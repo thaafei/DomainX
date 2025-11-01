@@ -1,26 +1,18 @@
 \documentclass{article}
 
-\usepackage{booktabs}
-\usepackage{tabularx}
 \usepackage{hyperref}
 \usepackage{comment}
 \usepackage{enumerate}
-\usepackage{adjustbox}
-\usepackage{booktabs}
 \usepackage{multirow}
 \usepackage{makecell}
 \usepackage{geometry}
-\usepackage{graphicx}
 \usepackage[shortlabels]{enumitem}
-\usepackage{float}
-\usepackage{array}
-\usepackage{pdflscape}
 \usepackage{tabularx,ragged2e,booktabs,caption}
 \usepackage{longtable}
-\usepackage{ulem}
-\usepackage{ltablex}
-\usepackage{nicematrix}
-\usepackage{makecell}
+\usepackage{float}
+\usepackage{graphicx}
+\usepackage{pdflscape}
+
 
 \hypersetup{
     colorlinks=true,       % false: boxed links; true: colored links
@@ -44,8 +36,6 @@
 \maketitle
 \thispagestyle{empty}
 
-\pagenumbering{roman}
-
 \begin{table}[hp]
 \caption{Revision History} \label{TblRevisionHistory}
 \begin{tabularx}{\textwidth}{llX}
@@ -53,22 +43,25 @@
 \textbf{Date} & \textbf{Developer(s)} & \textbf{Change}\\
 \midrule
 October 6, 2025  & Whole team & Initial v0 Draft\\
+October 29, 2025 & Fei & Update from TA feedback\\
 \bottomrule
 \end{tabularx}
 \end{table}
 
 ~\newpage
+\thispagestyle{empty}
 
 \tableofcontents
 
 ~\newpage
 
+\pagenumbering{arabic}
 
 \section{Introduction}
 
 
 This Hazard Analysis identifies and evaluates potential risks associated with
-the Neural Network Libraries (NNL) Assessment Tool, a web-based application that
+the DomainX Assessment Tool, a web-based application that
 automates evidence collection, data storage, and visualization for assessing
 open-source neural network libraries. 
 
@@ -76,14 +69,13 @@ In this context, a hazard is defined as any condition, event, or design
 decision that could lead to loss of data integrity, software malfunction,
 degraded performance, or failure to meet stakeholder requirements.
 
-The tool integrates React (frontend), Flask (backend), a relational database
-(e.g., MySQL), and public Application Programming Interfaces (APIs), such as the
+The tool integrates \href{https://react.dev/}{React} (frontend), \href{https://www.djangoproject.com/}{Django} (backend), and \href{https://www.mysql.com/}{MySQL}
+(relational database), and public Application Programming Interfaces (APIs), such as the
 GitHub API, to support automated data gathering, Analytic Hierarchy Process
 (AHP)--based ranking, and visualization of software-quality metrics.
 
 Because the system involves data integration, user interaction, and deployment
-on university infrastructure, it faces technical and operational hazards (for
-example, integration errors, API limits, or performance bottlenecks). This
+on university infrastructure, it faces technical and operational hazards, such as integration errors, API limits, and performance bottlenecks. This
 document identifies such risks early in the lifecycle to protect software
 reliability, data integrity, and user experience.
 
@@ -112,22 +104,23 @@ early to minimize risks and ensure project success.
 \section{System Boundaries and Components}
 
 The following explain the System Components:
-\begin{itemize}
-    \item Admin UI: Handles invitation, domain creation, and user management views.
-    \item Researcher UI: Handles data input, update, and visualization controls.
-    \item User Management: Handles logic for invite/sign-up, login, roles, and password reset.
-    \item Domain Data Service: Handles read and write operations for Domains, Libraries, and Metrics.
-    \item AHP Ranking: Handles the AHP calculation.
-    \item Visualization: Handles graph generation.
-    \item Export: Handles data downloads (JSON/Excel).
-    \item Security: Handles Access Control, validation, encrypt password, and manages audit trails.
-    \item Persistence: Handles storage and retrieval for all data entities.
-    \item System DB: The underlying data store.
-\end{itemize}
+\begin{enumerate}[label=C\arabic*.]
+  \item Admin UI: Handles invitation, domain creation, and user management views.
+  \item Researcher UI: Handles data input, update, and visualization controls.
+  \item User Management: Handles logic for invite/sign-up, login, roles, and password reset.
+  \item Domain Data Service: Handles read and write operations for Domains, Libraries, and Metrics.
+  \item AHP Ranking: Handles the AHP calculation.
+  \item Visualization: Handles graph generation.
+  \item Export: Handles data downloads (JSON/Excel).
+  \item Security: Handles Access Control, validation, encrypt password, and manages audit trails.
+  \item Persistence: Handles storage and retrieval for all data entities.
+  \item System Database: The underlying data store.
+\end{enumerate}
 
 \begin{figure}[H]
     \centering
     \includegraphics[scale=0.5] {images/component.png}
+    \caption{System Components Table}
 \end{figure}
 
 \section{Critical Assumptions}
@@ -162,7 +155,7 @@ The following assumptions support hazard identification and mitigation:
 \end{itemize}
 
 \section{Failure Mode and Effect Analysis}
-The following contain our Failure Mode and Effect Analysis table is a breakdown of the hazards that could occur within the system, along with recommended actions to mitigate them.
+This contains the Failure Mode and Effect Analysis table below and is a breakdown of the hazards that could occur within the system, along with recommended actions to mitigate them.
 \newgeometry{margin=0.5in}
 \begin{landscape}
   \begin{longtable}{|p{2cm}|p{4cm}|p{4cm}|p{4cm}|p{4cm}|p{2cm}|p{2cm}|}
@@ -394,27 +387,27 @@ The following contain our Failure Mode and Effect Analysis table is a breakdown 
 The hazard analysis revealed several safety-related requirements that were not fully covered in the SRS.
 These requirements aim to prevent data loss, improve user experience during failures, and keep the tool reliable.
 \subsection*{Correct Role Assignment}
-User roles (Viewer / Contributor) must be assigned and saved correctly at sign-up or when updated by an admin so that permissions are always accurate.\textit{(Added to SRS as Requirement SR-AC4.)}
+User roles (Viewer / Contributor) must be assigned and saved correctly at sign-up or when updated by an admin so that permissions are always accurate.\textit{(Added to \href{https://github.com/thaafei/DomainX/blob/main/docs/SRS/SRS.pdf}{SRS} as Requirement SR-AC4.)}
 
 \subsection*{Clear Error Feedback and Account Recovery}
-The system must show clear error messages (e.g., wrong password, network failure) and give users a way to reset their credentials if they forget them. \textit{(Added to SRS as Requirement SR-AC5.)}
+The system must show clear error messages (e.g., wrong password, network failure) and give users a way to reset their credentials if they forget them. \textit{(Added to \href{https://github.com/thaafei/DomainX/blob/main/docs/SRS/SRS.pdf}{SRS} as Requirement SR-AC5.)}
 
 \subsection*{Preventing Conflicting Edits}
-When two people try to edit the same record at the same time, the tool must either block one of the saves or clearly warn the users to avoid losing data. \textit{(Added to SRS as Requirement SR-INT3.)}
+When two people try to edit the same record at the same time, the tool must either block one of the saves or clearly warn the users to avoid losing data. \textit{(Added to \href{https://github.com/thaafei/DomainX/blob/main/docs/SRS/SRS.pdf}{SRS} as Requirement SR-INT3.)}
 
 \subsection*{Protecting Manual Edits from Automated Updates}
-If automated data refreshes could overwrite a user’s manual entry, the system must warn the user or ask for confirmation before replacing the data. \textit{(Added to SRS as Requirement SR-INT4.)}
+If automated data refreshes could overwrite a user’s manual entry, the system must warn the user or ask for confirmation before replacing the data. \textit{(Added to \href{https://github.com/thaafei/DomainX/blob/main/docs/SRS/SRS.pdf}{SRS} as Requirement SR-INT4.)}
 
 
 \subsection*{Consistent Visualization}
 Publishing visualizations must not happen at the same time as ongoing data edits.
-The system should either block publishing during edits or enforce a short downtime so charts and scores always reflect a stable dataset. \textit{(Added to SRS as Requirement SR-INT6.)}
+The system should either block publishing during edits or enforce a short downtime so charts and scores always reflect a stable dataset. \textit{(Added to \href{https://github.com/thaafei/DomainX/blob/main/docs/SRS/SRS.pdf}{SRS} as Requirement SR-INT6.)}
 
 \subsection*{Reliable Download of Data and Visuals}
-If an export (CSV, PNG, etc.) fails or the file is corrupted, the tool must alert the user and, where possible, let them retry the download. \textit{(Added to SRS as Requirement SR-INT7.)}
+If an export (CSV, PNG, etc.) fails or the file is corrupted, the tool must alert the user and, where possible, let them retry the download. \textit{(Added to \href{https://github.com/thaafei/DomainX/blob/main/docs/SRS/SRS.pdf}{SRS} as Requirement SR-INT7.)}
 
 \subsection*{Implement Backups of the Database}
-The system should have a protocol in place to take backups of the database, to restore data at max within the timeframe of an hour. \textit{(Added to SRS as Requirement PR-RFT3.)}
+The system should have a protocol in place to take backups of the database, to restore data at max within the timeframe of an hour. \textit{(Added to \href{https://github.com/thaafei/DomainX/blob/main/docs/SRS/SRS.pdf}{SRS} as Requirement PR-RFT3.)}
 
 \section{Roadmap}
 
@@ -439,8 +432,6 @@ Some features will be added later as future improvements:
 \newpage{}
 
 \section*{Appendix --- Reflection}
-
-\wss{Not required for CAS 741}
 
 \input{../Reflection.tex}
 \subsection*{Haniye}
