@@ -9,6 +9,7 @@ DomainX/
     ├── backend/       ← Django backend (API and database)
     │   ├── DomainX/   ← Django project settings
     │   ├── api/       ← Main Django app
+    ├── ├── users/       ← User app
     │   ├── manage.py
     │   └── requirements.txt
     └── frontend/      ← React frontend
