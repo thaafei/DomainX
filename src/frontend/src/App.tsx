@@ -4,6 +4,7 @@ import Home from './pages/Home';
 import Login from './pages/Login';
 import Visualize from './pages/Visualize';
 import Main from "./pages/Main";
+import Signup from "./pages/Signup";
 import "./styles/base.css";
 import "./styles/theme.css";
 import "./styles/auth.css";
@@ -16,6 +17,7 @@ const App: React.FC = () => {
       <Routes>
         <Route path="/" element={<Home />} />
         <Route path="/login" element={<Login />} />
+        <Route path="/signup" element={<Signup />} />
         <Route path="/visualize" element={<Visualize />} />
         <Route path="/main" element={<Main />} />
       </Routes>
