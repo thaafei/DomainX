@@ -1,0 +1,40 @@
+.dx-auth-bg {
+  position: relative;
+  width: 100%;
+  height: 100vh;
+  overflow: hidden;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.dx-auth-grid {
+  display: grid;
+  grid-template-columns: 1fr 380px;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  max-width: 1100px;
+  height: 100%;
+  margin: 0 auto;
+  padding: 0 2rem;
+  position: relative;
+  z-index: 2;
+}
+
+.dx-auth-hero { text-align: left; max-width: 520px; }
+.dx-hero-title { font-size: 2.4rem; font-weight: 500; color: var(--accent); margin-bottom: .8rem; }
+.dx-hero-desc { font-size: 1.15rem; color: var(--text-dim); max-width: 360px; line-height: 1.6; }
+
+.dx-auth-card { display: flex; justify-content: center; }
+
+.dx-card-auth {
+  background: rgba(10, 15, 25, 0.55);
+  padding: 2.4rem;
+  border-radius: 14px;
+  border: 1px solid rgba(125,211,252,0.15);
+  box-shadow: 0 0 35px rgba(125,211,252,0.08);
+  backdrop-filter: blur(14px);
+  width: 360px;
+  color: var(--text-main);
+}

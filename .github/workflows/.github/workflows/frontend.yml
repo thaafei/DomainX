@@ -1,0 +1,30 @@
+name: Frontend CI
+
+on:
+  push:
+    paths:
+      - "src/frontend/**"
+  pull_request:
+    paths:
+      - "src/frontend/**"
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: "20.12.1"
+
+      - name: Install dependencies
+        working-directory: src/frontend
+        run: npm install
+
+      - name: Build React App
+        working-directory: src/frontend
+        run: npm run build --if-present

@@ -1,0 +1,51 @@
+.dx-label {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  font-size: 0.95rem;
+  color: var(--text-main);
+}
+
+.dx-input {
+  padding: 10px 12px;
+  border-radius: 6px;
+  border: 1px solid rgba(125,211,252,0.25);
+  background: rgba(255,255,255,0.04);
+  color: var(--text-main);
+  outline: none;
+  transition: border 0.2s ease;
+}
+.dx-input:focus { border: 1px solid var(--accent); }
+
+.dx-btn {
+  padding: 9px 18px;
+  border-radius: 6px;
+  font-size: 0.95rem;
+  cursor: pointer;
+  transition: 0.25s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.dx-btn-outline {
+  background: transparent;
+  border: 1px solid rgba(125,211,252,0.3);
+  color: var(--accent);
+}
+.dx-btn-outline:hover {
+  border-color: var(--accent);
+  opacity: 0.85;
+}
+
+.dx-btn-primary {
+  background: #0b1a2e;
+  border: 1px solid rgba(125,211,252,0.4);
+  color: var(--accent);
+}
+.dx-btn-primary:hover {
+  border-color: #7dd3fc;
+  box-shadow: 0 0 12px rgba(125,211,252,0.20);
+}
+
+.dx-error { color: #f97316; font-size: 0.9rem; }

@@ -1,0 +1,14 @@
+:root {
+  --bg: #0d121c;
+  --accent: #7dd3fc;
+  --text-main: #e0f2fe;
+  --text-dim: #94a3b8;
+  --accent-glow: rgba(22,199,254,0.15);
+}
+
+html, body, #root {
+  height: 100%;
+  background: var(--bg);
+  margin: 0;
+  font-family: 'Inter', 'Segoe UI', 'Roboto', sans-serif;
+}

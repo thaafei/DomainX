@@ -1,4 +1,11 @@
 ## Core latex/pdflatex auxiliary files:
+.idea/
+venv/
+db.sqlite3
+*.sqlite3
+__pycache__/
+*.pyc
+node_modules/
 *.aux
 *.lof
 *.log
@@ -277,3 +284,7 @@ TSWLatexianTemp*
 
 # DS_Store file from Mac computers
 .DS_Store
+node_modules/
+__pycache__/
+*.pyc
+db.sqlite3
