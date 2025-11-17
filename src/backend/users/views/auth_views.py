@@ -4,8 +4,30 @@ from rest_framework import status
 from django.contrib.auth import authenticate
 from rest_framework.permissions import IsAuthenticated
 from rest_framework_simplejwt.tokens import RefreshToken
-from ..serializers import UserProfileSerializer
+from ..serializers import UserProfileSerializer,SignupSerializer
 from django.conf import settings
+from rest_framework.permissions import AllowAny
+
+class SignupView(APIView):
+    permission_classes = [AllowAny]
+    def post(self, request):
+        serializer = SignupSerializer(data=request.data)
+
+        if not serializer.is_valid():
+            return Response(
+                {"errors": serializer.errors},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+        user = serializer.save()
+
+        return Response(
+            {
+                "message": "Account created successfully.",
+                "user": UserProfileSerializer(user).data,
+            },
+            status=status.HTTP_201_CREATED
+        )
 
 class LoginView(APIView):
     def post(self, request):
