@@ -28,7 +28,7 @@ September 17, 2025 & Awurama Nyarko, & Created first draft of document
  \\ & Fei Xie &
  \\ &Ghena Hatoum &
  \\ &Haniye Hamidizadeh &
- \\
+\\November 17, 2025 & Fei Xie & Implemented TA feedback \href{https://github.com/thaafei/DomainX/issues/52}{issues}\\
 \bottomrule
 \end{tabularx}
 \end{table}
@@ -41,47 +41,48 @@ With additional sections that include the expected technologies and coding stand
 This project will be open-source, no confidential information to protect.
 
 \section{IP to Protect}
-This software and associated documentation files for this project are protected by copywrite as dictated by the \href{https://github.com/thaafei/DomainX/blob/main/LICENSE}{MIT License}.
+This software and associated documentation files for this project are protected by copyright as dictated by the \href{https://github.com/thaafei/DomainX/blob/main/LICENSE}{MIT License}.
 
 \section{Copyright License}
 This project use's the MIT License, located in the \href{https://github.com/thaafei/DomainX/blob/main/LICENSE}{LICENSE} file.
 
 \section{Team Meeting Plan}
-Meeting minutes and attendence will be taken for all meetings as their related issue in the project's Github. Each member is responsible for verifying their own attendence in the related Github issue.
+Meeting minutes and attendance will be taken for all meetings as their related issue in the project's GitHub. Each member is responsible for verifying their own attendance in the related Github issue.
 \subsection{Lectures}
   Members are expected to attend every \textbf{lecture} for Software Engineering Students \textbf{in-person} (maximum 3/week).
 \subsection{Tutorials}
   Members are expected to attend all TA-lead tutorials. For tutorials without a pre-designated lesson plan, the team will decide what to do, such as having a check-in, working session, and etc.
 \subsection{Team Meetings}
   Weekly team meetings are held every \textbf{Monday 10:30-11:20pm virtually}.
-  All members are expected to attend and it is up to the responsibility of the individual to inform the rest of the team why they cannot make the weekly meeting, and provide their updates asynchronously.
+  All members are expected to attend, and it is up to the responsibility of the individual to inform the rest of the team why they cannot make the weekly meeting, and provide their updates asynchronously.
   Meetings will be structured as follows:
   \begin{enumerate}
     \item Each member will give a short recap of the work they've done since the previous meeting
-    \item Each member has the oppurtunity to bring up any blockers, concerns, or issues they are facing
+    \item Each member has the opportunity to bring up any blockers, concerns, or issues they are facing
     \item Group will discuss and determine action items for the project that are to be done by the next meeting, and assign them to member(s).
     \item Meeting minutes will be taken and recorded as a corresponding Github Issue.
   \end{enumerate}
 \subsection{Supervisor and Domain Expert Meetings}
-  Weekly superviosr meetings are held every \textbf{Thursday 2:30-3:30pm in-person}, unless otherwise stated.
+  Weekly supervisors meetings are held every \textbf{Thursday 2:30-3:30pm in-person}, unless otherwise stated.
   Meeting topics must be prepared beforehand. One team member will be designated as the \textbf{meeting chair} for the meeting.
   They are responsible for coordinating the meeting between the supervisor/domain expert and the rest of the team, including sending the meeting invite on Microsoft Calendar.
 
   \section{Team Communication Plan}
 \begin{itemize}
-  \item \textbf{Microsoft Teams:} Main way of communication between team members, both through the chat and online team meetings.
-  \item \textbf{Github:} Tracking of the project process and meeting minutes. Github issues will be created for all meetings (Lecture, Peer Review, Supervisor Meeting, etc) and code tasks.
-  \item \textbf{Email:} Communication with the supervisor and domain expert, will all team members cc-ed.
-  \item \textbf{Notion:} Where rough drafts of documentation will be stored, prior to being transferred into latex format in the Github
+  \item \textbf{Discord:} Main way of communication between team members.
+  \item \textbf{Microsoft Teams:} Secondary way of communication between team members, used for online meetings.
+  \item \textbf{GitHub:} Tracking of the project process and meeting minutes. GitHub issues will be created for all meetings (Lecture, Peer Review, Supervisor Meeting, etc.) and code tasks.
+  \item \textbf{Email:} Communication with the supervisor and domain expert, with all team members cc-ed.
 \end{itemize}
 \section{Team Member Roles}
 \begin{itemize}
-  \item \textbf{Devops Lead:} Responsible for maintaining the github respository to properly track the development process. Updating and maintaining the Github Project Board, and ensuring issues are properly assigned the the correct milestone and project.
-  \item \textbf{Team Leader:} Oversees the overall process of the whole project. Ensures both subteams are on track, and coordinates meetings between team members and all stakeholders. This includes scheduling the meeting time on all member's calendars.
+  \item \textbf{DevOps Lead:} Responsible for maintaining the GitHub repository to properly track the development process. Updating and maintaining the GitHub Project Board, and ensuring issues are properly assigned the correct milestone and project.
+  \item \textbf{Team Leader:} Oversees the overall process of the whole project. Ensures both subteam are on track. Creates and assigns issues, delegates work. Coordinates meetings between team members and all stakeholders.
   \item \textbf{Research Lead:} Main lead for the research subteam. Responsible for coordinating and identifying work required for the research paper portion of the project.
   \item \textbf{Tech Lead:} Main lead for the tool subteam. Responsible for coordinating and identifying work required for the tool creation of the project.
   \item \textbf{Note Taker:} In charge of creating issues for all meeting types. Takes meeting minutes for the team during meetings.
-  \item \textbf{Meeting Chair:} Chair for meetings involving stakeholders. Resposible for creating the agenda before each meeting, leading the meeting and guiding discussion topics.
+  \item \textbf{Meeting Chair:} Chair for meetings involving stakeholders. Responsible for creating the agenda before each meeting, leading the meeting and guiding discussion topics.
+  \item \textbf{Peer Reviewer:} Reviews artifacts for other team and provides feedback. 
 \end{itemize}
 \begin{center}
 \begin{tabular}{|l|l|}
@@ -89,9 +90,10 @@ Meeting minutes and attendence will be taken for all meetings as their related i
 \textbf{Role} & \textbf{Assigned To} \\
 \hline
 DevOps Lead & Fei \\
-Team Leader & Ghena \\
+Team Leader & Fei \\
+Peer Reviewer & Fei \\
 Research Lead & Awurama \\
-Tech Lead & Haniye \\
+Tech Lead & Haniye and Ghena \\
 Note Taker & Ghena and Fei \textit{(rotating every few weeks with Haniye and Awurama)} \\
 Meeting Chair & Fei and Ghena \textit{(may rotate to Haniye or Awurama if needed)} \\
 \hline
@@ -122,7 +124,7 @@ Following are the general steps of what development should look like:
   \2 \textbf{Integration tests} must be created for feature issues, optional for refactoring and bug.
 \2 A \textbf{coverage tool}, such as \texttt{coverage.py}, will be used to track which parts of the code are tested and to identify any untested code paths.
 \1 Create pull request
-  \2 All Github Actions need to pass
+  \2 All GitHub Actions need to pass
   \2 At least one approval from a teammate
   \2 When merging, make sure to do \textbf{squash and merge}
 \1 Once the epic branch contains the related issues, the epic branch can be merged into main branch.
@@ -132,7 +134,7 @@ Following are the general steps of what development should look like:
 
 \subsection*{Project Scheduling}
 
-We will use GitHub Issues to organize both meeting notes and project development tasks.
+We will use \href{https://github.com/thaafei/DomainX/issues}{GitHub Issues} to organize both meeting notes and project development tasks.
 The team’s GitHub Project, \href{https://github.com/users/thaafei/projects/6}{\textbf{DomainX}}, will track non-meeting issues such as feature development, bug fixes, and documentation updates.
 Each deliverable will be broken down into smaller tasks, assigned to team members, and linked to the relevant milestone.
 This setup will help us keep track of progress and make sure deadlines are met.
@@ -145,17 +147,18 @@ The overall schedule follows the course timeline:
 \textbf{Deliverable} & \textbf{Week} \\
 \hline
 Team Formed, Project Selected & Week 03 \\
-Problem Statement, POC and Dev Plan & Week 04 \\
-SRS + HA Revision 0 & Week 06 \\
-V\&V Plan Revision 0 & Week 08 \\
-Design Document Revision 1 & Week 10 \\
-Proof of Concept Demonstration & Week 11--12 \\
-Design Document Revision 0 & Week 16 \\
-Revision 0 Demonstration & Week 18--19 \\
-V\&V Report Revision 0 & Week 22 \\
-Final Demonstration (Revision 1) & Week 24 \\
-EXPO Demonstration & Week 26 \\
-Final Documentation (Revision 1) & Week 26 \\
+\href{https://github.com/thaafei/DomainX/milestone/1}{Problem Statement, POC and Dev Plan} & Week 04 \\
+\href{https://github.com/thaafei/DomainX/milestone/2}{SRS + HA Revision 0} & Week 06 \\
+\href{https://github.com/thaafei/DomainX/milestone/3}{V\&V Plan Revision 0} & Week 08 \\
+\href{https://github.com/thaafei/DomainX/milestone/13}{Design Document Revision -1} & Week 10 \\
+\href{https://github.com/thaafei/DomainX/milestone/5}{Proof of Concept Demonstration} & Week 11--12 \\
+\href{https://github.com/thaafei/DomainX/milestone/12}{Proof of Concept Team Contribution} & Week 11--12 \\
+\href{https://github.com/thaafei/DomainX/milestone/6}{Design Document Revision 0} & Week 16 \\
+\href{https://github.com/thaafei/DomainX/milestone/7}{Revision 0 Demonstration} & Week 18--19 \\
+\href{https://github.com/thaafei/DomainX/milestone/8}{V\&V Report Revision 0} & Week 22 \\
+\href{https://github.com/thaafei/DomainX/milestone/9}{Final Demonstration Revision 1} & Week 24 \\
+\href{https://github.com/thaafei/DomainX/milestone/10}{EXPO Demonstration} & Week 26 \\
+\href{https://github.com/thaafei/DomainX/milestone/11}{Final Documentation Revision 1} & Week 26 \\
 \hline
 \end{tabular}
 \end{center}
@@ -171,7 +174,7 @@ One of the risks in our project is accessing the correct data through APIs. We m
 Another risk is that even if each component works individually, combining them into one complete workflow could cause unexpected issues. For instance, data collected from the API might not store properly in the database, or the way the data is structured in the database may not connect smoothly with the visualization tool. These kinds of problems could lead to delays and require extra adjustments during development.
 
 \subsubsection*{Lack of open-source packages or hard to find source codes}\vspace{-0.5em}
-As we are non-Domain Experts for the domain of Neural Network Libraries, it's hard to gauge the available packages accurately. We may come to find that only a small subset of library/packages commonly used
+As we are non-domain experts for the domain of Neural Network libraries, it's hard to gauge the available packages accurately. We may come to find that only a small subset of library/packages commonly used
 are open-sourced or have accessible source code. This could hinder data gathering as we work with our supervisor and domain expert to find alternatives or obtain the appropriate licensing.
 
 \subsubsection*{Difficulty communicating with the Domain Expert}\vspace{-0.5em}
@@ -189,40 +192,37 @@ Another risk is related to how we present the final results. If the data cannot 
 \noindent
 To address these risks, our proof of concept will focus on showing that the main components of the system can work together in practice. \\\\
 For the risk of data access and API limitations, we will build a small script that connects to the intended API endpoint, displays the raw response, and then parses the data into a structured format such as a Python dictionary. The parsed data will then be inserted into a database and used to generate a simple visualization, confirming that the entire pipeline from retrieving external data to processing, storing, and displaying it functions as expected. \\\\
-To address the risk of library packages, we will coordinate with the domain expert as early as possible. In additon to scheduling meeting at minimum a week in advance, allowing for adequate time for both the team and the domain expert to determine our availability.\\
+To address the risk of library packages, we will coordinate with the domain expert as early as possible. In addition to scheduling meeting at minimum a week in advance, allowing for adequate time for both the team and the domain expert to determine our availability.\\
 Finally, for the risks around database and graphing, we will demonstrate that parsed data can be stored in a suitable schema, retrieved through simple queries, and displayed in a basic graph using our chosen visualization tool. If we find during the PoC that the relational database struggles with large datasets or that the schema design limits flexibility, we will consider exploring a NoSQL option such as MongoDB as a backup to reduce these risks.
 \section{Expected Technology}
 
-Our project will be a web-based application with a React frontend to handle interaction and show graphs, a Flask(Python backend) to process data and manage requests, and a MySQL database to store the results. We plan to explore deploying the application on a cloud platform such as AWS or Google Cloud later in the project to make collaboration and access easier for the team and supervisors.\\ \\
-We plan to use Requests for making API calls and Pandas to organize and clean the data before saving it on the backend. NumPy might also be used for simple calculations.On the frontend, we expect to use a library like Chart.js to build the graphs and comparisons.\\ \\
-We will use Git and GitHub for version control. Our workflow will be based on creating GitHub issues for tasks, linking the related work to those issues, and developing each feature or fix on a separate branch. Once the work is ready, it will be merged into the main codebase through a pull request. We will also use GitHub Projects to track tasks and progress.\\ \\
+Our project will be a web-based application with a \href{https://react.dev/}{React} frontend to handle interaction and show graphs, \href{https://www.djangoproject.com/}{Django} backend to process data and manage requests, and a \href{https://www.mysql.com/}{MySQL} database to store the results. We plan to explore deploying the application on a cloud platform such as \href{https://aws.amazon.com/}{Amazon Web Services (AWS)} or \href{https://cloud.google.com/}{Google Cloud} later in the project to make collaboration and access easier for the team and supervisors.\\ \\
+We plan to use \href{https://pypi.org/project/requests/}{Requests} for making API calls and \href{https://pypi.org/project/pandas/}{Pandas} to organize and clean the data before saving it on the backend. \href{https://pypi.org/project/numpy/}{NumPy} might also be used for simple calculations. On the frontend, we expect to use a library like \href{https://www.chartjs.org/}{Chart.js} to build the graphs and comparisons.\\ \\
+We will use \href{https://git-scm.com/}{Git} and \href{https://github.com/thaafei/DomainX}{GitHub} for version control. Our workflow will be based on creating \href{https://github.com/thaafei/DomainX/issues}{GitHub Issues} for tasks, linking the related work to those issues, and developing each feature or fix on a separate branch. Once the work is ready, it will be merged into the main codebase through a pull request. We will also use \href{https://github.com/users/thaafei/projects/6}{GitHub Projects} to track tasks and progress.\\ \\
 For testing, we plan to start with simple manual tests to confirm that each part of the system works as expected and later explore automated testing as the project grows.\\ \\
-Most of the important logic for evaluating the libraries will be written by us, while tools and libraries will be used as a help. Since our focus is on analyzing existing neural network libraries, we don’t plan to train or create new machine learning models as of now.
-\section{Coding Standard}
+Most of the important logic for evaluating the libraries will be written by us, while tools and libraries will be used as a help.
 
 For the backend, we’ll follow Python’s official style guide, \href{https://peps.python.org/pep-0008/}{PEP 8}, to keep our code clean and consistent.
 
-To help automate adherence to PEP 8 and maintain high code quality, we will use the following tools:
+To help automate adherence to \href{https://peps.python.org/pep-0008/}{PEP 8} and maintain high code quality, we will use the following tools:
 \begin{itemize}
-  \item \textbf{Black} – an automatic code formatter to ensure consistent style across all files.
-  \item \textbf{isort} – to automatically sort and organize import statements.
-  \item \textbf{Flake8} – a lightweight linter for detecting syntax errors and style violations.
-  \item \textbf{Pylint} – a feature-rich linter for deeper static analysis and code quality checks.
+  \item \textbf{\href{https://github.com/psf/black}{Black}} – an automatic code formatter to ensure consistent style across all files.
+  \item \textbf{\href{https://pycqa.github.io/isort/}{isort}} – to automatically sort and organize import statements.
+  \item \textbf{\href{https://flake8.pycqa.org/en/latest/}{Flake8}} – a lightweight linter for detecting syntax errors and style violations.
+  \item \textbf{\href{https://pypi.org/project/pylint/}{Pylint}} – a feature-rich linter for deeper static analysis and code quality checks.
 \end{itemize}
 
-On the frontend, we’ll use React with TypeScript. For this, we’ll rely on the \href{https://react-typescript-cheatsheet.netlify.app/}{React TypeScript Cheatsheet} for common patterns and Google’s \href{https://google.github.io/styleguide/tsguide.html}{TypeScript Style Guide}.
+On the frontend, we’ll use \href{https://react.dev/}{React} with \href{https://www.typescriptlang.org/}{TypeScript}. For this, we’ll rely on the \href{https://react-typescript-cheatsheet.netlify.app/}{React TypeScript Cheatsheet} for common patterns and Google’s \href{https://google.github.io/styleguide/tsguide.html}{TypeScript Style Guide}.
 
 \newpage{}
 
 \section*{Appendix --- Reflection}
 
-\input{../Reflection.tex}
-
 \begin{enumerate}
     \item Why is it important to create a development plan prior to starting the
     project? \\
     \textbf{Ghena: } It makes sure everyone is on the same page, knowing what their roles and responsibilities as well as holding them accountable. It also gives clear guidelines of how everything should be done and organized making it easier to track changes and improves the overall collaboration.
-    \\\textbf{Fei:} To consolidate the team’s expectation before the project starts, allowing for everyone to start at the same level of understanding of what the expectations are. This also allows for better accountablility, having a pre-determined development plan beforehand implies that everyone is aware of the expectations before the project even starts.
+    \\\textbf{Fei:} To consolidate the team’s expectation before the project starts, allowing for everyone to start at the same level of understanding of what the expectations are. This also allows for better accountability, having a pre-determined development plan beforehand implies that everyone is aware of the expectations before the project even starts.
     \\\textbf{Awurama:} It ensures that roles, deliverables, and timelines are clearly defined 
     from the beginning. This prevents misunderstandings and helps the team stay aligned 
     on expectations.
@@ -231,7 +231,7 @@ On the frontend, we’ll use React with TypeScript. For this, we’ll rely on th
     \item In your opinion, what are the advantages and disadvantages of using
     CI/CD? \\
       \textbf{Ghena:} It gives results faster as well as detect bugs earlier. However, a disadvantage is that there might be a learning curve, which, in those cases, would be better to allow the developer to learn a system and then implement. 
-      \\\textbf{Fei:} As projects get bigger with bigger moving components, having a well documented CI/CD process reduces the paranoria involved when a user releases new features. Thus CI/CD allows for faster iterations of the design/development process, and potentially reducing downtime. Some obvious disadvantage is that due to the faster development cycle, developers can feel more stressed, constantly having to work sprint by sprint. Another disadvantage is the initial setup phase, where moving process and change how people are used to working can take some time, which can slow down the development cycle during the initial stages.
+      \\\textbf{Fei:} As projects get bigger with bigger moving components, having a well documented CI/CD process reduces the paranoia involved when a user releases new features. Thus, CI/CD allows for faster iterations of the design/development process, and potentially reducing downtime. Some obvious disadvantage is that due to the faster development cycle, developers can feel more stressed, constantly having to work sprint by sprint. Another disadvantage is the initial setup phase, where moving process and change how people are used to working can take some time, which can slow down the development cycle during the initial stages.
      \\\textbf{Awurama:} CI/CD improves consistency and reduces integration errors by 
     automating builds and tests. However, it can introduce overhead if the setup is 
     complex or if the team has limited experience maintaining pipelines.  
@@ -260,12 +260,12 @@ And the tool itself will hopefully be used by future students working on other S
 
 \subsubsection*{Expectations}
 
-Our team expects full commitment to all scheduled meetings, with everyone arriving on team and staying for the entire duration. It is up to the responsiblity of the individual to identify if they cannot make a meeting, and inform the team beforehand.
+Our team expects full commitment to all scheduled meetings, with everyone arriving on time and staying for the entire duration. It is up to the responsibility of the individual to identify if they cannot make a meeting, and inform the team beforehand.
 If it is an important meeting, it is the responsibility of the individual to suggest an alternative time that all members can attend. Missing meetings frequently without prior notice will be addressed by the team and escalated to the supervisor if necessary.
 
 \subsubsection*{Acceptable Excuse}
 
-Acceptable excuses includes unforeseen emergencies, personal illness, family matters, or other significant personal oligations. Unacceptable excuses include vague, or last-minute reasons such as forgetting and conflicting non-essential plans.
+Acceptable excuses include unforeseen emergencies, personal illness, family matters, or other significant personal obligations. Unacceptable excuses include vague, or last-minute reasons such as forgetting and conflicting non-essential plans.
 
 \subsubsection*{In Case of Emergency}
 
@@ -420,12 +420,12 @@ To keep our team on track, we will implement the following methods:
 
 \subsubsection*{Team Building}
 
-For team building, we will have a bi-weekly hangout session, where the team can get together to grab food, drinks or other activites. As decided by the team.
+For team building, we will have a bi-weekly hangout session, where the team can get together to grab food, drinks or other activities. As decided by the team.
 \subsubsection*{Decision Making} 
 
 In our group, our primary way of making decisions will be through
 consensus. We believe that it is important
-to include everyone in the decision-making process so it can lead to
+to include everyone in the decision-making process, so it can lead to
 better outcomes and strong group work.
 In certain situations where consensus cannot be reached, the group
 will take a vote and each member will have
