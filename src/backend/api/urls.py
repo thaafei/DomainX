@@ -1,5 +1,6 @@
 from django.urls import path, include
 from .views import status_views
+from .views.comparison_views import domain_comparison
 from .views.metric_views import (
     list_metrics,
     create_metric,
@@ -14,6 +15,7 @@ from .views.library_views import (
 urlpatterns = [
     path('status/', status_views.status_view, name='api_status'),
     path('github/', include('api.github_urls', namespace='github')),
+    path("comparison/<uuid:domain_id>/", domain_comparison, name="domain_comparison"),
     path('metrics/', list_metrics, name='metrics_list'),
     path('metrics/create/', create_metric, name='metrics_create'),
     path('metrics/<uuid:metric_id>/update/', update_metric, name='metrics_update'),
