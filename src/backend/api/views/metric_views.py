@@ -27,14 +27,14 @@ def update_metric(request, metric_id):
     try:
         metric = Metric.objects.get(pk=metric_id)
     except Metric.DoesNotExist:
-        return Response({"error": "Metric not found"}, status=404)
+        return Response({"error": "Metric not found"}, status=status.HTTP_404_NOT_FOUND)
 
     serializer = MetricSerializer(metric, data=request.data, partial=True)
     if serializer.is_valid():
         serializer.save()
         return Response(serializer.data)
 
-    return Response(serializer.errors, status=400)
+    return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
 @api_view(["DELETE"])
@@ -42,7 +42,7 @@ def delete_metric(request, metric_id):
     try:
         metric = Metric.objects.get(pk=metric_id)
     except Metric.DoesNotExist:
-        return Response({"error": "Metric not found"}, status=404)
+        return Response({"error": "Metric not found"}, status=status.HTTP_404_NOT_FOUND)
 
     metric.delete()
-    return Response(status=204)
+    return Response(status=status.HTTP_204_NO_CONTENT)
