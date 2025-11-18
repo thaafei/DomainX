@@ -1,8 +1,16 @@
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
 from rest_framework import status
-from ..models import Library, Domain
+
+from ..models import (
+    Domain,
+    Library,
+    Metric,
+    LibraryMetricValue
+)
+
 from ..serializers import LibrarySerializer
+
 
 @api_view(["GET"])
 def list_libraries(request, domain_id):
@@ -39,3 +47,32 @@ def delete_library(request, library_id):
 
     library.delete()
     return Response(status=status.HTTP_204_NO_CONTENT)
+
+
+@api_view(["POST"])
+def update_library_values(request, library_id):
+    try:
+        library = Library.objects.get(pk=library_id)
+    except Library.DoesNotExist:
+        return Response({"error": "Library not found"}, status=status.HTTP_404_NOT_FOUND)
+
+    data = request.data
+    library.Library_Name = data.get("Library_Name", library.Library_Name)
+    library.Repository_URL = data.get("Repository_URL", library.Repository_URL)
+    library.Programming_Language = data.get("Programming_Language", library.Programming_Language)
+    library.save()
+    metrics_data = data.get("metrics", {})
+
+    for metric_name, value in metrics_data.items():
+        try:
+            metric = Metric.objects.get(Metric_Name=metric_name)
+        except Metric.DoesNotExist:
+            continue  #ignore unrecognized metric names
+
+        LibraryMetricValue.objects.update_or_create(
+            Library=library,
+            Metric=metric,
+            defaults={"Value": value}
+        )
+
+    return Response({"success": True})

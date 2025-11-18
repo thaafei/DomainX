@@ -10,7 +10,8 @@ from .views.metric_views import (
 from .views.library_views import (
     list_libraries,
     create_library,
-    delete_library
+    delete_library,
+    update_library_values
 )
 urlpatterns = [
     path('status/', status_views.status_view, name='api_status'),
@@ -23,5 +24,7 @@ urlpatterns = [
     path("libraries/<uuid:domain_id>/",list_libraries, name="list_libraries"),
     path("libraries/create/", create_library, name="create_library"),
     path("libraries/<uuid:library_id>/delete/", delete_library, name="delete_library"),
+    path("libraries/<uuid:library_id>/update-values/", update_library_values, name="update_library_values"),
+
 
 ]
