@@ -17,7 +17,7 @@ const DOMAIN_ID = "dd8d1992-d085-41e1-8ed0-7d292d4c2f2f";
 const ComparisonToolPage: React.FC = () => {
   const navigate = useNavigate();
 
-  const [domainName, setDomainName] = useState("Domain X");
+  const [domainName] = useState("Domain X");
   const [metricList, setMetricList] = useState<Metric[]>([]);
   const [tableRows, setTableRows] = useState<LibraryMetricRow[]>([]);
 
@@ -29,15 +29,11 @@ const ComparisonToolPage: React.FC = () => {
     try {
       const res = await fetch(
         `http://127.0.0.1:8000/api/comparison/${DOMAIN_ID}/`,
-        {
-          credentials: "include",
-        }
+        { credentials: "include" }
       );
-
       const data = await res.json();
-
-      setMetricList(data.metrics);    //metrics from backend
-      setTableRows(data.libraries);   //library rows with metric values
+      setMetricList(data.metrics);
+      setTableRows(data.libraries);
     } catch (err) {
       console.error("Error loading comparison data:", err);
     }
@@ -45,6 +41,7 @@ const ComparisonToolPage: React.FC = () => {
 
   return (
     <div className="dx-bg" style={{ display: "flex", height: "100vh" }}>
+
       <div
         className="dx-card"
         style={{
@@ -76,23 +73,41 @@ const ComparisonToolPage: React.FC = () => {
           {domainName} – Comparison Tool
         </h1>
 
-        <div style={{ display: "flex", gap: 14, marginBottom: 20 }}>
-          <button
-            className="dx-btn dx-btn-primary"
-            onClick={() => navigate("/libraries")}
-          >
-            + Add Library
-          </button>
+        <div
+          style={{
+            display: "flex",
+            alignItems: "center",
+            width: "100%",
+            marginBottom: 20,
+          }}
+        >
+
+          <div style={{ display: "flex", gap: 14 }}>
+            <button
+              className="dx-btn dx-btn-primary"
+              onClick={() => navigate("/libraries")}
+            >
+              + Add Library
+            </button>
+
+            <button
+              className="dx-btn dx-btn-outline"
+              onClick={() => navigate("/edit")}
+            >
+              ✎ Edit Metric Values
+            </button>
+          </div>
+
+          <div style={{ flexGrow: 1 }} />
 
           <button
-            className="dx-btn dx-btn-outline"
-            onClick={() => navigate("/edit")}
+            className="dx-btn dx-btn-primary"
+            onClick={() => navigate("/visualize")}
           >
-            ✎ Edit Metric Values
+            Visualize →
           </button>
         </div>
 
-        {/* TABLE */}
         <div className="dx-card" style={{ padding: 20 }}>
           <table style={{ width: "100%", borderCollapse: "collapse" }}>
             <thead>
@@ -130,14 +145,6 @@ const ComparisonToolPage: React.FC = () => {
             </div>
           )}
         </div>
-
-        <button
-          className="dx-btn dx-btn-primary"
-          style={{ marginTop: 30 }}
-          onClick={() => navigate("/visualize")}
-        >
-          Visualize →
-        </button>
       </div>
     </div>
   );
