@@ -93,7 +93,7 @@ const AddLibraryPage: React.FC = () => {
       >
         <button
           className="dx-btn dx-btn-outline"
-          onClick={() => navigate("/comparisontool")}
+          onClick={() => navigate("/comparison-tool")}
         >
           ← Back
         </button>
