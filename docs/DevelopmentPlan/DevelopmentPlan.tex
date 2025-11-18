@@ -132,8 +132,6 @@ Following are the general steps of what development should look like:
 
 \section{Project Decomposition and Scheduling}
 
-\subsection*{Project Scheduling}
-
 We will use \href{https://github.com/thaafei/DomainX/issues}{GitHub Issues} to organize both meeting notes and project development tasks.
 The team’s GitHub Project, \href{https://github.com/users/thaafei/projects/6}{\textbf{DomainX}}, will track non-meeting issues such as feature development, bug fixes, and documentation updates.
 Each deliverable will be broken down into smaller tasks, assigned to team members, and linked to the relevant milestone.
@@ -168,32 +166,27 @@ Team Formed, Project Selected & Week 03 \\
 
 As with most projects, there are certain risks that could affect how successful ours will be. Below are the main risks we have identified and plan to address:
 
-\subsubsection*{Data Access \& API Limitations}\vspace{-0.5em}
+\subsection*{Data Access \& API Limitations}\vspace{-0.5em}
 One of the risks in our project is accessing the correct data through APIs. We may face challenges finding an API that provides the information we need in the way we require. In addition, the API we choose could be unreliable or return data in a format that is hard to process, such as poorly structured JSON or XML. There may also be restrictions, such as requiring special keys or authentication, and many APIs limit how many requests can be made within a given time. Any of these issues could make it difficult to collect enough usable data for our tool.
-\subsubsection*{Integration Risk}\vspace{-0.5em}
-Another risk is that even if each component works individually, combining them into one complete workflow could cause unexpected issues. For instance, data collected from the API might not store properly in the database, or the way the data is structured in the database may not connect smoothly with the visualization tool. These kinds of problems could lead to delays and require extra adjustments during development.
+\\\textbf{Addressing the risk:}\\
+We will build a small script that connects to the intended API endpoint, displays the raw response, and then parses the data into a structured format such as a dictionary. The parsed data will then be inserted into a database and used to generate a simple visualization, confirming that the entire pipeline from retrieving external data to processing, storing, and displaying it functions as expected. \\\\
 
-\subsubsection*{Lack of open-source packages or hard to find source codes}\vspace{-0.5em}
-As we are non-domain experts for the domain of Neural Network libraries, it's hard to gauge the available packages accurately. We may come to find that only a small subset of library/packages commonly used
-are open-sourced or have accessible source code. This could hinder data gathering as we work with our supervisor and domain expert to find alternatives or obtain the appropriate licensing.
 
-\subsubsection*{Difficulty communicating with the Domain Expert}\vspace{-0.5em}
-Due to the busy schedule of both the team and the domain expert, it may be hard to coordinate and plan meetings. This could result in longer than desired breaks between meetings to catch up with the domain expert.
-With the risk of a small misaligned spiraling larger between the meetings.
-
-\subsubsection*{Data Management \& Database Integration}\vspace{-0.5em}
+\subsection*{Data Management \& Database Integration}\vspace{-0.5em}
 Databases are widely used, but there are still risks when applying them to our specific case. One challenge is designing a schema that fits the data we collect from APIs, since the structure may not align well with a relational database. There is also the possibility of data integrity issues, such as duplicate or missing values, which could lead to an unreliable dataset. In addition, if the amount of data grows larger than expected, the database may struggle with performance and make queries too slow for our application.
+\\\textbf{Addressing the risk:}\\
+We will demonstrate that parsed data can be stored in a suitable schema. If we find during the PoC that the relational database struggles with large datasets or that the schema design limits flexibility, we will consider exploring a NoSQL option such as MongoDB as a backup to reduce these risks.
 
-\subsubsection*{Visualization \& Graphing}\vspace{-0.5em}
+\subsection*{Visualization \& Graphing}\vspace{-0.5em}
 Another risk is related to how we present the final results. If the data cannot be shown in a clear and effective way, the value of the tool is greatly reduced. The graphing library we choose might not fully support our data structure or may not integrate well with the rest of the system. There is also the chance that creating complex graphs with larger datasets could affect performance and make the tool slow to use. Finally, the library we select may not provide the types of charts or visualizations that best highlight the comparisons we need to show.
+\\\textbf{Addressing the risk:}\\
+We will show that simple visualizations and graphs can be created using mock data during the demonstration. 
 
+\subsection*{Integration Risk}\vspace{-0.5em}
+Another risk is that even if each component works individually, combining them into one complete workflow could cause unexpected issues. For instance, data collected from the API might not store properly in the database, or the way the data is structured in the database may not connect smoothly with the visualization tool. These kinds of problems could lead to delays and require extra adjustments during development.
+\\\textbf{Addressing the risk:}\\
+Our proof of concept will focus on showing that the main components of the system can work together in practice. \\\\
 
-\vspace{1em} %
-\noindent
-To address these risks, our proof of concept will focus on showing that the main components of the system can work together in practice. \\\\
-For the risk of data access and API limitations, we will build a small script that connects to the intended API endpoint, displays the raw response, and then parses the data into a structured format such as a Python dictionary. The parsed data will then be inserted into a database and used to generate a simple visualization, confirming that the entire pipeline from retrieving external data to processing, storing, and displaying it functions as expected. \\\\
-To address the risk of library packages, we will coordinate with the domain expert as early as possible. In addition to scheduling meeting at minimum a week in advance, allowing for adequate time for both the team and the domain expert to determine our availability.\\
-Finally, for the risks around database and graphing, we will demonstrate that parsed data can be stored in a suitable schema, retrieved through simple queries, and displayed in a basic graph using our chosen visualization tool. If we find during the PoC that the relational database struggles with large datasets or that the schema design limits flexibility, we will consider exploring a NoSQL option such as MongoDB as a backup to reduce these risks.
 \section{Expected Technology}
 
 Our project will be a web-based application with a \href{https://react.dev/}{React} frontend to handle interaction and show graphs, \href{https://www.djangoproject.com/}{Django} backend to process data and manage requests, and a \href{https://www.mysql.com/}{MySQL} database to store the results. We plan to explore deploying the application on a cloud platform such as \href{https://aws.amazon.com/}{Amazon Web Services (AWS)} or \href{https://cloud.google.com/}{Google Cloud} later in the project to make collaboration and access easier for the team and supervisors.\\ \\
