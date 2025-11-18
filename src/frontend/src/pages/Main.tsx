@@ -90,7 +90,17 @@ const Main: React.FC = () => {
             >
               <span style={{ fontSize: 15 }}>⚖️</span> Comparison Tool
             </button>
-
+            <button
+              className="dx-btn dx-btn-outline"
+              onClick={() => navigate("/metrics")}
+              style={{
+                display: "flex",
+                alignItems: "center",
+                marginTop: 8,
+              }}
+            >
+              Edit Metrics
+            </button>
             <button
               className="dx-btn dx-btn-outline"
               onClick={() => handleLogout()}
