@@ -85,12 +85,22 @@ const Main: React.FC = () => {
           <>
             <button
               className="dx-btn dx-btn-outline"
-              onClick={() => navigate("/visualize")}
+              onClick={() => navigate("/comparison-tool")}
               style={{ display: "flex", alignItems: "center", gap: 8 }}
             >
               <span style={{ fontSize: 15 }}>⚖️</span> Comparison Tool
             </button>
-
+            <button
+              className="dx-btn dx-btn-outline"
+              onClick={() => navigate("/metrics")}
+              style={{
+                display: "flex",
+                alignItems: "center",
+                marginTop: 8,
+              }}
+            >
+              Edit Metrics
+            </button>
             <button
               className="dx-btn dx-btn-outline"
               onClick={() => handleLogout()}
