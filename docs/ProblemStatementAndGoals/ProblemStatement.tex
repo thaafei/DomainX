@@ -1,4 +1,5 @@
 \documentclass{article}
+\usepackage[round]{natbib}
 
 \usepackage{tabularx}
 \usepackage{booktabs}
@@ -27,58 +28,26 @@ September 20, 2025 & Awurama Nyarko, & Created first draft of document
  \\ &Ghena Hatoum &
  \\ &Haniye Hamidizadeh &
  \\
-September 28, 2025 & Awurama Nyarko & Expanded abbreviations on first use per peer review
- \\
+September 28, 2025 & Awurama Nyarko & Expanded abbreviations on first use per peer review \\
+November 17, 2025 & Fei Xie & Implemented TA feedback \href{https://github.com/thaafei/DomainX/issues/52}{issues}\\
 \bottomrule
 \end{tabularx}
 \end{table}
 
 \section{Problem Statement}
-
-% \wss{You should check your problem statement with the
-% \href{https://github.com/smiths/capTemplate/blob/main/docs/Checklists/ProbState-Checklist.pdf}
-% {problem statement checklist}.} 
-
-% \wss{You can change the section headings, as long as you include the required
-% information.}
-
+The following section contains the problem statement, inputs and outputs and stakeholders for the project.
 \subsection{Problem}
-Open-source neural network (NN) libraries, including training frameworks
-(e.g., PyTorch, TensorFlow), inference frameworks (e.g., ONNX Runtime),
-and companion tooling (e.g., data loaders, visualization utilities), are central
-to academic research and production AI systems. Despite their importance,
-there is currently no transparent, reproducible, and domain-tailored way to
-assess the state of software-development practice across these libraries.
-
-Existing assessments are typically ad hoc: spreadsheet-based scoring and
-manual pairwise comparisons (e.g., Analytic Hierarchy Process AHP) that are difficult to trace, with
-evidence scattered across READMEs, documentation, tests, and continuous integration (CI)
-pipelines. This creates challenges for:
-
-\begin{enumerate}
-  \item Users (researchers and engineers), who cannot easily compare libraries 
-  on qualities such as installability, maintainability, understandability, usability, 
-  transparency, robustness, reliability, and reproducibility.
-  
-  \item Maintainers, who lack cross-project feedback on practice gaps and 
-  improvement opportunities.
-  
-  \item Researchers, who lack a consistent methodology and artifact trail 
-  suitable for replication or meta-analysis.
-\end{enumerate}
-
-This project addresses these issues by adapting and applying a rigorous,
-repeatable state-of-practice methodology to the NN-library domain, and
-replacing fragile spreadsheets with a more traceable, auditable toolset that
-streamlines evidence collection, scoring, and ranking. The outcome will be a
-defensible comparison across software-engineering qualities and actionable
-recommendations for practitioners and maintainers.
-
-
+Open-source Neural Network (NN) libraries, including training frameworks (e.g., PyTorch, TensorFlow), inference frameworks (e.g., ONNX Runtime), and companion tooling (e.g., data loaders, visualization utilities), are central to academic research and production Artificial Intelligence (AI) systems.
+Despite their importance, there is currently no transparent, reproducible, and domain-tailored way to assess the state of software-development practice across these libraries.
+\\Existing assessments are typically ad hoc: spreadsheet-based scoring and manual pairwise comparisons (e.g., Analytic Hierarchy Process (AHP)) that are difficult to trace, with evidence scattered across READMEs, documentation, tests, and Continuous Integration (CI) pipelines.
+This creates challenges for the researchers interested in the result of the assessment and future students who are assessing the state of practice for another domain and want to use a previous assessment as reference.
+\\This project addresses these issues by adapting and applying a rigorous, repeatable state-of-practice methodology to the NN libraries domain,
+and replacing fragile spreadsheets with a more traceable, auditable tool that streamlines evidence collection, scoring, and ranking.
+The outcome will be a defensible comparison across software-engineering qualities and actionable recommendations for practitioners and maintainers.
 \subsection{Inputs and Outputs}
 \paragraph{Inputs}
 \begin{itemize}
-  \item Curated set of open-source NN libraries that meet inclusion criteria
+  \item Curated set of open-source software libraries that meet inclusion criteria
   (public repositories with source, installation docs, runnable examples/tutorials).
   \item Public artifacts: source code, documentation, tutorials, tests, CI configs,
   issue trackers, release notes.
@@ -99,122 +68,104 @@ recommendations for practitioners and maintainers.
   plus stability testing under weight changes.
   \item Domain insights: summarized patterns, practice gaps, correlations across projects.
   \item Recommendations: prioritized, evidence-backed suggestions for maintainers and users.
-  \item Lightweight toolset: simple replacement for spreadsheets to collect evidence,
-  apply scoring, and export results (comma-separated values (CSV)/PDF).
+  \item Lightweight tool: simple replacement for spreadsheets to collect evidence,
+  apply scoring, and export results (CSV/PDF).
   \item Research deliverables: (i) an academic-style report documenting methods,
   dataset, findings; (ii) an open data/software package (versioned with changelog)
   for reproducibility and reuse.
 \end{itemize}
 
-% \wss{Characterize the problem in terms of ``high level'' inputs and outputs.  
-% Use abstraction so that you can avoid details.}
-
 \subsection{Stakeholders}
+\textbf{Primary Stakeholders}
 \begin{itemize}
-  \item Supervisors and domain experts (primary): define scope, validate inclusion criteria,
-  review methodology, and vet results.
-  \item NN library maintainers and contributors (primary): benefit from diagnostics
-  and recommendations; possible interview participants.
-  \item Practitioners (researchers, engineers, data scientists) (primary): need trustworthy
-  comparisons to select or advocate for libraries.
-  \item Software engineering and RSE research community (secondary): gains reusable
-  methodology, dataset, and toolset.
-  \item Course instruction team (secondary): evaluates rigor, scope fit, and completeness
+  \item \textbf{Supervisor}: Owner of the tool, has the final say in the design and implementation of the tool.
+  \item \textbf{Future Master's Students}: Users of the tools, using it to store data for the domain they're assessing
+\end{itemize}
+\textbf{Secondary Stakeholders}
+\begin{itemize}
+  \item \textbf{Library maintainers and contributors}: benefit from diagnostics of their library
+  \item \textbf{Research software community}: gains reusable tool, single point of access for best practice data on domains.
+  \item \textbf{Course instruction team}: evaluates rigor, scope fit, and completeness
   of methodology and reporting.
 \end{itemize}
 
 
 \subsection{Environment}
-\subsubsection{Hardware \& Execution Environment}
-
+The following contain the environment required for the development and maintenance of the tool. Users of the tool do not need these in order to access and use the tool.
+\\\textbf{Hardware \& Execution Environment}
 \begin{itemize}
-    \item Storage: a solid-state drive (SSD) for fast data access
-    \item Central processing unit (CPU): Multi-core processor to handle user requests
-    \item Web Server: Used to store, process, deliver content
-    \item Operating System: Linux to follow industry standards for web pages
+    \item \textbf{Storage}: a Solid-State Drive (SSD) for fast data access
+    \item \textbf{Central Processing Unit (CPU)}: Multi-core processor to handle user requests
+    \item \textbf{Web Server}: Used to store, process, deliver content
 \end{itemize}
-\subsubsection{Software \& Tooling}
+\textbf{Software \& Tooling}
 \begin{itemize}
-    \item Frontend: HTML, CSS, JavaScript, and React, to build user interface
-    \item Backend: Python and Django, to handle back-end logic and data processing
-    \item Database: MySQL to store and manage data
-    \item Application programming interfaces (APIs): e.g., GitHub API, to automatically fill in data
-    \item Libraries: Data visualization and AHP libraries
-    \item Version Control: Git to manage the project codebase
+  \item \textbf{Operating System}: Linux to follow industry standards for web pages
 \end{itemize}
-
-\paragraph{Assumptions}
+\textbf{Assumptions}
 \begin{itemize}
   \item Target libraries expose public repositories with source code.
   \item Installation documentation is available.
   \item Software qualities can be evaluated from surface artifacts within the project timeline.
   \item Stakeholders are available for periodic reviews.
 \end{itemize}
-
-\paragraph{Constraints}
+\textbf{Constraints}
 \begin{itemize}
   \item Fixed academic timeline.
-  \item Limited graphics processing unit (GPU) access.
   \item Private or internal artifacts excluded.
   \item Interviews optional and subject to limited availability.
   \item Rapid upstream changes mitigated via timestamped data collection.
 \end{itemize}
-
-\paragraph{Out of Scope}
+\textbf{Out of Scope}
 \begin{itemize}
   \item Benchmarking model accuracy.
   \item Benchmarking runtime or throughput performance.
   \item Domain-specific fitness evaluations beyond software-engineering qualities.
 \end{itemize}
 
-
 \section{Goals}
-\subsection{Research}
-At the end of our research we will have developed a research paper evaluate and understand the state of development practices within the NN libraries. Through this research paper we are aiming answer the questions mentioned in the Methodology for Assessing the State of the Practice for Domain X paper, which are as follows:
+We will develop a tool with several key features to minimize manual effort and improve data management for gathering the data required for the domain assessment.
+A research paper will also be written in parallel on the NN libraries domain using the tool.
+\subsection{Research}\label{research_paper}
+At the end of our research we will have developed a research paper evaluate and understand the state of development practices within the NN libraries domain. Through this research paper we are aiming answer the questions mentioned in the Methodology for Assessing the State of the Practice for Domain X paper, which are as follows:
 \begin{itemize}
-    \item Development and Technical Stack: What are the common tools and methodologies used to build and manage these software packages?
-    \item Developer Experience: What are the main challenges that developer face and how could they be resolved to improve development process and software quality?
-    \item Quality and Best Practices: What actions are developers taking to ensure key software quality (e.g. usability, maintainability, and reproducibility)?
-    \item Quality Comparison: How does a library's technical quality, as designed by this research methodology, compare to it's reputation within the broader developer community?
+    \item \textbf{Development and Technical Stack}: What are the common tools and methodologies used to build and manage these software packages?
+    \item \textbf{Developer Experience}: What are the main challenges that developer face and how could they be resolved to improve development process and software quality?
+    \item \textbf{Quality and Best Practices}: What actions are developers taking to ensure key software quality (e.g. usability, maintainability, and reproducibility)?
+    \item \textbf{Quality Comparison}: How does a library's technical quality, as designed by this research methodology, compare to it's reputation within the broader developer community?
 \end{itemize}
+
 \subsection{Tool}
-To enhance the efficiency of this research, we will develop a tool with several key features to minimize manual effort and improve data management.
+The tool will provide a centralized source for the data gathered across all assessed domain.
 \begin{itemize}
-    \item \textbf{Interactive Data Table:} This feature will provide a visually appealing and intuitive table, allowing researchers to directly edit and manage the database with a user-friendly interface. \textbf{Fit Criterion:} At least 80\% of users (team and pilot testers) will rate the table $\geq$ 4 out of 5 in usability and visual clarity during internal evaluation.
-    \item \textbf{Automated Data Collection:} The tool will automatically collect specific data points using Application Programming Interfaces (APIs) to reduce manual work and errors. \textbf{Fit Criterion:} Automation successfully retrieves and populates at least 90\% of targeted metrics (e.g., commits, issues) without human intervention.
-    \item \textbf{Automated Analytic Hierarchy Process (AHP):} The tool will implement an automated AHP to compare libraries, guiding users through pairwise comparisons to weigh criteria and evaluate alternatives. \textbf{Fit Criterion:} Automated AHP results match expected manual calculations within $\pm$ 2\% variance for all tested scenarios.
-    \item \textbf{Data Visualization and Download:} The tool will enable researchers to view and filter results as graphs and export them in formats such as PNG or LaTeX code. \textbf{Fit Criterion:} Visualizations correctly represent the underlying data and are exportable in all supported formats without error.
-    \item \textbf{Collaboration:} The tool will allow domain experts to vet software lists and provide feedback while supporting simultaneous data entry by up to two users. \textbf{Fit Criterion:} Concurrent editing produces no data conflicts in 95\% of test cases and records accurate change logs.
+    \item \textbf{Interactive Data Table:} This feature will provide a visually appealing and intuitive table, allowing researchers to directly edit and manage the database with a user-friendly interface.
+    \\\textbf{Fit Criterion:} At least 80\% of users (team and pilot testers) will rate the table $\geq$ 4 out of 5 in usability and visual clarity during internal evaluation.
+    \item \textbf{Automated Data Collection:} The tool will automatically collect specific data points using Application Programming Interfaces (APIs) to reduce manual work and errors.
+    \\\textbf{Fit Criterion:} Automation successfully retrieves and populates at least 90\% of targeted metrics (e.g., commits, issues) without human intervention.
+    \item \textbf{Automated Analytic Hierarchy Process (AHP):} The tool will implement an automated AHP to compare libraries, guiding users through pairwise comparisons to weigh criteria and evaluate alternatives.
+    \\\textbf{Fit Criterion:} Automated AHP results match expected manual calculations within $\pm$ 2\% variance for all tested scenarios.
+    \item \textbf{Data Visualization and Download:} The tool will enable researchers to view and filter results as graphs and export them in varying.
+    \\\textbf{Fit Criterion:} Visualizations correctly represent the underlying data and are exportable in all supported formats without error.
+    \item \textbf{Collaboration:} The tool will allow domain experts to vet software lists and provide feedback while supporting simultaneous data entry by up to two users.
+    \\\textbf{Fit Criterion:} Concurrent editing produces no data conflicts in 95\% of test cases and records accurate change logs.
 \end{itemize}
 
 \section{Stretch Goals}
 The following are possible features that can be added to the tool however are not the focus.
 \begin{itemize}
-    \item Traceability: Currently, the use of Excel sheets makes it difficult to track who made what changes and when. Our tool will include a feature that logs all updates, creating a clear history of changes and improving the accountability of the database.
-    \item Research Paper Generation: This feature will allow researchers to write up their findings directly on the tool. It will automatically compile important graphs and tables and format the final document in a user's preferred style, eliminating the need for manual formatting or direct use of LaTeX.
-    \item Increase Library Features: While the current methodology focuses on evaluating development practices, we will expand our data collection to include information on a library's specific features and capabilities. This will add a new level of functionality, ensuring the tool can recommend a library that not only follows best practices but also aligns with a user's specific needs.
-    \item Interactive Dashboard: This dashboard will provide a centralized, real-time overview of the project's progress. It will visually highlight key milestones, identify the next steps, and clearly show any missing data or required feedback from domain experts.
+    \item \textbf{Traceability}: Currently, the use of Excel sheets makes it difficult to track who made what changes and when. Our tool will include a feature that logs all updates, creating a clear history of changes and improving the accountability of the database.
+    \item \textbf{Research Paper Generation}: This feature will allow researchers to write up their findings directly on the tool. It will automatically compile important graphs and tables and format the final document in a user's preferred style, eliminating the need for manual formatting or direct use of LaTeX.
+    \item \textbf{Increase Library Features}: While the current methodology focuses on evaluating development practices, we will expand our data collection to include information on a library's specific features and capabilities. This will add a new level of functionality, ensuring the tool can recommend a library that not only follows best practices but also aligns with a user's specific needs.
+    \item \textbf{Interactive Dashboard}: This dashboard will provide a centralized, real-time overview of the project's progress. It will visually highlight key milestones, identify the next steps, and clearly show any missing data or required feedback from domain experts.
 \end{itemize}
 \section{Extras}
-Following a discussion with our supervisor, Dr. Smith, it confirmed that a research paper will serve as our extra and that there will be no need to have another.
-For more information on the paper's scope and purpose, please refer to Section 2.1 Research.
-% \wss{For CAS 741: State whether the project is a research project. This
-% designation, with the approval (or request) of the instructor, can be modified
-% over the course of the term.}
-
-% \wss{For SE Capstone: List your extras.  Potential extras include usability
-% testing, code walkthroughs, user documentation, formal proof, GenderMag
-% personas, Design Thinking, etc.  (The full list is on the course outline and in
-% Lecture 02.) Normally the number of extras will be two.  Approval of the extras
-% will be part of the discussion with the instructor for approving the project.
-% The extras, with the approval (or request) of the instructor, can be modified
-% over the course of the term.}
-\begin{itemize}
-  \item An academic-style report documenting the methodology, dataset, and findings.
-\end{itemize}
+Following a discussion with our supervisor, Dr. Spencer Smith, it confirmed that a research paper will serve as our extra and that there will be no need to have another.
+An academic-style report documenting the findings for the NN domain using the state of best practice methodology (\cite{MethodologyPaper}) and the developed tool.
+For more information on the paper's scope and purpose, please refer to subsection \ref{research_paper} Research.
 
 \newpage{}
-
+\bibliographystyle {plainnat}
+\bibliography{../../refs/References}
 \section*{Appendix --- Reflection}
 
 % \wss{Not required for CAS 741}
