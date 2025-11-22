@@ -3,7 +3,8 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 from .models import Metric
 from .serializers import MetricSerializer
-
+from rest_framework.generics import ListAPIView
+from .serializers import FlatMetricSerializer
 # Create or list all metrics
 class MetricListCreateView(generics.ListCreateAPIView):
     queryset = Metric.objects.all()
@@ -30,3 +31,13 @@ class MetricUpdateWeightView(APIView):
             'metric_id': str(metric.metric_ID),
             'metric_name': metric.metric_name,
         })
+class MetricListView(ListAPIView):
+    """
+    2. Returns a list of all Metrics, independent of any Domain or Library.
+    This replaces the old combined data fetch for the table columns.
+    """
+    # Using the FlatMetricSerializer as it contains the necessary metric_ID and metric_name
+    serializer_class = FlatMetricSerializer 
+    
+    # Get all metrics in alphabetical order
+    queryset = Metric.objects.all().order_by('metric_name')

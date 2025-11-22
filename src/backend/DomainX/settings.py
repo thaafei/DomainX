@@ -44,6 +44,7 @@ INSTALLED_APPS = [
     'api.database.libraries.apps.LibrariesConfig',
     'api.database.metrics.apps.MetricsConfig',
     'api.database.library_metric_values.apps.LibraryMetricValuesConfig',
+    'api.database.domain.apps.DomainConfig',
 
 ]
 
@@ -60,7 +61,7 @@ MIDDLEWARE = [
 ]
 
 ROOT_URLCONF = 'DomainX.urls'
-
+CORS_ALLOW_ALL_ORIGINS = True
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',

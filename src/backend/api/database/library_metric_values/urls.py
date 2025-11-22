@@ -1,12 +1,14 @@
 from django.urls import path
 from .views import (
     LibraryMetricValueCreateOrUpdateView,
-    LibraryMetricValueRetrieveView,
-    LibraryMetricTableView
+    LibraryMetricTableView,
+    LibraryMetricTableView,
+    MetricValueBulkUpdateView
 )
 
 urlpatterns = [
     path('create-or-update/', LibraryMetricValueCreateOrUpdateView.as_view(), name='library-metric-create-update'),
-    path('get/', LibraryMetricValueRetrieveView.as_view(), name='library-metric-get'),
+    # path('get/', LibraryMetricTableView.as_view(), name='library-metric-get'),
     path('table/', LibraryMetricTableView.as_view(), name='library-metric-table'),
+    path('bulk-update/', MetricValueBulkUpdateView.as_view(), name='metric-bulk-update'),
 ]
