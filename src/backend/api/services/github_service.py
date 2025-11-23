@@ -10,6 +10,11 @@ from django.http import JsonResponse
 import django
 from pathlib import Path
 from dotenv import load_dotenv
+from api.database.libraries.models import Library
+from api.database.metrics.models import Metric
+from api.database.library_metric_values.models import LibraryMetricValue
+import requests
+import random
 
 load_dotenv()
 SETTINGS_MODULE = 'DomainX.settings'
@@ -21,11 +26,6 @@ os.environ.setdefault('DJANGO_SETTINGS_MODULE', SETTINGS_MODULE)
 
 # 4. Initialize Django
 django.setup()
-from api.database.libraries.models import Library
-from api.database.metrics.models import Metric
-from api.database.library_metric_values.models import LibraryMetricValue 
-import requests
-import random
 
 
 def fetch_and_process_stars(repo_list: list) -> list:

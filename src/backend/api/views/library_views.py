@@ -1,3 +1,4 @@
+import threading
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
 from rest_framework import status
@@ -12,7 +13,16 @@ from ..models import (
 
 from ..serializers import LibrarySerializer
 
-
+def run_repo_analysis_in_background(library, repo_url):
+    try:
+        analyzer = RepoAnalyzer(repo_url)
+        analysis_results = analyzer.run_analysis_and_get_data()
+        metrics_data = analysis_results.get("metric_data", {})
+        if metrics_data:
+            update_library_metrics(library, metrics_data)
+        print("Background GitHub analysis finished.")
+    except Exception as e:
+        print(f"Error during repository analysis: {e}")
 @api_view(["GET"])
 def list_libraries(request, domain_id):
     libraries = Library.objects.filter(Domain__pk=domain_id)
@@ -50,15 +60,14 @@ def create_library(request):
         repo_url = request.data.get("Repository_URL")
         metrics_data = {}
         if repo_url:
-            try:
-                analyzer = RepoAnalyzer(repo_url)
-                analysis_results = analyzer.run_analysis_and_get_data()
-                metrics_data = analysis_results['metric_data']
-            except Exception as e:
-                print(f"Error during repository analysis: {e}")   
+            threading.Thread(
+                target=run_repo_analysis_in_background,
+                args=(new_library, repo_url),
+                daemon=True
+            ).start()
         if metrics_data:
             update_library_metrics(new_library, metrics_data)
-        return Response({"library": serializer.data}, status=status.HTTP_201_CREATED)
+        return Response({"library": serializer.data, "message": "Library created. GitHub analysis is running in background."}, status=status.HTTP_201_CREATED)
     
     return Response({"error": serializer.errors}, status=status.HTTP_400_BAD_REQUEST)
 
