@@ -41,6 +41,12 @@ INSTALLED_APPS = [
     'corsheaders',
     'users',
     'api.apps.ApiConfig',
+
+    'api.database.libraries.apps.LibrariesConfig',
+    'api.database.metrics.apps.MetricsConfig',
+    'api.database.library_metric_values.apps.LibraryMetricValuesConfig',
+    'api.database.domain.apps.DomainConfig',
+
 ]
 AUTH_USER_MODEL = 'users.CustomUser'
 REST_FRAMEWORK = {
@@ -67,7 +73,7 @@ MIDDLEWARE = [
 ]
 
 ROOT_URLCONF = 'DomainX.urls'
-
+CORS_ALLOW_ALL_ORIGINS = True
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',

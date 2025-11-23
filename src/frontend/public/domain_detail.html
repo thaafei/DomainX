@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title id="detail-title">Domain Detail</title>
+    <link rel="stylesheet" href="style.css"> 
+</head>
+<body>
+    <div class="container">
+        <h1 id="domain-name-header" class="text-3xl font-bold mb-6">Loading Domain...</h1>
+
+        <div class="flex space-x-4 mb-6">
+            <button id="add-library-btn" class="btn bg-green-500 hover:bg-green-600 text-white shadow-lg">+ Add Library</button>
+            <button id="update-metrics-btn" class="btn btn-primary shadow-lg">Update All Scores</button>
+        </div>
+
+        <div id="library-table-container">
+            <p>Loading table...</p>
+        </div>
+    </div>
+    <div id="addLibraryModal" class="modal">
+        <div class="modal-content">
+            <span class="close-btn">&times;</span>
+            <h3 class="text-xl font-semibold mb-4">Register New Library</h3>
+            <form id="add-library-form" class="space-y-4">
+                <div>
+                    <label for="githubUrl" class="block text-sm font-medium text-gray-700">GitHub URL:</label>
+                    <input type="url" id="githubUrl" required class="mt-1 block w-full rounded-md border-gray-300 shadow-sm p-2 border">
+                </div>
+                <button type="submit" class="btn btn-primary w-full">Add Library</button>
+            </form>
+        </div>
+    </div>
+
+    <script src="detail.js"></script>
+</body>
+</html>
