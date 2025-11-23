@@ -19,6 +19,7 @@
 \usepackage[section]{placeins}
 \usepackage{caption}
 \usepackage{fullpage}
+\usepackage{array}
 
 \hypersetup{
 bookmarks=true,     % show bookmarks bar?
@@ -50,11 +51,10 @@ urlcolor=cyan          % color of external links
 
 \section{Revision History}
 
-\begin{tabularx}{\textwidth}{p{3cm}p{2cm}X}
-\toprule {\bf Date} & {\bf Version} & {\bf Notes}\\
+\begin{tabularx}{\textwidth}{p{3cm}p{3cm}X}
+\toprule {\bf Date} & {\bf Developer(s)} & {\bf Change}\\
 \midrule
-Date 1 & 1.0 & Notes\\
-Date 2 & 1.1 & Notes\\
+Nov 12, 2025 & Awurama & Rev -1\\
 \bottomrule
 \end{tabularx}
 
@@ -62,9 +62,73 @@ Date 2 & 1.1 & Notes\\
 
 \section{Symbols, Abbreviations and Acronyms}
 
-See SRS Documentation at \wss{give url}
+See SRS Documentation at 
+\href{https://github.com/thaafei/DomainX/blob/main/docs/SRS/SRS.pdf}{SRS Documentation}.
 
-\wss{Also add any additional symbols, abbreviations or acronyms}
+This section records acronyms and abbreviations for easy reference. 
+Additional terms specific to the Module Interface Specification (MIS) are included below.
+
+\begin{longtable}{@{}l p{0.72\textwidth}@{}}
+\caption{Symbols, Abbreviations, and Acronyms}\\
+\toprule
+\textbf{Symbol / Acronym} & \textbf{Description}\\
+\midrule
+\endfirsthead
+
+\toprule
+\textbf{Symbol / Acronym} & \textbf{Description}\\
+\midrule
+\endhead
+
+\midrule
+\multicolumn{2}{r}{\small Continued on next page}
+\\\bottomrule
+\endfoot
+
+\bottomrule
+\endlastfoot
+
+AC & Anticipated Change. \\
+ADT & Abstract Data Type. \\
+AHP & Analytic Hierarchy Process, method for pairwise comparison and ranking of libraries. \\
+AI & Artificial Intelligence. \\
+API & Application Programming Interface, mechanism for data retrieval (e.g., GitHub API, PyPI API). \\
+BWM & Best–Worst Method. \\
+CAS & Computing and Software Department (McMaster University). \\
+CI/CD & Continuous Integration / Continuous Deployment, automated testing and deployment pipeline used in GitHub Actions. \\
+CSV & Comma-Separated Values, used as an export format for datasets. \\
+DAG & Directed Acyclic Graph. \\
+DB & Database, a MySQL instance used for persistent data storage. \\
+Domain & Research Software Domain. \\
+Excel Sheets & Existing manual tools previously used for data collection. \\
+Infrastructure & University-provided resources such as hosting, databases, and servers. \\
+JSON & JavaScript Object Notation, data interchange format used by the system’s APIs. \\
+LLM & Large Language Model. \\
+M & Module. \\
+MG & Module Guide. \\
+MIS & Module Interface Specification (this document). \\
+ML & Machine Learning. \\
+NN & Neural Network. \\
+NNL & Neural Network Libraries. \\
+ORM & Object Relational Mapper, Django ORM used for database interactions. \\
+OS & Operating System. \\
+Packages & Software Packages. \\
+PoC & Proof of Concept, demonstration validating workflow integration. \\
+R & Requirement. \\
+REST API & Representational State Transfer API, communication style used between the frontend (React) and backend (Django). \\
+Research Subteam & Student group applying the methodology and writing the research paper. \\
+SC & Scientific Computing. \\
+SFWRENG 4G06 & Capstone Design Process. \\
+SRS & Software Requirements Specification. \\
+SSB & Skew-Symmetric Bilinear. \\
+Stakeholders & All individuals involved in or affected by the project (e.g., supervisor, researchers, domain expert). \\
+Supervisor & Faculty member overseeing the project. \\
+Tool & The software being developed to automate data collection, visualization, and storage. \\
+UI & User Interface, front-end component built with React. \\
+UI/UX & User Interface and User Experience. \\
+UC & Unlikely Change. \\
+VnV & Verification and Validation, process of ensuring correctness and meeting stakeholder needs. \\
+\end{longtable}
 
 \newpage
 
@@ -76,156 +140,1979 @@ See SRS Documentation at \wss{give url}
 
 \section{Introduction}
 
-The following document details the Module Interface Specifications for
-\wss{Fill in your project name and description}
+The following document details the \textbf{Module Interface Specifications (MIS)} for the 
+\textbf{Domain Assessment Tool}, a web-based system that automates data collection, 
+analysis, and visualization to evaluate different research domains. 
+The system enables users to systematically compare libraries, frameworks, or technologies 
+by applying a structured methodology that combines both quantitative metrics and 
+qualitative insights.
 
-Complementary documents include the System Requirement Specifications
-and Module Guide.  The full documentation and implementation can be
-found at \url{...}.  \wss{provide the url for your repo}
+This tool is implemented using a \textbf{React} frontend and a \textbf{Django} backend, 
+with a \textbf{MySQL} database managed through the Django Object–Relational Mapper (ORM). 
+Data exchange between system components follows a \textbf{REST API} architecture using 
+\textbf{JSON} payloads. These technologies were selected based on their stability and are 
+considered \textbf{unlikely to change} throughout the project lifecycle.
+
+Complementary documents include the 
+\href{https://github.com/thaafei/DomainX/blob/main/docs/SRS/SRS.pdf}
+{System Requirements Specification (SRS)} and the 
+\href{https://github.com/thaafei/DomainX/blob/main/docs/Design/SoftArchitecture/MG.pdf}
+{Module Guide (MG)}. 
+The full documentation and implementation are maintained in the project’s GitHub repository at 
+\href{https://github.com/thaafei/DomainX}{DomainX}.
+
 
 \section{Notation}
 
-\wss{You should describe your notation.  You can use what is below as
-  a starting point.}
+The \textbf{Module Interface Specification (MIS)} follows the notation and principles of 
+\citet{HoffmanAndStrooper1995}, with adaptations from \citet{GhezziEtAl2003}. 
+Mathematical conventions align with Chapter 3 of \citet{HoffmanAndStrooper1995} and 
+notations used in \textbf{SFWRENG 4G06 – Capstone Design Process}.  
 
-The structure of the MIS for modules comes from \citet{HoffmanAndStrooper1995},
-with the addition that template modules have been adapted from
-\cite{GhezziEtAl2003}.  The mathematical notation comes from Chapter 3 of
-\citet{HoffmanAndStrooper1995}.  For instance, the symbol := is used for a
-multiple assignment statement and conditional rules follow the form $(c_1
-\Rightarrow r_1 | c_2 \Rightarrow r_2 | ... | c_n \Rightarrow r_n )$.
+\subsection{General Conventions}
 
-The following table summarizes the primitive data types used by \progname. 
+\begin{itemize}
+  \item \textbf{Assignment:} \texttt{x := e}
+  \item \textbf{Conditional rules:} 
+        $(c_1 \Rightarrow r_1\ |\ c_2 \Rightarrow r_2\ |\ \dots\ |\ c_n \Rightarrow r_n)$
+  \item \textbf{Parameter modes:} \texttt{in}, \texttt{out}
+  \item \textbf{Optional parameter:} \texttt{[param]}
+  \item \textbf{Exceptions:} functions list \texttt{ExceptionName} in an 
+        \emph{Exceptions} column; raising an exception denotes a partial function 
+        on the exceptional domain.
+  \item \textbf{Pre/postconditions:} \texttt{requires P} / \texttt{ensures Q}
+  \item \textbf{Undefined value / error sentinel:} $\bot$
+\end{itemize}
 
-\begin{center}
+\subsection{Logic and Set Notation}
+
+\begin{itemize}
+  \item \textbf{Logical operators:} $\neg$, $\land$, $\lor$, $\Rightarrow$, $\Leftrightarrow$
+  \item \textbf{Quantifiers:} $\forall x \in S \cdot P(x)$, $\exists x \in S \cdot P(x)$
+  \item \textbf{Sets:} $\emptyset$, $\{x \in S | P(x)\}$, union $A \cup B$, intersection $A \cap B$, difference $A \setminus B$, cardinality $|S|$
+  \item \textbf{Sequences/lists:} $(a_1,\dots,a_n)$; concatenation $s \| t$; length $|s|$
+  \item \textbf{Maps/dictionaries:} $m : K \rightarrow V$; application $m(k)$; update $m[k \mapsto v]$
+\end{itemize}
+
+\subsection{Primitive and Derived Types}
+
+\begin{table}[H]
+\centering
 \renewcommand{\arraystretch}{1.2}
-\noindent 
-\begin{tabular}{l l p{7.5cm}} 
-\toprule 
-\textbf{Data Type} & \textbf{Notation} & \textbf{Description}\\ 
+\begin{tabularx}{\textwidth}{l l X}
+\toprule
+\textbf{Data Type} & \textbf{Notation} & \textbf{Description} \\
 \midrule
-character & char & a single symbol or digit\\
-integer & $\mathbb{Z}$ & a number without a fractional component in (-$\infty$, $\infty$) \\
-natural number & $\mathbb{N}$ & a number without a fractional component in [1, $\infty$) \\
-real & $\mathbb{R}$ & any number in (-$\infty$, $\infty$)\\
+character & \texttt{char} & Single Unicode character. \\
+integer & $\mathbb{Z}$ & Whole numbers in $(-\infty,\infty)$. \\
+natural number & $\mathbb{N}$ & Non-negative integers $(0,1,2,\dots)$. \\
+real & $\mathbb{R}$ & Real numbers. \\
+boolean & \texttt{bool} & \texttt{True} or \texttt{False}. \\
+string & \texttt{string} & Finite sequence of characters. \\
+tuple & \texttt{(T$_1$,…,T$_n$)} & Fixed-size, ordered collection, possibly heterogeneous. \\
+list / sequence & \texttt{list(T)} & Variable-size sequence of T. \\
+set & $\mathcal{P}(T)$ & Finite subset of T (power-set elements). \\
+dictionary / map & \texttt{dict(K,V)} & Finite mapping from K to V. \\
+option / optional type & \texttt{Option(T)} & Either \texttt{Some(T)} or \texttt{None}. \\
 \bottomrule
-\end{tabular} 
-\end{center}
+\end{tabularx}
+\caption{Primitive and Derived Data Types}
+\end{table}
+
+\subsection{Units and Identifiers}
+
+\begin{itemize}
+  \item \textbf{Timestamps:} use ISO 8601 (e.g., 2025-11-11T09:30:00Z).  
+  \item \textbf{Durations:} explicit units (e.g., \texttt{min}, \texttt{hrs}).  
+  \item \textbf{Identifiers:} \texttt{domainID}, \texttt{metricID}, and \texttt{packageID} are opaque strings unless otherwise specified.
+\end{itemize}
 
 \noindent
-The specification of \progname \ uses some derived data types: sequences, strings, and
-tuples. Sequences are lists filled with elements of the same data type. Strings
-are sequences of characters. Tuples contain a list of values, potentially of
-different types. In addition, \progname \ uses functions, which
-are defined by the data types of their inputs and outputs. Local functions are
-described by giving their type signature followed by their specification.
+These conventions are used to define interfaces, state variables, environment variables, and access routines throughout the MIS. Derived structures (lists, maps, sets, tuples) represent collections of domain records, configuration parameters, and API payloads. Local functions are defined by their type signatures and input/output relationships.
+
 
 \section{Module Decomposition}
 
-The following table is taken directly from the Module Guide document for this project.
+The following table summarizes the hierarchical organization of modules for the Domain Assessment Tool.  
+Level 1 modules correspond to high-level abstraction layers, while Level 2 modules provide specific functionality within each layer.
 
-\begin{table}[h!]
+\begin{table}[H]
 \centering
-\begin{tabular}{p{0.3\textwidth} p{0.6\textwidth}}
-\toprule
-\textbf{Level 1} & \textbf{Level 2}\\
-\midrule
-
-{Hardware-Hiding} & ~ \\
-\midrule
-
-\multirow{7}{0.3\textwidth}{Behaviour-Hiding} & Input Parameters\\
-& Output Format\\
-& Output Verification\\
-& Temperature ODEs\\
-& Energy Equations\\ 
-& Control Module\\
-& Specification Parameters Module\\
-\midrule
-
-\multirow{3}{0.3\textwidth}{Software Decision} & {Sequence Data Structure}\\
-& ODE Solver\\
-& Plotting\\
-\bottomrule
-
-\end{tabular}
 \caption{Module Hierarchy}
-\label{TblMH}
+\setlength{\tabcolsep}{10pt}
+\renewcommand{\arraystretch}{1.2}
+\begin{tabularx}{\textwidth}{l X}
+\toprule
+\textbf{Level 1} & \textbf{Level 2} \\
+\midrule
+Hardware-Hiding Module & Browser Module \\
+\midrule
+Behaviour-Hiding Module &
+Domains Page Module \\
+& Application UI Module \\
+& Data Edit Module \\
+& User Authentication Module \\
+& User Role Access Module \\
+& User Page Module \\
+& Automated Metrics Module \\
+& Comparison Module \\
+& Configuration Module \\
+\midrule
+Software Decision Module &
+System API Gateway Module \\
+& Ranking Algorithm Module \\
+& Graphing Module \\
+& File Import Module \\
+& File Export Module \\
+& Repository API Module \\
+& Database Persistence Module \\
+& Logging Module \\
+\bottomrule
+\end{tabularx}
 \end{table}
 
 \newpage
 ~\newpage
 
-\section{MIS of \wss{Module Name}} \label{Module} \wss{Use labels for
-  cross-referencing}
-
-\wss{You can reference SRS labels, such as R\ref{R_Inputs}.}
-
-\wss{It is also possible to use \LaTeX for hypperlinks to external documents.}
-
-\subsection{Module}
-
-\wss{Short name for the module}
-
-\subsection{Uses}
 
 
-\subsection{Syntax}
 
-\subsubsection{Exported Constants}
 
-\subsubsection{Exported Access Programs}
 
-\begin{center}
-\begin{tabular}{p{2cm} p{4cm} p{4cm} p{2cm}}
-\hline
-\textbf{Name} & \textbf{In} & \textbf{Out} & \textbf{Exceptions} \\
-\hline
-\wss{accessProg} & - & - & - \\
-\hline
-\end{tabular}
-\end{center}
+\section{Module Interface Specifications}
+%   cross-referencing}
 
-\subsection{Semantics}
+% \wss{You can reference SRS labels, such as R\ref{R_Inputs}.}
 
-\subsubsection{State Variables}
+% \wss{It is also possible to use \LaTeX for hypperlinks to external documents.}
 
-\wss{Not all modules will have state variables.  State variables give the module
-  a memory.}
+% \subsection{Module}
 
-\subsubsection{Environment Variables}
+% \wss{Short name for the module}
 
-\wss{This section is not necessary for all modules.  Its purpose is to capture
-  when the module has external interaction with the environment, such as for a
-  device driver, screen interface, keyboard, file, etc.}
+% \subsection{Uses}
 
-\subsubsection{Assumptions}
 
-\wss{Try to minimize assumptions and anticipate programmer errors via
-  exceptions, but for practical purposes assumptions are sometimes appropriate.}
+% \subsection{Syntax}
 
-\subsubsection{Access Routine Semantics}
+% \subsubsection{Exported Constants}
 
-\noindent \wss{accessProg}():
+% \subsubsection{Exported Access Programs}
+
+% \begin{center}
+% \begin{tabular}{p{2cm} p{4cm} p{4cm} p{2cm}}
+% \hline
+% \textbf{Name} & \textbf{In} & \textbf{Out} & \textbf{Exceptions} \\
+% \hline
+% \wss{accessProg} & - & - & - \\
+% \hline
+% \end{tabular}
+% \end{center}
+
+% \subsection{Semantics}
+
+% \subsubsection{State Variables}
+
+% \wss{Not all modules will have state variables.  State variables give the module
+%   a memory.}
+
+% \subsubsection{Environment Variables}
+
+% \wss{This section is not necessary for all modules.  Its purpose is to capture
+%   when the module has external interaction with the environment, such as for a
+%   device driver, screen interface, keyboard, file, etc.}
+
+% \subsubsection{Assumptions}
+
+% \wss{Try to minimize assumptions and anticipate programmer errors via
+%   exceptions, but for practical purposes assumptions are sometimes appropriate.}
+
+% \subsubsection{Access Routine Semantics}
+
+% \noindent \wss{accessProg}():
+% \begin{itemize}
+% \item transition: \wss{if appropriate} 
+% \item output: \wss{if appropriate} 
+% \item exception: \wss{if appropriate} 
+% \end{itemize}
+
+% \wss{A module without environment variables or state variables is unlikely to
+%   have a state transition.  In this case a state transition can only occur if
+%   the module is changing the state of another module.}
+
+% \wss{Modules rarely have both a transition and an output.  In most cases you
+%   will have one or the other.}
+
+% \subsubsection{Local Functions}
+
+% \wss{As appropriate} \wss{These functions are for the purpose of specification.
+%   They are not necessarily something that is going to be implemented
+%   explicitly.  Even if they are implemented, they are not exported; they only
+%   have local scope.}
+
+
+\subsection{MIS of Browser Module (M2)}
+\label{mis:Browser}
+
+\subsubsection{Module}
+Provides the runtime container for the React front end. The browser renders HTML/CSS/JS, maintains the page’s Document Object Model (DOM), collects user input (mouse, keyboard), and handles network requests to the backend.
+
+\subsubsection{Uses}
+None (external, platform-provided).
+
+\subsubsection{Syntax}
+\paragraph{Exported Constants} None.  % External module, no constants exported by our system.
+
+\paragraph{Exported Access Programs} None. % The browser exposes standard Web APIs, not part of our codebase.
+
+\subsubsection{Semantics}
+
+\paragraph{State Variables}
 \begin{itemize}
-\item transition: \wss{if appropriate} 
-\item output: \wss{if appropriate} 
-\item exception: \wss{if appropriate} 
+  \item \textbf{domTree}: the in-memory Document Object Model for the current page.
+  \item \textbf{cookieStore}: key–value cookie storage scoped to the site.
+  \item \textbf{localStorage}/\textbf{sessionStorage}: Web Storage used by the UI for small client-side state.
+  \item \textbf{cache}: HTTP/resource cache managed by the browser.
 \end{itemize}
 
-\wss{A module without environment variables or state variables is unlikely to
-  have a state transition.  In this case a state transition can only occur if
-  the module is changing the state of another module.}
+\paragraph{Environment Variables}
+\begin{itemize}
+  \item Display surface and window manager (screen, viewport, device DPI).
+  \item Network stack (HTTP/HTTPS, TLS).
+\end{itemize}
 
-\wss{Modules rarely have both a transition and an output.  In most cases you
-  will have one or the other.}
+\paragraph{Assumptions}
+\begin{itemize}
+  \item A modern standards-compliant browser (Chromium/Chrome, Firefox, Safari).
+  \item Supports HTML5, ECMAScript 2020+, Fetch API, CORS, and Web Storage.
+  \item Site is served over HTTPS; backend endpoints expose JSON over REST.
+\end{itemize}
 
-\subsubsection{Local Functions}
+\paragraph{Access Routine Semantics}
+Not applicable (no routines exported by this module in our system).
 
-\wss{As appropriate} \wss{These functions are for the purpose of specification.
-  They are not necessarily something that is going to be implemented
-  explicitly.  Even if they are implemented, they are not exported; they only
-  have local scope.}
+\paragraph{Local Functions}
+Not applicable.
+
+\subsection{MIS of Application UI Module (M3)}
+\label{mis:ApplicationUI}
+
+\subsubsection{Module}
+Provides the React-based front-end shell (routing, layout, and common UI state) that renders all pages and components of the DomainX app, and wires user interactions to the rest of the system.
+
+\subsubsection{Uses}
+Browser Module (M2) (\ref{mis:Browser})\\
+System API Gateway Module (M10) (\ref{mis:SystemAPIGateway})\\
+Graphing Module (M12) (\ref{mis:GraphingModule})\\
+File Import Module (M13) (\ref{mis:FileImportModule})\\
+File Export Module (M14) (\ref{mis:FileExportModule})\\
+Repository API Module (M15) (\ref{mis:RepositoryAPIModule})
+
+\subsubsection{Syntax}
+
+\paragraph{Exported Constants}
+\begin{itemize}
+  \item \textbf{APP\_TITLE} = ``DomainX''
+  \item \textbf{DEFAULT\_ROUTE} = ``/domains''
+  \item \textbf{TOAST\_DURATION\_MS} = 4000
+\end{itemize}
+
+\paragraph{Exported Access Programs}
+\begin{center}
+\renewcommand{\arraystretch}{1.2}
+\begin{tabularx}{\textwidth}{l X X l}
+\toprule
+\textbf{Name} & \textbf{In} & \textbf{Out} & \textbf{Exceptions}\\
+\midrule
+initAppShell & none & mountedRoot & RenderError \\
+navigateTo & routeID, [params] & renderedView & RouteNotFound \\
+renderComponent & componentID, props & renderedFragment & RenderError \\
+handleUserAction & actionType, payload & dispatchResult & ActionError \\
+showNotification & message, severity & successFlag & None \\
+\bottomrule
+\end{tabularx}
+\end{center}
+
+\subsubsection{Semantics}
+
+\paragraph{State Variables}
+\begin{itemize}
+  \item \textbf{currentRoute}: the active route (path and params).
+  \item \textbf{uiState}: global UI model (loading flags, toasts, modal state).
+  \item \textbf{sessionContext}: authenticated user + role snapshot for conditional rendering.
+\end{itemize}
+
+\paragraph{Environment Variables}
+\begin{itemize}
+  \item Browser DOM (document, window, viewport).
+  \item React runtime (React 18) and router (e.g., React Router) in a SPA environment.
+\end{itemize}
+
+\paragraph{Assumptions}
+\begin{itemize}
+  \item Implemented with React (per MG); routes are client-side (SPA).
+  \item Network I/O occurs through M10; UI does not embed backend endpoints directly.
+  \item Graphs are rendered via M12; file workflows are delegated to M13/M14.
+\end{itemize}
+
+\paragraph{Access Routine Semantics}
+
+\noindent \textbf{initAppShell}():
+\begin{itemize}
+  \item transition: mounts the React root, initializes router and global providers (theme, session).
+  \item output: \texttt{mountedRoot}.
+  \item exception: \texttt{RenderError} if bootstrap fails.
+\end{itemize}
+
+\noindent \textbf{navigateTo}(routeID, [params]):
+\begin{itemize}
+  \item transition: updates \texttt{currentRoute}; triggers route component render.
+  \item output: \texttt{renderedView}.
+  \item exception: \texttt{RouteNotFound} if routeID unknown.
+\end{itemize}
+
+\noindent \textbf{renderComponent}(componentID, props):
+\begin{itemize}
+  \item transition: none (pure render of a component into the view tree).
+  \item output: \texttt{renderedFragment}.
+  \item exception: \texttt{RenderError} if component fails to render.
+\end{itemize}
+
+\noindent \textbf{handleUserAction}(actionType, payload):
+\begin{itemize}
+  \item transition: may update \texttt{uiState}; may delegate to M10/M12/M13/M14/M15 via callbacks.
+  \item output: \texttt{dispatchResult} (ack/nack).
+  \item exception: \texttt{ActionError} on invalid action/payload.
+\end{itemize}
+
+\noindent \textbf{showNotification}(message, severity):
+\begin{itemize}
+  \item transition: enqueues a toast into \texttt{uiState} for \texttt{TOAST\_DURATION\_MS}.
+  \item output: \texttt{successFlag}.
+  \item exception: none.
+\end{itemize}
+
+\paragraph{Local Functions}
+\begin{itemize}
+  \item \texttt{guardByRole()} — checks \texttt{sessionContext} to gate routes/components.
+  \item \texttt{bindGraphHandlers()} — wires chart events (M12) to UI callbacks.
+  \item \texttt{confirmBeforeLeave()} — prompts on unsaved changes before navigation.
+\end{itemize}
+
+
+\subsection{MIS of Data Edit Module (M4)}
+\label{mis:DataEdit}
+
+\subsubsection{Module}
+Handles user-initiated edits to domain, package, and metric data. Provides client-side validation and coordinates save/delete operations through the System API Gateway.
+
+\subsubsection{Uses}
+Application UI Module (M3) (\ref{mis:ApplicationUI})\\
+User Authentication Module (M5) (\ref{mis:UserAuthentication})\\
+User Role Access Module (M6) (\ref{mis:UserRoleAccess})\\
+System API Gateway Module (M10) (\ref{mis:SystemAPIGateway})\\
+Database Persistence Module (M17) (\ref{mis:DatabasePersistenceModule})
+
+\subsubsection{Syntax}
+
+\paragraph{Exported Constants}
+\begin{itemize}
+  \item \textbf{MAX\_EDIT\_BATCH} = 50
+  \item \textbf{UNDO\_STACK\_LIMIT} = 10
+\end{itemize}
+
+\paragraph{Exported Access Programs}
+\begin{center}
+\renewcommand{\arraystretch}{1.15}
+\begin{tabularx}{\textwidth}{l X X c}
+\toprule
+\textbf{Name} & \textbf{In} & \textbf{Out} & \textbf{Exceptions}\\
+\midrule
+addMetric & metricData & successFlag & SchemaError \\
+editMetric & metricID, newValue & successFlag & ValidationError \\
+deleteMetric & metricID & successFlag & NotFoundError \\
+undoLastEdit & -- & successFlag & StackEmptyError \\
+validateEdit & candidateChange & Boolean & ValidationError \\
+commitBatch & changeList & successFlag & NetworkError \\
+\bottomrule
+\end{tabularx}
+\end{center}
+
+\subsubsection{Semantics}
+
+\paragraph{State Variables}
+\begin{itemize}
+  \item \textbf{editBuffer}: pending changes not yet committed.
+  \item \textbf{undoStack}: most recent operations up to \texttt{UNDO\_STACK\_LIMIT}.
+\end{itemize}
+
+\paragraph{Environment Variables}
+\begin{itemize}
+  \item Browser runtime and React state for form fields and UI feedback.
+  \item Network transport to backend via M10 (Django REST over HTTPS, JSON).
+\end{itemize}
+
+\paragraph{Assumptions}
+\begin{itemize}
+  \item The user is authenticated (M5) and authorized (M6) for the requested action.
+  \item Requests and responses use JSON and follow the schemas exposed by M10.
+  \item Persistent storage of edits is performed by M17 behind M10.
+\end{itemize}
+
+\paragraph{Access Routine Semantics}
+
+\noindent \textbf{addMetric}(metricData):
+\begin{itemize}
+  \item transition: validate \texttt{metricData}; stage in \texttt{editBuffer}; on commit, send create request via M10 to M17.
+  \item output: \texttt{successFlag} = true if accepted by backend.
+  \item exception: \texttt{SchemaError} if required fields are missing or malformed.
+\end{itemize}
+
+\noindent \textbf{editMetric}(metricID, newValue):
+\begin{itemize}
+  \item transition: stage field updates in \texttt{editBuffer}; mark record dirty.
+  \item output: \texttt{successFlag} = true on commit acknowledgement.
+  \item exception: \texttt{ValidationError} if new value violates schema or business rules.
+\end{itemize}
+
+\noindent \textbf{deleteMetric}(metricID):
+\begin{itemize}
+  \item transition: stage delete action in \texttt{editBuffer}.
+  \item output: \texttt{successFlag} = true if deletion is confirmed by M17 (via M10).
+  \item exception: \texttt{NotFoundError} if the metric does not exist.
+\end{itemize}
+
+\noindent \textbf{undoLastEdit}():
+\begin{itemize}
+  \item transition: revert the most recent staged or committed change if reversible; update \texttt{undoStack}.
+  \item output: \texttt{successFlag} = true if an action was undone.
+  \item exception: \texttt{StackEmptyError} if there is nothing to undo.
+\end{itemize}
+
+\noindent \textbf{validateEdit}(candidateChange):
+\begin{itemize}
+  \item transition: none (local validation only).
+  \item output: Boolean indicating whether \texttt{candidateChange} satisfies client-side checks.
+  \item exception: \texttt{ValidationError} if checks fail.
+\end{itemize}
+
+\noindent \textbf{commitBatch}(changeList):
+\begin{itemize}
+  \item transition: send up to \texttt{MAX\_EDIT\_BATCH} staged changes via M10; clear successful items from \texttt{editBuffer}; push entries to \texttt{undoStack}.
+  \item output: \texttt{successFlag} = true if all changes are acknowledged by M17.
+  \item exception: \texttt{NetworkError} if API calls fail or time out.
+\end{itemize}
+
+\paragraph{Local Functions}
+\begin{itemize}
+  \item \texttt{coerceTypes()} — cast user input to expected types.
+  \item \texttt{diffRecords()} — compute minimal patch for update requests.
+  \item \texttt{throttleSaves()} — coalesce frequent edits before commit.
+\end{itemize}
+
+
+\subsection{MIS of User Authentication Module (M5)}
+\label{mis:UserAuthentication}
+
+\subsubsection{Uses}
+System API Gateway Module (M10) [Django REST Framework, JSON] (\ref{mis:SystemAPIGateway})\\
+User Role Access Module (M6) (\ref{mis:UserRoleAccess})\\
+Database Persistence Module (M17) [Django ORM] (\ref{mis:DatabasePersistenceModule})\\
+Application UI Module (M3) (\ref{mis:ApplicationUI})
+
+\subsubsection{Syntax}
+
+\paragraph{Exported Constants}
+\begin{itemize}
+  \item \textbf{TOKEN\_EXPIRY\_HOURS} = 24
+  \item \textbf{MAX\_LOGIN\_ATTEMPTS} = 5
+  \item \textbf{PASSWORD\_MIN\_LENGTH} = 8
+\end{itemize}
+
+\paragraph{Exported Access Programs}
+\begin{center}
+\renewcommand{\arraystretch}{1.2}
+\begin{tabularx}{\textwidth}{l X X l}
+\toprule
+\textbf{Name} & \textbf{In} & \textbf{Out} & \textbf{Exceptions}\\
+\midrule
+registerUser & email, password, role & authToken & ValidationError \\
+loginUser & email, password & authToken & AuthError \\
+logoutUser & authToken & successFlag & SessionError \\
+validateSession & authToken & Boolean & TokenError \\
+refreshToken & oldToken & newToken & TokenExpiredError \\
+\bottomrule
+\end{tabularx}
+\end{center}
+
+\subsubsection{Semantics}
+
+\paragraph{State Variables}
+\begin{itemize}
+  \item \textbf{activeSessions}: map of valid tokens to user IDs and expiry timestamps.
+  \item \textbf{failedAttempts}: counter tracking consecutive failed login attempts.
+\end{itemize}
+
+\paragraph{Environment Variables}
+\begin{itemize}
+  \item Django authentication middleware and JWT management via DRF SimpleJWT.
+  \item Encrypted database storage via M17 (using Django ORM).
+  \item HTTPS communication channel for login and registration requests.
+\end{itemize}
+
+\paragraph{Assumptions}
+\begin{itemize}
+  \item Authentication uses Django’s \texttt{AbstractUser} and DRF SimpleJWT (JWT-based tokens).
+  \item All credential transmissions occur via HTTPS.
+  \item The UI (M3) performs basic client-side validation before requests are sent.
+  \item Tokens expire after \texttt{TOKEN\_EXPIRY\_HOURS}.
+\end{itemize}
+
+\paragraph{Access Routine Semantics}
+
+\noindent \textbf{registerUser}(email, password, role):
+\begin{itemize}
+  \item transition: create a new user in M17 with a hashed password and assigned role.
+  \item output: \texttt{authToken} if registration succeeds.
+  \item exception: \texttt{ValidationError} if email exists or password fails complexity checks.
+\end{itemize}
+
+\noindent \textbf{loginUser}(email, password):
+\begin{itemize}
+  \item transition: validate credentials; issue JWT; add entry to \texttt{activeSessions}.
+  \item output: \texttt{authToken}.
+  \item exception: \texttt{AuthError} if credentials are invalid or account is locked.
+\end{itemize}
+
+\noindent \textbf{logoutUser}(authToken):
+\begin{itemize}
+  \item transition: invalidate token; remove from \texttt{activeSessions}.
+  \item output: \texttt{successFlag} = true if successful.
+  \item exception: \texttt{SessionError} if session not found.
+\end{itemize}
+
+\noindent \textbf{validateSession}(authToken):
+\begin{itemize}
+  \item transition: none.
+  \item output: Boolean indicating if token is valid and unexpired.
+  \item exception: \texttt{TokenError} if malformed or tampered.
+\end{itemize}
+
+\noindent \textbf{refreshToken}(oldToken):
+\begin{itemize}
+  \item transition: invalidate old token; issue new JWT with reset expiry.
+  \item output: \texttt{newToken}.
+  \item exception: \texttt{TokenExpiredError} if token already expired.
+\end{itemize}
+
+\paragraph{Local Functions}
+\begin{itemize}
+  \item \texttt{hashPassword()} – wraps Django’s \texttt{make\_password()} to store password hashes.
+  \item \texttt{verifyPassword()} – compares plaintext input to stored hash.
+  \item \texttt{generateToken()} – issues signed JWT using Django secret key.
+  \item \texttt{rateLimitLogin()} – blocks login after \texttt{MAX\_LOGIN\_ATTEMPTS}.
+\end{itemize}
+
+
+\subsection{MIS of User Role Access Module (M6)}
+\label{mis:UserRoleAccess}
+
+\subsubsection{Module}
+Defines, stores, and enforces user permissions and access levels across the DomainX web application. This module ensures that users can only view or modify data permitted by their assigned roles, using the role-based access control (RBAC) mechanism built on Django’s authorization framework.
+
+\subsubsection{Uses}
+User Authentication Module (M5) (\ref{mis:UserAuthentication})\\
+System API Gateway Module (M10) [Django REST Framework, JSON] (\ref{mis:SystemAPIGateway})\\
+Database Persistence Module (M17) [Django ORM] (\ref{mis:DatabasePersistenceModule})\\
+Application UI Module (M3) (\ref{mis:ApplicationUI})
+
+\subsubsection{Syntax}
+
+\paragraph{Exported Constants}
+\begin{itemize}
+  \item \textbf{DEFAULT\_ROLE} = ``Viewer''
+  \item \textbf{ROLE\_HIERARCHY} = [``Viewer``, ``Editor``, ``Admin``]
+  \item \textbf{PERMISSIONS\_CACHE\_TTL} = 300  \textit{(seconds; cached client-side for performance)}
+\end{itemize}
+
+\paragraph{Exported Access Programs}
+\begin{center}
+\renewcommand{\arraystretch}{1.2}
+\begin{tabularx}{\textwidth}{l X X l}
+\toprule
+\textbf{Name} & \textbf{In} & \textbf{Out} & \textbf{Exceptions}\\
+\midrule
+assignRole & userID, roleName & successFlag & InvalidRoleError \\
+getUserRole & userID & roleName & NotFoundError \\
+verifyAccess & userID, actionType & Boolean & PermissionError \\
+updateRolePermissions & roleName, newPermissions & successFlag & ConfigError \\
+listAllRoles & -- & roleList & None \\
+\bottomrule
+\end{tabularx}
+\end{center}
+
+\subsubsection{Semantics}
+
+\paragraph{State Variables}
+\begin{itemize}
+  \item \textbf{rolesTable}: mapping of role names to permission sets (read, write, delete, admin).
+  \item \textbf{userRoleMap}: dictionary mapping user IDs to assigned roles.
+  \item \textbf{permissionsCache}: temporary in-memory store of validated permissions for current session.
+\end{itemize}
+
+\paragraph{Environment Variables}
+\begin{itemize}
+  \item Django’s \texttt{auth.Group} and \texttt{Permission} models manage role bindings in the database.
+  \item Requests validated through Django REST middleware for permission checks.
+  \item Front-end access (M3) conditionally renders UI components based on allowed actions.
+\end{itemize}
+
+\paragraph{Assumptions}
+\begin{itemize}
+  \item All users are authenticated before accessing role-based resources (via M5).
+  \item Role hierarchy is static and unlikely to change during this version.
+  \item Permissions are fetched from the backend via JSON and cached for \texttt{PERMISSIONS\_CACHE\_TTL} seconds.
+\end{itemize}
+
+\paragraph{Access Routine Semantics}
+
+\noindent \textbf{assignRole}(userID, roleName):
+\begin{itemize}
+  \item transition: updates \texttt{userRoleMap} and backend table with new role.
+  \item output: \texttt{successFlag} = true if update is stored.
+  \item exception: \texttt{InvalidRoleError} if \texttt{roleName} not found in \texttt{ROLE\_HIERARCHY}.
+\end{itemize}
+
+\noindent \textbf{getUserRole}(userID):
+\begin{itemize}
+  \item transition: none.
+  \item output: the user’s current role as a string.
+  \item exception: \texttt{NotFoundError} if user not found in table.
+\end{itemize}
+
+\noindent \textbf{verifyAccess}(userID, actionType):
+\begin{itemize}
+  \item transition: none.
+  \item output: Boolean — true if role’s permissions include the requested \texttt{actionType}.
+  \item exception: \texttt{PermissionError} if unauthorized.
+\end{itemize}
+
+\noindent \textbf{updateRolePermissions}(roleName, newPermissions):
+\begin{itemize}
+  \item transition: modifies \texttt{rolesTable} for the given role and syncs to backend.
+  \item output: \texttt{successFlag} = true if successfully updated.
+  \item exception: \texttt{ConfigError} if update fails or backend schema mismatch.
+\end{itemize}
+
+\noindent \textbf{listAllRoles}():
+\begin{itemize}
+  \item transition: none.
+  \item output: list of available roles and descriptions.
+  \item exception: none.
+\end{itemize}
+
+\paragraph{Local Functions}
+\begin{itemize}
+  \item \texttt{hasPermission(userID, action)} – returns true if user’s role allows the action.
+  \item \texttt{invalidateCache()} – clears cached permissions on role update or logout.
+  \item \texttt{syncWithBackend()} – pushes updates to Django ORM via M10.
+\end{itemize}
+
+
+\subsection{MIS of User Page Module (M7)}
+\label{mis:UserPage}
+
+\subsubsection{Module}
+Implements the interactive user settings page in the DomainX web interface.  
+This module displays and updates user account details such as display name, email, password, and notification preferences, integrating with the backend through M12.
+
+\subsubsection{Uses}
+User Authentication Module (M5) (\ref{mis:UserAuthentication})\\
+User Role Access Module (M6) (\ref{mis:UserRoleAccess})\\
+System API Gateway Module (M10) [Django REST Framework, JSON] (\ref{mis:SystemAPIGateway})\\
+Database Persistence Module (M17) [Django ORM] (\ref{mis:DatabasePersistenceModule})\\
+Application UI Module (M3) (\ref{mis:ApplicationUI})
+
+\subsubsection{Syntax}
+
+\paragraph{Exported Constants}
+\begin{itemize}
+  \item \textbf{MAX\_DISPLAY\_NAME\_LEN} = 50
+  \item \textbf{SESSION\_REFRESH\_INTERVAL} = 15 \textit{(minutes)}
+\end{itemize}
+
+\paragraph{Exported Access Programs}
+\begin{center}
+\renewcommand{\arraystretch}{1.2}
+\begin{tabularx}{\textwidth}{l X X l}
+\toprule
+\textbf{Name} & \textbf{In} & \textbf{Out} & \textbf{Exceptions}\\
+\midrule
+fetchUserProfile & authToken & userProfile & AuthError \\
+updateUserProfile & authToken, updatedData & successFlag & ValidationError \\
+changePassword & authToken, oldPwd, newPwd & successFlag & PasswordError \\
+toggleNotifications & authToken, preferenceFlag & successFlag & ConfigError \\
+deleteAccount & authToken & successFlag & PermissionError \\
+\bottomrule
+\end{tabularx}
+\end{center}
+
+\subsubsection{Semantics}
+
+\paragraph{State Variables}
+\begin{itemize}
+  \item \textbf{userProfile}: object storing current session’s user info (name, email, role, preferences).
+  \item \textbf{localCache}: stores recently loaded profile data to reduce repeated API calls.
+\end{itemize}
+
+\paragraph{Environment Variables}
+\begin{itemize}
+  \item React front-end components rendering forms and interactive settings UI.
+  \item Network communication with Django REST API via M10 (HTTPS, JSON payloads).
+  \item Persistent user data stored in database via M17 (Django ORM).
+\end{itemize}
+
+\paragraph{Assumptions}
+\begin{itemize}
+  \item User is authenticated through M5 before accessing the page.
+  \item Profile updates require valid session tokens for backend verification.
+  \item Password strength and validation follow rules enforced by M5.
+\end{itemize}
+
+\paragraph{Access Routine Semantics}
+
+\noindent \textbf{fetchUserProfile}(authToken):
+\begin{itemize}
+  \item transition: none.
+  \item output: returns \texttt{userProfile} containing user’s data.
+  \item exception: \texttt{AuthError} if token invalid or expired.
+\end{itemize}
+
+\noindent \textbf{updateUserProfile}(authToken, updatedData):
+\begin{itemize}
+  \item transition: updates local and backend profile data via M10.
+  \item output: \texttt{successFlag} = true on confirmation.
+  \item exception: \texttt{ValidationError} if new data violates constraints.
+\end{itemize}
+
+\noindent \textbf{changePassword}(authToken, oldPwd, newPwd):
+\begin{itemize}
+  \item transition: validates old password; updates to \texttt{newPwd} via M5 backend call.
+  \item output: \texttt{successFlag} = true on success.
+  \item exception: \texttt{PasswordError} if old password incorrect or new one too weak.
+\end{itemize}
+
+\noindent \textbf{toggleNotifications}(authToken, preferenceFlag):
+\begin{itemize}
+  \item transition: modifies user’s notification preference and syncs to backend.
+  \item output: \texttt{successFlag} = true if preference saved.
+  \item exception: \texttt{ConfigError} if backend update fails.
+\end{itemize}
+
+\noindent \textbf{deleteAccount}(authToken):
+\begin{itemize}
+  \item transition: issues delete request via M10; user data removed from backend.
+  \item output: \texttt{successFlag} = true on completion.
+  \item exception: \texttt{PermissionError} if user lacks required authorization.
+\end{itemize}
+
+\paragraph{Local Functions}
+\begin{itemize}
+  \item \texttt{cacheProfileData()} – stores profile data locally for faster re-rendering.
+  \item \texttt{validateEmailFormat()} – ensures valid email syntax before submission.
+  \item \texttt{displayConfirmation()} – shows confirmation prompts for irreversible actions.
+\end{itemize}
+
+
+\subsection{MIS of Automated Metrics Module (M8)}
+\label{mis:AutomatedMetrics}
+
+\subsubsection{Module}
+Implements the logic for automated retrieval, calculation, and storage of quantitative metrics associated with repositories or packages.  
+This module interacts with external APIs through M15 to gather data such as stars, forks, downloads, or commit frequency and stores them in the internal database for further ranking and analysis.
+
+\subsubsection{Uses}
+Repository API Module (M15) [GitHub API, PyPI API] (\ref{mis:RepositoryAPIModule})\\
+System API Gateway Module (M10) [Django REST Framework, JSON] (\ref{mis:SystemAPIGateway})\\
+Database Persistence Module (M17) [Django ORM] (\ref{mis:DatabasePersistenceModule})\\
+Ranking Algorithm Module (M11) (\ref{mis:RankingAlgorithm})
+
+\subsubsection{Syntax}
+
+\paragraph{Exported Constants}
+\begin{itemize}
+  \item \textbf{UPDATE\_INTERVAL\_HOURS} = 24
+  \item \textbf{MAX\_RETRIES} = 3
+  \item \textbf{SUPPORTED\_METRICS} = [``stars``, ``forks``, ``downloads``, ``commits``]
+\end{itemize}
+
+\paragraph{Exported Access Programs}
+\begin{center}
+\renewcommand{\arraystretch}{1.2}
+\begin{tabularx}{\textwidth}{l X X l}
+\toprule
+\textbf{Name} & \textbf{In} & \textbf{Out} & \textbf{Exceptions}\\
+\midrule
+fetchMetricsFromRepo & packageID & metricsData & APIError \\
+validateMetrics & metricsData & Boolean & ValidationError \\
+storeValidatedMetrics & metricsData & successFlag & WriteError \\
+scheduleAutoUpdate & None & successFlag & SchedulerError \\
+\bottomrule
+\end{tabularx}
+\end{center}
+
+\subsubsection{Semantics}
+
+\paragraph{State Variables}
+\begin{itemize}
+  \item \textbf{metricsQueue}: list of repositories scheduled for update.
+  \item \textbf{lastUpdateTime}: timestamp of the last successful metric refresh.
+\end{itemize}
+
+\paragraph{Environment Variables}
+\begin{itemize}
+  \item Python \texttt{requests} and \texttt{cron} utilities used for scheduled API requests.
+  \item Communication with Repository API Module (M15) for fetching data.
+  \item Persistent storage handled through Database Persistence Module (M10) using Django ORM.
+\end{itemize}
+
+\paragraph{Assumptions}
+\begin{itemize}
+  \item API rate limits are respected by using cached data or delay-based retries.
+  \item Network failures are retried up to \texttt{MAX\_RETRIES}.
+  \item Fetched data conforms to a consistent JSON schema before validation.
+\end{itemize}
+
+\paragraph{Access Routine Semantics}
+
+\noindent \textbf{fetchMetricsFromRepo}(packageID):
+\begin{itemize}
+  \item transition: sends a GET request via M15 to external repository API.
+  \item output: \texttt{metricsData} — structured dictionary of retrieved metrics.
+  \item exception: \texttt{APIError} if API call fails or response malformed.
+\end{itemize}
+
+\noindent \textbf{validateMetrics}(metricsData):
+\begin{itemize}
+  \item transition: none.
+  \item output: Boolean value indicating if all required metrics are valid.
+  \item exception: \texttt{ValidationError} if missing or inconsistent fields.
+\end{itemize}
+
+\noindent \textbf{storeValidatedMetrics}(metricsData):
+\begin{itemize}
+  \item transition: inserts or updates metric entries in M17.
+  \item output: \texttt{successFlag} = true if stored successfully.
+  \item exception: \texttt{WriteError} if database transaction fails.
+\end{itemize}
+
+\noindent \textbf{scheduleAutoUpdate}():
+\begin{itemize}
+  \item transition: schedules a background task (via Django \texttt{crontab} or \texttt{Celery}) to run every \texttt{UPDATE\_INTERVAL\_HOURS}.
+  \item output: \texttt{successFlag} = true if task successfully registered.
+  \item exception: \texttt{SchedulerError} if job registration fails.
+\end{itemize}
+
+\paragraph{Local Functions}
+\begin{itemize}
+  \item \texttt{normalizeMetricValues()} — adjusts different metrics to comparable scales before storage.
+  \item \texttt{retryFailedRequests()} — retries failed fetch operations respecting delay intervals.
+  \item \texttt{updateLastRunTimestamp()} — records timestamp of most recent completed update.
+\end{itemize}
+
+\subsection{MIS of Domains Page Module (M9)}
+\label{mis:DomainsPage}
+
+\subsubsection{Module}
+Implements the logic and presentation layer for displaying all domain-related data within the DomainX platform.  
+This includes the retrieval, organization, and rendering of domains, their associated packages, metrics, and textual descriptions for end users through a React interface connected to the Django backend.
+
+\subsubsection{Uses}
+Configuration Module (M19) [Django ORM, PostgreSQL] (\ref{mis:Configuration})\\ 
+System API Gateway Module (M10) [Django REST Framework] (\ref{mis:SystemAPIGateway})\\
+Graphing Module (M12) [Chart.js / Plotly via React] (\ref{mis:GraphingModule})\\
+Ranking Algorithm Module (M11) [for displaying domain scores] (\ref{mis:RankingAlgorithm})\\
+Automated Metrics Module (M8) (\ref{mis:AutomatedMetrics})
+
+\subsubsection{Syntax}
+
+\paragraph{Exported Constants}
+\begin{itemize}
+  \item \textbf{DEFAULT\_SORT\_ORDER} = ``alphabetical``
+  \item \textbf{MAX\_DISPLAYED\_DOMAINS} = 50
+  \item \textbf{DEFAULT\_METRIC\_SET} = [``stars``, ``forks``, ``downloads``]
+\end{itemize}
+
+\paragraph{Exported Access Programs}
+\begin{center}
+\renewcommand{\arraystretch}{1.2}
+\begin{tabularx}{\textwidth}{l X X l}
+\toprule
+\textbf{Name} & \textbf{In} & \textbf{Out} & \textbf{Exceptions}\\
+\midrule
+fetchAllDomains & filterOptions & domainList & DatabaseError \\
+displayDomainDetails & domainID & renderedView & DataNotFoundError \\
+renderDomainMetrics & domainID, metricType & chartObject & RenderError \\
+searchDomains & searchTerm & filteredList & None \\
+\bottomrule
+\end{tabularx}
+\end{center}
+
+\subsubsection{Semantics}
+
+\paragraph{State Variables}
+\begin{itemize}
+  \item \textbf{domainCache}: dictionary storing the most recently viewed domains for quick access.
+  \item \textbf{activeFilters}: list of active search or metric filters applied by the user.
+\end{itemize}
+
+\paragraph{Environment Variables}
+\begin{itemize}
+  \item React components (e.g., \texttt{DomainList.jsx}, \texttt{DomainDetails.jsx}) used to render UI elements.
+  \item Django REST endpoints for retrieving domain and metric data.
+  \item Persistent domain and package data stored in PostgreSQL via Django ORM.
+\end{itemize}
+
+\paragraph{Assumptions}
+\begin{itemize}
+  \item Domain data is properly structured and indexed in the database.
+  \item Graph rendering libraries (Chart.js or Plotly) are installed and functional.
+  \item User has appropriate permissions via M6 (User Role Access Module) to view domain data.
+\end{itemize}
+
+\paragraph{Access Routine Semantics}
+
+\noindent \textbf{fetchAllDomains}(filterOptions):
+\begin{itemize}
+  \item transition: none.
+  \item output: list of domain objects matching \texttt{filterOptions}.
+  \item exception: \texttt{DatabaseError} if ORM query fails.
+\end{itemize}
+
+\noindent \textbf{displayDomainDetails}(domainID):
+\begin{itemize}
+  \item transition: loads the selected domain’s details into \texttt{DomainDetails.jsx}.
+  \item output: rendered domain view.
+  \item exception: \texttt{DataNotFoundError} if the domain ID does not exist.
+\end{itemize}
+
+\noindent \textbf{renderDomainMetrics}(domainID, metricType):
+\begin{itemize}
+  \item transition: retrieves the domain’s metric data via M8 and renders a chart through M12.
+  \item output: visualization object.
+  \item exception: \texttt{RenderError} if visualization fails.
+\end{itemize}
+
+\noindent \textbf{searchDomains}(searchTerm):
+\begin{itemize}
+  \item transition: updates the domain list view with matching results.
+  \item output: filtered domain list.
+  \item exception: none.
+\end{itemize}
+
+\paragraph{Local Functions}
+\begin{itemize}
+  \item \texttt{applyFilters()} — applies active filters to retrieved domain list.
+  \item \texttt{updateCache()} — refreshes domain cache with recently accessed data.
+  \item \texttt{formatMetricData()} — adjusts metric values for standardized display.
+\end{itemize}
+
+
+\subsection{MIS of Comparison Module (M16)}
+\label{mis:Comparison}
+
+\subsubsection{Module}
+Implements the logic that defines and manages comparison methods between software packages or domains.  
+This module allows users to compare entities based on quantitative metrics (e.g., stars, forks, commits, downloads) and qualitative attributes (e.g., documentation quality, update frequency).  
+It serves as a bridge between the user interface, ranking algorithm, and metrics data to compute and display meaningful comparisons.
+
+\subsubsection{Uses}
+Ranking Algorithm Module (M11) [AHP / BWM weighting methods] (\ref{mis:RankingAlgorithm})\\
+Automated Metrics Module (M8) [metrics retrieval] (\ref{mis:AutomatedMetrics})\\
+Database Persistence Module (M17) [Django ORM – metrics and package data] (\ref{mis:DatabasePersistenceModule})\\
+Graphing Module (M12) [Chart.js / Plotly for visual comparison] (\ref{mis:GraphingModule})\\
+System API Gateway Module (M10) [Django REST Framework] (\ref{mis:SystemAPIGateway}) 
+
+\subsubsection{Syntax}
+
+\paragraph{Exported Constants}
+\begin{itemize}
+  \item \textbf{DEFAULT\_METHOD} = ``AHP''
+  \item \textbf{SUPPORTED\_METHODS} = [``AHP``, ``BWM``, ``SSB``]
+  \item \textbf{DEFAULT\_VISUALIZATION} = ``barChart``
+\end{itemize}
+
+\paragraph{Exported Access Programs}
+\begin{center}
+\renewcommand{\arraystretch}{1.2}
+\begin{tabularx}{\textwidth}{l X X l}
+\toprule
+\textbf{Name} & \textbf{In} & \textbf{Out} & \textbf{Exceptions}\\
+\midrule
+selectComparisonMethod & methodName & successFlag & InvalidMethodError \\
+computeComparison & domainSet, metricWeights & comparisonTable & ComputationError \\
+fetchComparisonData & domainSet & metricsData & DatabaseError \\
+visualizeComparison & comparisonTable, chartType & chartObject & RenderError \\
+\bottomrule
+\end{tabularx}
+\end{center}
+
+\subsubsection{Semantics}
+
+\paragraph{State Variables}
+\begin{itemize}
+  \item \textbf{activeMethod}: string representing the currently selected comparison method.  
+  \item \textbf{comparisonResults}: cached dictionary holding the most recent comparison output.  
+\end{itemize}
+
+\paragraph{Environment Variables}
+\begin{itemize}
+  \item Django backend provides metric and domain data via REST API endpoints.  
+  \item React front-end renders comparison results and visualizations.  
+  \item Graphing libraries (Chart.js / Plotly) used for displaying visual comparisons.  
+\end{itemize}
+
+\paragraph{Assumptions}
+\begin{itemize}
+  \item All metric data used for comparison is already validated by M8.  
+  \item User selects a valid comparison method from \texttt{SUPPORTED\_METHODS}.  
+  \item Database schema for domains and metrics is consistent with UC1 (structural stability).  
+\end{itemize}
+
+\paragraph{Access Routine Semantics}
+
+\noindent \textbf{selectComparisonMethod}(methodName):
+\begin{itemize}
+  \item transition: updates \texttt{activeMethod}.  
+  \item output: \texttt{successFlag} = true if method is supported.  
+  \item exception: \texttt{InvalidMethodError} if method not in \texttt{SUPPORTED\_METHODS}.  
+\end{itemize}
+
+\noindent \textbf{computeComparison}(domainSet, metricWeights):
+\begin{itemize}
+  \item transition: executes the selected comparison algorithm using data fetched via M11 and M17.  
+  \item output: \texttt{comparisonTable} containing ranked and weighted scores.  
+  \item exception: \texttt{ComputationError} if calculation fails or data incomplete.  
+\end{itemize}
+
+\noindent \textbf{fetchComparisonData}(domainSet):
+\begin{itemize}
+  \item transition: none.  
+  \item output: retrieves metric records for all domains in the set.  
+  \item exception: \texttt{DatabaseError} if ORM query fails.  
+\end{itemize}
+
+\noindent \textbf{visualizeComparison}(comparisonTable, chartType):
+\begin{itemize}
+  \item transition: renders visual representation of results via M12.  
+  \item output: chart object displayed in the React UI.  
+  \item exception: \texttt{RenderError} if graph generation fails.  
+\end{itemize}
+
+\paragraph{Local Functions}
+\begin{itemize}
+  \item \texttt{normalizeWeights()} — ensures weights sum to 1 before calculation.  
+  \item \texttt{computeAHPMatrix()} — performs pairwise comparisons for AHP method.  
+  \item \texttt{applyBWM()} — computes ranking scores using Best-Worst Method.  
+\end{itemize}
+
+
+\subsection{MIS of Configuration Module (M19)}
+\label{mis:Configuration}
+
+\subsubsection{Module}
+Implements the logic for storing, retrieving, and updating configuration data associated with each authenticated user.  
+This includes user preferences such as selected visualization settings, default domain filters, notification preferences, and saved comparison parameters.  
+It interacts with M5 (User Authentication) to identify the active user and with M17 (Database Persistence Module) for persistent storage of configuration data.
+
+\subsubsection{Uses}
+User Authentication Module (M5) [Django authentication system] (\ref{mis:UserAuthentication})\\
+Database Persistence Module (M17) [Django ORM / PostgreSQL] (\ref{mis:DatabasePersistence})\\
+System API Gateway Module (M10) [REST API for data retrieval] (\ref{mis:SystemAPIGateway})
+
+\subsubsection{Syntax}
+
+\paragraph{Exported Constants}
+\begin{itemize}
+  \item \textbf{DEFAULT\_LANGUAGE} = ``en''
+  \item \textbf{DEFAULT\_THEME} = ``light''
+  \item \textbf{DEFAULT\_NOTIFICATION\_SETTINGS} = \{email: true, inApp: true\}
+\end{itemize}
+
+\paragraph{Exported Access Programs}
+\begin{center}
+\renewcommand{\arraystretch}{1.2}
+\begin{tabularx}{\textwidth}{l X X l}
+\toprule
+\textbf{Name} & \textbf{In} & \textbf{Out} & \textbf{Exceptions}\\
+\midrule
+getUserConfig & userID & configData & DataNotFoundError \\
+updateUserConfig & userID, configData & successFlag & WriteError \\
+resetToDefaults & userID & configData & None \\
+fetchAllConfigs & None & configList & DatabaseError \\
+\bottomrule
+\end{tabularx}
+\end{center}
+
+\subsubsection{Semantics}
+
+\paragraph{State Variables}
+\begin{itemize}
+  \item \textbf{userConfigs}: dictionary mapping each userID to their saved configuration data.  
+  \item \textbf{defaultSettings}: dictionary storing global default configuration values.
+\end{itemize}
+
+\paragraph{Environment Variables}
+\begin{itemize}
+  \item Django authentication framework for identifying the current user.  
+  \item PostgreSQL database accessed through Django ORM for persisting user settings.  
+  \item REST API endpoints exposed by M10 for frontend communication.  
+\end{itemize}
+
+\paragraph{Assumptions}
+\begin{itemize}
+  \item Each userID exists and is validated through M5 before configuration access.  
+  \item Configuration data adheres to a predefined JSON schema.  
+  \item Default values are stored within this module and initialized at system startup.  
+\end{itemize}
+
+\paragraph{Access Routine Semantics}
+
+\noindent \textbf{getUserConfig}(userID):
+\begin{itemize}
+  \item transition: none.  
+  \item output: returns configuration settings for the given user.  
+  \item exception: \texttt{DataNotFoundError} if user has no stored configuration.  
+\end{itemize}
+
+\noindent \textbf{updateUserConfig}(userID, configData):
+\begin{itemize}
+  \item transition: updates stored configuration for the given user in the database.  
+  \item output: \texttt{successFlag} = true if update is successful.  
+  \item exception: \texttt{WriteError} if database transaction fails.  
+\end{itemize}
+
+\noindent \textbf{resetToDefaults}(userID):
+\begin{itemize}
+  \item transition: resets all stored configuration to default values.  
+  \item output: \texttt{configData} reflecting the defaults.  
+  \item exception: none.  
+\end{itemize}
+
+\noindent \textbf{fetchAllConfigs}():
+\begin{itemize}
+  \item transition: none.  
+  \item output: list of all stored configuration records for administrative view.  
+  \item exception: \texttt{DatabaseError} if ORM query fails.  
+\end{itemize}
+
+\paragraph{Local Functions}
+\begin{itemize}
+  \item \texttt{validateConfigSchema()} — ensures submitted configuration matches the JSON schema.  
+  \item \texttt{mergeDefaults()} — merges user-provided configuration with stored defaults.  
+  \item \texttt{logConfigChange()} — records modification timestamps for audit purposes.  
+\end{itemize}
+
+
+\subsection{MIS of System API Gateway Module (M10)}
+\label{mis:SystemAPIGateway}
+
+\subsubsection{Module}
+Implements the backend REST API layer that governs communication between the Django server, the PostgreSQL database, and the React frontend.  
+This module manages business logic flow, data serialization, and application state across all feature modules.  
+It ensures that frontend requests are authenticated, validated, and routed to the correct Django views or serializers.
+
+\subsubsection{Uses}
+Database Persistence Module (M17) [Django ORM / PostgreSQL] (\ref{mis:DatabasePersistenceModule})\\
+User Authentication Module (M5) [Django Auth Middleware] (\ref{mis:UserAuthentication})\\
+Automated Metrics Module (M8) [API data collection integration] (\ref{mis:AutomatedMetrics})\\
+Repository API Module (M15) [external API requests] (\ref{mis:RepositoryAPIModule})\\
+Configuration Module (M19) (\ref{mis:Configuration})
+
+\subsubsection{Syntax}
+
+\paragraph{Exported Constants}
+\begin{itemize}
+  \item \textbf{BASE\_URL} = ``https://api.domainx.ca/v1/``
+  \item \textbf{REQUEST\_TIMEOUT\_SEC} = 30
+  \item \textbf{MAX\_CONNECTIONS} = 100
+  \item \textbf{CONTENT\_TYPE} = ``application/json``
+\end{itemize}
+
+\paragraph{Exported Access Programs}
+\begin{center}
+\renewcommand{\arraystretch}{1.2}
+\begin{tabularx}{\textwidth}{l X X l}
+\toprule
+\textbf{Name} & \textbf{In} & \textbf{Out} & \textbf{Exceptions}\\
+\midrule
+sendRequest & endpoint, payload, method & responseData & NetworkError \\
+authenticateRequest & sessionToken & authorizedHeader & AuthError \\
+handleResponse & rawResponse & parsedResponse & ParseError \\
+routeToService & endpoint, payload & serviceOutput & RouteError \\
+\bottomrule
+\end{tabularx}
+\end{center}
+
+\subsubsection{Semantics}
+
+\paragraph{State Variables}
+\begin{itemize}
+  \item \textbf{activeSessions}: dictionary of authenticated users and tokens.  
+  \item \textbf{apiRegistry}: mapping of available service endpoints → handler functions.  
+\end{itemize}
+
+\paragraph{Environment Variables}
+\begin{itemize}
+  \item Django REST Framework serializers, views, and routers.  
+  \item JSON parser and HTTP utilities for request/response handling.  
+  \item React frontend consuming REST endpoints via Axios / Fetch API.  
+\end{itemize}
+
+\paragraph{Assumptions}
+\begin{itemize}
+  \item All endpoints conform to REST conventions (GET, POST, PUT, DELETE).  
+  \item Network connections are encrypted via HTTPS.  
+  \item Frontend tokens are validated by M5 (User Authentication Module).  
+\end{itemize}
+
+\paragraph{Access Routine Semantics}
+
+\noindent \textbf{sendRequest}(endpoint, payload, method):
+\begin{itemize}
+  \item transition: sends an HTTP request to \texttt{endpoint} with \texttt{payload}.  
+  \item output: \texttt{responseData} containing parsed JSON response.  
+  \item exception: \texttt{NetworkError} if the request fails or times out.  
+\end{itemize}
+
+\noindent \textbf{authenticateRequest}(sessionToken):
+\begin{itemize}
+  \item transition: adds authorization header to outgoing requests.  
+  \item output: \texttt{authorizedHeader}.  
+  \item exception: \texttt{AuthError} if token is invalid or expired.  
+\end{itemize}
+
+\noindent \textbf{handleResponse}(rawResponse):
+\begin{itemize}
+  \item transition: parses JSON and validates response schema.  
+  \item output: structured \texttt{parsedResponse}.  
+  \item exception: \texttt{ParseError} if invalid JSON is returned.  
+\end{itemize}
+
+\noindent \textbf{routeToService}(endpoint, payload):
+\begin{itemize}
+  \item transition: maps endpoint to corresponding Django service function.  
+  \item output: processed response object.  
+  \item exception: \texttt{RouteError} if endpoint is undefined in \texttt{apiRegistry}.  
+\end{itemize}
+
+\paragraph{Local Functions}
+\begin{itemize}
+  \item \texttt{serializeData()} — converts Django models to JSON format for frontend consumption.  
+  \item \texttt{deserializeRequest()} — validates incoming JSON requests against defined schemas.  
+  \item \texttt{logTransaction()} — records API request metadata for monitoring and debugging.  
+\end{itemize}
+
+
+\subsection{MIS of Ranking Algorithm Module (M11)}
+\label{mis:RankingAlgorithm}
+
+\subsubsection{Module}
+Implements the Analytic Hierarchy Process (AHP) ranking algorithm that computes pairwise comparisons of software packages or domains based on weighted criteria.  
+This module quantifies qualitative assessments and produces normalized ranking scores to determine relative performance or importance.  
+It is implemented using the AHPy library, with extension points for future ranking models such as Best–Worst Method (BWM) or Skew–Symmetric Bilinear (SSB).
+
+\subsubsection{Uses}
+Database Persistence Module (M17) [metrics and domain data via Django ORM] (\ref{mis:DatabasePersistenceModule})\\
+Automated Metrics Module (M8) [input metric data] (\ref{mis:AutomatedMetrics})\\
+Comparison Module (M16) [for result visualization] (\ref{mis:Comparison})\\
+Configuration Module (M19) [for user-defined weights and preferences] (\ref{mis:Configuration})
+
+\subsubsection{Syntax}
+
+\paragraph{Exported Constants}
+\begin{itemize}
+  \item \textbf{DEFAULT\_METHOD} = ``AHP``
+  \item \textbf{CONSISTENCY\_THRESHOLD} = 0.1
+  \item \textbf{SUPPORTED\_METHODS} = [``AHP``, ``BWM``, ``SSB``]
+\end{itemize}
+
+\paragraph{Exported Access Programs}
+\begin{center}
+\renewcommand{\arraystretch}{1.2}
+\begin{tabularx}{\textwidth}{l X X l}
+\toprule
+\textbf{Name} & \textbf{In} & \textbf{Out} & \textbf{Exceptions}\\
+\midrule
+computeRankScores & metricsTable, userWeights & rankTable & InvalidMetricError \\
+applyAHPWeights & criteriaMatrix & weightedMatrix & MatrixError \\
+normalizeScores & rankTable & normalizedTable & NormalizationError \\
+getTopPackages & normalizedTable, limit & rankedList & None \\
+\bottomrule
+\end{tabularx}
+\end{center}
+
+\subsubsection{Semantics}
+
+\paragraph{State Variables}
+\begin{itemize}
+  \item \textbf{criteriaMatrix}: matrix of pairwise criteria comparisons.  
+  \item \textbf{normalizedScores}: vector of final ranking results.  
+\end{itemize}
+
+\paragraph{Environment Variables}
+\begin{itemize}
+  \item AHPy Python library for performing AHP computations.  
+  \item Django backend provides metric input via M8 (Automated Metrics Module) and M17 (Database Persistence Module).  
+  \item React frontend retrieves computed ranking results from M10 through REST API endpoints.  
+\end{itemize}
+
+\paragraph{Assumptions}
+\begin{itemize}
+  \item Criteria weights are positive and consistent within the threshold.  
+  \item All metric inputs are validated prior to ranking.  
+  \item The AHP consistency ratio does not exceed 0.1.  
+\end{itemize}
+
+\paragraph{Access Routine Semantics}
+
+\noindent \textbf{computeRankScores}(metricsTable, userWeights):
+\begin{itemize}
+  \item transition: constructs a weighted decision matrix using AHPy.  
+  \item output: \texttt{rankTable} — ranked list of packages or domains.  
+  \item exception: \texttt{InvalidMetricError} if metrics missing or inconsistent.  
+\end{itemize}
+
+\noindent \textbf{applyAHPWeights}(criteriaMatrix):
+\begin{itemize}
+  \item transition: applies pairwise weights to compute priority vectors.  
+  \item output: \texttt{weightedMatrix}.  
+  \item exception: \texttt{MatrixError} if dimensions invalid or inconsistent.  
+\end{itemize}
+
+\noindent \textbf{normalizeScores}(rankTable):
+\begin{itemize}
+  \item transition: rescales scores so total weight = 1.  
+  \item output: normalized score table.  
+  \item exception: \texttt{NormalizationError} if division by 0 or invalid data.  
+\end{itemize}
+
+\noindent \textbf{getTopPackages}(normalizedTable, limit):
+\begin{itemize}
+  \item transition: none.  
+  \item output: top-\(n\) ranked packages.  
+  \item exception: none.  
+\end{itemize}
+
+\paragraph{Local Functions}
+\begin{itemize}
+  \item \texttt{checkConsistency()} — calculates consistency ratio for AHP matrices.  
+  \item \texttt{aggregateWeights()} — merges user-defined and default weight sets.  
+  \item \texttt{normalizeVector()} — scales weight vectors for comparison output.  
+\end{itemize}
+
+
+\subsection{MIS of Graphing Module (M12)}
+\label{mis:GraphingModule}
+
+\subsubsection{Module}
+Implements the logic and utilities for generating graphs and data visualizations from processed metric datasets.  
+This module supports visual comparison of domains, packages, and metric trends using the Matplotlib library.  
+It operates as a backend visualization service, receiving numerical or categorical data from other modules and outputting visual plots (bar, line, pie, or radar charts) for display or export.
+
+\subsubsection{Uses}
+Automated Metrics Module (M8) [provides metric values] (\ref{mis:AutomatedMetrics})\\
+Database Persistence Module (M17) [retrieves stored dataset entries] (\ref{mis:DatabasePersistenceModule})\\
+System API Gateway Module (M10) [routes graphing requests] (\ref{mis:SystemAPIGateway})\\
+Comparison Module (M16) [requests comparative plots] (\ref{mis:Comparison})\\
+Configuration Module (M19) [retrieves user visualization preferences] (\ref{mis:Configuration})
+
+\subsubsection{Syntax}
+
+\paragraph{Exported Constants}
+\begin{itemize}
+  \item \textbf{DEFAULT\_STYLE} = ``seaborn-v0\_8-darkgrid``
+  \item \textbf{DEFAULT\_FIGSIZE} = (10, 6)
+  \item \textbf{SUPPORTED\_CHARTS} = [``bar``, ``line``, ``pie``, ``radar``]
+  \item \textbf{EXPORT\_FORMAT} = [``.png``, ``.svg``, ``.pdf``]
+\end{itemize}
+
+\paragraph{Exported Access Programs}
+\begin{center}
+\renewcommand{\arraystretch}{1.2}
+\begin{tabularx}{\textwidth}{l X X l}
+\toprule
+\textbf{Name} & \textbf{In} & \textbf{Out} & \textbf{Exceptions}\\
+\midrule
+generateGraph & metricData, graphType, config & graphImage & GraphError \\
+updateGraphStyle & styleParams & successFlag & StyleError \\
+exportGraph & graphImage, format, fileName & exportPath & ExportError \\
+renderComparisonPlot & domainMetrics, metricType & comparisonImage & DataError \\
+\bottomrule
+\end{tabularx}
+\end{center}
+
+\subsubsection{Semantics}
+
+\paragraph{State Variables}
+\begin{itemize}
+  \item \textbf{currentGraph}: last generated Matplotlib figure object.  
+  \item \textbf{styleConfig}: dictionary storing current theme and formatting options.  
+\end{itemize}
+
+\paragraph{Environment Variables}
+\begin{itemize}
+  \item Python Matplotlib library for visualization.  
+  \item NumPy and Pandas libraries for data manipulation.  
+  \item REST API (via M10) exposes generated images or data URLs to the React frontend.  
+\end{itemize}
+
+\paragraph{Assumptions}
+\begin{itemize}
+  \item Input datasets contain numeric or categorical values compatible with Matplotlib.  
+  \item Configuration settings comply with Matplotlib formatting constraints.  
+  \item Graph generation occurs on the backend before transfer to the frontend for rendering.  
+\end{itemize}
+
+\paragraph{Access Routine Semantics}
+
+\noindent \textbf{generateGraph}(metricData, graphType, config):
+\begin{itemize}
+  \item transition: constructs a Matplotlib figure according to input type and configuration.  
+  \item output: \texttt{graphImage} — rendered visualization object.  
+  \item exception: \texttt{GraphError} if data invalid or plotting fails.  
+\end{itemize}
+
+\noindent \textbf{updateGraphStyle}(styleParams):
+\begin{itemize}
+  \item transition: updates \texttt{styleConfig} (color scheme, font, size).  
+  \item output: \texttt{successFlag} = true if update applied.  
+  \item exception: \texttt{StyleError} if parameters are unsupported.  
+\end{itemize}
+
+\noindent \textbf{exportGraph}(graphImage, format, fileName):
+\begin{itemize}
+  \item transition: saves figure to specified file path in given format.  
+  \item output: \texttt{exportPath} of saved image.  
+  \item exception: \texttt{ExportError} if write operation fails.  
+\end{itemize}
+
+\noindent \textbf{renderComparisonPlot}(domainMetrics, metricType):
+\begin{itemize}
+  \item transition: overlays multiple data series for comparative visualization.  
+  \item output: \texttt{comparisonImage} — rendered comparative plot.  
+  \item exception: \texttt{DataError} if inconsistent metric arrays are provided.  
+\end{itemize}
+
+\paragraph{Local Functions}
+\begin{itemize}
+  \item \texttt{normalizeData()} — ensures all metric values are scaled before plotting.  
+  \item \texttt{applyTheme()} — applies style configuration globally.  
+  \item \texttt{cleanTempFiles()} — clears cached images after export.  
+\end{itemize}
+
+
+\subsection{MIS of File Import Module (M13)}
+\label{mis:FileImportModule}
+
+\subsubsection{Module}
+Handles ingestion of user-provided data files and converts them into structured datasets for internal use.  
+This module parses, validates, and transforms Excel or CSV files into standardized data frames compatible with the system’s metric and domain schema.  
+It ensures type consistency and data integrity before persisting the data to the database.
+
+\subsubsection{Uses}
+Database Persistence Module (M17) [for data persistence] (\ref{mis:DatabasePersistenceModule})\\
+System API Gateway Module (M10) [for upload routing and validation] (\ref{mis:SystemAPIGateway})\\
+Configuration Module (M19) [for file-format settings] (\ref{mis:Configuration})\\
+Automated Metrics Module (M8) [for synchronization of imported metrics] (\ref{mis:AutomatedMetrics}) 
+
+\subsubsection{Syntax}
+
+\paragraph{Exported Constants}
+\begin{itemize}
+  \item \textbf{SUPPORTED\_FORMATS} = [``.csv``, ``.xlsx``]
+  \item \textbf{MAX\_FILE\_SIZE\_MB} = 10
+  \item \textbf{DEFAULT\_ENCODING} = ``utf-8``
+  \item \textbf{REQUIRED\_FIELDS} = [``DomainName``, ``PackageName``, ``MetricName``, ``Value``]
+\end{itemize}
+
+\paragraph{Exported Access Programs}
+\begin{center}
+\renewcommand{\arraystretch}{1.2}
+\begin{tabularx}{\textwidth}{l X X l}
+\toprule
+\textbf{Name} & \textbf{In} & \textbf{Out} & \textbf{Exceptions}\\
+\midrule
+parseFile & filePath, fileType & dataFrame & ParseError \\
+validateImportedData & dataFrame & Boolean & ValidationError \\
+storeImportedData & dataFrame & successFlag & WriteError \\
+getImportSummary & dataFrame & summaryDict & None \\
+\bottomrule
+\end{tabularx}
+\end{center}
+
+\subsubsection{Semantics}
+
+\paragraph{State Variables}
+\begin{itemize}
+  \item \textbf{lastImportedFile}: path or identifier of the last processed file.  
+  \item \textbf{importStatus}: status flag indicating the most recent operation result.  
+\end{itemize}
+
+\paragraph{Environment Variables}
+\begin{itemize}
+  \item Python \texttt{pandas} library for parsing CSV/Excel files.  
+  \item Django REST Framework handles file uploads and passes file references to this module.  
+  \item File storage is temporary before validated data is written to the database via M9.  
+\end{itemize}
+
+\paragraph{Assumptions}
+\begin{itemize}
+  \item Uploaded files conform to the system’s schema and naming conventions.  
+  \item File size and encoding are supported and within defined constraints.  
+  \item Invalid rows are filtered out and logged, not silently dropped.  
+\end{itemize}
+
+\paragraph{Access Routine Semantics}
+
+\noindent \textbf{parseFile}(filePath, fileType):
+\begin{itemize}
+  \item transition: opens and reads the file using \texttt{pandas.read\_csv()} or \texttt{pandas.read\_excel()}.  
+  \item output: \texttt{dataFrame} containing structured data.  
+  \item exception: \texttt{ParseError} if the file cannot be opened or parsed.  
+\end{itemize}
+
+\noindent \textbf{validateImportedData}(dataFrame):
+\begin{itemize}
+  \item transition: checks for required fields and data-type consistency.  
+  \item output: Boolean indicating whether validation succeeded.  
+  \item exception: \texttt{ValidationError} if mandatory columns are missing or invalid types detected.  
+\end{itemize}
+
+\noindent \textbf{storeImportedData}(dataFrame):
+\begin{itemize}
+  \item transition: inserts validated rows into the database through the Django ORM (M9).  
+  \item output: \texttt{successFlag} = true if all rows stored successfully.  
+  \item exception: \texttt{WriteError} if a database transaction fails.  
+\end{itemize}
+
+\noindent \textbf{getImportSummary}(dataFrame):
+\begin{itemize}
+  \item transition: none.  
+  \item output: \texttt{summaryDict} — total rows processed, valid, invalid, and stored.  
+  \item exception: none.  
+\end{itemize}
+
+\paragraph{Local Functions}
+\begin{itemize}
+  \item \texttt{cleanColumnNames()} — standardizes column names to match system schema.  
+  \item \texttt{detectDelimiter()} — determines delimiter automatically for CSV files.  
+  \item \texttt{logImportActivity()} — records metadata of each file import for traceability.  
+\end{itemize}
+
+
+\subsection{MIS of File Export Module (M14)}
+\label{mis:FileExportModule}
+
+\subsubsection{Module}
+Handles transformation of system data into exportable formats such as CSV or Excel.  
+This module converts domain, metric, and ranking data from database tables into standardized file outputs compatible with external analysis tools.  
+It ensures that exported files preserve correct formatting, encoding, and schema alignment for interoperability.
+
+\subsubsection{Uses}
+Database Persistence Module (M17) [retrieves structured data for export] (\ref{mis:DatabasePersistenceModule})\\
+System API Gateway Module (M10) [handles export requests and delivery] (\ref{mis:SystemAPIGateway})\\
+Configuration Module (M19) [provides user-selected export settings] (\ref{mis:Configuration})\\
+Ranking Algorithm Module (M11) [supplies ranking data for export] (\ref{mis:RankingAlgorithm})
+
+\subsubsection{Syntax}
+
+\paragraph{Exported Constants}
+\begin{itemize}
+  \item \textbf{SUPPORTED\_FORMATS} = [``.csv``, ``.xlsx``]
+  \item \textbf{DEFAULT\_ENCODING} = ``utf-8``
+  \item \textbf{EXPORT\_DIRECTORY} = ``/exports/``
+  \item \textbf{MAX\_ROWS\_PER\_FILE} = 50{,}000
+\end{itemize}
+
+\paragraph{Exported Access Programs}
+\begin{center}
+\renewcommand{\arraystretch}{1.2}
+\begin{tabularx}{\textwidth}{l X X l}
+\toprule
+\textbf{Name} & \textbf{In} & \textbf{Out} & \textbf{Exceptions}\\
+\midrule
+prepareExportData & queryParams, dataType & dataFrame & DataError \\
+exportToCSV & dataFrame, fileName & filePath & WriteError \\
+exportToExcel & dataFrame, fileName & filePath & WriteError \\
+getExportSummary & filePath & summaryDict & None \\
+\bottomrule
+\end{tabularx}
+\end{center}
+
+\subsubsection{Semantics}
+
+\paragraph{State Variables}
+\begin{itemize}
+  \item \textbf{exportStatus}: status flag of the latest export operation.  
+  \item \textbf{lastExportFile}: file name of the most recently generated export.  
+\end{itemize}
+
+\paragraph{Environment Variables}
+\begin{itemize}
+  \item Python \texttt{pandas} library for writing tabular data to files.  
+  \item Django backend provides query data via ORM (M17).  
+  \item React frontend triggers export through API endpoints in M10.  
+\end{itemize}
+
+\paragraph{Assumptions}
+\begin{itemize}
+  \item Data requested for export is already validated and normalized.  
+  \item User export requests specify supported formats only.  
+  \item The file system path \texttt{EXPORT\_DIRECTORY} is writable by the application.  
+\end{itemize}
+
+\paragraph{Access Routine Semantics}
+
+\noindent \textbf{prepareExportData}(queryParams, dataType):
+\begin{itemize}
+  \item transition: retrieves records from the database according to filters and data type.  
+  \item output: \texttt{dataFrame} with processed export data.  
+  \item exception: \texttt{DataError} if query fails or data unavailable.  
+\end{itemize}
+
+\noindent \textbf{exportToCSV}(dataFrame, fileName):
+\begin{itemize}
+  \item transition: writes data to a comma-separated file using \texttt{pandas.to\_csv()}.  
+  \item output: \texttt{filePath} to generated CSV file.  
+  \item exception: \texttt{WriteError} if file I/O fails.  
+\end{itemize}
+
+\noindent \textbf{exportToExcel}(dataFrame, fileName):
+\begin{itemize}
+  \item transition: writes data to an Excel file using \texttt{pandas.ExcelWriter()}.  
+  \item output: \texttt{filePath} to generated Excel file.  
+  \item exception: \texttt{WriteError} if Excel writer fails.  
+\end{itemize}
+
+\noindent \textbf{getExportSummary}(filePath):
+\begin{itemize}
+  \item transition: none.  
+  \item output: \texttt{summaryDict} — includes file name, record count, and format.  
+  \item exception: none.  
+\end{itemize}
+
+\paragraph{Local Functions}
+\begin{itemize}
+  \item \texttt{sanitizeFileName()} — ensures export file names are safe and standardized.  
+  \item \texttt{splitLargeExports()} — divides large datasets into multiple files if row limit exceeded.  
+  \item \texttt{logExportActivity()} — records export metadata for auditing.  
+\end{itemize}
+
+
+\subsection{MIS of Repository API Module (M15)}
+\label{mis:RepositoryAPIModule}
+
+\subsubsection{Module}
+Provides an interface for interacting with external repository APIs such as GitHub, GitLab, and PyPI.  
+This module retrieves repository metadata and metric data (e.g., stars, forks, issues, commits) required for domain analysis.  
+It handles authentication, rate limiting, and response parsing before returning validated data to internal modules.
+
+\subsubsection{Uses}
+Automated Metrics Module (M8) [for metric retrieval requests] (\ref{mis:AutomatedMetrics})\\
+System API Gateway Module (M10) [for backend communication] (\ref{mis:SystemAPIGateway})\\
+Configuration Module (M19) [for API tokens and environment variables] (\ref{mis:Configuration})\\
+Database Persistence Module (M17) [for storing fetched data] (\ref{mis:DatabasePersistenceModule})  
+
+\subsubsection{Syntax}
+
+\paragraph{Exported Constants}
+\begin{itemize}
+  \item \textbf{GITHUB\_BASE\_URL} = ``https://api.github.com/``  
+  \item \textbf{PYPI\_BASE\_URL} = ``https://pypi.org/pypi/``  
+  \item \textbf{REQUEST\_TIMEOUT\_SEC} = 30  
+  \item \textbf{MAX\_RETRIES} = 3  
+  \item \textbf{RATE\_LIMIT\_THRESHOLD} = 1000  
+\end{itemize}
+
+\paragraph{Exported Access Programs}
+\begin{center}
+\renewcommand{\arraystretch}{1.2}
+\begin{tabularx}{\textwidth}{l X X l}
+\toprule
+\textbf{Name} & \textbf{In} & \textbf{Out} & \textbf{Exceptions}\\
+\midrule
+setAuthToken & token & successFlag & AuthError \\
+fetchRepoMetadata & packageID & repoData & APIError \\
+fetchRepoMetrics & packageID, metricList & metricsData & APIError \\
+handleRateLimit & responseHeaders & delaySeconds & RateLimitError \\
+\bottomrule
+\end{tabularx}
+\end{center}
+
+\subsubsection{Semantics}
+
+\paragraph{State Variables}
+\begin{itemize}
+  \item \textbf{authToken}: authentication key for accessing external APIs.  
+  \item \textbf{lastResponseStatus}: HTTP status code of the most recent request.  
+\end{itemize}
+
+\paragraph{Environment Variables}
+\begin{itemize}
+  \item Internet connection and access to repository APIs (GitHub, GitLab, PyPI).  
+  \item Python \texttt{requests} library for sending API requests.  
+  \item Django environment variables (via M19) for storing API keys securely.  
+\end{itemize}
+
+\paragraph{Assumptions}
+\begin{itemize}
+  \item API tokens are valid and refreshed automatically if expired.  
+  \item Rate limiting is handled gracefully using \texttt{Retry-After} headers.  
+  \item JSON responses from external APIs follow their documented schemas.  
+\end{itemize}
+
+\paragraph{Access Routine Semantics}
+
+\noindent \textbf{setAuthToken}(token):
+\begin{itemize}
+  \item transition: sets a new authentication token for subsequent API calls.  
+  \item output: \texttt{successFlag} = true if token successfully stored.  
+  \item exception: \texttt{AuthError} if token invalid or missing permissions.  
+\end{itemize}
+
+\noindent \textbf{fetchRepoMetadata}(packageID):
+\begin{itemize}
+  \item transition: sends GET request to GitHub/PyPI API for project metadata.  
+  \item output: \texttt{repoData} — dictionary of metadata (name, owner, description, license).  
+  \item exception: \texttt{APIError} if request fails or JSON malformed.  
+\end{itemize}
+
+\noindent \textbf{fetchRepoMetrics}(packageID, metricList):
+\begin{itemize}
+  \item transition: sends API requests for specific metrics (e.g., stars, forks, downloads).  
+  \item output: \texttt{metricsData} — structured dictionary of metric values.  
+  \item exception: \texttt{APIError} if any metric endpoint fails or rate-limited.  
+\end{itemize}
+
+\noindent \textbf{handleRateLimit}(responseHeaders):
+\begin{itemize}
+  \item transition: calculates required delay based on rate-limit headers.  
+  \item output: \texttt{delaySeconds} = integer number of seconds to wait.  
+  \item exception: \texttt{RateLimitError} if headers missing or malformed.  
+\end{itemize}
+
+\paragraph{Local Functions}
+\begin{itemize}
+  \item \texttt{parseJSONResponse()} — converts JSON responses into Python dictionaries.  
+  \item \texttt{retryRequest()} — retries failed API calls up to \texttt{MAX\_RETRIES}.  
+  \item \texttt{logAPICall()} — records each API interaction for debugging and monitoring.  
+\end{itemize}
+
+
+\subsection{MIS of Database Persistence Module (M17)}
+\label{mis:DatabasePersistenceModule}
+
+\subsubsection{Module}
+Handles all data persistence and retrieval operations between the application and its relational database.  
+This module defines and manages models representing entities such as domains, packages, metrics, and users.  
+It ensures data integrity, schema consistency, and transactional reliability using Django’s ORM layer with a MySQL backend.
+
+\subsubsection{Uses}
+System API Gateway Module (M10) [for CRUD operations] (\ref{mis:SystemAPIGateway})\\
+Configuration Module (M19) [for connection credentials] (\ref{mis:Configuration})\\
+Automated Metrics Module (M8) [for inserting new metric data] (\ref{mis:AutomatedMetrics})\\
+Ranking Algorithm Module (M11) [for reading metric tables during ranking] (\ref{mis:RankingAlgorithm})
+
+\subsubsection{Syntax}
+
+\paragraph{Exported Constants}
+\begin{itemize}
+  \item \textbf{DB\_NAME} = ``domainx\_db``  
+  \item \textbf{DB\_ENGINE} = ``django.db.backends.mysql``  
+  \item \textbf{DB\_TIMEOUT\_SEC} = 15  
+  \item \textbf{AUTO\_COMMIT} = true  
+\end{itemize}
+
+\paragraph{Exported Access Programs}
+\begin{center}
+\renewcommand{\arraystretch}{1.2}
+\begin{tabularx}{\textwidth}{l X X l}
+\toprule
+\textbf{Name} & \textbf{In} & \textbf{Out} & \textbf{Exceptions}\\
+\midrule
+createRecord & tableName, dataDict & successFlag & WriteError \\
+readRecord & tableName, queryFilters & resultSet & NotFoundError \\
+updateRecord & tableName, recordID, updatedFields & successFlag & WriteError \\
+deleteRecord & tableName, recordID & successFlag & DeleteError \\
+executeRawQuery & queryString & queryResult & QueryError \\
+\bottomrule
+\end{tabularx}
+\end{center}
+
+\subsubsection{Semantics}
+
+\paragraph{State Variables}
+\begin{itemize}
+  \item \textbf{connectionPool}: pool of reusable MySQL database connections.  
+  \item \textbf{lastTransactionStatus}: Boolean flag indicating success or failure of the last query.  
+\end{itemize}
+
+\paragraph{Environment Variables}
+\begin{itemize}
+  \item MySQL database server (version $\geq$ 8.0) hosting all project data.  
+  \item Django ORM handles model definitions and query translation.  
+  \item Environment credentials managed by M19 (e.g., host, username, password).  
+\end{itemize}
+
+\paragraph{Assumptions}
+\begin{itemize}
+  \item Database schema remains stable (UC1).  
+  \item All ORM migrations are version-controlled through Django’s migration system.  
+  \item Connection credentials are valid and not hard-coded.  
+\end{itemize}
+
+\paragraph{Access Routine Semantics}
+
+\noindent \textbf{createRecord}(tableName, dataDict):
+\begin{itemize}
+  \item transition: inserts new record into table using Django ORM’s \texttt{Model.objects.create()}.  
+  \item output: \texttt{successFlag} = true if commit successful.  
+  \item exception: \texttt{WriteError} if transaction fails or constraint violated.  
+\end{itemize}
+
+\noindent \textbf{readRecord}(tableName, queryFilters):
+\begin{itemize}
+  \item transition: queries table for matching records using \texttt{filter()} or \texttt{get()}.  
+  \item output: \texttt{resultSet} = list or object containing retrieved records.  
+  \item exception: \texttt{NotFoundError} if no results found.  
+\end{itemize}
+
+\noindent \textbf{updateRecord}(tableName, recordID, updatedFields):
+\begin{itemize}
+  \item transition: updates record fields and commits changes to the database.  
+  \item output: \texttt{successFlag} = true if update succeeds.  
+  \item exception: \texttt{WriteError} if record not found or data invalid.  
+\end{itemize}
+
+\noindent \textbf{deleteRecord}(tableName, recordID):
+\begin{itemize}
+  \item transition: deletes a record using ORM’s \texttt{delete()} method.  
+  \item output: \texttt{successFlag} = true if deletion succeeds.  
+  \item exception: \texttt{DeleteError} if record missing or database locked.  
+\end{itemize}
+
+\noindent \textbf{executeRawQuery}(queryString):
+\begin{itemize}
+  \item transition: executes custom SQL queries directly via ORM’s \texttt{raw()} method.  
+  \item output: \texttt{queryResult} containing query output.  
+  \item exception: \texttt{QueryError} if query invalid or connection lost.  
+\end{itemize}
+
+\paragraph{Local Functions}
+\begin{itemize}
+  \item \texttt{initializeConnectionPool()} — sets up reusable database connections on startup.  
+  \item \texttt{rollbackTransaction()} — rolls back failed transactions to preserve integrity.  
+  \item \texttt{logQueryActivity()} — logs all executed queries for debugging and analytics.  
+\end{itemize}
+
+\subsection{MIS of Logging Module (M18)}
+\label{mis:LoggingModule}
+
+\subsubsection{Module}
+Provides centralized logging functionality for recording and retrieving events, user activities, and system actions.  
+It captures events from backend services, database operations, and API calls, storing them in structured log files for traceability and debugging.  
+This module helps ensure accountability, auditability, and system reliability throughout DomainX.
+
+\subsubsection{Uses}
+System API Gateway Module (M10) [for capturing backend requests and responses] (\ref{mis:SystemAPIGateway})\\
+Database Persistence Module (M17) [for storing error logs and event history] (\ref{mis:DatabasePersistenceModule})\\
+Configuration Module (M19) [for environment-specific logging paths and levels] (\ref{mis:Configuration}) 
+
+\subsubsection{Syntax}
+
+\paragraph{Exported Constants}
+\begin{itemize}
+  \item \textbf{LOG\_FILE\_PATH} = ``/var/log/domainx/app.log``  
+  \item \textbf{DEFAULT\_LEVEL} = ``INFO``  
+  \item \textbf{MAX\_LOG\_SIZE\_MB} = 10  
+  \item \textbf{BACKUP\_COUNT} = 5  
+\end{itemize}
+
+\paragraph{Exported Access Programs}
+\begin{center}
+\renewcommand{\arraystretch}{1.2}
+\begin{tabularx}{\textwidth}{l X X l}
+\toprule
+\textbf{Name} & \textbf{In} & \textbf{Out} & \textbf{Exceptions}\\
+\midrule
+initLogger & configFilePath & successFlag & ConfigError \\
+logEvent & message, level, context & successFlag & WriteError \\
+getRecentLogs & limit & logsList & FileError \\
+archiveLogs & None & successFlag & ArchiveError \\
+\bottomrule
+\end{tabularx}
+\end{center}
+
+\subsubsection{Semantics}
+
+\paragraph{State Variables}
+\begin{itemize}
+  \item \textbf{activeLogger}: configured logger instance handling all writes.  
+  \item \textbf{logLevel}: current logging verbosity threshold (DEBUG, INFO, WARNING, ERROR).  
+\end{itemize}
+
+\paragraph{Environment Variables}
+\begin{itemize}
+  \item Python \texttt{logging} package for logging and log rotation.  
+  \item File system storage for log persistence.  
+  \item Operating environment defined by M19 (development, staging, production).  
+\end{itemize}
+
+\paragraph{Assumptions}
+\begin{itemize}
+  \item File system permissions allow append and rotation of log files.  
+  \item Log directory structure already exists and is writable by the application.  
+  \item Critical events (ERROR, CRITICAL) are monitored through external observability tools if configured.  
+\end{itemize}
+
+\paragraph{Access Routine Semantics}
+
+\noindent \textbf{initLogger}(configFilePath):
+\begin{itemize}
+  \item transition: initializes the logger with parameters defined in the config file.  
+  \item output: \texttt{successFlag} = true if initialization succeeds.  
+  \item exception: \texttt{ConfigError} if file invalid or missing keys.  
+\end{itemize}
+
+\noindent \textbf{logEvent}(message, level, context):
+\begin{itemize}
+  \item transition: formats and writes a log entry to file and console.  
+  \item output: \texttt{successFlag} = true if write successful.  
+  \item exception: \texttt{WriteError} if log file inaccessible or write fails.  
+\end{itemize}
+
+\noindent \textbf{getRecentLogs}(limit):
+\begin{itemize}
+  \item transition: reads from log file up to the specified limit of lines.  
+  \item output: \texttt{logsList} = list of recent log entries.  
+  \item exception: \texttt{FileError} if log file missing or corrupted.  
+\end{itemize}
+
+\noindent \textbf{archiveLogs}():
+\begin{itemize}
+  \item transition: compresses and rotates existing log files once they exceed \texttt{MAX\_LOG\_SIZE\_MB}.  
+  \item output: \texttt{successFlag} = true if archiving succeeds.  
+  \item exception: \texttt{ArchiveError} if file rotation fails.  
+\end{itemize}
+
+\paragraph{Local Functions}
+\begin{itemize}
+  \item \texttt{formatLogMessage()} — prepends timestamps and log levels to messages.  
+  \item \texttt{rotateLogs()} — performs log rotation based on file size thresholds.  
+  \item \texttt{sendCriticalAlert()} — triggers email or console alerts for severe events.  
+\end{itemize}
+
 
 \newpage
 
@@ -235,14 +2122,21 @@ The following table is taken directly from the Module Guide document for this pr
 \newpage
 
 \section{Appendix} \label{Appendix}
+\subsection{Appendix --- Module Hierarchy Diagram}
 
-\wss{Extra information if required}
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=\textwidth]{images/Use_Hierarchy_Diagram.drawio.PNG}
+    \caption{Module Hierarchy for DomainX}
+    \label{fig:modulehierarchy}
+\end{figure}
+% \wss{Extra information if required}
 
 \newpage{}
 
 \section*{Appendix --- Reflection}
 
-\wss{Not required for CAS 741 projects}
+% \wss{Not required for CAS 741 projects}
 
 The information in this section will be used to evaluate the team members on the
 graduate attribute of Problem Analysis and Design.
@@ -251,18 +2145,43 @@ graduate attribute of Problem Analysis and Design.
 
 \begin{enumerate}
   \item What went well while writing this deliverable? 
+  
+  Awurama: We had a clear module hierarchy and strong alignment with the MG, 
+  which made structuring each MIS section easier. Collaboration and consistency across modules also improved clarity.
+  
   \item What pain points did you experience during this deliverable, and how
     did you resolve them?
+  
+  Awurama: Managing LaTeX formatting, especially tables and long text, was time-consuming. 
+  We fixed these by using the tabularx package and standardizing our template for all modules.
+  
   \item Which of your design decisions stemmed from speaking to your client(s)
   or a proxy (e.g. your peers, stakeholders, potential users)? For those that
   were not, why, and where did they come from?
+  
+  Awurama: Most design choices came from client discussions with Dr. Smith and feedback from peers. 
+  For example, decisions on automation scope, ranking algorithms, 
+  and database structure came directly from those conversations.
+  
   \item While creating the design doc, what parts of your other documents (e.g.
   requirements, hazard analysis, etc), it any, needed to be changed, and why?
+  
+  Awurama: We refined sections of the SRS and MG for consistency,
+  mainly updating module responsibilities and interfaces to match the finalized MIS content.
+  
   \item What are the limitations of your solution?  Put another way, given
   unlimited resources, what could you do to make the project better? (LO\_ProbSolutions)
+  
+  Awurama: Limited time and resources meant we couldn’t build full scalability or advanced automation. 
+  With more resources, we’d expand integration testing, optimize APIs, and improve real-time analytics.
+  
   \item Give a brief overview of other design solutions you considered.  What
   are the benefits and tradeoffs of those other designs compared with the chosen
   design?  From all the potential options, why did you select the documented design?
+  
+  Awurama: We considered using a non-relational database and different frontend frameworks but chose Django/MySQL and React 
+  for reliability and maintainability. Alternatives offered flexibility but added complexity and reduced team familiarity.
+
   (LO\_Explores)
 \end{enumerate}
 

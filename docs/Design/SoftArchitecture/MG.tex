@@ -8,6 +8,8 @@
 \usepackage{graphicx}
 \usepackage{float}
 \usepackage{hyperref}
+\usepackage{longtable, booktabs}
+
 \hypersetup{
     colorlinks,
     citecolor=blue,
@@ -43,13 +45,16 @@
 
 \section{Revision History}
 
-\begin{tabularx}{\textwidth}{p{3cm}p{2cm}X}
-\toprule {\bf Date} & {\bf Version} & {\bf Notes}\\
+\begin{table}[hp]
+\caption{Revision History} \label{MgRevHis}
+\begin{tabularx}{\textwidth}{llX}
+\toprule
+\textbf{Date} & \textbf{Developer(s)} & \textbf{Change}\\
 \midrule
-Date 1 & 1.0 & Notes\\
-Date 2 & 1.1 & Notes\\
+Nov 3, 2025 & Fei & Rev -1\\
 \bottomrule
 \end{tabularx}
+\end{table}
 
 \newpage
 
@@ -72,9 +77,16 @@ This section records information for easy reference.
   R & Requirement\\
   SC & Scientific Computing \\
   SRS & Software Requirements Specification\\
-  \progname & Explanation of program name\\
+  \progname & Software Engineering Capstone Project\\
   UC & Unlikely Change \\
-  \wss{etc.} & \wss{...}\\
+  AHP & Analytical Hierarchy Process \\ 
+  BWM & Best-Worst Method \\
+  SSB & Skew-Symmetric Bilinear \\ 
+  Domain & Research Software Domain \\
+  Packages & Software Packages \\  
+  API & Application Programming Interface \\
+  ADT & Abstract Data Type\\
+  POC & Proof of Concept\\
   \bottomrule
 \end{tabular}\\
 
@@ -157,17 +169,15 @@ adapted here is called design for
 change.
 
 \begin{description}
-\item[\refstepcounter{acnum} \actheacnum \label{acHardware}:] The specific
-  hardware on which the software is running.
-\item[\refstepcounter{acnum} \actheacnum \label{acInput}:] The format of the
-  initial input data.
-\item ...
+  \item[\refstepcounter{acnum} \actheacnum \label{ac1}:] The metrics used to assess a domain's state of practice may be updated (e.g. Addition of new metrics, such as code coverage percentage)
+  \item[\refstepcounter{acnum} \actheacnum \label{ac2}:] The system should support extension to user authentication (e.g. Using two-factor authentication on top of username and password)
+  \item[\refstepcounter{acnum} \actheacnum \label{ac3}:] The ranking algorithm used within a domain for packages may be changed (e.g. Alternatives to AHP, such as BWM, SSB, etc)
+  \item[\refstepcounter{acnum} \actheacnum \label{ac4}:] The comparison algorithms used between domains may be changed
+  \item[\refstepcounter{acnum} \actheacnum \label{ac5}:] The user access roles available might be expanded (e.g. Admin, User, Contributor)
+  \item[\refstepcounter{acnum} \actheacnum \label{ac6}:] The APIs used to extract repository metrics
+  \item[\refstepcounter{acnum} \actheacnum \label{ac7}:] The visualization libraries used to display data
+  \item[\refstepcounter{acnum} \actheacnum \label{ac8}:] Additional export and import file formatting may be added (e.g. CSV, Excel)
 \end{description}
-
-\wss{Anticipated changes relate to changes that would be made in requirements,
-design or implementation choices.  They are not related to changes that are made
-at run-time, like the values of parameters.}
-
 \subsection{Unlikely Changes} \label{SecUchange}
 
 The module design should be as general as possible. However, a general system is
@@ -178,9 +188,11 @@ will potentially need to be modified. Hence, it is not intended that these
 decisions will be changed.
 
 \begin{description}
-\item[\refstepcounter{ucnum} \uctheucnum \label{ucIO}:] Input/Output devices
-  (Input: File and/or Keyboard, Output: File, Memory, and/or Screen).
-\item ...
+  \item[\refstepcounter{ucnum} \uctheucnum \label{uc1}:] The schema structure of our domain and metrics systems are designed for long-term use and allows for the addition of new metric types
+  \item[\refstepcounter{ucnum} \uctheucnum \label{uc2}:] The platform of the tool will remain as a web application
+  \item[\refstepcounter{ucnum} \uctheucnum \label{uc3}:] The development stack of our web application will remain the same (\href{https://react.dev/}{React}, \href{https://www.djangoproject.com/}{Django})
+  \item[\refstepcounter{ucnum} \uctheucnum \label{uc4}:] Input types of existing metrics, as outlined in the methodology paper (\citet{MethodologyPaper})
+  \item[\refstepcounter{ucnum} \uctheucnum \label{uc5}:] Tool owner, Dr. Spencer Smith, is not expected to change for the duration of the tool's lifespan
 \end{description}
 
 \section{Module Hierarchy} \label{SecMH}
@@ -191,8 +203,27 @@ below, which are leaves in the hierarchy tree, are the modules that will
 actually be implemented.
 
 \begin{description}
-\item [\refstepcounter{mnum} \mthemnum \label{mHH}:] Hardware-Hiding Module
-\item ...
+\item [\refstepcounter{mnum} \mthemnum \label{mHH1}:] Hardware Hiding Module
+\item [\refstepcounter{mnum} \mthemnum \label{mHH2}:] Browser Module
+\item [\refstepcounter{mnum} \mthemnum \label{mAppUI}:] Application UI Module Module
+\item [\refstepcounter{mnum} \mthemnum \label{mDataEdit}:] Data Edit Module
+\item [\refstepcounter{mnum} \mthemnum \label{mUserAuth}:] User Authentication Module
+\item [\refstepcounter{mnum} \mthemnum \label{mUserRole}:] User Role Access Module
+\item [\refstepcounter{mnum} \mthemnum \label{mUserPage}:] User Page Module
+\item [\refstepcounter{mnum} \mthemnum \label{mAutMetrics}:] Automated Metrics
+\item [\refstepcounter{mnum} \mthemnum \label{mDomainsPage}:] Domains Page Module
+\item [\refstepcounter{mnum} \mthemnum \label{mSysApi}:] System API Gateway Module
+\item [\refstepcounter{mnum} \mthemnum \label{mRankAlgo}:] Ranking Algorithm Module
+\item [\refstepcounter{mnum} \mthemnum \label{mGraphing}:] Graphing Module
+\item [\refstepcounter{mnum} \mthemnum \label{mImport}:] File Import Module
+\item [\refstepcounter{mnum} \mthemnum \label{mExport}:] File Export Module
+\item [\refstepcounter{mnum} \mthemnum \label{mRepoAPI}:] Repository API Module
+\item [\refstepcounter{mnum} \mthemnum \label{mCompare}:] Comparison Module
+\item [\refstepcounter{mnum} \mthemnum \label{mDB}:] Database Persistence Module
+\item [\refstepcounter{mnum} \mthemnum \label{mLog}:] Logging Module
+\item [\refstepcounter{mnum} \mthemnum \label{mConf}:] Configuration Module
+
+
 \end{description}
 
 
@@ -203,22 +234,27 @@ actually be implemented.
 \textbf{Level 1} & \textbf{Level 2}\\
 \midrule
 
-{Hardware-Hiding Module} & ~ \\
+{Hardware-Hiding Module} & Browser Module\\
+\midrule
+\multirow{7}{0.3\textwidth}{Behaviour-Hiding Module} &  Domains Page Module \\
+& Application UI Module \\
+& Data Edit Module \\
+& User Authentication Module\\
+& User Role Access Module\\
+& User Page Module \\
+& Automated Metrics Module\\
+& Comparison Module \\
+& Configuration Module \\
 \midrule
 
-\multirow{7}{0.3\textwidth}{Behaviour-Hiding Module} & ?\\
-& ?\\
-& ?\\
-& ?\\
-& ?\\
-& ?\\
-& ?\\ 
-& ?\\
-\midrule
-
-\multirow{3}{0.3\textwidth}{Software Decision Module} & {?}\\
-& ?\\
-& ?\\
+\multirow{3}{0.3\textwidth}{Software Decision Module} & {System API Gateway Module}\\
+& Ranking Algorithm Module\\
+& Graphing Module\\
+& File Import Module\\
+& File Export Module\\
+& Repository API Module\\
+& Database Persistence Module \\
+& Logging Module \\
 \bottomrule
 
 \end{tabular}
@@ -231,13 +267,6 @@ actually be implemented.
 The design of the system is intended to satisfy the requirements developed in
 the SRS. In this stage, the system is decomposed into modules. The connection
 between requirements and modules is listed in Table~\ref{TblRT}.
-
-\wss{The intention of this section is to document decisions that are made
-  ``between'' the requirements and the design.  To satisfy some requirements,
-  design decisions need to be made.  Rather than make these decisions implicit,
-  they are explicitly recorded here.  For instance, if a program has security
-  requirements, a specific design decision may be made to satisfy those
-  requirements with a password.}
 
 \section{Module Decomposition} \label{SecMD}
 
@@ -255,15 +284,21 @@ Only the leaf modules in the hierarchy have to be implemented. If a dash
 (\emph{--}) is shown, this means that the module is not a leaf and will not have
 to be implemented.
 
-\subsection{Hardware Hiding Modules (\mref{mHH})}
-
+\subsection{Hardware Hiding Modules (\mref{mHH1})}
 \begin{description}
-\item[Secrets:]The data structure and algorithm used to implement the virtual
+\item[Secrets:] The data structure and algorithm used to implement the virtual
   hardware.
-\item[Services:]Serves as a virtual hardware used by the rest of the
+\item[Services:] Serves as a virtual hardware used by the rest of the
   system. This module provides the interface between the hardware and the
   software. So, the system can use it to display outputs or to accept inputs.
 \item[Implemented By:] OS
+\end{description}
+
+\subsubsection{Browser Module (\mref{mHH2})}
+\begin{description}
+\item[Secrets:] The data structure and algorithm used to implement the browser, which is outside of the scope of the project.
+\item[Services:] The browser allows all users of the product to view and retrieve the project through the internet, and displays the contents for use.
+\item[Implemented By:] Web browser
 \end{description}
 
 \subsection{Behaviour-Hiding Module}
@@ -271,29 +306,88 @@ to be implemented.
 \begin{description}
 \item[Secrets:]The contents of the required behaviours.
 \item[Services:]Includes programs that provide externally visible behaviour of
-  the system as specified in the software requirements specification (SRS)
+  the system as specified in the software requirements specification (\href{https://github.com/thaafei/DomainX/blob/main/docs/SRS/SRS.pdf}{SRS})
   documents. This module serves as a communication layer between the
   hardware-hiding module and the software decision module. The programs in this
   module will need to change if there are changes in the SRS.
 \item[Implemented By:] --
 \end{description}
 
-\subsubsection{Input Format Module (\mref{mInput})}
 
+\subsubsection{ Application UI Module (\mref{mAppUI})}
 \begin{description}
-\item[Secrets:]The format and structure of the input data.
-\item[Services:]Converts the input data into the data structure used by the
-  input parameters module.
-\item[Implemented By:] [Your Program Name Here]
-\item[Type of Module:] [Record, Library, Abstract Object, or Abstract Data Type]
-  [Information to include for leaf modules in the decomposition by secrets tree.]
+\item[Secrets:] The data structures and algorithms to display all visuals.
+\item[Services:] Displays and renders the interactive user interface elements.
+\item[Implemented By:] \href{https://react.dev/}{React}
+\item[Type of Module:] ADT
 \end{description}
 
-\subsubsection{Etc.}
+\subsubsection{ Data Edit Module (\mref{mDataEdit})}
+\begin{description}
+\item[Secrets:] The data structures and algorithms to edit domain data. 
+\item[Services:]  Handles and validates user inputs of domain/package/metric data.
+\item[Implemented By:] \projname
+\item[Type of Module:] ADT
+\end{description}
+
+\subsubsection{ User Authentication Module (\mref{mUserAuth})}
+\begin{description}
+\item[Secrets:] The data structures and algorithms used to securely store, validate and manage user credentials.
+\item[Services:] Provides user registration, login, and session management services.
+\item[Implemented By:]  \projname
+\item[Type of Module:] Library
+\end{description}
+
+\subsubsection{ User Role Access Module (\mref{mUserRole})}
+\begin{description}
+\item[Secrets:] The data structures and algorithms used to store and validate users access level within the system.
+\item[Services:] Provides user role and capabilities related to the role.
+\item[Implemented By:]  \projname
+\item[Type of Module:] ADT
+\end{description}
+
+\subsubsection{User Page Module (\mref{mUserPage})}
+\begin{description}
+\item[Secrets:] The algorithms and components used to display the interactive user settings page.
+\item[Services:] Displays user settings where user can update their settings and view information related to their account profile.
+\item[Implemented By:] \projname
+\item[Type of Module:] Abstract Object
+\end{description}
+
+\subsubsection{ Automated Metrics Module (\mref{mAutMetrics})}
+\begin{description}
+\item[Secrets:] The data structures and algorithms used for adding automatable metrics.
+\item[Services:] Handles the automated data entry into system using the Repository Api Module \mref{mRepoAPI}.
+\item[Implemented By:]  \projname
+\item[Type of Module:] Library
+\end{description}
+
+\subsubsection{ Domains Page Module (\mref{mDomainsPage})}
+\begin{description}
+\item[Secrets:] The algorithms and components used to display domain management data.
+\item[Services:] Displays available domains and the domain contents, including it's corresponding packages, metrics, description.
+\item[Implemented By:] \projname
+\item[Type of Module:] ADT
+\end{description}
+
+\subsubsection{Comparison Module (\mref{mCompare})}
+\begin{description}
+\item[Secrets:] The data structures and algorithm that store the package comparison methods.
+\item[Services:] Defines available comparison methods based on user request.
+\item[Implemented By:] \projname
+\item[Type of Module:] Abstract Object
+\end{description}
+
+\subsubsection{Configuration Module (\mref{mConf})}
+\begin{description}
+\item[Secrets:] The data structures and algorithm that stores each individual user.
+\item[Services:] Using the user authentication and provides interface to retrieve and update user information.
+\item[Implemented By:] \projname
+\item[Type of Module:] Abstract Object
+\end{description}
 
 
 \subsection{Software Decision Module}
-
 \begin{description}
 \item[Secrets:] The design decision based on mathematical theorems, physical
   facts, or programming considerations. The secrets of this module are
@@ -305,37 +399,219 @@ to be implemented.
 \item[Implemented By:] --
 \end{description}
 
-\subsubsection{Etc.}
+\subsubsection{System API Gateway Module (\mref{mSysApi})}
+\begin{description}
+\item[Secrets:] The backend apis that services the flow of business logic.
+\item[Services:] Manages application state and serves as the central communication hub for the system.
+\item[Implemented By:] \href{https://www.djangoproject.com/}{Django}
+\item[Type of Module:] Abstract Object
+\end{description}
+
+
+\subsubsection{Ranking Algorithm Module (\mref{mRankAlgo})}
+\begin{description}
+\item[Secrets:] AHP ranking algorithm used for package comparison.
+\item[Services:] Computes comparative rankings using configurable methods and outputs the result.
+\item[Implemented By:] \href{https://pypi.org/project/AHPy/}{AHPy}
+\item[Type of Module:] Abstract Object
+\end{description}
+
+\subsubsection{Graphing Module (\mref{mGraphing})}
+\begin{description}
+\item[Secrets:] The data structures and algorithms used for graphing data.
+\item[Services:] Takes metric data as input and outputs requested graphs.
+\item[Implemented By:] \href{https://pypi.org/project/matplotlib/}{Matplotlib}
+\item[Type of Module:] Abstract Object
+\end{description}
+
+\subsubsection{File Import Module (\mref{mImport})}
+\begin{description}
+\item[Secrets:] The data structures and algorithms used to import data of varying formats (e.g. Excel, CSV).
+\item[Services:] Facilitates the process of processing a inputted file into data for use by the rest of the system.
+\item[Implemented By:] \href{https://pypi.org/project/pandas/}{pandas}
+\item[Type of Module:] Abstract Object
+\end{description}
+
+\subsubsection{File Export Module (\mref{mExport})}
+\begin{description}
+\item[Secrets:] The data structures and algorithms used to export data in varying formats (e.g. Excel, CSV).
+\item[Services:] Facilitates the process of transforming system data into an exportable format (e.g. Excel, CSV).
+\item[Implemented By:] \href{https://pypi.org/project/pandas/}{pandas}
+\item[Type of Module:] Abstract Object
+\end{description}
+
+\subsubsection{Repository API Module (\mref{mRepoAPI})}
+\begin{description}
+\item[Secrets:] API endpoints, tokens, and rate limit strategies.
+\item[Services:] Fetches metrics and metadata from external repositories (e.g., GitHub, GitLab).
+\item[Implemented By:] \href{https://docs.github.com/en/rest?apiVersion=2022-11-28}{Github API}
+\item[Type of Module:] Library
+\end{description}
+
+\subsubsection{Database Persistence Module (\mref{mDB})}
+\begin{description}
+\item[Secrets:] The algorithms used for interacting with the database.
+\item[Services:] Provides database methods related to updating and querying the stored data and the connection to the database itself. The expected database design is shown in Figure \ref{fig:databaseschema}
+\item[Implemented By:] \href{https://www.mysql.com/}{MySQL}
+\item[Type of Module:] Library
+\end{description}
+
+\subsubsection{Logging Module (\mref{mLog})}
+\begin{description}
+\item[Secrets:] The algorithms and parameters used for logging all interactions that happens with the system.
+\item[Services:] Provides logging capabilities and logs user actions and system actions, provides a way to retrieve logged details.
+\item[Implemented By:] \href{https://docs.python.org/3/library/logging.html}{Logging (Python)}
+\item[Type of Module:] Abstract Object
+\end{description}
+
 
 \section{Traceability Matrix} \label{SecTM}
 
 This section shows two traceability matrices: between the modules and the
 requirements and between the modules and the anticipated changes.
-
-% the table should use mref, the requirements should be named, use something
-% like fref
 \begin{table}[H]
 \centering
 \begin{tabular}{p{0.2\textwidth} p{0.6\textwidth}}
 \toprule
 \textbf{Req.} & \textbf{Modules}\\
 \midrule
-R1 & \mref{mHH}, \mref{mInput}, \mref{mParams}, \mref{mControl}\\
-R2 & \mref{mInput}, \mref{mParams}\\
-R3 & \mref{mVerify}\\
-R4 & \mref{mOutput}, \mref{mControl}\\
-R5 & \mref{mOutput}, \mref{mODEs}, \mref{mControl}, \mref{mSeqDS}, \mref{mSolver}, \mref{mPlot}\\
-R6 & \mref{mOutput}, \mref{mODEs}, \mref{mControl}, \mref{mSeqDS}, \mref{mSolver}, \mref{mPlot}\\
-R7 & \mref{mOutput}, \mref{mEnergy}, \mref{mControl}, \mref{mSeqDS}, \mref{mPlot}\\
-R8 & \mref{mOutput}, \mref{mEnergy}, \mref{mControl}, \mref{mSeqDS}, \mref{mPlot}\\
-R9 & \mref{mVerifyOut}\\
-R10 & \mref{mOutput}, \mref{mODEs}, \mref{mControl}\\
-R11 & \mref{mOutput}, \mref{mODEs}, \mref{mEnergy}, \mref{mControl}\\
+FR1 & \mref{mUserPage}\\
+FR2 & \mref{mUserAuth}, \mref{mUserPage}\\
+FR3 & \mref{mUserAuth}\\
+FR4 & \mref{mConf}\\
+FR5 & \mref{mDomainsPage}, \mref{mUserRole} \\
+FR6 & \mref{mDomainsPage} \\
+FR7 & \mref{mDataEdit}, \mref{mDB}, \mref{mExport} \\
+FR8 & \mref{mDataEdit} \\
+FR9 & \mref{mImport} \\
+FR10 & \mref{mAutMetrics}, \mref{mRepoAPI}\\
+FR11 & \mref{mDomainsPage}\\
+FR12 & \mref{mRankAlgo}, \mref{mCompare}\\
+FR13 & \mref{mGraphing}\\
+FR14 & \mref{mExport}\\
+FR15 & \mref{mGraphing}, \mref{mExport}\\
 \bottomrule
 \end{tabular}
-\caption{Trace Between Requirements and Modules}
-\label{TblRT}
+\caption{Trace Between Functional Requirements and Modules}
+\label{tb_fr_modules}
 \end{table}
+
+Table \ref{tb_fr_modules} shows the traceability between the functional requirements and the modules. Note that \mref{mAppUI}, \mref{mSysApi} and \mref{mLog} is applicable to all, since they facilitate the information flow and user interaction for all the listed functional requirements and all functional requirements interactions will be logged.
+
+\begin{longtable}{p{0.2\textwidth} p{0.6\textwidth}}
+\toprule
+\textbf{Req.} & \textbf{Modules}\\
+\midrule
+\endfirsthead
+\toprule
+\textbf{Req.} & \textbf{Modules (continued)}\\
+\midrule
+\endhead
+\bottomrule
+\endfoot
+LF-AR1 & \mref{mAppUI}\\
+LF-AR2 & \mref{mHH2}, \mref{mSysApi}\\
+LF-AR3 & \mref{mAppUI}, \mref{mGraphing}, \mref{mSysApi}\\
+LF-AR4 & \mref{mAppUI}, \mref{mDomainsPage}\\
+LF-AR5 & \mref{mAppUI}\\
+LF-AR6 & \mref{mAppUI}\\
+LF-SR1 & \mref{mAppUI}\\
+LF-SR2 & \mref{mGraphing}\\
+LF-SR3 & \mref{mAppUI},\\
+UH-EU1 & \mref{mAppUI}\\
+UH-EU2 & \mref{mAppUI}\\
+UH-EU3 & \mref{mAppUI}\\
+UH-LR1 & \mref{mAppUI}\\
+UH-LR2 & \mref{mAppUI}, \mref{mDomainsPage}\\
+UH-UP1 & \mref{mAppUI}, \mref{mDomainsPage}\\
+UH-UP2 & \mref{mAppUI}, \mref{mDomainsPage}\\
+UH-UP3 & \mref{mAppUI}\\
+UH-AR1 & \mref{mAppUI}\\
+UH-AR2 & \mref{mAppUI}\\
+PR-SL1 & \mref{mCompare}\\
+PR-SC1 & \mref{mUserAuth}\\
+PR-SC2 & \mref{mUserAuth}, \mref{mConf}\\
+PR-SC3 & \mref{mUserRole}, \mref{mDataEdit}\\
+PR-PA1 & \mref{mAutMetrics}\\
+PR-RFT1 & \mref{mSysApi}\\
+PR-RFT2 & \mref{mDB}\\
+PR-RFT3 & \mref{mDB}\\
+PR-CR1 & \mref{mSysApi}\\
+PR-CR2 & \mref{mDB}\\
+PR-CR3 & \mref{mSysApi}, \mref{mDB}\\
+PR-SE1 & \mref{mAppUI}, \mref{mSysApi}, \mref{mDB}\\
+PR-SE2 & \mref{mUserAuth}, \mref{mUserRole} \\
+PR-LR1 & \mref{mSysApi}, \mref{mDB}\\
+PR-LR2 & \mref{mDB}\\
+OE-EPE1 & \mref{mSysApi}\\
+OE-EPE2 & \mref{mHH1}, \mref{mHH2}\\
+OE-EPE3 & \mref{mHH1}\\
+OE-WE1 & \mref{mHH2}, \mref{mSysApi}, \mref{mRepoAPI}\\
+OE-WE2 & \mref{mHH1}\\
+OE-WE3 & \mref{mHH2}\\
+OE-IA1 & \mref{mRepoAPI}\\
+OE-IA2 & \mref{mDB}\\
+OE-IA3 & \mref{mGraphing}\\
+OE-IA4 & \mref{mSysApi}, \mref{mRepoAPI}\\
+OE-PR1 & Not Relevant \\
+OE-PR2 & Not Relevant \\
+OE-PR3 & Not Relevant \\
+OE-PR4 & \mref{mExport}, \mref{mGraphing} \\
+OE-RR1 & Not Relevant \\
+OE-RR2 & Not Relevant \\
+OE-RR3 & Not Relevant \\
+OE-RR4 & Not Relevant \\
+MS-MR1 & Not Relevant \\
+MS-MR2 & Not Relevant \\
+MS-MR3 & Not Relevant \\
+MS-MR4 & Not Relevant \\
+MS-MR5 & Not Relevant \\
+MS-MR6 & Not Relevant \\
+MS-MR7 & \mref{mLog}, \mref{mDataEdit} \\
+MS-MR8 & \mref{mAppUI}, \mref{mSysApi}, \mref{mRepoAPI}, \mref{mDB}\\
+MS-SR1 & Not Relevant \\
+MS-SR2 & Not Relevant \\
+MS-SR3 & \mref{mLog} \\
+MS-SR4 & Not Relevant \\
+MS-AR1 & \mref{mSysApi}\\
+MS-AR2 & \mref{mDB}\\
+MS-AR3 & \mref{mRepoAPI}\\
+MS-AR4 & \mref{mHH1}, \mref{mHH2}, \mref{mSysApi}\\
+MS-AR5 & \mref{mSysApi}, \mref{mAppUI}, \mref{mDB}\\
+SR-AC1 & \mref{mUserRole}, \mref{mDomainsPage}\\
+SR-AC2 & \mref{mUserRole}\\
+SR-AC3 & \mref{mConf}, \mref{mUserRole}\\
+SR-AC4 & \mref{mUserRole}\\
+SR-AC5 & \mref{mAppUI}\\
+SR-AC6 & \mref{mRepoAPI}, \mref{mDB}\\
+SR-INT1 & \mref{mDataEdit}\\
+SR-INT2 & \mref{mDB}\\
+SR-INT3 & \mref{mDataEdit}, \mref{mDB}\\
+SR-INT4 & \mref{mAppUI}, \mref{mDataEdit}, \mref{mAutMetrics}, \mref{mDB}\\
+SR-INT5 & \mref{mDB}, \mref{mLog}\\
+SR-INT6 & \mref{mDataEdit}\\
+SR-INT7 & \mref{mExport}, \mref{mSysApi}, \mref{mAppUI}\\
+SR-P1 & \mref{mDB}, \mref{mUserAuth}, \mref{mConf}\\
+SR-P2 & \mref{mDB}, \mref{mUserAuth}, \mref{mConf}\\
+SR-AU1 & \mref{mDB}, \mref{mLog}\\
+SR-AU2 & \mref{mLog}\\
+SR-AU3 & \mref{mLog}, \mref{mUserRole}\\
+SR-IM1 & \mref{mDB}\\
+SR-IM2 & \mref{mAppUI}\\
+SR-IM3 & \mref{mRepoAPI}\\
+SR-IM3 & Not Relevant \\
+CU-CR1 & \mref{mAppUI}\\
+CU-CR2 & \mref{mAppUI}\\
+CU-CR3 & \mref{mAppUI}\\
+CU-CR4 & Not Relevant \\ 
+CR-LR1 & Not Relevant \\ 
+CR-LR2 & Not Relevant \\ 
+CR-LR3 & Not Relevant \\ 
+\bottomrule
+\caption{Trace Between Non-Functional Requirements and Modules}
+\label{tnf_modules}
+\end{longtable}
+Table \ref{tnf_modules} shows the traceability between the non-functional requirements and the modules.
 
 \begin{table}[H]
 \centering
@@ -343,23 +619,27 @@ R11 & \mref{mOutput}, \mref{mODEs}, \mref{mEnergy}, \mref{mControl}\\
 \toprule
 \textbf{AC} & \textbf{Modules}\\
 \midrule
-\acref{acHardware} & \mref{mHH}\\
-\acref{acInput} & \mref{mInput}\\
-\acref{acParams} & \mref{mParams}\\
-\acref{acVerify} & \mref{mVerify}\\
-\acref{acOutput} & \mref{mOutput}\\
-\acref{acVerifyOut} & \mref{mVerifyOut}\\
-\acref{acODEs} & \mref{mODEs}\\
-\acref{acEnergy} & \mref{mEnergy}\\
-\acref{acControl} & \mref{mControl}\\
-\acref{acSeqDS} & \mref{mSeqDS}\\
-\acref{acSolver} & \mref{mSolver}\\
-\acref{acPlot} & \mref{mPlot}\\
+\acref{ac1} & \mref{mDataEdit}, \mref{mDB}, \mref{mDomainsPage}\\
+\acref{ac2} & \mref{mUserAuth}\\
+\acref{ac3} & \mref{mRankAlgo}\\
+\acref{ac4} & \mref{mCompare}\\
+\acref{ac5} & \mref{mUserRole}, \mref{mUserPage}, \mref{mConf}\\
+\acref{ac6} & \mref{mRepoAPI}, \mref{mAutMetrics}\\
+\acref{ac7} & \mref{mGraphing}\\
+\acref{ac8} & \mref{mExport},  \mref{mImport}\\
 \bottomrule
 \end{tabular}
 \caption{Trace Between Anticipated Changes and Modules}
 \label{TblACT}
 \end{table}
+Table \ref{TblACT} shows the traceability between the anticipated changes and the modules. \\
+Note that \mref{mAppUI} and \mref{mSysApi} is applicable to all the anticipated changes, since they cover the data flow and user interface for the system.
+\mref{mLog} is also applicable to all, since changes to the underlying modules could impact the logging module.
+\\ Since \acref{ac1} can result in additional metrics, the main page that would display the domain would have to change (\mref{mDomainsPage}), the underlying methods involved in updating the data (\mref{mDataEdit}) and database itself (\mref{mDB}).
+\\ \acref{ac5} touches on what the user can see, if additional roles are added, the user page UI must be updated (\mref{mUserPage}). The configuration to store each user's preference (\mref{mConf}) and role will also be updated (\mref{mUserRole}).
+\\ To account for \acref{ac6}, the underlying API will need to be updated (\mref{mRepoAPI}), and the data retrieved from the new API might differ (\mref{mAutMetrics}).
+
+
 
 \section{Use Hierarchy Between Modules} \label{SecUse}
 
@@ -374,42 +654,117 @@ the modules. It can be seen that the graph is a directed acyclic graph
 system, and modules in the higher level of the hierarchy are essentially simpler
 because they use modules from the lower levels.
 
-\wss{The uses relation is not a data flow diagram.  In the code there will often
-be an import statement in module A when it directly uses module B.  Module B
-provides the services that module A needs.  The code for module A needs to be
-able to see these services (hence the import statement).  Since the uses
-relation is transitive, there is a use relation without an import, but the
-arrows in the diagram typically correspond to the presence of import statement.}
-
-\wss{If module A uses module B, the arrow is directed from A to B.}
-
 \begin{figure}[H]
 \centering
-%\includegraphics[width=0.7\textwidth]{UsesHierarchy.png}
+\includegraphics[width=0.7\textwidth]{images/UsesHierarchy.png}
 \caption{Use hierarchy among modules}
 \label{FigUH}
 \end{figure}
 
-%\section*{References}
-
 \section{User Interfaces}
 
-\wss{Design of user interface for software and hardware.  Attach an appendix if
-needed. Drawings, Sketches, Figma}
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.7\textwidth]{images/ui1.png}
+\caption{Main domain summary view page}
+\label{FigUI1}
+\end{figure}
+Figure \ref{FigUI1} shows the main page users of any role can see. This page allows the user to filter published domains, compare domains, and view domain details. The summary view of the domain allows users to quickly view the graphs associated with the data.
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.7\textwidth]{images/ui6.png}
+\caption{Main domain data view page}
+\label{FigUI2}
+\end{figure}
+Figure \ref{FigUI2} shows the secondary source view of a domain. This allows users to see the underlying metric data used to display the graphs from the summary view.
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.7\textwidth]{images/ui2.png}
+\caption{Domain editing}
+\label{FigUI3}
+\end{figure}
+Figure \ref{FigUI3} shows the domain editing view accessible for collaborator roles and above (admin, super admin). This page allows user to enter metric data manually and triggering the automation tool to input data automatically for the selected packages and metrics. Automatable metrics and data are indicated with a different colour.
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.7\textwidth]{images/ui3.png}
+\caption{Domain management (collaborator role)}
+\label{FigUI4}
+\end{figure}
+Figure \ref{FigUI4} shows the domain management page that a collaborator can see. This page allows them to quickly glance information about the domains they are working on, and the current process of the domains. As well as the option to publish domains.
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.7\textwidth]{images/ui4.png}
+\caption{User management (super admin role)}
+\label{FigUI5}
+\end{figure}
+Figure \ref{FigUI5} shows the user management page, this page is visible for admin and super admins. Allows admins to edit the role access level of current users, user information, and sending invites to directly invite users.
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.7\textwidth]{images/ui5.png}
+\caption{Main user information page (viewer role)}
+\label{FigUI6}
+\end{figure}
+Figure \ref{FigUI6} shows the main user information page that any users can see. This apge allows users to set their basic information. Additional side columns are added based on the role access level.
 
 \section{Design of Communication Protocols}
-
-\wss{If appropriate}
-
+N/A
 \section{Timeline}
 
-\wss{Schedule of tasks and who is responsible}
+The following is the timeline for development of the modules, building up from the POC. Issues related to the timeline will be created and tracked through \href{https://github.com/thaafei/DomainX/issues}{Github Issues} and the associated \href{https://github.com/users/thaafei/projects/6}{project board}.
+\begin{longtable}{|p{1.2cm}|p{2.3cm}|p{3cm}|p{8.2cm}|}
+\hline
+\textbf{Week} & \textbf{Dates} & \textbf{Assigned To} & \textbf{Deliverables (Module Focus)} \\ \hline
+\endfirsthead
+\hline
+\textbf{Week} & \textbf{Dates} & \textbf{Assigned To} & \textbf{Deliverables (Module Focus)} \\ \hline
+\endhead
 
-\wss{You can point to GitHub if this information is included there}
+1 & Jan 5 -- Jan 11 & Haniye & Implement \textbf{User Authentication Module (\mref{mUserAuth})} for secure login, registration, token management, and password encryption. \\ \cline{3-4}
+  &  & Ghena & Implement \textbf{User Role Access Module (\mref{mUserRole})} with Admin/Analyst/Viewer roles and middleware for route protection. \\ \cline{3-4}
+  &  & Fei & Setup Logging Module (\mref{mLog}) \\ \cline{3-4}
+  &  & Fei & Setup testing framework \\ \cline{3-4}
+  &  & Awurama & Build User Page (\mref{mUserPage}) \\ \hline
+
+2 & Jan 12 -- Jan 18 & Haniye & Extend backend to support \textbf{Database Persistence (\mref{mDB})}: ORM models, migrations, CRUD operations. \\ \cline{3-4}
+  &  & Ghena & Expand \textbf{System API Gateway (\mref{mSysApi})} to integrate Auth \& Repo APIs, include error-handling layer. \\ \cline{3-4}
+  &  & Awurama & Expand user page with \textbf{configurable functionalities (\mref{mConf})}  based on user role \\ \hline
+
+3 & Jan 19 -- Jan 25 & Awurama & Build \textbf{Application UI Module (\mref{mAppUI})} with global navigation, sidebar, responsive design, and state handling. \\ \cline{3-4}
+  &  & Fei & Implement \textbf{Domains Page Module (\mref{mDomainsPage})} to display domains and metrics with integrated backend data. \\ \cline{3-4}
+  &  & Ghena & Finalize \textbf{Repository API Module (\mref{mRepoAPI})}: error handling, caching, and rate-limit retries. \\ \cline{3-4}
+  &  & Fei & Build \textbf{File Export Module (\mref{mExport})} to export domain data in CSV/XLSX formats. \\ \hline
+
+4 & Jan 26 -- Feb 1 & Awurama & Develop \textbf{File Import Module (\mref{mImport})} to upload, validate, and parse CSV/XLSX files. \\ \cline{3-4}
+  &  & Haniye & Implement \textbf{Automated Metrics Module (\mref{mAutMetrics})} with background job scheduler and automatic metric retrieval. \\ \hline
+
+
+5 & Feb 2 -- Feb 8 & Awurama + Fei & Implement \textbf{Data Edit Module (\mref{mDataEdit})} with React validation, inline feedback, and API integration. \\ \cline{3-4}
+  &  & Ghena & Implement \textbf{Ranking Algorithm Module (\mref{mRankAlgo})} using AHP/BWM/SSB methods with test coverage. \\ \cline{3-4}
+  &  & Haniye & Develop \textbf{Graphing Module (\mref{mGraphing})} for data visualizations using \href{https://pypi.org/project/matplotlib/}{Matplotlib}. \\ \hline
+
+6 & Feb 9 -- Feb 15 & Ghena + Haniye & Build \textbf{Comparison Module (\mref{mCompare})} for cross-domain and in-domain analysis, visualization, and reporting. \\ \cline{3-4}
+  &  & Awurama + Fei & Conduct accessibility and usability testing. \\ \hline
+
+9-11 & Mar 2 -- Mar 23 & Awurama + Fei & Conduct full end-to-end testing; finalize documentation and update traceability links. \\ \cline{3-4}
+&  & All Developers & Code freeze and integration testing; bug fixes, performance optimization, and final release demo. \\ \hline
+
+\end{longtable}
 
 \bibliographystyle {plainnat}
 \bibliography{../../../refs/References}
 
 \newpage{}
-
+    \section*{Appendix A: Database Schema}
+        \begin{figure}[h]
+            \centering
+            \includegraphics[width=0.9\textwidth]{images/DatabaseSchema.png}
+            \caption{Domain X Database Schema}
+            \label{fig:databaseschema}
+        \end{figure}
+\newpage{}
 \end{document}
