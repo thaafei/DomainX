@@ -25,6 +25,9 @@ urlpatterns = [
     path("libraries/create/", create_library, name="create_library"),
     path("libraries/<uuid:library_id>/delete/", delete_library, name="delete_library"),
     path("libraries/<uuid:library_id>/update-values/", update_library_values, name="update_library_values"),
-
-
+    path('database/', include('api.database.urls')),
+    # path('database/libraries/', include('api.database.libraries.urls')),
+    # path('database/metrics/', include('api.database.metrics.urls')),
+    # path('database/library-metrics/', include('api.database.library_metric_values.urls')),
+    # path('database/domain/', include('api.database.domain.urls')),
 ]

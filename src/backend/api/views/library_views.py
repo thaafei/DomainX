@@ -1,6 +1,8 @@
+import threading
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
 from rest_framework import status
+from api.database.services import RepoAnalyzer
 
 from ..models import (
     Domain,
@@ -11,13 +13,35 @@ from ..models import (
 
 from ..serializers import LibrarySerializer
 
-
+def run_repo_analysis_in_background(library, repo_url):
+    try:
+        analyzer = RepoAnalyzer(repo_url)
+        analysis_results = analyzer.run_analysis_and_get_data()
+        metrics_data = analysis_results.get("metric_data", {})
+        if metrics_data:
+            update_library_metrics(library, metrics_data)
+        print("Background GitHub analysis finished.")
+    except Exception as e:
+        print(f"Error during repository analysis: {e}")
 @api_view(["GET"])
 def list_libraries(request, domain_id):
     libraries = Library.objects.filter(Domain__pk=domain_id)
     serializer = LibrarySerializer(libraries, many=True)
     return Response({"libraries": serializer.data})
 
+def update_library_metrics(library, metrics_data):
+    if not isinstance(metrics_data, dict):
+        return
+    for metric_name, value in metrics_data.items():
+        try:
+            metric = Metric.objects.get(Metric_Name=metric_name)
+        except Metric.DoesNotExist:
+            continue
+        LibraryMetricValue.objects.update_or_create(
+            Library=library,
+            Metric=metric,
+            defaults={"Value": value}
+        )    
 
 @api_view(["POST"])
 def create_library(request):
@@ -32,10 +56,53 @@ def create_library(request):
 
     serializer = LibrarySerializer(data=request.data)
     if serializer.is_valid():
-        serializer.save(Domain=domain)
-        return Response({"library": serializer.data}, status=status.HTTP_201_CREATED)
-
+        new_library = serializer.save(Domain=domain)
+        repo_url = request.data.get("Repository_URL")
+        metrics_data = {}
+        if repo_url:
+            threading.Thread(
+                target=run_repo_analysis_in_background,
+                args=(new_library, repo_url),
+                daemon=True
+            ).start()
+        if metrics_data:
+            update_library_metrics(new_library, metrics_data)
+        return Response({"library": serializer.data, "message": "Library created. GitHub analysis is running in background."}, status=status.HTTP_201_CREATED)
+    
     return Response({"error": serializer.errors}, status=status.HTTP_400_BAD_REQUEST)
+
+# @api_view(["POST"])
+# def create_library(request):
+#     domain_id = request.data.get("Domain")
+#     if not domain_id:
+#         return Response({"error": "Domain ID is required"}, status=status.HTTP_400_BAD_REQUEST)
+
+#     try:
+#         domain = Domain.objects.get(pk=domain_id)
+#     except Domain.DoesNotExist:
+#         return Response({"error": "Invalid Domain ID"}, status=status.HTTP_400_BAD_REQUEST)
+
+#     serializer = LibrarySerializer(data=request.data)
+#     if serializer.is_valid():
+#         serializer.save(Domain=domain)
+#         # return Response({"library": serializer.data}, status=status.HTTP_201_CREATED)
+#     # try:
+#     analyzer = RepoAnalyzer(request.data.get("Repository_URL"))
+#     analysis_results = analyzer.run_analysis_and_get_data()
+#     # except Exception as e:
+#     #     error = e
+#     for metric_name, value in analysis_results['metric_data'].items():
+#         try:
+#             metric = Metric.objects.get(Metric_Name=metric_name)
+#         except Metric.DoesNotExist:
+#             continue  #ignore unrecognized metric names
+
+#         LibraryMetricValue.objects.update_or_create(
+#             Library=library,
+#             Metric=metric,
+#             defaults={"Value": value}
+#         )
+#     return Response({"error": serializer.errors}, status=status.HTTP_400_BAD_REQUEST)
 
 
 @api_view(["DELETE"])
