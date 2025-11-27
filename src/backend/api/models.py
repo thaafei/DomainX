@@ -20,7 +20,7 @@ class Library(models.Model):
     Domain = models.ForeignKey(Domain, on_delete=models.CASCADE, related_name='libraries')
     Library_Name = models.CharField(max_length=100)
     Repository_URL = models.CharField(max_length=255, blank=True, null=True)
-    Programming_Language = models.CharField(max_length=50, blank=True)
+    Programming_Language = models.CharField(max_length=50, blank=True,null=True)
     Created_At = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
@@ -49,7 +49,7 @@ class LibraryMetricValue(models.Model):
     Value_ID = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     Library = models.ForeignKey(Library, on_delete=models.CASCADE)
     Metric = models.ForeignKey(Metric, on_delete=models.CASCADE)
-    Value = models.TextField()
+    Value = models.TextField(blank=True,null=True)
     Collected_By = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True)
     Last_Modified = models.DateTimeField(auto_now=True)
 
