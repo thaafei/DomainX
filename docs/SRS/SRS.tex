@@ -16,6 +16,7 @@
 \usepackage{xcolor,colortbl}
 \usepackage{placeins}
 
+
 \captionsetup{font=small,labelfont=bf}
 \newcolumntype{Y}{>{\raggedright\arraybackslash}X} 
 \newcolumntype{Z}{>{\centering\arraybackslash}p{1.6cm}}
@@ -49,6 +50,8 @@
 \textbf{Date} & \textbf{Developer(s)} & \textbf{Change}\\
 \midrule
 October 10, 2025 & Whole team & Initial v0 Draft\\
+\midrule
+December 28, 2025 & Fei & Update based on TA and Peer Review \href{https://github.com/thaafei/DomainX/pull/254}{feedback issues}\\
 \bottomrule
 \end{tabularx}
 \end{table}
@@ -58,9 +61,12 @@ October 10, 2025 & Whole team & Initial v0 Draft\\
 \tableofcontents
 
 ~\newpage
+\pagenumbering{arabic}
+
 \section{Purpose of the Project}
+The reason for building Domain Comparison Tool can be found in the sections below.
 \subsection{User Business}
-The “methodology to assess the state of best practice for Domain X” paper, outlines a series of systematic steps to assess the state of best practice for a particular domain.
+The “methodology to assess the state of best practice for Domain X” paper \cite{MethodologyPaper}, outlines a series of systematic steps to assess the state of best practice for a particular domain.
 However, the process of data gathering is dependent on the student themselves. Current practice involves numerous Excel sheets, and ad-hoc scripts to compile and generate the required tables and graphs.
 This method is extremely tedious, with lots of manual data entering, and information on prior domains are scattered, with no dedicated central storage.
 To assist in the creation of this paper, we will create a reusable tool, whose main purpose is to simplify the process of gathering, visualizing and storing the data. This tool will then be reusable for future domains. 
@@ -82,6 +88,7 @@ The tool should allow for multiple users to use the tool simultaneously and cont
 \section{Stakeholders}
 The following section contains the stakeholders of the project.
 \subsection{Client}
+The main users for the tool, and the individuals who requested it.
 \subsubsection{Dr. Spencer Smith}\label{smith}
 Our supervisor, Dr. Spencer Smith is the product owner of the tool.
 They are responsible for providing the main features requested, as well has having the final say in the presentation and features of the tool during the team's weekly check-in.
@@ -90,18 +97,21 @@ When the tool is live, they will also have administrative access and manages the
 The research subteam will be actively using the tool. They are responsible for providing feedback to the product subteam on any pain points experienced while using the tool.
 As well as assessing if the tool makes the current data gathering process easier, as compared to the previous ad-hoc method of using excel. The research subteam will be alternating between the current students working on this project: Awurama Nyarko, Fei Xie, Ghena Hatoum, and Haniye Hamidizadeh.
 \subsection{Customer}
+The users of the tool.
 \subsubsection{Research Subteam}
 See \hyperref[research_team]{Research Subteam}.
 \subsubsection{Ryan Fang}\label{ryan}
 A Master's student at McMaster University currently measuring the State of Best Practices for the Robotics Software domain.
 Once the tool is in a usable state, after the proof of concept demonstration, he will be onboarded to start using the tool for his research. He is responsible for providing feedback once he starts using the tool.
 \subsection{Other Stakeholders}
+Additional stakeholders for the development or maintenance of the tool.
 \subsubsection{Development Subteam}
 The development subteam will be alternating between the current students working on this project.
 They are responsible for the technical development portion of the project, including testing, system design, developing, and interacting with the client and customers (\hyperref[smith]{Dr. Spencer Smith}, \hyperref[research_team]{research subteam} and \hyperref[ryan]{Ryan Fang}).
 \subsubsection{Dr. Lingyang Chu}\label{chu}
 The domain expert/consultant for the \hyperref[research_team]{research subteam} during their work on the paper. This person has deep domain knowledge but won't necessarily know the technical software aspects of the domain. He will be interested in the results that the research subteam discovered during their assessment of the domain.
 \subsection{Hands-On Users of the Project}
+Broader users of the tool.
 \subsubsection{Dr. Spencer Smith}
 See \hyperref[smith]{Dr. Spencer Smith}.
 \subsubsection{Research Subteam}
@@ -111,11 +121,13 @@ See \hyperref[chu]{Dr. Lingyang Chu}
 \subsubsection{Researchers/Industry Workers}
 These are people who are interested in seeing the results of the research results for a domain. They are responsible for accessing the usability of the tool in the context of a read-only experience, and provide feedback to the product subteam.
 \subsection{Personas}
+Below are personas to help visualize the users of the tool.
 \subsubsection{Kevin - Master's Student at McMaster University}
 I’m Kevin, a master student at McMaster University currently working on the state of best practice for Domain X. I am extremely busy and don’t want to spend too much time entering data. I want a tool to decrease the amount of manual data inputting I need to do, allowing me to focus on the interesting portions of this research. Although I am adequately familiar with software tools, such as using the terminal and version control, my interests are more in the science aspect of computer science andI don’t want to spend too long setting things up.
 \subsubsection{Ashley - Research Scientist at X company}
 I’m Ashley, a research scientist currently working in the ML/AI field. During my work, I use several software tools to assist me. I don’t want to create all the tools myself, preferring to use off-the-shelve, pre-existing libraries, so I can focus on what actually matters. I’ve read through several tech blogs but they all rank the libraries differently, or don’t consider a big enough variety, and sometimes the libraries mentioned are outdated. A consolidated source that can measure varying aspects of the library would be great, since as a researcher, I haven’t had as much experience with the DevOps process of the software lifecycle. My personal preference is to use packages and libraries that are easy to learn, install, and use.
 \subsection{Priorities Assigned to Users}
+The priority level for each user groups.
 \textbf{Key Users}:
 \begin{itemize}
 \item Research Subteam
@@ -129,6 +141,7 @@ I’m Ashley, a research scientist currently working in the ML/AI field. During 
 \end{itemize}
 
 \subsection{User Participation}
+The following contains how the development team engages the user during development.
 \textbf{Research Subteam} \\
 Actively using the tool during the writing of the paper. They should provide honest feedbacks on the experience when using the tool. Including any shortfalls, UI disagreements, and bugs.\\\\
 \textbf{Domain Expert} \\
@@ -137,45 +150,42 @@ Has knowledge of the NN domain, will provide feedback on the research subteam’
 During the user acceptance testing phase of the product. The CASE Supervisor should provide their honest feedback on their experience while using the tool, as they are the main administrator of the tool once it's live.
 
 \subsection{Maintenance Users and Service Technicians}
+Users responsible for maintaining the tool after the initial development
 \textbf{Project Maintainer} \\
 The person responsible for updating the tool with new features, or fixing any existing bugs once the initial creators of the tool leaves. They were not present during the development of the tool, and will most likely be the future students who use the tool for their domain research.
 \\\\
 \textbf{Infrastructure Team} \\
 The infrastructure team at McMaster University will be responsible for hosting the project, and should ensure that the application is available for use and maintains data integrity of their database servers.
 \section{Mandated Constraints}
+Constraints on the eventual design of the tool. 
 \subsection{Solution Constraints}
+Constraints on a particular way the tool should solve and behave.
 \begin{itemize}
   \item Requirement: The product must be built utilizing existing McMaster University software and IT infrastructure.
   \item Rationale: This approach is mandated to avoid the client incurring costs associated with application and database hosting.
   \item Fit Criterion: Successful implementation depends on the necessary infrastructure components being formally approved and provided by McMaster University IT services.
 \end{itemize}
 \subsection{Implementation Environment of the Current System}
-\begin{itemize}
-  \item The current system relies on Excel spreadsheets that are saved and stored either on an individual's personal laptop (which has an unknown operating system) or in an online cloud storage environment.
-\end{itemize}
+The current system relies on Excel spreadsheets that are saved and stored either on an individual's personal laptop (which has an unknown operating system) or in an online cloud storage environment.
+
 \subsection{Partner or Collaborative Applications}
-\begin{itemize}
-  \item Excel integration is essential. Since Excel was the format utilized by the previous ad hoc tool, enabling planned import and export functionality will facilitate a smooth transition and allow for the potential backfilling of historical data.
-\end{itemize}
+Excel integration is essential. Since Excel was the format utilized by the previous ad hoc tool, enabling planned import and export functionality will facilitate a smooth transition and allow for the potential backfilling of historical data.
+
 \subsection{Off-the-Shelf Software}
 N/A
 \subsection{Anticipated Workplace Environment}
-\begin{itemize}
-  \item  The application must be fully functional on current and immediately previous stable versions of major web browsers (e.g., Chrome, Firefox, Safari, Edge).
-\end{itemize}
+The application must be fully functional on current and immediately previous stable versions of major web browsers (e.g., Chrome, Firefox, Safari, Edge).
 \subsection{Schedule Constraints}
 \begin{itemize}
   \item Tool must be built by February 2, 2026
   \item Research paper must be written and submitted by April 6, 2026
 \end{itemize}
 \subsection{Budget Constraints}
-\begin{itemize}
-  \item The project cannot cost more than \$125.
-\end{itemize}
+The project cannot cost more than \$125.
 \subsection{Enterprise Constraints}
 N/A
-
 \section{Naming Conventions and Terminology}
+Below are the naming conventions and terminology that will be used throughout the video.
 \subsection{Glossary of All Terms, Including Acronyms, Used by Stakeholders
 involved in the Project}
 
@@ -212,9 +222,9 @@ Domain experts generally work Monday to Friday, 9 AM – 5 PM, and are unlikely 
 McMaster University will provide the infrastructure required to host the application and make the necessary databases available for use.
 
 \section{The Scope of the Work}
+Boundaries of the current environment and business requirements to understand the scope of the product are written below.
 \subsection{The Current Situation}
-Following the methodology listed:
-
+The following are the steps as stated from the methodology paper \cite{MethodologyPaper}:
 \begin{enumerate}
     \item Domain is identified
     \item Research team gathers a preliminary list of packages fitting the domain
@@ -375,6 +385,7 @@ API Information & \textit{See Developer Platform} & Attribute/Element \\ \hline
 
 
 \section{The Scope of the Product}
+Visualization of the scope we decided for the tool.
 \subsection{Product Boundary}
 This system aims to simplify and streamline the process of collecting, managing, and analyzing data to assess the state of the practice for various research domains. It replaces the existing, manual process (currently managed via Excel sheets) and formalizes the methodology outlined in the \href{https://arxiv.org/abs/2110.11575}{Methodology for Assessing the State of the Practice for Domain X paper}. The final system will be a secure, accessible, data management and analysis tool.
 
@@ -428,6 +439,7 @@ The system will provide the following core functionality:
 \end{itemize}
 
 \subsection{Product Use Case Table}
+Summary of all the interfaces between the product and other systems.
 \begin{tabularx}{\textwidth}{|p{2cm}|p{2cm}|p{2cm}|X|} \hline
 \toprule
 \textbf{Use Case (Goal)} & \textbf{Primary Actor} & \textbf{Secondary Actor(s)} & \textbf{Key Functional Requirements (FRs)} \\ \hline
@@ -463,7 +475,7 @@ Important things to keep in mind when looking at the Use Case Diagram:
 
 
 \section{Functional Requirements}
-\subsection{Functional Requirements}
+What our tool must do, it's features and behaviours are listed below.   
 \begin{enumerate}[label=FR\arabic*]
   \item The Admin will be able to extend an invitation to new researchers via the website, using the researcher's email address.
   \\ \textbf{Rationale}: The tool should handle all required functionality for use, without requiring users to go off site.
@@ -513,6 +525,7 @@ Important things to keep in mind when looking at the Use Case Diagram:
 \end{enumerate}
 
 \section{Look and Feel Requirements}
+Requirements for the appearance of the tool.
 \subsection{Appearance Requirements}
 \begin{enumerate}[label=LF-AR\arabic*]
   \item The application will maintain a consistent visual hierarchy where primary action buttons (e.g., "Save," "Create New Domain") are visually distinct.
@@ -539,6 +552,7 @@ Important things to keep in mind when looking at the Use Case Diagram:
 \end{enumerate}
 
 \section{Usability and Humanity Requirements}
+Requirements for the usability, and accessibility of the tool.
 \subsection{Ease of Use Requirements}
 \begin{enumerate}[label=UH-EU\arabic*]
   \item The primary navigation menu must be persistently available on the left side or top of every screen, and basic actions (e.g., viewing data, downloading reports) must be achievable within a maximum of three clicks/steps for new users.
@@ -575,6 +589,7 @@ N/A
 \end{enumerate}
 
 \section{Performance Requirements}
+Requirements for the performance of the tool itself.
 \subsection{Speed and Latency Requirements}
 \begin{enumerate}[label=PR-SL\arabic*]
   \item The system must finish the AHP ranking calculation for a standard domain in less than ten seconds.
@@ -628,6 +643,7 @@ N/A
 \end{enumerate}
 
 \section{Operational and Environmental Requirements}
+Requirements for the operating environment and operational environment the tool will run in.
 \subsection{Expected Physical Environment}
 \textbf{Fit Criterion}: The system runs successfully on standard desktop or laptop hardware using a modern web browser and internet connection.
 \begin{enumerate}[label=OE-EPE\arabic*]
@@ -688,7 +704,9 @@ Project releases follow the capstone timeline, are published as GitHub Releases 
         \item \texttt{v1.0.0} → stable Final Release for Revision~1
     \end{itemize}
 \end{enumerate}
+
 \section{Maintainability and Support Requirements}
+Requirements for the maintenance and support of the tool once the initial development has left.
 \subsection{Maintenance Requirements}
 The tool is an open-source web application that will need occasional updates to fix bugs and to adapt if external APIs change.
 
@@ -722,7 +740,9 @@ The system uses a modular, cross-platform architecture that allows new metrics, 
 \item The tool must be able to run on standard operating systems(Windows, macOS, and Linux) by using widely supported technologies (such as Python, Node.js, and MySQL), and by avoiding any system-specific code.
 \item The system must be designed in a modular way so that parts like data collection, storage, and visualization remain separate. This makes it easier to add new features or update one part without affecting the rest of the tool.
 \end{enumerate}
+
 \section{Security Requirements}
+Requirements on the security in relation to data, such as the privacy and integrity of it.
 \subsection{Access Requirements}
 The system enforces role-based access control such that all users can view results, only authenticated Contributors can modify data or perform administrative actions, roles are correctly assigned and enforced, login failures are handled with clear recovery options, and all external API credentials are stored securely outside the source code.
 
@@ -786,7 +806,6 @@ The system prevents common security attacks by using safe database queries, rend
 \end{enumerate}
 
 \section{Cultural Requirements}
-\subsection{Cultural Requirements}
 Since the tool will be shared mostly in an academic and research setting, we just need to make sure the interface stays clear, neutral, and easy to understand for anyone who uses it later.
 
 All user-facing text and documentation use plain English, follow consistent date and number formats, apply neutral design choices, and include standard open-source licensing and contribution information.
@@ -796,6 +815,7 @@ All user-facing text and documentation use plain English, follow consistent date
 \item \textbf{Neutral Design:} Colours, labels, and icons must stay neutral and must not include any symbols or words that could carry unintended cultural or political meaning.
 \item \textbf{Open-Source Norms:} The repository must include a license notice and simple contribution guidelines to match common open-source practice.
 \end{enumerate}
+
 \section{Compliance Requirements}
 The project includes a copyright notice, is distributed under a recognized open-source license, and clearly states citation or acknowledgement requirements for reuse.
 
@@ -1265,6 +1285,8 @@ The following is the development team's idea for the user interface of the tool.
   \label{fig:domainx_ui}
 \end{figure}
 \newpage{}
+\bibliographystyle {plainnat}
+\bibliography{../../refs/References}
 \section*{Appendix --- Reflection}
 
 \input{../Reflection.tex}
