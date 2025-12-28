@@ -464,24 +464,55 @@ Important things to keep in mind when looking at the Use Case Diagram:
 \subsection{Functional Requirements}
 \begin{enumerate}[label=FR\arabic*]
   \item The Admin will be able to extend an invitation to new researchers via the website, using the researcher's email address.
+  \\ Rationale: The tool should handle all required functionality for use, without requiring users to go off site.
+  \\ Fit Criterion: Superuser and admins can send email invite requests from the tool.
   \item Researchers will be able to sign up using their invited email. The process requires email validation and the creation of a unique username and password.
+  \\ Rationale: User should be able to create an account through the tool from the invite link.
+  \\ Fit Criterion: User can create an account and sign up
   \item The system will allow Admin and Researchers to securely login using their email and password.
+  \\ Rationale: To allow for role access levels within the application
+  \\ Fit Criterion: User can sign up with their email and password
   \item Users will be able to reset their password after validating their email address.
+  \\ Rationale: In case the user forgets their credentials
+  \\ Fit Criterion: User receives password reset email if the email exist, and the next login will use the new password instead of the old one to allow user access.
   \item Admin can create domains, using a unique domain name and optionally a short description.
+  \\ Rationale: To prevent all users to create domains, only domains that are verified by the product owner (Dr. Spencer Smith) will be able to create domains.
+  \\ Fit Criterion: Admin users can create domains, while normal users cannot.
   \item Admin can publish a domain, once research is completed, for anyone to see and download data collected.
+  \\ Rationale: To allow for domains to be in different stages, and for open access once completed.
+  \\ Fit Criterion: Unpublished domains cannot be seen by users. Published domains can be seen by users.
   \item Researchers can add/modify data/libraries of existing domains, and download data/graphs regardless of completion status.
+  \\ Rationale: Researchers must be able to continuously update and analyze domain data throughout the research lifecycle, including before a domain is finalized or published.
+  \\ Fit Criterion: Researchers can create, edit, and delete libraries and associated metric data within domains they have access to, and can download datasets and generated graphs whether the domain is published or unpublished.
   \item The system must validate all user input upon addition or update (e.g., ensuring numeric fields are numbers, dates are valid, and text limits are met).	
-  \item The system must allow a Admin to bulk upload library and metric data using a predefined Excel template. The system must report detailed errors for any records that fail validation, such as feature names not being in the scope or wrong data type for a column.
+  \\ Rationale: Input validation is required to ensure data correctness, consistency, and reliability for downstream analysis and visualization.
+  \\ Fit Criterion: Invalid inputs are rejected at submission time with clear error messages, and only data that meets defined validation rules is saved to the system.
+  \item The system must allow an Admin to bulk upload library and metric data using a predefined Excel template. The system must report detailed errors for any records that fail validation, such as feature names not being in the scope or wrong data type for a column.
+  \\ Rationale: Reduces manual data entry effort and minimizes human error when working with large datasets.
+  \\ Fit Criterion: Admins can upload an Excel file that follows the predefined template, and the system successfully imports valid records while displaying a detailed error report for each invalid row and column.
   \item When a Researcher enters a public GitHub URL for a library, the system must call the GitHub API to automatically retrieve and populate specific data points, such as the Repository Creation Date and the Last Commit Date.
+  \\ Rationale: Automatable repository metric data should be automatically extracted.
+  \\ Fit Criterion: With a valid Github URL, system populates the corresponding rows and columns with the collected metrics, and displays errors for irretrievable data.
   \item The system must display a complete list of all metrics and their definitions for a selected domain.
+  \\ Rationale: Users should be able to clearly see what metrics are and what does metrics mean.
+  \\ Fit Criterion: When a domain is selected, the system displays all associated metrics along with their definitions in a readable format.
   \item The system will rank the libraries within a domain using the Analytical Hierarchy Process (AHP) and display the calculated results.
-  \item Users must be able to select a domain → libraries → metrics → graph type to visualize differences in libraries using comparative graphs.
+  \\ Rationale: System should provide a more transparent and automated method to run the AHP between libraries to reduce manual human labour.
+  \\ Fit Criterion: System computes ranking using AHP and displays final results in a readable and traceable way.
+  \item Users must be able to visualize differences in libraries using comparative graphs.
+  \\ Rationale: Provides better user readability and quick view of the collected data.
+  \\ Fit Criterion: Users can select a domain, one or more libraries, relevant metrics, and a graph type, and the system generates the corresponding comparative visualization.
   \item All users will be able to download the collected data for a specific scope in JSON, Excel, or LaTeX code formats to their device.
+  \\ Rationale: Providing multiple export formats allows users to reuse data for analysis, reporting, and academic publication.
+  \\ Fit Criterion: Users can successfully download selected datasets in JSON, Excel, or LaTeX formats, and the downloaded files contain the correct data.
   \item Users must be able to download any generated graph, with the option to save it as a PNG file.
+  \\ Rationale: Users may need to include visualizations in reports, presentations, or publications.
+  \\ Fit Criterion: Users can download any generated graph as a PNG file, and the downloaded image accurately reflects the on-screen visualization.
 \end{enumerate}
 
 \section{Look and Feel Requirements}
 \subsection{Appearance Requirements}
+Rationales: 
 \begin{enumerate}[label=LF-AR\arabic*]
   \item The application will maintain a consistent visual hierarchy where primary action buttons (e.g., "Save," "Create New Domain") are visually distinct.
   \item The system must be fully responsive and function correctly on standard desktop monitors and laptops.
