@@ -516,85 +516,120 @@ Important things to keep in mind when looking at the Use Case Diagram:
 \subsection{Appearance Requirements}
 \begin{enumerate}[label=LF-AR\arabic*]
   \item The application will maintain a consistent visual hierarchy where primary action buttons (e.g., "Save," "Create New Domain") are visually distinct.
+  \\ \textbf{Fit Criterion}: Primary action buttons use a consistent color and style across the application and are visually more prominent than secondary actions. Users can easily identify buttons within 10 seconds.
   \item The system must be fully responsive and function correctly on standard desktop monitors and laptops.
+  \\ \textbf{Fit Criterion}: The application functions correctly at common desktop and laptop screen sizes without overlapping or hidden UI elements.
   \item Data visualization and editing displays must prioritize information density while remaining readable. Tables should have alternating row colors (zebra striping) to help tracking.
+  \\ \textbf{Fit Criterion}: Tables with five or more rows use alternating row colors, and all table text remains readable at default browser zoom.
   \item The main user dashboard should provide a clear, high-level overview of active domains and tasks, with minimal visual clutter.
+  \\ \textbf{Fit Criterion}: The dashboard displays active domains and tasks on a single screen without requiring scrolling under normal usage.
   \item Ensure all required input fields are clearly identified (e.g., with an asterisk). Input forms must give real-time feedback, such as a green check mark for acceptable input and a red boundary for errors.
+  \\ \textbf{Fit Criterion}: All required fields are clearly marked, and validation feedback appears immediately when input is accepted or rejected.
   \item All error messages (system errors, validation problems) must be clear, short, and contain practical guidance for resolving the problem.
+  \\ \textbf{Fit Criterion}: Error messages clearly state the issue and suggest a corrective action in one or two short sentences.
 \end{enumerate}
 \subsection{Style Requirements}
 \begin{enumerate}[label=LF-SR\arabic*]
   \item The system must use a single, consistent style of icons (e.g., solid, outline, or filled) for all navigational elements, actions, and status indicators.
+  \\ \textbf{Fit Criterion}: All icons used for navigation, actions, and status indicators follow the same visual style (e.g., all outline or all filled) across the application.
   \item Graphs must use minimalist design to prioritize data readability. Axes and labels must be clear and legible.
+  \\ \textbf{Fit Criterion}: All graphs include labeled x- and y-axes with text readable at 100\% browser zoom, and labels are legible without zooming on a standard desktop display.
   \item Font sizing must follow a defined scale (e.g., large for titles, medium for body text, small for captions) and remain consistent on all screens.
+  \\ \textbf{Fit Criterion}: The application uses no more than three font sizes for titles, body text, and captions, and these sizes are applied consistently across all pages.
 \end{enumerate}
 
 \section{Usability and Humanity Requirements}
 \subsection{Ease of Use Requirements}
 \begin{enumerate}[label=UH-EU\arabic*]
   \item The primary navigation menu must be persistently available on the left side or top of every screen, and basic actions (e.g., viewing data, downloading reports) must be achievable within a maximum of three clicks/steps for new users.
+  \\ \textbf{Fit Criterion}: The primary navigation menu is visible on all screens, and common actions (viewing data, downloading reports) can be completed in three or fewer user actions.
   \item All data input fields for library metrics must include a tooltip (activated on hover) that explicitly states the required data type and format (e.g., "Numeric value, max 3 decimal places" or "Date in YYYY-MM-DD format").
+  \\ \textbf{Fit Criterion}: All metric input fields display a tooltip on hover that specifies the expected data type and format.
   \item All system error messages (validation failures, access denied) must be written in plain language, avoid technical jargon, and provide explicit instructions on how the user can resolve the issue (e.g., "Error: Please verify your username and try again" instead of "401 unauthorized").
+  \\ \textbf{Fit Criterion}: All system error messages avoid technical error codes and include a brief explanation and a clear corrective action.
 \end{enumerate}
 \subsection{Personalization and Internationalization Requirements}
 N/A
 \subsection{Learning Requirements}
 \begin{enumerate}[label=UH-LR\arabic*]
   \item The system must contain a brief lesson or guide that explains the precise steps for Bulk Data Upload and the AHP Ranking process and is available from the appropriate screens.
+  \\ \textbf{Fit Criterion}: A short guide for Bulk Data Upload and AHP Ranking is accessible from the relevant screens and explains the process in step-by-step form.
   \item All words referring to research entities (Domain, Library, Metric) must be used consistently across the interface and documentation.
+  \\ \textbf{Fit Criterion}: All references to Domain, Library, and Metric use the same terms across the UI and documentation, with no alternate naming.
 \end{enumerate}
 \subsection{Understandability and Politeness Requirements}
 \begin{enumerate}[label=UH-UP\arabic*]
   \item The system must contain a brief lesson or guide that explains the precise steps for Bulk Data Upload and the AHP Ranking process and is available from the appropriate screens.
+  \\ \textbf{Fit Criterion}: Help content for Bulk Upload and AHP Ranking is reachable within one click from the related interface.
   \item All words referring to research entities (Domain, Library, Metric) must be used consistently across the interface and documentation.
-  \item All system-generated error messages will be clear, use non-technical language, and suggest a simple course of corrective action
+  \\ \textbf{Fit Criterion}: Research entities are labeled consistently across all pages and help materials.
+  \item All system-generated error messages will be clear, use non-technical language, and suggest a simple course of corrective action.
+  \\ \textbf{Fit Criterion}: All system-generated error messages use non-technical language and suggest at least one corrective action.
 \end{enumerate}
 \subsection{Accessibility Requirements}
 \begin{enumerate}[label=UH-AR\arabic*]
   \item Critical status indicators and data visualizations must convey meaning through patterns or text labels in addition to color.
+  \\ \textbf{Fit Criterion}: All critical status indicators and visualizations include text labels or patterns in addition to color.
   \item Users must be able to change font size using regular browser options (up to 200\%) without losing information or functionality.
+  \\ \textbf{Fit Criterion}: All pages remain readable and functional when browser font size is increased up to 200\%.
 \end{enumerate}
 
 \section{Performance Requirements}
 \subsection{Speed and Latency Requirements}
 \begin{enumerate}[label=PR-SL\arabic*]
   \item The system must finish the AHP ranking calculation for a standard domain in less than ten seconds.
+  \\ \textbf{Fit Criterion}: The AHP ranking calculation completes in under 10 seconds for a standard domain.
 \end{enumerate}
 \subsection{Safety-Critical Requirements}
 \begin{enumerate}[label=PR-SC\arabic*]
   \item The system will encrypt all user passwords.
+  \\ \textbf{Fit Criterion}: All user passwords are stored in encrypted (hashed) form and never in plaintext.
   \item If there have been multiple failed attempts to login to an existing account the user must be notified and lock account.
+  \\ \textbf{Fit Criterion}: After a predefined number of consecutive failed login attempts, the account is locked and the user is notified via email.
   \item The system will ensure that only researchers modify data.
+  \\ \textbf{Fit Criterion}: Only users with Researcher or Admin roles can modify domain data. Other users are blocked from write operations.
 \end{enumerate}\subsection{Precision or Accuracy Requirements}
 \begin{enumerate}[label=PR-PA\arabic*]
-  \item All data  that the system automatically filled out, must be 100\% accurate.
-\end{enumerate}
+  \item All data that the system automatically filled out, must be 100\% accurate.
+  \\ \textbf{Fit Criterion}: All automatically retrieved data matches the API used with transparent processing, if any.
+  \end{enumerate}
+
 \subsection{Robustness or Fault-Tolerance Requirements}
 \begin{enumerate}[label=PR-RFT\arabic*]
   \item The system must implement graceful error handling, ensuring that a failure in one function (e.g., a failed GitHub API call) does not crash the entire application or disrupt other users.
+  \\ \textbf{Fit Criterion}: Failures in external services (e.g., GitHub API) do not crash the application and display a user-facing error message with at least one next step.
   \item The system must use database transactions to ensure that data modifications are atomic, if an update operation fails in the middle, the data must be returned to its last validated state.
+  \\ \textbf{Fit Criterion}: If a data update fails mid-operation, no partial changes are saved to the database.
   \item The system should have a protocol in place to take backups of the database, to restore data at max within the timeframe of an hour.
+  \\ \textbf{Fit Criterion}: Database backups exist and allow restoration of system data within one hour.
 \end{enumerate}
 \subsection{Capacity Requirements}
 \begin{enumerate}[label=PR-CR\arabic*]
   \item The system must be able to accommodate up to 20 concurrent active users (logged in and doing operations) with no visible performance decrease.
+  \\ \textbf{Fit Criterion}: The system supports up to 20 concurrent active users without noticeable performance degradation.
   \item The database must be able to store at least 70 different study domains.
+  \\ \textbf{Fit Criterion}: The database can store at least 70 domains without errors.
   \item The system's architecture must support increasing the underlying database size (up to the maximum capacity defined by the Capacity Requirements) without resulting in database connection errors, timeouts, or data integrity issues.
+  \\ \textbf{Fit Criterion}: Increasing database size does not cause connection failures, timeouts, or data corruption.
 \end{enumerate}
 \subsection{Scalability or Extensibility Requirements}
 \begin{enumerate}[label=PR-SE\arabic*]
   \item The system architecture must clearly divide the Data Management/Storage layer from the Analysis/Visualization layer so that either component may be improved or replaced independently.
+  \\ \textbf{Fit Criterion}: Data storage and analysis/visualization components are implemented as separate modules.
   \item The authentication and authorization system must be adaptable enough to accommodate additional user roles (e.g., "Guest Analyst") and specialized rights without requiring code changes to core operations.
+  \\ \textbf{Fit Criterion}: New user roles can be added through configuration or extension without modifying core application logic.
 \end{enumerate}
 \subsection{Longevity Requirements}
 \begin{enumerate}[label=PR-LR\arabic*]
   \item The system must be capable of running without the requirement for maintenance for two years.
+  \\ \textbf{Fit Criterion}: The system operates without mandatory maintenance interruptions for a period of two years under normal usage.
   \item Database scaling operations (e.g. migrating to a larger server instance) must be achievable entirely by modifying the system's infrastructure configuration. Such scaling operations must not require any changes to the core application code base.
+  \\ \textbf{Fit Criterion}: Database scaling can be completed through infrastructure configuration changes without modifying application source code.
 \end{enumerate}
 
 \section{Operational and Environmental Requirements}
 \subsection{Expected Physical Environment}
-
+\textbf{Fit Criterion}: The system runs successfully on standard desktop or laptop hardware using a modern web browser and internet connection.
 \begin{enumerate}[label=OE-EPE\arabic*]
 \item The tool is a web-based application that will be used mainly by our team, supervisors, and potentially other researchers or domain experts.
 \item It is expected to run on a standard desktop or laptop computer with a reliable internet connection, in a normal indoor setting such as an office, lab, or home workspace.
@@ -602,6 +637,7 @@ N/A
 \end{enumerate}
 
 \subsection{Wider Environment Requirements}
+\textbf{Fit Criterion}: The application functions correctly on the latest two to three major versions of Chrome, Firefox, and Edge with an active internet connection.
 \begin{enumerate}[label=OE-WE\arabic*]
 \item The application depends on a stable internet connection for retrieving data from public repositories (e.g., GitHub) and for loading the hosted web interface if deployed to the cloud.
 \item It does not rely on any dedicated on-premises hardware.
@@ -609,21 +645,21 @@ N/A
 \end{enumerate}
 \subsection{Requirements for Interfacing with Adjacent Systems}
 The tool must be able to communicate with a few external systems and internal components to collect, store, and visualize data.
-
 \begin{enumerate}[label=OE-IA\arabic*]
-
   \item Public Repository APIs (e.g., GitHub API): The tool must communicate with external repository services to automatically collect information about the selected neural-network libraries. For example, it needs to retrieve details such as how often the code is updated, the number of open or closed issues and pull requests, and the main programming languages used. This data will help evaluate qualities like maintainability, transparency, and overall project activity. The information must be received in a standard machine-readable format (e.g., JSON over HTTPS) whenever a user triggers a scan or during scheduled updates.
-
+  \\ \textbf{Fit Criterion}: System calls external APIs immediately when the scan is triggered, and the system must be able to receive JSON over HTTPS.
   \item Database (MySQL): The backend must store scores, rankings, and evidence collected from repositories.
-
+\\ \textbf{Fit Criterion}: All scores, rankings, and evidence are stored and retrievable from the database within 10 seconds.
   \item Visualization Component: The frontend must render charts and comparisons (e.g., using Chart.js) from the data served by the backend.
-
+\\ \textbf{Fit Criterion}: Charts are rendered correctly using backend-provided data using visualization libraries.
   \item All connections must use standard web technologies (HTTP/HTTPS, JSON) and require only basic authentication methods such as API tokens for secure access to external repository APIs.
-
+\\ \textbf{Fit Criterion}: All external communications use HTTPS and authenticated API access where required.
 \end{enumerate}
 
 \subsection{Productization Requirements}
 The tool will be delivered as an open-source web application hosted in the team’s public GitHub repository.
+
+The project repository contains a README with setup instructions, required dependency files, and documentation for local and cloud deployment. The application can be accessed via a web URL when deployed, and supports exporting results in standard formats (e.g., CSV, PNG, PDF).
 \begin{enumerate}[label=OE-PR\arabic*]
 \item A clear README file must explain how to set up the backend (Python + Flask) and the frontend (React) using common package managers such as pip and npm.
 \item For developers running the tool locally, the repository must include a requirements.txt file for Python packages and a database schema file so they can create the required tables.
@@ -631,6 +667,7 @@ The tool will be delivered as an open-source web application hosted in the team�
 \item The application must also provide options to export results in formats such as CSV for data tables and PNG/PDF for visualizations.
 \end{enumerate}
 \subsection{Release Requirements}
+Project releases follow the capstone timeline, are published as GitHub Releases with version tags and changelogs, and the final release incorporates documented feedback from earlier demonstrations.
 \begin{enumerate}[label=OE-RR\arabic*]
 \item The project should follow the official capstone timeline: an internal test release before the Proof-of-Concept (PoC) demonstration in \textbf{November}, a Revision~0 Demonstration in \textbf{Weeks~18--19}, and the Final Release (Revision~1) at \textbf{Week~26} along with the research paper and final dataset.
 \item The Final Release (Revision 1) must incorporate feedback collected during the Revision 0 Demonstration, including usability improvements, bug fixes, and supervisor/TA-requested changes.
@@ -654,18 +691,22 @@ The tool will be delivered as an open-source web application hosted in the team�
 \section{Maintainability and Support Requirements}
 \subsection{Maintenance Requirements}
 The tool is an open-source web application that will need occasional updates to fix bugs and to adapt if external APIs change.
+
+The codebase follows defined coding standards, includes automated formatting and linting tools, maintains test coverage for core functionality, tracks dependencies with pinned versions, logs data changes, and supports routine maintenance and feature updates within the stated timeframes.
 \begin{enumerate}[label=MS-MR\arabic*]
 \item All code must follow the project’s coding standards (PEP 8 for the Python backend; React + TypeScript style guide for the frontend).
 \item Automated tools (such as Black, Flake8, and Pylint) must remain part of the workflow so new contributors can easily read and update the code.
 \item Unit tests must be written for all new features and bug fixes. Developers should also run basic integration tests to make sure the full pipeline (API → database → visualization) still works after changes.
 \item Test coverage must be tracked and reported to ensure that critical parts of the backend are being tested.
-\item All Python and frontend packages must be listed in requirements.txt and package.json, with pinned versions so the same build can be reproduced.
+\item All Python and frontend packages must be listed in requirements.txt and package.json, with pinned versions, so the same build can be reproduced.
 \item The dependency list must be reviewed and updated at least once each semester to keep it current and secure.
 \item Any changes to the dataset made through the interactive data table must be logged with a timestamp and the username so there is always a clear audit trail.
 \item Most routine fixes, such as small UI tweaks or bug fixes, should be finished within a couple of days. Larger updates, such as adding a new metric or a new visualization, are expected to take about one to two weeks.
 \end{enumerate}
 \subsection{Supportability Requirements}
 The tool is intended to be mostly self-supporting since it will be used primarily by our team, the supervisors, and potentially other researchers in the future.
+
+The repository includes up-to-date documentation that allows a new developer to set up and run the system within approximately two hours, provides guidance for core workflows, and includes logging and issue-reporting mechanisms to support troubleshooting.
 \begin{enumerate}[label=MS-SR\arabic*]
 \item The README file must include step-by-step instructions so that a new developer can set up the backend (Flask + MySQL) and frontend (React) locally, or deploy it to a cloud platform (such as AWS or Google Cloud), in a consistent and repeatable way. A new developer should be able to follow these instructions and have the application running within about two hours.
 \item The repository must always include an up-to-date guide for installation, setup, the data-collection workflow, using the interactive data table, visualization, and exporting results.
@@ -673,6 +714,7 @@ The tool is intended to be mostly self-supporting since it will be used primaril
 \item Users should use the GitHub Issues page to report bugs or ask questions. No printed manual will be needed; all documentation will remain online in the repository.
 \end{enumerate}
 \subsection{Adaptability Requirements}
+The system uses a modular, cross-platform architecture that allows new metrics, data sources, user roles, and features to be added with limited changes and without disrupting existing functionality.
 \begin{enumerate}[label=MS-AR\arabic*]
 \item The tool must remain flexible so it can grow with the project and adapt to future needs.
 \item The MySQL database must be set up so that if a new quality criterion needs to be tracked, it can be added by creating a new column, updating the data-collection script, and adjusting the UI without having to redesign the whole system.
@@ -682,7 +724,7 @@ The tool is intended to be mostly self-supporting since it will be used primaril
 \end{enumerate}
 \section{Security Requirements}
 \subsection{Access Requirements}
-
+The system enforces role-based access control such that all users can view results, only authenticated Contributors can modify data or perform administrative actions, roles are correctly assigned and enforced, login failures are handled with clear recovery options, and all external API credentials are stored securely outside the source code.
 
 \begin{enumerate}[label=SR-AC\arabic*]
 
@@ -705,6 +747,8 @@ The tool is intended to be mostly self-supporting since it will be used primaril
 \end{enumerate}
 
 \subsection{Integrity Requirements}
+All user inputs are validated before storage, concurrent or conflicting edits are detected and handled without data loss, raw data and derived results are stored separately, publishing is blocked during updates, and users are notified of failed exports or conflicting changes.
+
 \begin{enumerate}[label=SR-INT\arabic*]
 \item To ensure the accuracy and reliability of the collected data, all manually entered information into the interactive table must be checked before it is saved. For example, numbers must fall within valid ranges, and text must be cleaned so that it cannot be treated as code or scripts.
 \item The database must include safeguards so that if two users edit the same record at the same time, no changes are lost or overwritten.
@@ -716,18 +760,24 @@ The tool is intended to be mostly self-supporting since it will be used primaril
 \end{enumerate}
 \subsection{Privacy Requirements}
 The tool mainly works with open-source repository data, so there is very little personal data involved.
+
+Any collected user information is stored securely using standard security practices, and passwords are stored only in hashed form. No additional personal or confidential data is stored by the system.
 \begin{enumerate}[label=SR-P\arabic*]
 \item If basic user details are collected for login (such as name or email), they must be kept private and stored securely using widely accepted security standards.
 \item User passwords must be stored only in hashed form using a secure one-way hashing algorithm so that the actual password is never saved.
 \end{enumerate}
 No other personal or confidential information will be collected or stored.
 \subsection{Audit Requirements}
+The system logs all critical user actions, login events, automated data collection runs, and major errors, and restricts access to these logs to authorized administrators only.
+
 \begin{enumerate}[label=SR-AU\arabic*]
 \item The system must keep a record of all important activity for accountability and troubleshooting. Every time a Contributor adds, edits, or deletes data in the interactive table, the system must save a log entry showing the user’s ID, the time of the action, the type of action, and the fields that were changed.
 \item The system must also log key events such as login attempts (successful and failed), scheduled API-collection runs, and major errors so that they can be reviewed later.
 \item Access to these logs must be restricted to authorized project admins only.
 \end{enumerate}
 \subsection{Immunity Requirements}
+The system prevents common security attacks by using safe database queries, rendering user input as plain text, respecting external API rate limits, and monitoring dependencies for known vulnerabilities.
+
 \begin{enumerate}[label=SR-IM\arabic*]
 \item The backend must prevent SQL-injection attacks by using the safe query methods provided by the database library instead of building raw SQL strings with user input.
 \item The frontend must display any text entered by users as plain text only and never allow it to run as code. For example, React’s built-in escaping already takes care of this.
@@ -738,6 +788,8 @@ No other personal or confidential information will be collected or stored.
 \section{Cultural Requirements}
 \subsection{Cultural Requirements}
 Since the tool will be shared mostly in an academic and research setting, we just need to make sure the interface stays clear, neutral, and easy to understand for anyone who uses it later.
+
+All user-facing text and documentation use plain English, follow consistent date and number formats, apply neutral design choices, and include standard open-source licensing and contribution information.
 \begin{enumerate}[label=CU-CR\arabic*]
 \item \textbf{Language:} All text in the user interface and documentation must be in plain English. We should avoid using region-specific jargon so that future collaborators from outside McMaster can understand it easily.
 \item \textbf{Dates and Numbers:} Dates must be displayed in a clear standard format such as ISO 8601 (YYYY-MM-DD) so they’re unambiguous for anyone who uses the tool. Numbers must use a consistent style (for example, decimal point for fractions and thousands separated by commas).
@@ -745,6 +797,8 @@ Since the tool will be shared mostly in an academic and research setting, we jus
 \item \textbf{Open-Source Norms:} The repository must include a license notice and simple contribution guidelines to match common open-source practice.
 \end{enumerate}
 \section{Compliance Requirements}
+The project includes a copyright notice, is distributed under a recognized open-source license, and clearly states citation or acknowledgement requirements for reuse.
+
 \subsection{Legal Requirements}
 \begin{enumerate}[label=CR-LR\arabic*]
 \item The tool must include a copyright notice covering the code and documentation produced by the team.
