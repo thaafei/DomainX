@@ -15,6 +15,10 @@ from api.database.metrics.models import Metric
 from api.database.library_metric_values.models import LibraryMetricValue
 import requests
 import random
+from api.services.github_http import github_get
+from urllib.parse import urlparse
+from pathlib import Path
+
 
 load_dotenv()
 SETTINGS_MODULE = 'DomainX.settings'
@@ -40,10 +44,10 @@ def fetch_and_process_stars(repo_list: list) -> list:
 
     return results
 
-GITHUB_TOKEN = os.environ.get("GITHUB_TOKEN")
+#GITHUB_TOKEN = os.environ.get("GITHUB_TOKEN")
 
-if not GITHUB_TOKEN:
-    print("FATAL ERROR: GITHUB_TOKEN environment variable not set.")
+# if not GITHUB_TOKEN:
+#     print("FATAL ERROR: GITHUB_TOKEN environment variable not set.")
 
 GITHUB_URLS_TO_ANALYZE = [
     "https://github.com/tensorflow/tensorflow",
@@ -76,11 +80,11 @@ GITHUB_URLS_TO_ANALYZE = [
 ]
 
 API_BASE = "https://api.github.com"
-HEADERS = {
-    "Accept": "application/vnd.github+json",
-    "Authorization": f"Bearer {GITHUB_TOKEN}",
-    "X-GitHub-Api-Version": "2022-11-28"
-}
+# HEADERS = {
+#     "Accept": "application/vnd.github+json",
+#     "Authorization": f"Bearer {GITHUB_TOKEN}",
+#     "X-GitHub-Api-Version": "2022-11-28"
+# }
 
 def setup_metrics(library_url):
     """
@@ -104,8 +108,8 @@ def setup_metrics(library_url):
     )
 
     # Fetch repository data from GitHub API
-    api_url = f"https://api.github.com/repos/{owner}/{repo}"
-    response = requests.get(api_url)
+    api_url = f"/repos/{owner}/{repo}"
+    response = github_get(api_url)
 
     if response.status_code != 200:
         print(f"Failed to fetch data from GitHub: {response.status_code}")
@@ -166,9 +170,9 @@ def fetch_paginated_data(endpoint, params=None):
         # Use the initial URL (current_url) only for the first request (page 1) 
         # to correctly merge `params`.
         if page == 1 and params:
-            response = requests.get(current_url, headers=HEADERS, params=params)
+            response = github_get(current_url, params=params)
         else:
-            response = requests.get(current_url, headers=HEADERS)
+            response = github_get(current_url)
 
         if response.status_code == 202:
             # Statistics endpoints often return 202 (Accepted) if data is being computed.
