@@ -2,31 +2,34 @@ import threading
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
 from rest_framework import status
-from api.database.services import RepoAnalyzer
+from ..database.services import RepoAnalyzer
+from ..database.libraries.models import Domain
+from ..database.libraries.models import Library
+from ..database.metrics.models import Metric
+from ..database.library_metric_values.models import LibraryMetricValue
 
-from ..models import (
-    Domain,
-    Library,
-    Metric,
-    LibraryMetricValue
-)
+from ..database.libraries.serializers import LibrarySerializer
 
-from ..serializers import LibrarySerializer
-
-def run_repo_analysis_in_background(library, repo_url):
+def run_repo_analysis_in_background(library_id, repo_url):
     try:
-        analyzer = RepoAnalyzer(repo_url)
+        library = Library.objects.get(pk=library_id)
+
+        analyzer = RepoAnalyzer(github_url=repo_url)
         analysis_results = analyzer.run_analysis_and_get_data()
         metrics_data = analysis_results.get("metric_data", {})
+
         if metrics_data:
             update_library_metrics(library, metrics_data)
+
         print("Background GitHub analysis finished.")
     except Exception as e:
         print(f"Error during repository analysis: {e}")
+
 @api_view(["GET"])
 def list_libraries(request, domain_id):
-    libraries = Library.objects.filter(Domain__pk=domain_id)
+    libraries = Library.objects.filter(domain__pk=domain_id)
     serializer = LibrarySerializer(libraries, many=True)
+    print(serializer.data)
     return Response({"libraries": serializer.data})
 
 def update_library_metrics(library, metrics_data):
@@ -34,18 +37,19 @@ def update_library_metrics(library, metrics_data):
         return
     for metric_name, value in metrics_data.items():
         try:
-            metric = Metric.objects.get(Metric_Name=metric_name)
+            metric = Metric.objects.get(metric_name=metric_name)
         except Metric.DoesNotExist:
             continue
         LibraryMetricValue.objects.update_or_create(
-            Library=library,
-            Metric=metric,
-            defaults={"Value": value}
+            library=library,
+            metric=metric,
+            defaults={"value": value}
         )    
 
 @api_view(["POST"])
 def create_library(request):
-    domain_id = request.data.get("Domain")
+    print(request.data)
+    domain_id = request.data.get("domain")
     if not domain_id:
         return Response({"error": "Domain ID is required"}, status=status.HTTP_400_BAD_REQUEST)
 
@@ -55,54 +59,21 @@ def create_library(request):
         return Response({"error": "Invalid Domain ID"}, status=status.HTTP_400_BAD_REQUEST)
 
     serializer = LibrarySerializer(data=request.data)
-    if serializer.is_valid():
-        new_library = serializer.save(Domain=domain)
-        repo_url = request.data.get("Repository_URL")
-        metrics_data = {}
-        if repo_url:
-            threading.Thread(
-                target=run_repo_analysis_in_background,
-                args=(new_library, repo_url),
-                daemon=True
-            ).start()
-        if metrics_data:
-            update_library_metrics(new_library, metrics_data)
-        return Response({"library": serializer.data, "message": "Library created. GitHub analysis is running in background."}, status=status.HTTP_201_CREATED)
-    
-    return Response({"error": serializer.errors}, status=status.HTTP_400_BAD_REQUEST)
+    serializer.is_valid(raise_exception=True)
 
-# @api_view(["POST"])
-# def create_library(request):
-#     domain_id = request.data.get("Domain")
-#     if not domain_id:
-#         return Response({"error": "Domain ID is required"}, status=status.HTTP_400_BAD_REQUEST)
+    new_library = serializer.save(domain=domain)
 
-#     try:
-#         domain = Domain.objects.get(pk=domain_id)
-#     except Domain.DoesNotExist:
-#         return Response({"error": "Invalid Domain ID"}, status=status.HTTP_400_BAD_REQUEST)
+    repo_url = serializer.validated_data.get("url")
+    threading.Thread(
+        target=run_repo_analysis_in_background,
+        args=(new_library.pk, repo_url),
+        daemon=True,
+    ).start()
 
-#     serializer = LibrarySerializer(data=request.data)
-#     if serializer.is_valid():
-#         serializer.save(Domain=domain)
-#         # return Response({"library": serializer.data}, status=status.HTTP_201_CREATED)
-#     # try:
-#     analyzer = RepoAnalyzer(request.data.get("Repository_URL"))
-#     analysis_results = analyzer.run_analysis_and_get_data()
-#     # except Exception as e:
-#     #     error = e
-#     for metric_name, value in analysis_results['metric_data'].items():
-#         try:
-#             metric = Metric.objects.get(Metric_Name=metric_name)
-#         except Metric.DoesNotExist:
-#             continue  #ignore unrecognized metric names
-
-#         LibraryMetricValue.objects.update_or_create(
-#             Library=library,
-#             Metric=metric,
-#             defaults={"Value": value}
-#         )
-#     return Response({"error": serializer.errors}, status=status.HTTP_400_BAD_REQUEST)
+    return Response(
+        {"library": LibrarySerializer(new_library).data, "message": "Library created. Analysis running in background."},
+        status=status.HTTP_201_CREATED
+    )
 
 
 @api_view(["DELETE"])
@@ -124,22 +95,22 @@ def update_library_values(request, library_id):
         return Response({"error": "Library not found"}, status=status.HTTP_404_NOT_FOUND)
 
     data = request.data
-    library.Library_Name = data.get("Library_Name", library.Library_Name)
-    library.Repository_URL = data.get("Repository_URL", library.Repository_URL)
-    library.Programming_Language = data.get("Programming_Language", library.Programming_Language)
+    library.library_name = data.get("library_name", library.library_name)
+    library.url = data.get("url", library.url)
+    library.programming_language = data.get("programming_language", library.programming_language)
     library.save()
     metrics_data = data.get("metrics", {})
 
     for metric_name, value in metrics_data.items():
         try:
-            metric = Metric.objects.get(Metric_Name=metric_name)
+            metric = Metric.objects.get(metric_name=metric_name)
         except Metric.DoesNotExist:
             continue  #ignore unrecognized metric names
 
         LibraryMetricValue.objects.update_or_create(
-            Library=library,
-            Metric=metric,
-            defaults={"Value": value}
+            library=library,
+            metric=metric,
+            defaults={"value": value}
         )
 
     return Response({"success": True})
