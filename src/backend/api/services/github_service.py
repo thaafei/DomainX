@@ -1,22 +1,16 @@
-import requests
-import json
 import sys, os
-from github import Github
 from datetime import datetime, timedelta, timezone # Imported timezone for awareness comparisons
 import time
 from collections import defaultdict
-from django.shortcuts import get_object_or_404
 from django.http import JsonResponse
 import django
-from pathlib import Path
 from dotenv import load_dotenv
-from api.database.libraries.models import Library
-from api.database.metrics.models import Metric
-from api.database.library_metric_values.models import LibraryMetricValue
-import requests
+from ..database.libraries.models import Library
+from ..database.metrics.models import Metric
+from ..database.library_metric_values.models import LibraryMetricValue
 import random
-from api.services.github_http import github_get
-from urllib.parse import urlparse
+from ..services.github_http import github_get
+from urllib.parse import urlparse, parse_qs
 from pathlib import Path
 
 
@@ -44,47 +38,10 @@ def fetch_and_process_stars(repo_list: list) -> list:
 
     return results
 
-#GITHUB_TOKEN = os.environ.get("GITHUB_TOKEN")
 
-# if not GITHUB_TOKEN:
-#     print("FATAL ERROR: GITHUB_TOKEN environment variable not set.")
-
-GITHUB_URLS_TO_ANALYZE = [
-    "https://github.com/tensorflow/tensorflow",
-    "https://github.com/sony/nnabla",
-    "https://github.com/pytorch/pytorch",
-    "https://github.com/onnx/onnx",
-    "https://github.com/pymc-devs/pytensor",
-    "https://github.com/BVLC/caffe",
-    "https://github.com/keras-team/keras",
-    "https://github.com/deeplearning4j/deeplearning4j",
-    "https://github.com/apache/mxnet",
-    "https://github.com/chainer/chainer",
-    "https://github.com/tensorflow/tensorboard",
-    "https://github.com/neuroph/neuroph",
-    "https://github.com/wekan/wekan",
-    "https://github.com/libfann/fann",
-    "https://github.com/scikit-learn/scikit-learn",
-    "https://github.com/lululxvi/deepxde",
-    "https://github.com/Theano/Theano",
-    "https://github.com/numpy/numpy",
-    "https://github.com/pandas-dev/pandas",
-    "https://github.com/mlflow/mlflow",
-    "https://github.com/microsoft/LightGBM",
-    "https://github.com/dmlc/xgboost",
-    "https://github.com/microsoft/FLAML",
-    "https://github.com/fastai/fastai",
-    "https://github.com/statsmodels/statsmodels",
-    "https://github.com/optuna/optuna",
-    "https://github.com/h2oai/h2o-3"
-]
 
 API_BASE = "https://api.github.com"
-# HEADERS = {
-#     "Accept": "application/vnd.github+json",
-#     "Authorization": f"Bearer {GITHUB_TOKEN}",
-#     "X-GitHub-Api-Version": "2022-11-28"
-# }
+
 
 def setup_metrics(library_url):
     """
@@ -486,8 +443,3 @@ def print_summary_report(all_results):
     print(separator)
     print(f"\nNote: The 'Activity Score' is a custom heuristic based on a weighted sum of key metrics for rough comparative sorting.")
 
-if __name__ == "__main__":
-    all_results = []
-    for url in GITHUB_URLS_TO_ANALYZE:
-        setup_metrics(url)
-        time.sleep(1)

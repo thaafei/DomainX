@@ -2,17 +2,17 @@ import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 
 interface Metric {
-  Metric_ID: string;
-  Metric_Name: string;
+  metric_ID: string;
+  metric_name: string;
 }
 
 interface LibraryRow {
-  Library_ID: string;
-  Library_Name: string;
+  library_ID: string;
+  library_name: string;
   metrics: { [metricName: string]: string | number | null };
 }
 
-const DOMAIN_ID = "dd8d1992-d085-41e1-8ed0-7d292d4c2f2f";
+const DOMAIN_ID = "ecba1df1ede211f0987c0050568e534c";
 
 const Visualize: React.FC = () => {
   const navigate = useNavigate();
@@ -32,10 +32,26 @@ const Visualize: React.FC = () => {
 
   const loadData = async () => {
     try {
-      const res = await fetch(`http://127.0.0.1:8000/api/comparison/${DOMAIN_ID}/`, {
+         const formatUUID = (rawId: string) => {
+            if (rawId && rawId.length === 32 && !rawId.includes('-')) {
+              return rawId.substring(0, 8) + '-' +
+                     rawId.substring(8, 12) + '-' +
+                     rawId.substring(12, 16) + '-' +
+                     rawId.substring(16, 20) + '-' +
+                     rawId.substring(20, 32);
+            }
+            return rawId;
+          };
+
+      const formattedDomainId = formatUUID(DOMAIN_ID);
+      const res = await fetch(`http://127.0.0.1:8000/api/comparison/${formattedDomainId}/`, {
         credentials: "include"
       });
-      const data = await res.json();
+      const responseText = await res.text();
+      if (!res.ok) {
+          throw new Error(`Server Error (${res.status}): See console for details.`);
+      }
+      const data = JSON.parse(responseText);
 
       setMetricList(data.metrics);
       setLibraries(data.libraries);
@@ -65,9 +81,9 @@ const Visualize: React.FC = () => {
     }
 
     const rows = libraries
-      .filter(l => selectedLibraries.includes(l.Library_ID))
+      .filter(l => selectedLibraries.includes(l.library_ID))
       .map(l => ({
-        label: l.Library_Name,
+        label: l.library_name,
         value: Number(l.metrics[selectedMetric])
       }));
 
@@ -137,8 +153,8 @@ const Visualize: React.FC = () => {
           >
             <option value="">— Select Metric —</option>
             {metricList.map(m => (
-              <option key={m.Metric_ID} value={m.Metric_Name}>
-                {m.Metric_Name}
+              <option key={m.metric_ID} value={m.metric_name}>
+                {m.metric_name}
               </option>
             ))}
           </select>
@@ -154,16 +170,16 @@ const Visualize: React.FC = () => {
           >
             {libraries.map(lib => (
               <label
-                key={lib.Library_ID}
+                key={lib.library_ID}
                 style={{ display: "block", marginBottom: 6 }}
               >
                 <input
                   type="checkbox"
-                  checked={selectedLibraries.includes(lib.Library_ID)}
-                  onChange={() => toggleLibrary(lib.Library_ID)}
+                  checked={selectedLibraries.includes(lib.library_ID)}
+                  onChange={() => toggleLibrary(lib.library_ID)}
                   style={{ marginRight: 6 }}
                 />
-                {lib.Library_Name}
+                {lib.library_name}
               </label>
             ))}
           </div>
