@@ -18,20 +18,40 @@ from dotenv import load_dotenv
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 load_dotenv(BASE_DIR / ".env")
-# Build paths inside the project like this: BASE_DIR / 'subdir'.
-BASE_DIR = Path(__file__).resolve().parent.parent
 
 
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/5.2/howto/deployment/checklist/
 
-# SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'django-insecure-%&(qe!zm1b8v)no4x^f%=%4*t=@en9vy+(3g9cv47n8wi=cu$h'
+#Changed Secret Key to Prod Secret Key for deployment
+SECRET_KEY = os.getenv("DJANGO_SECRET_KEY")
+if not SECRET_KEY:
+    raise RuntimeError("DJANGO_SECRET_KEY is not set")
 
-# SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+#Changed to env variable
+def env_bool(name: str, default: bool = False) -> bool:
+    v = os.getenv(name)
+    if v is None:
+        return default
+    return v.strip().lower() in ("1", "true", "t", "yes", "y", "on")
 
-ALLOWED_HOSTS = ["127.0.0.1", "localhost"]
+DEBUG = env_bool("DJANGO_DEBUG", default=False)
+IS_LOCAL = env_bool("DJANGO_LOCAL", default=True)
+
+if not DEBUG and not IS_LOCAL:
+    SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
+    SESSION_COOKIE_SECURE = True
+    CSRF_COOKIE_SECURE = True
+    SECURE_SSL_REDIRECT = True
+else:
+    SECURE_SSL_REDIRECT = False
+    SESSION_COOKIE_SECURE = False
+    CSRF_COOKIE_SECURE = False
+
+ALLOWED_HOSTS = [h.strip() for h in os.getenv("DJANGO_ALLOWED_HOSTS", "127.0.0.1,localhost").split(",") if h.strip()]
+
+
+
 
 
 
@@ -53,6 +73,7 @@ INSTALLED_APPS = [
     'api.database.metrics.apps.MetricsConfig',
     'api.database.library_metric_values.apps.LibraryMetricValuesConfig',
     'api.database.domain.apps.DomainConfig',
+    'django_celery_results',
 
 ]
 AUTH_USER_MODEL = 'users.CustomUser'
@@ -80,7 +101,6 @@ MIDDLEWARE = [
 ]
 
 ROOT_URLCONF = 'DomainX.urls'
-CORS_ALLOW_ALL_ORIGINS = True
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
@@ -115,6 +135,16 @@ DATABASES = {
         },
     }
 }
+CELERY_BROKER_URL = os.getenv("CELERY_BROKER_URL")
+
+CELERY_RESULT_BACKEND = "django-db"
+CELERY_ACCEPT_CONTENT = ["json"]
+CELERY_TASK_SERIALIZER = "json"
+CELERY_RESULT_SERIALIZER = "json"
+CELERY_TIMEZONE = "UTC"
+CELERY_TASK_TRACK_STARTED = True
+CELERY_TASK_TIME_LIMIT = 60 * 15
+
 
 
 # Password validation
