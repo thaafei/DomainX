@@ -1,29 +1,12 @@
-import threading
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
 from rest_framework import status
-from ..database.services import RepoAnalyzer
-from ..database.libraries.models import Domain
+from ..tasks import analyze_repo_task
+from ..database.domain.models import Domain
 from ..database.libraries.models import Library
 from ..database.metrics.models import Metric
 from ..database.library_metric_values.models import LibraryMetricValue
-
 from ..database.libraries.serializers import LibrarySerializer
-
-def run_repo_analysis_in_background(library_id, repo_url):
-    try:
-        library = Library.objects.get(pk=library_id)
-
-        analyzer = RepoAnalyzer(github_url=repo_url)
-        analysis_results = analyzer.run_analysis_and_get_data()
-        metrics_data = analysis_results.get("metric_data", {})
-
-        if metrics_data:
-            update_library_metrics(library, metrics_data)
-
-        print("Background GitHub analysis finished.")
-    except Exception as e:
-        print(f"Error during repository analysis: {e}")
 
 @api_view(["GET"])
 def list_libraries(request, domain_id):
@@ -32,23 +15,8 @@ def list_libraries(request, domain_id):
     print(serializer.data)
     return Response({"libraries": serializer.data})
 
-def update_library_metrics(library, metrics_data):
-    if not isinstance(metrics_data, dict):
-        return
-    for metric_name, value in metrics_data.items():
-        try:
-            metric = Metric.objects.get(metric_name=metric_name)
-        except Metric.DoesNotExist:
-            continue
-        LibraryMetricValue.objects.update_or_create(
-            library=library,
-            metric=metric,
-            defaults={"value": value}
-        )    
-
 @api_view(["POST"])
 def create_library(request):
-    print(request.data)
     domain_id = request.data.get("domain")
     if not domain_id:
         return Response({"error": "Domain ID is required"}, status=status.HTTP_400_BAD_REQUEST)
@@ -63,16 +31,65 @@ def create_library(request):
 
     new_library = serializer.save(domain=domain)
 
-    repo_url = serializer.validated_data.get("url")
-    threading.Thread(
-        target=run_repo_analysis_in_background,
-        args=(new_library.pk, repo_url),
-        daemon=True,
-    ).start()
+    # mark pending
+    new_library.analysis_status = Library.ANALYSIS_PENDING
+    new_library.analysis_task_id = None
+    new_library.analysis_error = None
+    new_library.analysis_started_at = None
+    new_library.analysis_finished_at = None
+    new_library.save(update_fields=[
+        "analysis_status", "analysis_task_id", "analysis_error",
+        "analysis_started_at", "analysis_finished_at"
+    ])
+
+    # enqueue analysis
+    repo_url = serializer.validated_data["url"]
+    async_result = analyze_repo_task.delay(str(new_library.library_ID), repo_url)
+
+    # store celery task id
+    new_library.analysis_task_id = async_result.id
+    new_library.save(update_fields=["analysis_task_id"])
 
     return Response(
-        {"library": LibrarySerializer(new_library).data, "message": "Library created. Analysis running in background."},
-        status=status.HTTP_201_CREATED
+        {
+            "library": LibrarySerializer(new_library).data,
+            "message": "Library created. Analysis queued in background.",
+            "task_id": async_result.id,
+        },
+        status=status.HTTP_201_CREATED,
+    )
+    try:
+        domain = Domain.objects.get(pk=domain_id)
+    except Domain.DoesNotExist:
+        return Response({"error": "Invalid Domain ID"}, status=status.HTTP_400_BAD_REQUEST)
+
+    serializer = LibrarySerializer(data=request.data)
+    serializer.is_valid(raise_exception=True)
+
+    new_library = serializer.save(domain=domain)
+    new_library.analysis_status = Library.ANALYSIS_PENDING
+    new_library.analysis_task_id = None
+    new_library.analysis_error = None
+    new_library.analysis_started_at = None
+    new_library.analysis_finished_at = None
+    new_library.save(update_fields=[
+        "analysis_status",
+        "analysis_task_id",
+        "analysis_error",
+        "analysis_started_at",
+        "analysis_finished_at",
+    ])
+    repo_url = serializer.validated_data.get("url")
+    async_result = analyze_repo_task.delay(str(new_library.library_ID), repo_url)
+    new_library.analysis_task_id = async_result.id
+    new_library.save(update_fields=["analysis_task_id"])
+    return Response(
+        {
+            "library": LibrarySerializer(new_library).data,
+            "message": "Library created. Analysis queued in background.",
+            "task_id": async_result.id,
+        },
+        status=status.HTTP_201_CREATED,
     )
 
 
