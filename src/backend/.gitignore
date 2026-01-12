@@ -2,3 +2,7 @@
 .venv
 venv
 Secrets/
+
+# Redis
+*.rdb
+dump.rdb
