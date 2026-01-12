@@ -15,7 +15,6 @@ from .views.library_views import (
 )
 urlpatterns = [
     path('status/', status_views.status_view, name='api_status'),
-    path('github/', include('api.github_urls', namespace='github')),
     path("comparison/<uuid:domain_id>/", domain_comparison, name="domain_comparison"),
     path('metrics/', list_metrics, name='metrics_list'),
     path('metrics/create/', create_metric, name='metrics_create'),
