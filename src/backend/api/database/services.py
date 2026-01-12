@@ -4,16 +4,10 @@ import subprocess
 from django.conf import settings
 from .metrics.models import Metric
 from urllib.parse import urlparse
-import requests
-from datetime import datetime
-from django.db import transaction
-from git import Repo
-import re
 from urllib.parse import urlparse, parse_qs
 from api.services.github_http import github_get
 
 # Configuration
-GITHUB_TOKEN = os.environ.get("GITHUB_TOKEN")
 CLONE_DIR = os.path.join(settings.BASE_DIR, 'cloned_repos') 
 os.makedirs(CLONE_DIR, exist_ok=True)
 
@@ -38,17 +32,14 @@ class RepoAnalyzer:
         self.repo_owner, self.repo_name = self._extract_repo_info(github_url)
 
     def _get_total_commit_count_via_api(self) -> int:
-        api_url = f"https://api.github.com/repos/{self.repo_owner}/{self.repo_name}/commits"
-        headers = {}
-        if GITHUB_TOKEN:
-            headers["Authorization"] = f"token {GITHUB_TOKEN}"
+        resp = github_get(
+            f"/repos/{self.repo_owner}/{self.repo_name}/commits",
+            params={"per_page": 1},
+            timeout=20,
+        )
 
-        resp = requests.get(api_url, headers=headers, params={"per_page": 1}, timeout=20)
-
-        if resp.status_code == 409:  # empty repo
+        if resp.status_code == 409:
             return 0
-
-        resp.raise_for_status()
 
         link = resp.headers.get("Link")
         if not link:
@@ -78,17 +69,14 @@ class RepoAnalyzer:
         raise ValueError("Invalid GitHub URL format (expected user/repo).")
 
     def _get_branch_count_via_api(self) -> int:
-        url = f"https://api.github.com/repos/{self.repo_owner}/{self.repo_name}/branches"
-        headers = {}
-        if GITHUB_TOKEN:
-            headers["Authorization"] = f"token {GITHUB_TOKEN}"
-
-        resp = requests.get(url, headers=headers, params={"per_page": 1}, timeout=20)
+        resp = github_get(
+            f"/repos/{self.repo_owner}/{self.repo_name}/branches",
+            params={"per_page": 1},
+            timeout=20,
+        )
 
         if resp.status_code == 409:  # empty repo
             return 0
-
-        resp.raise_for_status()
 
         link = resp.headers.get("Link")
         if not link:
@@ -127,9 +115,9 @@ class RepoAnalyzer:
                 "Commit Count": self._get_total_commit_count_via_api(),
                 "Branch Count": self._get_branch_count_via_api(),
             }
-        except requests.exceptions.RequestException as e:
+        except Exception as e:
             print(f"Error fetching GitHub API metrics for {self.repo_owner}/{self.repo_name}: {e}")
-            raise Exception(f"GitHub API Error: {e}")
+            raise
     
     def _analyze_repo(self):
         github_api_results = self._get_github_api_metrics()
@@ -154,8 +142,7 @@ class RepoAnalyzer:
 
             return {
                 'repo_name': self.repo_name,
-                'metric_data': metric_results,
-                # 'metric_map': self.metric_map
+                'metric_data': metric_results
             }
 
         except Exception as e:
