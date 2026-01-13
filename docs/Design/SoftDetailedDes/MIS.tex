@@ -625,6 +625,12 @@ commitBatch & changeList & successFlag & NetworkError \\
 \subsection{MIS of User Authentication Module (M5)}
 \label{mis:UserAuthentication}
 
+\subsubsection{Module}
+Provides user authentication and session management using Django’s built-in
+authentication framework and JWT-based tokens (DRF SimpleJWT). This module
+exposes a simplified interface to the rest of the system rather than
+reimplementing authentication logic.
+
 \subsubsection{Uses}
 System API Gateway Module (M10) [Django REST Framework, JSON] (\ref{mis:SystemAPIGateway})\\
 User Role Access Module (M6) (\ref{mis:UserRoleAccess})\\
