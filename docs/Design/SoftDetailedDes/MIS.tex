@@ -539,9 +539,18 @@ Database Persistence Module (M17) (\ref{mis:DatabasePersistenceModule})
 \toprule
 \textbf{Name} & \textbf{In} & \textbf{Out} & \textbf{Exceptions}\\
 \midrule
+addDomain & domainData & successFlag & SchemaError \\
+editDomain & domainID, newValue & successFlag & ValidationError \\
+deleteDomain & domainID & successFlag & NotFoundError \\
+\addlinespace
+addPackage & packageData & successFlag & SchemaError \\
+editPackage & packageID, newValue & successFlag & ValidationError \\
+deletePackage & packageID & successFlag & NotFoundError \\
+\addlinespace
 addMetric & metricData & successFlag & SchemaError \\
 editMetric & metricID, newValue & successFlag & ValidationError \\
 deleteMetric & metricID & successFlag & NotFoundError \\
+\addlinespace
 undoLastEdit & -- & successFlag & StackEmptyError \\
 validateEdit & candidateChange & bool & ValidationError \\
 commitBatch & changeList & successFlag & NetworkError \\
