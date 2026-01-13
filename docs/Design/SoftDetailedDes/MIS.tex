@@ -376,10 +376,11 @@ None (external, platform-provided).
 \end{itemize}
 
 \paragraph{Environment Variables}
-\begin{itemize}
-  \item Display surface and window manager (screen, viewport, device DPI).
-  \item Network stack (HTTP/HTTPS, TLS).
-\end{itemize}
+
+None.  
+This module relies solely on capabilities provided by the host browser
+runtime and does not consume externally supplied configuration values.
+
 
 \paragraph{Assumptions}
 \begin{itemize}
@@ -392,7 +393,17 @@ None (external, platform-provided).
 Not applicable (no routines exported by this module in our system).
 
 \paragraph{Local Functions}
-Not applicable.
+
+\begin{itemize}
+  \item \textit{renderPage}(): Updates the Document Object Model in response to
+        application state changes.
+  \item \textit{handleUserInput}(e): Captures and dispatches user input events
+        (mouse, keyboard) to the front-end logic.
+  \item \textit{sendRequest}(req): Issues network requests to backend services
+        using the browser networking stack.
+  \item \textit{updateStorage}(k, v): Reads from and writes to localStorage or
+        sessionStorage as required by the UI.
+\end{itemize}
 
 \subsection{MIS of Application UI Module (M3)}
 \label{mis:ApplicationUI}
