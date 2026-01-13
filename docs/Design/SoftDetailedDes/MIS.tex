@@ -454,17 +454,23 @@ showNotification & message, severity & successFlag & None \\
 \end{itemize}
 
 \paragraph{Environment Variables}
-\begin{itemize}
-  \item Browser DOM (document, window, viewport).
-  \item React runtime (React 18) and router (e.g., React Router) in a SPA environment.
-\end{itemize}
+
+None.  
+This module does not consume externally supplied configuration values and
+relies solely on constants defined within the module and services provided
+by dependent modules.
 
 \paragraph{Assumptions}
 \begin{itemize}
-  \item Implemented with React (per MG); routes are client-side (SPA).
-  \item Network I/O occurs through M10; UI does not embed backend endpoints directly.
+  \item Executed within a modern standards-compliant browser providing a
+        Document Object Model (DOM).
+  \item Implemented using React with client-side routing in a
+        single-page application (SPA) environment.
+  \item Network I/O occurs exclusively through the System API Gateway Module (M10);
+        backend endpoints are not embedded in the UI.
   \item Graphs are rendered via M12; file workflows are delegated to M13/M14.
 \end{itemize}
+
 
 \paragraph{Access Routine Semantics}
 
@@ -558,15 +564,15 @@ commitBatch & changeList & successFlag & NetworkError \\
 \end{itemize}
 
 \paragraph{Environment Variables}
-\begin{itemize}
-  \item Browser runtime and React state for form fields and UI feedback.
-  \item Network transport to backend via M10 (Django REST over HTTPS, JSON).
-\end{itemize}
+None.  
+This module does not consume externally supplied configuration values;
+ it relies on services provided by M3/M10 and the host browser runtime.
 
 \paragraph{Assumptions}
 \begin{itemize}
   \item The user is authenticated (M5) and authorized (M6) for the requested action.
-  \item Requests and responses use JSON and follow the schemas exposed by M10.
+  \item Executed within a browser-based React UI; form state and feedback are managed by M3.
+  \item Network I/O is performed through M10 over HTTPS using JSON payloads conforming to M10 schemas.
   \item Persistent storage of edits is performed by M17 behind M10.
 \end{itemize}
 
@@ -665,11 +671,8 @@ refreshToken & oldToken & newToken & TokenExpiredError \\
 \end{itemize}
 
 \paragraph{Environment Variables}
-\begin{itemize}
-  \item Django authentication middleware and JWT management via DRF SimpleJWT.
-  \item Encrypted database storage via M17 (using Django ORM).
-  \item HTTPS communication channel for login and registration requests.
-\end{itemize}
+None. This module does not interact with externally supplied
+environment configuration values.
 
 \paragraph{Assumptions}
 \begin{itemize}
@@ -772,11 +775,8 @@ listAllRoles & -- & roleList & None \\
 \end{itemize}
 
 \paragraph{Environment Variables}
-\begin{itemize}
-  \item Django’s \texttt{auth.Group} and \texttt{Permission} models manage role bindings in the database.
-  \item Requests validated through Django REST middleware for permission checks.
-  \item Front-end access (M3) conditionally renders UI components based on allowed actions.
-\end{itemize}
+None. This module does not interact with externally supplied
+environment configuration values.
 
 \paragraph{Assumptions}
 \begin{itemize}
@@ -877,11 +877,8 @@ deleteAccount & authToken & successFlag & PermissionError \\
 \end{itemize}
 
 \paragraph{Environment Variables}
-\begin{itemize}
-  \item React front-end components rendering forms and interactive settings UI.
-  \item Network communication with Django REST API via M10 (HTTPS, JSON payloads).
-  \item Persistent user data stored in database via M17 (Django ORM).
-\end{itemize}
+None. This module does not interact with externally supplied
+environment configuration values.
 
 \paragraph{Assumptions}
 \begin{itemize}
@@ -981,11 +978,8 @@ scheduleAutoUpdate & None & successFlag & SchedulerError \\
 \end{itemize}
 
 \paragraph{Environment Variables}
-\begin{itemize}
-  \item Python \texttt{requests} and \texttt{cron} utilities used for scheduled API requests.
-  \item Communication with Repository API Module (M15) for fetching data.
-  \item Persistent storage handled through Database Persistence Module (M10) using Django ORM.
-\end{itemize}
+None. This module does not interact with externally supplied
+environment configuration values.
 
 \paragraph{Assumptions}
 \begin{itemize}
@@ -1078,11 +1072,8 @@ searchDomains & searchTerm & filteredList & None \\
 \end{itemize}
 
 \paragraph{Environment Variables}
-\begin{itemize}
-  \item React components (e.g., \texttt{DomainList.jsx}, \texttt{DomainDetails.jsx}) used to render UI elements.
-  \item Django REST endpoints for retrieving domain and metric data.
-  \item Persistent domain and package data stored in PostgreSQL via Django ORM.
-\end{itemize}
+None. This module does not interact with externally supplied
+environment configuration values.
 
 \paragraph{Assumptions}
 \begin{itemize}
@@ -1177,11 +1168,8 @@ visualizeComparison & comparisonTable, chartType & chartObject & RenderError \\
 \end{itemize}
 
 \paragraph{Environment Variables}
-\begin{itemize}
-  \item Django backend provides metric and domain data via REST API endpoints.  
-  \item React front-end renders comparison results and visualizations.  
-  \item Graphing libraries (Chart.js / Plotly) used for displaying visual comparisons.  
-\end{itemize}
+None. This module does not interact with externally supplied
+environment configuration values.
 
 \paragraph{Assumptions}
 \begin{itemize}
@@ -1274,11 +1262,8 @@ fetchAllConfigs & None & configList & DatabaseError \\
 \end{itemize}
 
 \paragraph{Environment Variables}
-\begin{itemize}
-  \item Django authentication framework for identifying the current user.  
-  \item PostgreSQL database accessed through Django ORM for persisting user settings.  
-  \item REST API endpoints exposed by M10 for frontend communication.  
-\end{itemize}
+None. This module does not interact with externally supplied
+environment configuration values.
 
 \paragraph{Assumptions}
 \begin{itemize}
@@ -1374,11 +1359,8 @@ routeToService & endpoint, payload & serviceOutput & RouteError \\
 \end{itemize}
 
 \paragraph{Environment Variables}
-\begin{itemize}
-  \item Django REST Framework serializers, views, and routers.  
-  \item JSON parser and HTTP utilities for request/response handling.  
-  \item React frontend consuming REST endpoints via Axios / Fetch API.  
-\end{itemize}
+None. This module does not interact with externally supplied
+environment configuration values.
 
 \paragraph{Assumptions}
 \begin{itemize}
@@ -1472,11 +1454,8 @@ getTopPackages & normalizedTable, limit & rankedList & None \\
 \end{itemize}
 
 \paragraph{Environment Variables}
-\begin{itemize}
-  \item AHPy Python library for performing AHP computations.  
-  \item Django backend provides metric input via M8 (Automated Metrics Module) and M17 (Database Persistence Module).  
-  \item React frontend retrieves computed ranking results from M10 through REST API endpoints.  
-\end{itemize}
+None. This module does not interact with externally supplied
+environment configuration values.
 
 \paragraph{Assumptions}
 \begin{itemize}
@@ -1572,11 +1551,8 @@ renderComparisonPlot & domainMetrics, metricType & comparisonImage & DataError \
 \end{itemize}
 
 \paragraph{Environment Variables}
-\begin{itemize}
-  \item Python Matplotlib library for visualization.  
-  \item NumPy and Pandas libraries for data manipulation.  
-  \item REST API (via M10) exposes generated images or data URLs to the React frontend.  
-\end{itemize}
+None. This module does not interact with externally supplied
+environment configuration values.
 
 \paragraph{Assumptions}
 \begin{itemize}
@@ -1671,11 +1647,8 @@ getImportSummary & dataFrame & summaryDict & None \\
 \end{itemize}
 
 \paragraph{Environment Variables}
-\begin{itemize}
-  \item Python \texttt{pandas} library for parsing CSV/Excel files.  
-  \item Django REST Framework handles file uploads and passes file references to this module.  
-  \item File storage is temporary before validated data is written to the database via M9.  
-\end{itemize}
+None. This module does not interact with externally supplied
+environment configuration values.
 
 \paragraph{Assumptions}
 \begin{itemize}
@@ -1770,11 +1743,8 @@ getExportSummary & filePath & summaryDict & None \\
 \end{itemize}
 
 \paragraph{Environment Variables}
-\begin{itemize}
-  \item Python \texttt{pandas} library for writing tabular data to files.  
-  \item Django backend provides query data via ORM (M17).  
-  \item React frontend triggers export through API endpoints in M10.  
-\end{itemize}
+None. This module does not interact with externally supplied
+environment configuration values.
 
 \paragraph{Assumptions}
 \begin{itemize}
@@ -1832,7 +1802,6 @@ It handles authentication, rate limiting, and response parsing before returning 
 \subsubsection{Uses}
 Automated Metrics Module (M8) [for metric retrieval requests] (\ref{mis:AutomatedMetrics})\\
 System API Gateway Module (M10) [for backend communication] (\ref{mis:SystemAPIGateway})\\
-Configuration Module (M19) [for API tokens and environment variables] (\ref{mis:Configuration})\\
 Database Persistence Module (M17) [for storing fetched data] (\ref{mis:DatabasePersistenceModule})  
 
 \subsubsection{Syntax}
@@ -1870,11 +1839,8 @@ handleRateLimit & responseHeaders & delaySeconds & RateLimitError \\
 \end{itemize}
 
 \paragraph{Environment Variables}
-\begin{itemize}
-  \item Internet connection and access to repository APIs (GitHub, GitLab, PyPI).  
-  \item Python \texttt{requests} library for sending API requests.  
-  \item Django environment variables (via M19) for storing API keys securely.  
-\end{itemize}
+None. This module does not interact with externally supplied
+environment configuration values.
 
 \paragraph{Assumptions}
 \begin{itemize}
@@ -1970,11 +1936,8 @@ executeRawQuery & queryString & queryResult & QueryError \\
 \end{itemize}
 
 \paragraph{Environment Variables}
-\begin{itemize}
-  \item MySQL database server (version $\geq$ 8.0) hosting all project data.  
-  \item Django ORM handles model definitions and query translation.  
-  \item Environment credentials managed by M19 (e.g., host, username, password).  
-\end{itemize}
+None. This module does not interact with externally supplied
+environment configuration values.
 
 \paragraph{Assumptions}
 \begin{itemize}
@@ -2074,11 +2037,8 @@ archiveLogs & None & successFlag & ArchiveError \\
 \end{itemize}
 
 \paragraph{Environment Variables}
-\begin{itemize}
-  \item Python \texttt{logging} package for logging and log rotation.  
-  \item File system storage for log persistence.  
-  \item Operating environment defined by M19 (development, staging, production).  
-\end{itemize}
+None. This module does not interact with externally supplied
+environment configuration values.
 
 \paragraph{Assumptions}
 \begin{itemize}
