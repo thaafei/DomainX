@@ -954,7 +954,36 @@ Ranking Algorithm Module (M11) (\ref{mis:RankingAlgorithm})
 \begin{itemize}
   \item \textbf{UPDATE\_INTERVAL\_HOURS} = 24
   \item \textbf{MAX\_RETRIES} = 3
-  \item \textbf{SUPPORTED\_METRICS} = [``stars``, ``forks``, ``downloads``, ``commits``]
+  \item \textbf{SUPPORTED\_METRICS} = 
+ \begin{itemize}
+    \item \textbf{GitHub API:}
+      \begin{itemize}
+        \item stars
+        \item forks
+        \item watchers
+        \item openPullRequests
+        \item closedPullRequests
+      \end{itemize}
+    \item \textbf{Git statistics (git\_stats):}
+      \begin{itemize}
+        \item textFileCount
+        \item binaryFileCount
+        \item textLineCount
+        \item totalLinesAdded
+        \item totalLinesDeleted
+        \item totalCommits
+        \item commitsByYearLastFive
+        \item commitsByMonth
+      \end{itemize}
+    \item \textbf{Source code analysis (scc):}
+      \begin{itemize}
+        \item textFileCount
+        \item textLineCount
+        \item codeLineCount
+        \item commentLineCount
+        \item blankLineCount
+      \end{itemize}
+  \end{itemize}
 \end{itemize}
 
 \paragraph{Exported Access Programs}
@@ -967,7 +996,8 @@ Ranking Algorithm Module (M11) (\ref{mis:RankingAlgorithm})
 fetchMetricsFromRepo & packageID & metricsData & APIError \\
 validateMetrics & metricsData & bool & ValidationError \\
 storeValidatedMetrics & metricsData & successFlag & WriteError \\
-scheduleAutoUpdate & None & successFlag & SchedulerError \\
+enqueueMetricsFetch & packageID & successFlag & QueueError \\
+processMetricsQueue & None & successFlag & WorkerError \\
 \bottomrule
 \end{tabularx}
 \end{center}
@@ -1017,11 +1047,19 @@ scheduleAutoUpdate & None & successFlag & SchedulerError \\
   \item exception: \texttt{WriteError} if database transaction fails.
 \end{itemize}
 
-\noindent \textbf{scheduleAutoUpdate}():
+\noindent \textbf{enqueueMetricsFetch}(packageID):
 \begin{itemize}
-  \item transition: schedules a background task (via Django \texttt{crontab} or \texttt{Celery}) to run every \texttt{UPDATE\_INTERVAL\_HOURS}.
-  \item output: \texttt{successFlag} = true if task successfully registered.
-  \item exception: \texttt{SchedulerError} if job registration fails.
+  \item transition: add \texttt{packageID} to \texttt{metricsQueue} for deferred processing.
+  \item output: \texttt{successFlag} = true if enqueue succeeds.
+  \item exception: \texttt{QueueError} if the request cannot be queued.
+\end{itemize}
+
+\noindent \textbf{processMetricsQueue}():
+\begin{itemize}
+  \item transition: dequeue pending repositories and fetch supported metrics
+        via M15; validate and store results in M17.
+  \item output: \texttt{successFlag} = true if all queued jobs complete.
+  \item exception: \texttt{WorkerError} if processing fails or is interrupted.
 \end{itemize}
 
 \paragraph{Local Functions}
