@@ -532,7 +532,7 @@ addMetric & metricData & successFlag & SchemaError \\
 editMetric & metricID, newValue & successFlag & ValidationError \\
 deleteMetric & metricID & successFlag & NotFoundError \\
 undoLastEdit & -- & successFlag & StackEmptyError \\
-validateEdit & candidateChange & Boolean & ValidationError \\
+validateEdit & candidateChange & bool & ValidationError \\
 commitBatch & changeList & successFlag & NetworkError \\
 \bottomrule
 \end{tabularx}
@@ -639,7 +639,7 @@ Application UI Module (M3) (\ref{mis:ApplicationUI})
 registerUser & email, password, role & authToken & ValidationError \\
 loginUser & email, password & authToken & AuthError \\
 logoutUser & authToken & successFlag & SessionError \\
-validateSession & authToken & Boolean & TokenError \\
+validateSession & authToken & bool & TokenError \\
 refreshToken & oldToken & newToken & TokenExpiredError \\
 \bottomrule
 \end{tabularx}
@@ -744,7 +744,7 @@ Application UI Module (M3) (\ref{mis:ApplicationUI})
 \midrule
 assignRole & userID, roleName & successFlag & InvalidRoleError \\
 getUserRole & userID & roleName & NotFoundError \\
-verifyAccess & userID, actionType & Boolean & PermissionError \\
+verifyAccess & userID, actionType & bool & PermissionError \\
 updateRolePermissions & roleName, newPermissions & successFlag & ConfigError \\
 listAllRoles & -- & roleList & None \\
 \bottomrule
@@ -954,7 +954,7 @@ Ranking Algorithm Module (M11) (\ref{mis:RankingAlgorithm})
 \textbf{Name} & \textbf{In} & \textbf{Out} & \textbf{Exceptions}\\
 \midrule
 fetchMetricsFromRepo & packageID & metricsData & APIError \\
-validateMetrics & metricsData & Boolean & ValidationError \\
+validateMetrics & metricsData & bool & ValidationError \\
 storeValidatedMetrics & metricsData & successFlag & WriteError \\
 scheduleAutoUpdate & None & successFlag & SchedulerError \\
 \bottomrule
@@ -1644,7 +1644,7 @@ Automated Metrics Module (M8) [for synchronization of imported metrics] (\ref{mi
 \textbf{Name} & \textbf{In} & \textbf{Out} & \textbf{Exceptions}\\
 \midrule
 parseFile & filePath, fileType & dataFrame & ParseError \\
-validateImportedData & dataFrame & Boolean & ValidationError \\
+validateImportedData & dataFrame & bool & ValidationError \\
 storeImportedData & dataFrame & successFlag & WriteError \\
 getImportSummary & dataFrame & summaryDict & None \\
 \bottomrule
