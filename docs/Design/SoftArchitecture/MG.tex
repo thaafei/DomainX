@@ -266,7 +266,12 @@ actually be implemented.
 
 The design of the system is intended to satisfy the requirements developed in
 the SRS. In this stage, the system is decomposed into modules. The connection
-between requirements and modules is listed in Table~\ref{TblRT}.
+between requirements and modules is listed in Table~\ref{tb_fr_modules}.
+
+On a boarder scope all the functional requirements are covered by one module.
+In cases where multiple modules covers a single functional requirement, it is due to the required functionality requiring multiple layers of system processes. 
+For example, FR5 "Admin can create domains, using a unique domain name and optionally a short description.", the modules needed to fulfill the requirement is \mref{mDomainsPage} and \mref{mUserRole}. 
+Since the domains' page is visible to all users, but only Admin users can create domains, we require the two modules to work simultaneously to achieve this requirement.
 
 \section{Module Decomposition} \label{SecMD}
 

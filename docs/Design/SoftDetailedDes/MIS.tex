@@ -376,10 +376,11 @@ None (external, platform-provided).
 \end{itemize}
 
 \paragraph{Environment Variables}
-\begin{itemize}
-  \item Display surface and window manager (screen, viewport, device DPI).
-  \item Network stack (HTTP/HTTPS, TLS).
-\end{itemize}
+
+None.  
+This module relies solely on capabilities provided by the host browser
+runtime and does not consume externally supplied configuration values.
+
 
 \paragraph{Assumptions}
 \begin{itemize}
@@ -392,7 +393,17 @@ None (external, platform-provided).
 Not applicable (no routines exported by this module in our system).
 
 \paragraph{Local Functions}
-Not applicable.
+
+\begin{itemize}
+  \item \textit{renderPage}(): Updates the Document Object Model in response to
+        application state changes.
+  \item \textit{handleUserInput}(e): Captures and dispatches user input events
+        (mouse, keyboard) to the front-end logic.
+  \item \textit{sendRequest}(req): Issues network requests to backend services
+        using the browser networking stack.
+  \item \textit{updateStorage}(k, v): Reads from and writes to localStorage or
+        sessionStorage as required by the UI.
+\end{itemize}
 
 \subsection{MIS of Application UI Module (M3)}
 \label{mis:ApplicationUI}
@@ -532,7 +543,7 @@ addMetric & metricData & successFlag & SchemaError \\
 editMetric & metricID, newValue & successFlag & ValidationError \\
 deleteMetric & metricID & successFlag & NotFoundError \\
 undoLastEdit & -- & successFlag & StackEmptyError \\
-validateEdit & candidateChange & Boolean & ValidationError \\
+validateEdit & candidateChange & bool & ValidationError \\
 commitBatch & changeList & successFlag & NetworkError \\
 \bottomrule
 \end{tabularx}
@@ -639,7 +650,7 @@ Application UI Module (M3) (\ref{mis:ApplicationUI})
 registerUser & email, password, role & authToken & ValidationError \\
 loginUser & email, password & authToken & AuthError \\
 logoutUser & authToken & successFlag & SessionError \\
-validateSession & authToken & Boolean & TokenError \\
+validateSession & authToken & bool & TokenError \\
 refreshToken & oldToken & newToken & TokenExpiredError \\
 \bottomrule
 \end{tabularx}
@@ -744,7 +755,7 @@ Application UI Module (M3) (\ref{mis:ApplicationUI})
 \midrule
 assignRole & userID, roleName & successFlag & InvalidRoleError \\
 getUserRole & userID & roleName & NotFoundError \\
-verifyAccess & userID, actionType & Boolean & PermissionError \\
+verifyAccess & userID, actionType & bool & PermissionError \\
 updateRolePermissions & roleName, newPermissions & successFlag & ConfigError \\
 listAllRoles & -- & roleList & None \\
 \bottomrule
@@ -943,7 +954,36 @@ Ranking Algorithm Module (M11) (\ref{mis:RankingAlgorithm})
 \begin{itemize}
   \item \textbf{UPDATE\_INTERVAL\_HOURS} = 24
   \item \textbf{MAX\_RETRIES} = 3
-  \item \textbf{SUPPORTED\_METRICS} = [``stars``, ``forks``, ``downloads``, ``commits``]
+  \item \textbf{SUPPORTED\_METRICS} = 
+ \begin{itemize}
+    \item \textbf{GitHub API:}
+      \begin{itemize}
+        \item stars
+        \item forks
+        \item watchers
+        \item openPullRequests
+        \item closedPullRequests
+      \end{itemize}
+    \item \textbf{Git statistics (git\_stats):}
+      \begin{itemize}
+        \item textFileCount
+        \item binaryFileCount
+        \item textLineCount
+        \item totalLinesAdded
+        \item totalLinesDeleted
+        \item totalCommits
+        \item commitsByYearLastFive
+        \item commitsByMonth
+      \end{itemize}
+    \item \textbf{Source code analysis (scc):}
+      \begin{itemize}
+        \item textFileCount
+        \item textLineCount
+        \item codeLineCount
+        \item commentLineCount
+        \item blankLineCount
+      \end{itemize}
+  \end{itemize}
 \end{itemize}
 
 \paragraph{Exported Access Programs}
@@ -954,9 +994,10 @@ Ranking Algorithm Module (M11) (\ref{mis:RankingAlgorithm})
 \textbf{Name} & \textbf{In} & \textbf{Out} & \textbf{Exceptions}\\
 \midrule
 fetchMetricsFromRepo & packageID & metricsData & APIError \\
-validateMetrics & metricsData & Boolean & ValidationError \\
+validateMetrics & metricsData & bool & ValidationError \\
 storeValidatedMetrics & metricsData & successFlag & WriteError \\
-scheduleAutoUpdate & None & successFlag & SchedulerError \\
+enqueueMetricsFetch & packageID & successFlag & QueueError \\
+processMetricsQueue & None & successFlag & WorkerError \\
 \bottomrule
 \end{tabularx}
 \end{center}
@@ -1006,11 +1047,19 @@ scheduleAutoUpdate & None & successFlag & SchedulerError \\
   \item exception: \texttt{WriteError} if database transaction fails.
 \end{itemize}
 
-\noindent \textbf{scheduleAutoUpdate}():
+\noindent \textbf{enqueueMetricsFetch}(packageID):
 \begin{itemize}
-  \item transition: schedules a background task (via Django \texttt{crontab} or \texttt{Celery}) to run every \texttt{UPDATE\_INTERVAL\_HOURS}.
-  \item output: \texttt{successFlag} = true if task successfully registered.
-  \item exception: \texttt{SchedulerError} if job registration fails.
+  \item transition: add \texttt{packageID} to \texttt{metricsQueue} for deferred processing.
+  \item output: \texttt{successFlag} = true if enqueue succeeds.
+  \item exception: \texttt{QueueError} if the request cannot be queued.
+\end{itemize}
+
+\noindent \textbf{processMetricsQueue}():
+\begin{itemize}
+  \item transition: dequeue pending repositories and fetch supported metrics
+        via M15; validate and store results in M17.
+  \item output: \texttt{successFlag} = true if all queued jobs complete.
+  \item exception: \texttt{WorkerError} if processing fails or is interrupted.
 \end{itemize}
 
 \paragraph{Local Functions}
@@ -1227,7 +1276,7 @@ It interacts with M5 (User Authentication) to identify the active user and with 
 
 \subsubsection{Uses}
 User Authentication Module (M5) [Django authentication system] (\ref{mis:UserAuthentication})\\
-Database Persistence Module (M17) [Django ORM / PostgreSQL] (\ref{mis:DatabasePersistence})\\
+Database Persistence Module (M17) [Django ORM / PostgreSQL] (\ref{mis:DatabasePersistenceModule})\\
 System API Gateway Module (M10) [REST API for data retrieval] (\ref{mis:SystemAPIGateway})
 
 \subsubsection{Syntax}
@@ -1644,7 +1693,7 @@ Automated Metrics Module (M8) [for synchronization of imported metrics] (\ref{mi
 \textbf{Name} & \textbf{In} & \textbf{Out} & \textbf{Exceptions}\\
 \midrule
 parseFile & filePath, fileType & dataFrame & ParseError \\
-validateImportedData & dataFrame & Boolean & ValidationError \\
+validateImportedData & dataFrame & bool & ValidationError \\
 storeImportedData & dataFrame & successFlag & WriteError \\
 getImportSummary & dataFrame & summaryDict & None \\
 \bottomrule
