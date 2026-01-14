@@ -625,6 +625,9 @@ commitBatch & changeList & successFlag & NetworkError \\
 \subsection{MIS of User Authentication Module (M5)}
 \label{mis:UserAuthentication}
 
+\subsubsection{Module}
+Authenticates users and manages session tokens. Supports login/logout, session validation, and invitation-based account creation (admin-issued invites with verification codes).
+
 \subsubsection{Uses}
 System API Gateway Module (M10) [Django REST Framework, JSON] (\ref{mis:SystemAPIGateway})\\
 User Role Access Module (M6) (\ref{mis:UserRoleAccess})\\
@@ -647,7 +650,8 @@ Application UI Module (M3) (\ref{mis:ApplicationUI})
 \toprule
 \textbf{Name} & \textbf{In} & \textbf{Out} & \textbf{Exceptions}\\
 \midrule
-registerUser & email, password, role & authToken & ValidationError \\
+sendInvite & email, role & inviteCode & AuthError \\
+registerUser & email, password, inviteCode & authToken & ValidationError \\
 loginUser & email, password & authToken & AuthError \\
 logoutUser & authToken & successFlag & SessionError \\
 validateSession & authToken & bool & TokenError \\
@@ -681,11 +685,18 @@ refreshToken & oldToken & newToken & TokenExpiredError \\
 
 \paragraph{Access Routine Semantics}
 
-\noindent \textbf{registerUser}(email, password, role):
+\noindent \textbf{registerUser}(email, password, inviteCode):
 \begin{itemize}
-  \item transition: create a new user in M17 with a hashed password and assigned role.
+  \item transition: validate \texttt{inviteCode}; if valid, create a new user in M17 with a hashed password and the role associated with the invite.
   \item output: \texttt{authToken} if registration succeeds.
-  \item exception: \texttt{ValidationError} if email exists or password fails complexity checks.
+  \item exception: \texttt{ValidationError} if email exists, password fails checks, or \texttt{inviteCode} is invalid/expired.
+\end{itemize}
+
+\noindent \textbf{sendInvite}(email, role):
+\begin{itemize}
+  \item transition: generate an invitation code tied to \texttt{email} and \texttt{role}; store the invite and send the code to the user.
+  \item output: \texttt{inviteCode}.
+  \item exception: \texttt{AuthError} if the requester is not authorized to invite users.
 \end{itemize}
 
 \noindent \textbf{loginUser}(email, password):
