@@ -128,6 +128,9 @@ UI & User Interface, front-end component built with React. \\
 UI/UX & User Interface and User Experience. \\
 UC & Unlikely Change. \\
 VnV & Verification and Validation, process of ensuring correctness and meeting stakeholder needs. \\
+HTTP & Hypertext Transfer Protocol, application-layer protocol for transmitting web resources. \\
+HTTPS & Hypertext Transfer Protocol Secure, encrypted version of HTTP using TLS. \\
+CORS & Cross-Origin Resource Sharing, browser security mechanism controlling cross-domain HTTP requests. \\
 \end{longtable}
 
 \newpage
@@ -1974,15 +1977,12 @@ handleRateLimit & responseHeaders & delaySeconds & RateLimitError \\
 \label{mis:DatabasePersistenceModule}
 
 \subsubsection{Module}
-Handles all data persistence and retrieval operations between the application and its relational database.  
+Handles all data persistence and retrieval operations for the system's relational database.  
 This module defines and manages models representing entities such as domains, packages, metrics, and users.  
 It ensures data integrity, schema consistency, and transactional reliability using Django’s ORM layer with a MySQL backend.
 
 \subsubsection{Uses}
-System API Gateway Module (M10) [for CRUD operations] (\ref{mis:SystemAPIGateway})\\
 Configuration Module (M19) [for connection credentials] (\ref{mis:Configuration})\\
-Automated Metrics Module (M8) [for inserting new metric data] (\ref{mis:AutomatedMetrics})\\
-Ranking Algorithm Module (M11) [for reading metric tables during ranking] (\ref{mis:RankingAlgorithm})
 
 \subsubsection{Syntax}
 
