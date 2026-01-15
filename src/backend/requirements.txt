@@ -10,3 +10,5 @@ requests==2.32.5
 GitPython==3.1.45
 PyGithub==2.8.1
 python-dotenv==1.2.1
+pytest
+pytest-django
