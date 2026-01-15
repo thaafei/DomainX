@@ -342,7 +342,7 @@ to be implemented.
 \item[Secrets:] The data structures and algorithms used to securely store, validate and manage user credentials.
 \item[Services:] Provides user registration, login, and session management services.
 \item[Implemented By:] \href{https://www.djangoproject.com/}{Django}
-\item[Type of Module:] Library
+\item[Type of Module:] Abstract Object
 \end{description}
 
 \subsubsection{ User Role Access Module (\mref{mUserRole})}
@@ -366,7 +366,7 @@ to be implemented.
 \item[Secrets:] The data structures and algorithms used for adding automatable metrics.
 \item[Services:] Handles the automated data entry into system using the Repository Api Module \mref{mRepoAPI}.
 \item[Implemented By:]  \projname
-\item[Type of Module:] Library
+\item[Type of Module:] ADT
 \end{description}
 
 \subsubsection{ Domains Page Module (\mref{mDomainsPage})}
@@ -395,17 +395,6 @@ to be implemented.
 
 
 \subsection{Software Decision Module}
-\begin{description}
-\item[Secrets:] The design decision based on mathematical theorems, physical
-  facts, or programming considerations. The secrets of this module are
-  \emph{not} described in the SRS.
-\item[Services:] Includes data structure and algorithms used in the system that
-  do not provide direct interaction with the user. 
-  % Changes in these modules are more likely to be motivated by a desire to
-  % improve performance than by externally imposed changes.
-\item[Implemented By:] --
-\end{description}
-
 \subsubsection{System API Gateway Module (\mref{mSysApi})}
 \begin{description}
 \item[Secrets:] The backend apis that services the flow of business logic.
@@ -452,7 +441,7 @@ to be implemented.
 \item[Secrets:] API endpoints, tokens, and rate limit strategies.
 \item[Services:] Fetches metrics and metadata from external repositories (e.g., GitHub, GitLab).
 \item[Implemented By:] \href{https://docs.github.com/en/rest?apiVersion=2022-11-28}{Github API}
-\item[Type of Module:] Library
+\item[Type of Module:] Abstract Object
 \end{description}
 
 \subsubsection{Database Persistence Module (\mref{mDB})}
@@ -460,7 +449,7 @@ to be implemented.
 \item[Secrets:] The algorithms used for interacting with the database.
 \item[Services:] Provides database methods related to updating and querying the stored data and the connection to the database itself. The expected database design is shown in Figure \ref{fig:databaseschema}
 \item[Implemented By:] \href{https://www.mysql.com/}{MySQL}
-\item[Type of Module:] Library
+\item[Type of Module:] Abstract Object
 \end{description}
 
 \subsubsection{Logging Module (\mref{mLog})}
