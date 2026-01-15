@@ -324,7 +324,7 @@ to be implemented.
 \subsubsection{ Application UI Module (\mref{mAppUI})}
 \begin{description}
 \item[Secrets:] The data structures and algorithms to display all visuals.
-\item[Services:] Displays and renders the interactive user interface elements.
+\item[Services:] Displays and renders the interactive user interface elements. 
 \item[Implemented By:] \href{https://react.dev/}{React}
 \item[Type of Module:] ADT
 \end{description}
@@ -332,7 +332,7 @@ to be implemented.
 \subsubsection{ Data Edit Module (\mref{mDataEdit})}
 \begin{description}
 \item[Secrets:] The data structures and algorithms to edit domain data. 
-\item[Services:]  Handles and validates user inputs of domain/package/metric data.
+\item[Services:]  Handles and validates user inputs of domain/package/metric data from user-inputted data and allows editing of automated data. Provides error checking for each metric based on their requirements.
 \item[Implemented By:] \projname
 \item[Type of Module:] ADT
 \end{description}
@@ -340,7 +340,7 @@ to be implemented.
 \subsubsection{ User Authentication Module (\mref{mUserAuth})}
 \begin{description}
 \item[Secrets:] The data structures and algorithms used to securely store, validate and manage user credentials.
-\item[Services:] Provides user registration, login, and session management services.
+\item[Services:] Provides user registration, login, and session management services. 
 \item[Implemented By:] \href{https://www.djangoproject.com/}{Django}
 \item[Type of Module:] Abstract Object
 \end{description}
@@ -348,7 +348,7 @@ to be implemented.
 \subsubsection{ User Role Access Module (\mref{mUserRole})}
 \begin{description}
 \item[Secrets:] The data structures and algorithms used to store and validate users access level within the system.
-\item[Services:] Provides user role and capabilities related to the role.
+\item[Services:] Provides user role and capabilities related to the role, which allows other modules to restrict features and display based on the role of the user.
 \item[Implemented By:]  \projname
 \item[Type of Module:] ADT
 \end{description}
@@ -380,7 +380,7 @@ to be implemented.
 \subsubsection{Comparison Module (\mref{mCompare})}
 \begin{description}
 \item[Secrets:] The data structures and algorithm that store the package comparison methods.
-\item[Services:] Defines available comparison methods based on user request.
+\item[Services:] Defines available comparison methods based on user request and interfaces with the graphing module where appropriate.
 \item[Implemented By:] \projname
 \item[Type of Module:] Abstract Object
 \end{description}
@@ -395,10 +395,21 @@ to be implemented.
 
 
 \subsection{Software Decision Module}
+\begin{description}
+\item[Secrets:] The design decision based on mathematical theorems, physical
+  facts, or programming considerations. The secrets of this module are
+  \emph{not} described in the SRS.
+\item[Services:] Includes data structure and algorithms used in the system that
+  do not provide direct interaction with the user. 
+  % Changes in these modules are more likely to be motivated by a desire to
+  % improve performance than by externally imposed changes.
+\item[Implemented By:] --
+\end{description}
+
 \subsubsection{System API Gateway Module (\mref{mSysApi})}
 \begin{description}
 \item[Secrets:] The backend apis that services the flow of business logic.
-\item[Services:] Manages application state and serves as the central communication hub for the system.
+\item[Services:] Manages application state and serves as the central communication hub for the system. First point of contact for changes to the business logic.
 \item[Implemented By:] \href{https://www.djangoproject.com/}{Django}
 \item[Type of Module:] Abstract Object
 \end{description}
@@ -414,7 +425,7 @@ to be implemented.
 
 \subsubsection{Graphing Module (\mref{mGraphing})}
 \begin{description}
-\item[Secrets:] The data structures and algorithms used for graphing data.
+\item[Secrets:] The algorithms and external libraries required to graph and visualize user data.
 \item[Services:] Takes metric data as input and outputs requested graphs.
 \item[Implemented By:] \href{https://pypi.org/project/matplotlib/}{Matplotlib}
 \item[Type of Module:] Abstract Object
@@ -423,7 +434,7 @@ to be implemented.
 \subsubsection{File Import Module (\mref{mImport})}
 \begin{description}
 \item[Secrets:] The data structures and algorithms used to import data of varying formats (e.g. Excel, CSV).
-\item[Services:] Facilitates the process of processing a inputted file into data for use by the rest of the system.
+\item[Services:] Facilitates the process of processing a inputted file into data for use by the rest of the system. Contains the external libraries and additional mechanisms to retrieve and format inputted files.
 \item[Implemented By:] \href{https://pypi.org/project/pandas/}{pandas}
 \item[Type of Module:] Abstract Object
 \end{description}
@@ -439,7 +450,7 @@ to be implemented.
 \subsubsection{Repository API Module (\mref{mRepoAPI})}
 \begin{description}
 \item[Secrets:] API endpoints, tokens, and rate limit strategies.
-\item[Services:] Fetches metrics and metadata from external repositories (e.g., GitHub, GitLab).
+\item[Services:] Fetches metrics and metadata from external repositories (e.g., GitHub, GitLab). Handles the communications with the external library and provides an abstract layer between the raw external API interface and the system interface.
 \item[Implemented By:] \href{https://docs.github.com/en/rest?apiVersion=2022-11-28}{Github API}
 \item[Type of Module:] Abstract Object
 \end{description}
