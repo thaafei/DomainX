@@ -178,6 +178,7 @@ change.
   \item[\refstepcounter{acnum} \actheacnum \label{ac6}:] The APIs used to extract repository metrics
   \item[\refstepcounter{acnum} \actheacnum \label{ac7}:] The visualization libraries used to display data
   \item[\refstepcounter{acnum} \actheacnum \label{ac8}:] Additional export and import file formatting may be added (e.g. CSV, Excel)
+  \item[\refstepcounter{acnum} \actheacnum \label{ac9}:] The user interface features, design and colours might be changed.
 \end{description}
 \subsection{Unlikely Changes} \label{SecUchange}
 
@@ -502,7 +503,8 @@ FR15 & \mref{mGraphing}, \mref{mExport}\\
 \label{tb_fr_modules}
 \end{table}
 
-Table \ref{tb_fr_modules} shows the traceability between the functional requirements and the modules. Note that \mref{mAppUI}, \mref{mSysApi} and \mref{mLog} is applicable to all, since they facilitate the information flow and user interaction for all the listed functional requirements and all functional requirements interactions will be logged.
+Table \ref{tb_fr_modules} shows the traceability between the functional requirements and the modules.
+Note that \mref{mAppUI}, \mref{mSysApi} and \mref{mLog} is applicable to all, since they facilitate the information flow and user interaction for all the listed functional requirements and all functional requirements interactions will be logged.
 
 \begin{longtable}{p{0.2\textwidth} p{0.6\textwidth}}
 \toprule
@@ -617,6 +619,7 @@ CR-LR3 & Not Relevant \\
 \caption{Trace Between Non-Functional Requirements and Modules}
 \label{tnf_modules}
 \end{longtable}
+
 Table \ref{tnf_modules} shows the traceability between the non-functional requirements and the modules.
 
 \begin{table}[H]
@@ -633,13 +636,14 @@ Table \ref{tnf_modules} shows the traceability between the non-functional requir
 \acref{ac6} & \mref{mRepoAPI}, \mref{mAutMetrics}\\
 \acref{ac7} & \mref{mGraphing}\\
 \acref{ac8} & \mref{mExport},  \mref{mImport}\\
+\acref{ac9} & \mref{mAppUI}
 \bottomrule
 \end{tabular}
 \caption{Trace Between Anticipated Changes and Modules}
 \label{TblACT}
 \end{table}
 Table \ref{TblACT} shows the traceability between the anticipated changes and the modules. \\
-Note that \mref{mAppUI} and \mref{mSysApi} is applicable to all the anticipated changes, since they cover the data flow and user interface for the system.
+Note that \mref{mSysApi} is applicable to all the anticipated changes, since they cover the data flow for the system.
 \mref{mLog} is also applicable to all, since changes to the underlying modules could impact the logging module.
 \\ Since \acref{ac1} can result in additional metrics, the main page that would display the domain would have to change (\mref{mDomainsPage}), the underlying methods involved in updating the data (\mref{mDataEdit}) and database itself (\mref{mDB}).
 \\ \acref{ac5} touches on what the user can see, if additional roles are added, the user page UI must be updated (\mref{mUserPage}). The configuration to store each user's preference (\mref{mConf}) and role will also be updated (\mref{mUserRole}).
