@@ -7,8 +7,12 @@ class LibrarySerializer(serializers.ModelSerializer):
     
     class Meta:
         model = Library
-        fields = "__all__"
-        read_only_fields = ['library_ID', 'created_at']
+        fields = ["library_ID", "library_name", "url", "domain", "programming_language", "created_at",
+                  "analysis_status", "analysis_task_id", "analysis_error", "analysis_started_at",
+                  "analysis_finished_at"]
+        read_only_fields = ["library_ID", "created_at", "analysis_status", "analysis_task_id",
+                            "analysis_error", "analysis_started_at", "analysis_finished_at"]
+
 
     def validate_url(self, value):
         if 'github.com' not in value:
