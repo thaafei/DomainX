@@ -289,6 +289,8 @@ __pycache__/
 *.pyc
 db.sqlite3
 
+# coverage generated files
+.coverage
 # Redis
 *.rdb
 dump.rdb
