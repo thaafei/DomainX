@@ -7,3 +7,8 @@ omit =
     */urls.py
     */celery.py
     */manage.py
+    */api/admin.py
+    */apps.py
+    */users/admin.py
+    */domain/admin.py
+    */libraries/admin.py
