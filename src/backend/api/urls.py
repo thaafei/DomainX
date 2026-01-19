@@ -1,6 +1,7 @@
 from django.urls import path, include
 from .views import status_views
 from .views.comparison_views import domain_comparison
+from .database.domain.views import create_domain
 from .views.metric_views import (
     list_metrics,
     create_metric,
@@ -25,6 +26,7 @@ urlpatterns = [
     path("libraries/<uuid:library_id>/delete/", delete_library, name="delete_library"),
     path("libraries/<uuid:library_id>/update-values/", update_library_values, name="update_library_values"),
     path('database/', include('api.database.urls')),
+    path('domain/create/', create_domain, name='create_domain')
     # path('database/libraries/', include('api.database.libraries.urls')),
     # path('database/metrics/', include('api.database.metrics.urls')),
     # path('database/library-metrics/', include('api.database.library_metric_values.urls')),

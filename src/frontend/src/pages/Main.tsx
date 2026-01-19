@@ -12,6 +12,9 @@ const Main: React.FC = () => {
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const [selectedDomain, setSelectedDomain] = useState(domains[0]);
   const { logout } = useAuthStore();
+  const [showDomainModal, setShowDomainModal] = useState(false);
+  const [domainName, setDomainName] = useState("");
+  const [description, setDescription] = useState("");
   const handleLogout = async () => {
       try {
           await fetch("http://127.0.0.1:8000/logout/", {
@@ -24,6 +27,19 @@ const Main: React.FC = () => {
       } catch (err: any) {
         console.error(err);
       }
+  };
+  const handleCreateDomain = async () => {
+    const response = await fetch('http://127.0.0.1:8000/api/domain/create/', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ domain_name: domainName, description: description }),
+    });
+
+    if (response.ok) {
+      setShowDomainModal(false);
+      setDomainName("");
+      setDescription("");
+    }
   };
   return (
     <div className="dx-bg" style={{ display: "flex", height: "100vh", overflow: "hidden" }}>
@@ -92,6 +108,17 @@ const Main: React.FC = () => {
             </button>
             <button
               className="dx-btn dx-btn-outline"
+              onClick={() => setShowDomainModal(true)}
+              style={{
+                display: "flex",
+                alignItems: "center",
+                marginTop: 8,
+              }}
+            >
+              <span style={{ fontSize: 15, marginRight: 8 }}>🌐</span> Create Domain
+            </button>
+            <button
+              className="dx-btn dx-btn-outline"
               onClick={() => navigate("/metrics")}
               style={{
                 display: "flex",
@@ -114,6 +141,55 @@ const Main: React.FC = () => {
             >
               Logout
             </button>
+            {showDomainModal && (
+              <div
+                style={{
+                  position: "fixed",
+                  top: 0,
+                  left: 0,
+                  width: "100vw",
+                  height: "100vh",
+                  backgroundColor: "rgba(0, 0, 0, 0.6)",
+                  display: "flex",
+                  justifyContent: "center",
+                  alignItems: "center",
+                  zIndex: 9999, // High z-index to stay on top of everything
+                }}
+              >
+                <div
+                  style={{
+                    background: "#fff",
+                    padding: "24px",
+                    borderRadius: "12px",
+                    width: "350px",
+                    boxShadow: "0 10px 25px rgba(0,0,0,0.2)",
+                    color: "#333",
+                    display: "flex",
+                    flexDirection: "column",
+                  }}
+                >
+                  <h3>New Domain</h3>
+                  <input 
+                    className="dx-input" // Assuming you have a standard input class
+                    placeholder="Domain Name" 
+                    value={domainName}
+                    onChange={(e) => setDomainName(e.target.value)}
+                    style={{ width: '100%', marginBottom: 12, padding: 8 }}
+                  />
+                  <textarea 
+                    className="dx-input"
+                    placeholder="Description" 
+                    value={description}
+                    onChange={(e) => setDescription(e.target.value)}
+                    style={{ width: '100%', marginBottom: 12, padding: 8, minHeight: 60 }}
+                  />
+                  <div style={{ display: 'flex', gap: 8, justifyContent: 'flex-end' }}>
+                    <button className="dx-btn" onClick={() => setShowDomainModal(false)}>Cancel</button>
+                    <button className="dx-btn dx-btn-primary" onClick={handleCreateDomain}>Create</button>
+                  </div>
+                </div>
+              </div>
+            )}
           </>
         )}
 
