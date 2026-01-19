@@ -2222,11 +2222,19 @@ Database Persistence Module (M17)  (\ref{mis:DatabasePersistenceModule})\\
 \midrule
 initLogger & logConfig & successFlag & ConfigError \\
 logEvent & message, level, context & successFlag & WriteError \\
-getRecentLogs & limit, [filter] & logsList & ReadError \\
-archiveLogs & none & successFlag & ArchiveError \\
+getRecentLogs & limit, [filter:LogFilter] & list(LogEntry) & ReadError \\
+archiveLogs & None & successFlag & ArchiveError \\
 \bottomrule
 \end{tabularx}
 \end{center}
+
+\paragraph{Data Types}
+\begin{itemize}
+  \item \textbf{LogLevel} ::= \{\texttt{DEBUG}, \texttt{INFO}, \texttt{WARNING}, \texttt{ERROR}, \texttt{CRITICAL}\}
+  \item \textbf{LogEntry} ::= $\langle timestamp:string, level:LogLevel, message:string, context:dict(string,string) \rangle$
+  \item \textbf{LogFilter} ::= $\langle minLevel:Option(LogLevel), containsText:Option(string) \rangle$
+  \item \textbf{LogConfig} ::= $\langle storeType:\{\texttt{FILE},\texttt{DB}\}, level:LogLevel \rangle$
+\end{itemize}
 
 \subsubsection{Semantics}
 
@@ -2249,9 +2257,7 @@ archiveLogs & none & successFlag & ArchiveError \\
 \paragraph{Environment Variables}
 \begin{itemize}
   \item \textbf{clock}: system clock used for timestamps.
-  \item \textbf{logStore}: target logging sink (e.g., file store or database table).
   \item \textbf{logDir}: directory/location for log storage if file-based.
-  \item \textbf{net}: network interface used if logs are shipped to an external service.
 \end{itemize}
 
 \paragraph{Assumptions}
@@ -2261,26 +2267,33 @@ archiveLogs & none & successFlag & ArchiveError \\
   \item Critical events (ERROR, CRITICAL) are monitored through external observability tools if configured.  
 \end{itemize}
 
+
 \paragraph{Access Routine Semantics}
 
-\noindent \textbf{initLogger}(configFilePath):
+\noindent \textbf{initLogger}(logConfig):
 \begin{itemize}
-  \item transition: initializes the logger with parameters defined in the config file.  
+  \item transition: initializes the logger with parameters defined in logConfig.  
   \item output: \texttt{successFlag} = true if initialization succeeds.  
-  \item exception: \texttt{ConfigError} if file invalid or missing keys.  
+  \item exception: \texttt{ConfigError} if logConfig invalid or missing keys.  
 \end{itemize}
 
 \noindent \textbf{logEvent}(message, level, context):
 \begin{itemize}
-  \item transition: formats the log entry and appends it to the configured log store.
+  \item transition:
+  \begin{itemize}
+    \item Formats the log entry with timestamp, level, message, and context.
+    \item If \texttt{logConfig.storeType = FILE}, the log entry is persisted to a file under \texttt{logDir}.
+    \item If \texttt{logConfig.storeType = DB}, the log entry is persisted via the Database Persistence Module (M17).
+  \end{itemize}
   \item output: \texttt{successFlag} = true if the entry is persisted.
   \item exception: \texttt{WriteError} if persistence fails.
 \end{itemize}
 
+
 \noindent \textbf{getRecentLogs}(limit, [filter]):
 \begin{itemize}
   \item transition: none.
-  \item output: \texttt{logsList} containing up to \texttt{limit} most recent entries matching \texttt{filter} if provided.
+  \item output: \texttt{logsList : list(LogEntry)} containing up to \texttt{limit} most recent entries matching \texttt{filter} if provided.
   \item exception: \texttt{ReadError} if logs cannot be retrieved.
 \end{itemize}
 
