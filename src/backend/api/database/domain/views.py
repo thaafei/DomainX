@@ -18,19 +18,18 @@ class DomainRetrieveUpdateDestroyView(generics.RetrieveUpdateDestroyAPIView):
 
 @api_view(["POST"])
 def create_domain(request):
-    if request.method == 'POST':
-        name = request.POST.get('domain_name', '').strip()
-        desc = request.POST.get('description', '').strip()
-        if not name:
-            messages.error(request, "Domain name is required.")
-        elif Domain.objects.filter(domain_name=name).exists():
-            messages.error(request, f"The domain '{name}' already exists.")
-        else:
-            Domain.objects.create(
-                domain_name=name,
-                description=desc,
-                created_by=request.user
-            )
-            messages.success(request, "Domain created successfully!")
-            return redirect('domain_list')
-    return Response({"message": "Domain created successfully"}, status=status.HTTP_201_CREATED)
+    name = request.data.get('domain_name')
+    desc = request.data.get('description')
+
+    if not name or not desc:
+        return Response({"error": "Fields missing"}, status=400)
+
+    try:
+        Domain.objects.create(
+            domain_name=name,
+            description=desc, 
+            # created_by=request.user
+        )
+        return Response({"status": "success"}, status=201)
+    except Exception as e:
+        return Response({"error": str(e)}, status=400)
