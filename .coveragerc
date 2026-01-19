@@ -6,3 +6,4 @@ omit =
     */settings.py
     */urls.py
     */celery.py
+    */manage.py
