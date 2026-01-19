@@ -126,7 +126,7 @@ const ComparisonToolPage: React.FC = () => {
 
             <button
               className="dx-btn dx-btn-outline"
-              onClick={() => navigate("/edit")}
+              onClick={() => navigate(`/edit/${DOMAIN_ID}`)}
             >
               ✎ Edit Metric Values
             </button>

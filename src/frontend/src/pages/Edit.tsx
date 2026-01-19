@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { useParams } from 'react-router-dom';
 
 interface Metric {
   metric_ID: string;
@@ -16,9 +17,11 @@ interface EditableRow {
   isEditing: boolean;
 }
 
-const DOMAIN_ID = " ecba1df1ede211f0987c0050568e534c";
+// const DOMAIN_ID = " ecba1df1ede211f0987c0050568e534c";
 
 const EditValuesPage: React.FC = () => {
+  const { domainId } = useParams<{ domainId: string }>();
+  const DOMAIN_ID = domainId; 
   const navigate = useNavigate();
   const [metricList, setMetricList] = useState<Metric[]>([]);
   const [rows, setRows] = useState<EditableRow[]>([]);
