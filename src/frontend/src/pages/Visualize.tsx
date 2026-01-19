@@ -117,7 +117,7 @@ const Visualize: React.FC = () => {
       >
         <button
           className="dx-btn dx-btn-outline"
-          onClick={() => navigate("/comparison-tool")}
+          onClick={() => navigate(`/comparison-tool/${domainId}`)}
         >
           ← Back
         </button>
