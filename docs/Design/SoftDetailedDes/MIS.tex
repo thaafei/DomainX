@@ -2202,13 +2202,13 @@ and persisting them in a configurable log store.
 
 \subsubsection{Uses}
 System API Gateway Module (M10)  (\ref{mis:SystemAPIGateway})\\
-Database Persistence Module (M17)  (\ref{mis:DatabasePersistenceModule})\\
+Database Persistence Module (M17) (\emph{optional; only if} \texttt{storeType = DB}) (\ref{mis:DatabasePersistenceModule})\\
 
 \subsubsection{Syntax}
 
 \paragraph{Exported Constants}
 \begin{itemize}
-  \item \textbf{DEFAULT\_LEVEL} = ``INFO''
+  \item \textbf{DEFAULT\_LEVEL} = ``INFO``
   \item \textbf{MAX\_LOG\_SIZE\_MB} = 10
   \item \textbf{BACKUP\_COUNT} = 5
 \end{itemize}
@@ -2233,7 +2233,7 @@ archiveLogs & None & successFlag & ArchiveError \\
   \item \textbf{LogLevel} ::= \{\texttt{DEBUG}, \texttt{INFO}, \texttt{WARNING}, \texttt{ERROR}, \texttt{CRITICAL}\}
   \item \textbf{LogEntry} ::= $\langle timestamp:string, level:LogLevel, message:string, context:dict(string,string) \rangle$
   \item \textbf{LogFilter} ::= $\langle minLevel:Option(LogLevel), containsText:Option(string) \rangle$
-  \item \textbf{LogConfig} ::= $\langle storeType:\{\texttt{FILE},\texttt{DB}\}, level:LogLevel \rangle$
+  \item \textbf{LogConfig} ::= $\langle storeType:\{\texttt{FILE},\texttt{DB}\}, level:LogLevel, fileName:Option(string) \rangle$
 \end{itemize}
 
 \subsubsection{Semantics}
@@ -2267,6 +2267,13 @@ archiveLogs & None & successFlag & ArchiveError \\
   \item Critical events (ERROR, CRITICAL) are monitored through external observability tools if configured.  
 \end{itemize}
 
+\paragraph{Project Configuration Note}
+For the peer-implementation deliverable and the current system release,
+\texttt{logConfig.storeType = FILE}. Therefore, persistence and retrieval are file-based under
+\texttt{logDir}. Database persistence via M17 is supported by this MIS but is not required for the peer implementation.
+If \texttt{fileName = None}, the implementation shall use \texttt{app.log}.
+
+
 
 \paragraph{Access Routine Semantics}
 
@@ -2281,21 +2288,23 @@ archiveLogs & None & successFlag & ArchiveError \\
 \begin{itemize}
   \item transition:
   \begin{itemize}
-    \item Formats the log entry with timestamp, level, message, and context.
-    \item If \texttt{logConfig.storeType = FILE}, the log entry is persisted to a file under \texttt{logDir}.
-    \item If \texttt{logConfig.storeType = DB}, the log entry is persisted via the Database Persistence Module (M17).
+    \item Create \texttt{entry : LogEntry} using the current \texttt{clock} for \texttt{timestamp}.
+    \item If \texttt{level} is below the configured threshold \texttt{logLevel}, do not persist and return \texttt{successFlag = false}.
+    \item If \texttt{logConfig.storeType = FILE}, append \texttt{entry} to \texttt{logDir/fileName} (default \texttt{app.log} if \texttt{fileName = None}).
+    \item If \texttt{logConfig.storeType = DB}, persist \texttt{entry} via the Database Persistence Module (M17).
   \end{itemize}
-  \item output: \texttt{successFlag} = true if the entry is persisted.
-  \item exception: \texttt{WriteError} if persistence fails.
+  \item output: \texttt{successFlag} indicates whether the entry was persisted.
+  \item exception: \texttt{WriteError} if the configured log store cannot be written.
 \end{itemize}
 
 
 \noindent \textbf{getRecentLogs}(limit, [filter]):
 \begin{itemize}
-  \item transition: none.
+  \item transition: reads entries, applies \texttt{filter} if provided, then returns the most recent \texttt{limit} entries.
   \item output: \texttt{logsList : list(LogEntry)} containing up to \texttt{limit} most recent entries matching \texttt{filter} if provided.
   \item exception: \texttt{ReadError} if logs cannot be retrieved.
 \end{itemize}
+
 
 
 \noindent \textbf{archiveLogs}():
