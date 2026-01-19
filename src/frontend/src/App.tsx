@@ -30,7 +30,8 @@ const App: React.FC = () => {
         <Route path="/edit" element={<Navigate to="/" replace />} />
         <Route path="/libraries/:domainId" element={<Libraries />} />
         <Route path="/libraries" element={<Navigate to="/" replace />} />
-        <Route path="/visualize" element={<Visualize />} />
+        <Route path="/visualize/:domainId" element={<Visualize />} />
+        <Route path="/libraries" element={<Navigate to="/" replace />} />
         <Route path="/main" element={<Main />} />
       </Routes>
     </Router>

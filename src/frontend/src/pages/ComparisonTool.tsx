@@ -136,7 +136,7 @@ const ComparisonToolPage: React.FC = () => {
 
           <button
             className="dx-btn dx-btn-primary"
-            onClick={() => navigate("/visualize")}
+            onClick={() => navigate(`/visualize/${domainId}`)}
           >
             Visualize →
           </button>
