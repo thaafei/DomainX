@@ -12,3 +12,4 @@ omit =
     */users/admin.py
     */domain/admin.py
     */libraries/admin.py
+    */migrations/*.py
