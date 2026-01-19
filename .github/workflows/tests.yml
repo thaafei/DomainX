@@ -31,7 +31,7 @@ jobs:
           pytest test/ \
             --cov=. \
             --cov-report=term-missing \
-            --cov-report=xml \
+            --cov-report=html \
             --cov-fail-under=80
 
       - name: Upload coverage report
