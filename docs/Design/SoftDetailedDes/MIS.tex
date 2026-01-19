@@ -1374,6 +1374,10 @@ Implements the backend REST API layer that governs communication between the Dja
 This module manages business logic flow, data serialization, and application state across all feature modules.  
 It ensures that frontend requests are authenticated, validated, and routed to the correct Django views or serializers.
 
+
+The backend application is initialized and run using Django’s standard entry points
+(\texttt{manage.py} for development and WSGI/ASGI for deployment).
+
 \subsubsection{Uses}
 Database Persistence Module (M17) [Django ORM / PostgreSQL] (\ref{mis:DatabasePersistenceModule})\\
 User Authentication Module (M5) [Django Auth Middleware] (\ref{mis:UserAuthentication})\\
