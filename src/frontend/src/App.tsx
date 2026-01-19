@@ -27,7 +27,8 @@ const App: React.FC = () => {
         <Route path="/comparison-tool/:domainId" element={<ComparisonTool />} />
         <Route path="/comparison-tool" element={<Navigate to="/" replace />} />
         <Route path="/edit" element={<Edit />} />
-        <Route path="/libraries" element={<Libraries />} />
+        <Route path="/libraries/:domainId" element={<Libraries />} />
+        <Route path="/libraries" element={<Navigate to="/" replace />} />
         <Route path="/visualize" element={<Visualize />} />
         <Route path="/main" element={<Main />} />
       </Routes>

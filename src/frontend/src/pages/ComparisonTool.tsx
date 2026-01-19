@@ -119,7 +119,7 @@ const ComparisonToolPage: React.FC = () => {
           <div style={{ display: "flex", gap: 14 }}>
             <button
               className="dx-btn dx-btn-primary"
-              onClick={() => navigate("/libraries")}
+              onClick={() => navigate(`/libraries/${DOMAIN_ID}`)}
             >
               + Add Library
             </button>

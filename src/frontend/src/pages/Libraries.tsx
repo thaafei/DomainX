@@ -1,5 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { useParams } from 'react-router-dom';
+
 interface Library {
   library_ID: string;
   library_name: string;
@@ -7,9 +9,11 @@ interface Library {
   programming_language: string;
 }
 
-const DOMAIN_ID = "ecba1df1ede211f0987c0050568e534c";   // POC domain (need to delete later and replace with actual)
+// const DOMAIN_ID = "ecba1df1ede211f0987c0050568e534c";   // POC domain (need to delete later and replace with actual)
 
 const AddLibraryPage: React.FC = () => {
+  const { domainId } = useParams<{ domainId: string }>();
+  const DOMAIN_ID = domainId
   const navigate = useNavigate();
   const [libraries, setLibraries] = useState<Library[]>([]);
   const [name, setName] = useState("");
@@ -33,7 +37,7 @@ const AddLibraryPage: React.FC = () => {
             return rawId;
           };
 
-      const formattedDomainId = formatUUID(DOMAIN_ID);
+      const formattedDomainId = DOMAIN_ID;
       const res = await fetch(`http://127.0.0.1:8000/api/libraries/${formattedDomainId}/`, {
         credentials: "include",
       });
