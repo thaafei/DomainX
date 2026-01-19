@@ -13,3 +13,12 @@ python-dotenv==1.2.1
 pytest
 pytest-django
 coverage
+PyMySQL==1.1.1
+celery==5.4.0
+redis==5.0.8
+django-celery-results==2.5.1
+gunicorn==21.2.0
+whitenoise==6.7.0
+
+
+
