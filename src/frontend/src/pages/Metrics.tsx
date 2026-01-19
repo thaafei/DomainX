@@ -1,11 +1,11 @@
 import React, { useState, useEffect } from "react";
 
 interface Metric {
-  Metric_ID: string;
-  Metric_Name: string;
-  Value_Type: string;
-  Category?: string;
-  Description?: string;
+  metric_ID: string;
+  metric_name: string;
+  value_type: string;
+  category?: string;
+  description?: string;
 }
 
 const MetricsPage: React.FC = () => {
@@ -16,20 +16,26 @@ const MetricsPage: React.FC = () => {
   const [newDesc, setNewDesc] = useState("");
 
   useEffect(() => {
-      const loadMetrics = async () => {
-        try {
-          const res = await fetch("http://127.0.0.1:8000/api/metrics/", {
-            credentials: "include",
-          });
 
-          const data = await res.json();
-          console.log("Metrics response:", data);
+        const loadMetrics = async () => {
+            try {
+                const res = await fetch("http://127.0.0.1:8000/api/metrics/", {
+                    credentials: "include",
+                });
 
-          setMetrics(Array.isArray(data) ? data : []);
-        } catch (err) {
-          console.error(err);
-        }
-      };
+                const data = await res.json();
+
+                const uniqueMetricsMap = new Map();
+                (Array.isArray(data) ? data : []).forEach(metric => {
+                    uniqueMetricsMap.set(metric.metric_ID, metric);
+                });
+                const uniqueMetrics = Array.from(uniqueMetricsMap.values());
+                setMetrics(uniqueMetrics);
+
+            } catch (err) {
+                console.error(err);
+            }
+        };
 
       loadMetrics();
     }, []);
@@ -37,38 +43,57 @@ const MetricsPage: React.FC = () => {
 
 
   const addMetric = async () => {
-      if (!newName.trim()) return;
+    if (!newName.trim()) return;
 
-      const payload = {
-        Metric_Name: newName,
-        Value_Type: newType,
-        Category: newCategory.trim() || null,
-        Description: newDesc.trim() || null,
-      };
-
-      try {
-        const res = await fetch("http://127.0.0.1:8000/api/metrics/create/", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          credentials: "include",
-          body: JSON.stringify(payload),
-        });
-
-        const data = await res.json();
-        if (!res.ok) throw new Error(data.error);
-
-        setMetrics(prev => [...prev, data]);
-
-        //clear inputs
-        setNewName("");
-        setNewType("float");
-        setNewCategory("");
-        setNewDesc("");
-
-      } catch (err) {
-        console.error(err);
-      }
+    const payload = {
+      metric_name: newName,
+      value_type: newType,
+      category: newCategory.trim() || null,
+      description: newDesc.trim() || null,
     };
+
+    try {
+      const res = await fetch("http://127.0.0.1:8000/api/metrics/create/", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        credentials: "include",
+        body: JSON.stringify(payload),
+      });
+      const responseBody = await res.text();
+
+      if (!res.ok) {
+        console.error("status:", res.status);
+        console.error("body:", responseBody);
+
+        let errorMsg = responseBody;
+        try {
+          const errorJson = JSON.parse(responseBody);
+          errorMsg = errorJson.detail || errorJson.error || responseBody;
+        } catch (e) {
+        }
+        throw new Error(`API Error (${res.status}): ${errorMsg}`);
+      }
+
+      const data = JSON.parse(responseBody);
+
+      console.log("status:", res.status);
+      console.log("body:", responseBody);
+      setMetrics(prev => {
+          const tempMap = new Map(prev.map(m => [m.metric_ID, m]));
+          tempMap.set(data.metric_ID, data);
+
+          return Array.from(tempMap.values());
+      });
+
+      setNewName("");
+      setNewType("float");
+      setNewCategory("");
+      setNewDesc("");
+
+    } catch (err) {
+      console.error(err);
+    }
+  };
 
 
   const deleteMetric = async (id: string) => {
@@ -79,7 +104,7 @@ const MetricsPage: React.FC = () => {
         });
 
         if (res.ok) {
-          setMetrics(prev => prev.filter(m => m.Metric_ID !== id));
+          setMetrics(prev => prev.filter(m => m.metric_ID !== id));
         }
       } catch (err) {
         console.error(err);
@@ -183,18 +208,18 @@ return (
           <tbody>
             {metrics.map((m) => (
               <tr
-                key={m.Metric_ID}
+                key={m.metric_ID}
                 style={{ borderBottom: "1px solid rgba(255,255,255,0.1)" }}
               >
-                <td style={{ padding: 8 }}>{m.Metric_Name}</td>
-                <td style={{ padding: 8 }}>{m.Value_Type}</td>
-                <td style={{ padding: 8 }}>{m.Category || "—"}</td>
-                <td style={{ padding: 8 }}>{m.Description || "—"}</td>
+                <td style={{ padding: 8 }}>{m.metric_name}</td>
+                <td style={{ padding: 8 }}>{m.value_type}</td>
+                <td style={{ padding: 8 }}>{m.category || "—"}</td>
+                <td style={{ padding: 8 }}>{m.description || "—"}</td>
                 <td style={{ padding: 8 }}>
                   <button
                     className="dx-btn dx-btn-outline"
                     style={{ borderColor: "var(--danger)", color: "var(--danger)" }}
-                    onClick={() => deleteMetric(m.Metric_ID)}
+                    onClick={() => deleteMetric(m.metric_ID)}
                   >
                     Delete
                   </button>

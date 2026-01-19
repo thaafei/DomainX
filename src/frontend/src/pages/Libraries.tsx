@@ -1,13 +1,13 @@
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 interface Library {
-  Library_ID: string;
-  Library_Name: string;
-  Repository_URL: string | null;
-  Programming_Language: string;
+  library_ID: string;
+  library_name: string;
+  url: string | null;
+  programming_language: string;
 }
 
-const DOMAIN_ID = "dd8d1992-d085-41e1-8ed0-7d292d4c2f2f";   // POC domain (need to delete later and replace with actual)
+const DOMAIN_ID = "ecba1df1ede211f0987c0050568e534c";   // POC domain (need to delete later and replace with actual)
 
 const AddLibraryPage: React.FC = () => {
   const navigate = useNavigate();
@@ -22,10 +22,27 @@ const AddLibraryPage: React.FC = () => {
 
   const loadLibraries = async () => {
     try {
-      const res = await fetch(`http://127.0.0.1:8000/api/libraries/${DOMAIN_ID}/`, {
+        const formatUUID = (rawId: string) => {
+            if (rawId && rawId.length === 32 && !rawId.includes('-')) {
+              return rawId.substring(0, 8) + '-' +
+                     rawId.substring(8, 12) + '-' +
+                     rawId.substring(12, 16) + '-' +
+                     rawId.substring(16, 20) + '-' +
+                     rawId.substring(20, 32);
+            }
+            return rawId;
+          };
+
+      const formattedDomainId = formatUUID(DOMAIN_ID);
+      const res = await fetch(`http://127.0.0.1:8000/api/libraries/${formattedDomainId}/`, {
         credentials: "include",
       });
-      const data = await res.json();
+      const responseText = await res.text();
+      if (!res.ok) {
+          throw new Error(`Server Error (${res.status}): See console for details.`);
+      }
+      const data = JSON.parse(responseText);
+      //const data = await res.json();
       setLibraries(data.libraries);
     } catch (err) {
       console.error(err);
@@ -36,10 +53,10 @@ const AddLibraryPage: React.FC = () => {
     if (!name.trim()) return;
 
     const payload = {
-      Library_Name: name,
-      Repository_URL: url.trim() || null,
-      Programming_Language: language.trim(),
-      Domain: DOMAIN_ID,
+      library_name: name,
+      url: url.trim() || null,
+      programming_language: language.trim(),
+      domain: DOMAIN_ID,
     };
 
     try {
@@ -71,7 +88,7 @@ const AddLibraryPage: React.FC = () => {
       });
 
       if (res.ok) {
-        setLibraries(prev => prev.filter(l => l.Library_ID !== id));
+        setLibraries(prev => prev.filter(l => l.library_ID !== id));
       }
     } catch (err) {
       console.error(err);
@@ -135,14 +152,14 @@ const AddLibraryPage: React.FC = () => {
 
             <tbody>
               {libraries.map(lib => (
-                <tr key={lib.Library_ID} style={{ borderBottom: "1px solid rgba(255,255,255,0.1)" }}>
-                  <td style={{ padding: 8 }}>{lib.Library_Name}</td>
-                  <td style={{ padding: 8 }}>{lib.Programming_Language || "—"}</td>
-                  <td style={{ padding: 8 }}>{lib.Repository_URL || "—"}</td>
+                <tr key={lib.library_ID} style={{ borderBottom: "1px solid rgba(255,255,255,0.1)" }}>
+                  <td style={{ padding: 8 }}>{lib.library_name}</td>
+                  <td style={{ padding: 8 }}>{lib.programming_language || "—"}</td>
+                  <td style={{ padding: 8 }}>{lib.url || "—"}</td>
                   <td style={{ padding: 8 }}>
                     <button className="dx-btn dx-btn-outline"
                       style={{ borderColor: "var(--danger)", color: "var(--danger)" }}
-                      onClick={() => deleteLibrary(lib.Library_ID)}>
+                      onClick={() => deleteLibrary(lib.library_ID)}>
                       Delete
                     </button>
                   </td>

@@ -1,8 +1,11 @@
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
 from rest_framework import status
+from ..database.libraries.models import Domain
+from ..database.libraries.models import Library
+from ..database.metrics.models import Metric
+from ..database.library_metric_values.models import LibraryMetricValue
 
-from ..models import Domain, Library, Metric, LibraryMetricValue
 
 @api_view(["GET"])
 def domain_comparison(request, domain_id):
@@ -11,31 +14,32 @@ def domain_comparison(request, domain_id):
     except Domain.DoesNotExist:
         return Response({"error": "Domain not found"}, status=status.HTTP_404_NOT_FOUND)
 
-    libraries = Library.objects.filter(Domain=domain)
+    libraries = Library.objects.filter(domain=domain)
     metrics = Metric.objects.all()
+
     table = []
     for lib in libraries:
         table.append({
-            "Library_ID": str(lib.Library_ID),
-            "Library_Name": lib.Library_Name,
-            "Repository_URL": lib.Repository_URL,
-            "Programming_Language": lib.Programming_Language,
-            "metrics": {m.Metric_Name: None for m in metrics},
+            "library_ID": str(lib.library_ID),
+            "library_name": lib.library_name,
+            "url": lib.url,
+            "programming_language": lib.programming_language,
+            "metrics": {m.metric_name: None for m in metrics},
         })
 
-    values = LibraryMetricValue.objects.filter(Library__in=libraries)
+    values = LibraryMetricValue.objects.filter(library__in=libraries).select_related('library', 'metric')
 
     for val in values:
-        metric_name = val.Metric.Metric_Name
+        metric_name = val.metric.metric_name
 
         for row in table:
-            if row["Library_ID"] == str(val.Library.Library_ID):
-                row["metrics"][metric_name] = val.Value
+            if row["library_ID"] == str(val.library.library_ID):
+                row["metrics"][metric_name] = val.value
                 break
 
     return Response({
         "metrics": [
-            {"Metric_ID": str(m.Metric_ID), "Metric_Name": m.Metric_Name}
+            {"metric_ID": str(m.metric_ID), "metric_name": m.metric_name}
             for m in metrics
         ],
         "libraries": table
