@@ -1,20 +1,42 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from "react-router-dom";
 import { useAuthStore } from "../store/useAuthStore";
-const domains = [
-  { name: "Neural Networks", version: "v1.0" },
-  { name: "Domain X", version: "v2.1" },
-  { name: "Domain Y", version: "v3.0" },
-];
+
 
 const Main: React.FC = () => {
   const navigate = useNavigate();
   const [sidebarOpen, setSidebarOpen] = useState(true);
-  const [selectedDomain, setSelectedDomain] = useState(domains[0]);
+  const [domains, setDomains] = useState<any[]>([]);
+  const [selectedDomain, setSelectedDomain] = useState<any>(null);;
+  const [loading, setLoading] = useState(true);
   const { logout } = useAuthStore();
   const [showDomainModal, setShowDomainModal] = useState(false);
   const [domainName, setDomainName] = useState("");
   const [description, setDescription] = useState("");
+  const fetchDomains = async () => {
+    try {
+      const response = await fetch('http://127.0.0.1:8000/api/domain/');
+      if (response.ok) {
+        const data = await response.json();
+        console.log(data)
+        setDomains(data);
+        // Set the first domain as default if none selected
+        if (data.length > 0 && !selectedDomain) {
+          setSelectedDomain(data[0]);
+        }
+      }
+    } catch (error) {
+      console.log("Error fetching domains:", error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchDomains();
+  }, []);
+
+  if (loading) return <div>Loading...</div>;
   const handleLogout = async () => {
       try {
           await fetch("http://127.0.0.1:8000/logout/", {
@@ -25,7 +47,7 @@ const Main: React.FC = () => {
         logout();
         navigate("/login");
       } catch (err: any) {
-        console.error(err);
+        console.log(err);
       }
   };
   const handleCreateDomain = async () => {
@@ -39,6 +61,7 @@ const Main: React.FC = () => {
       setShowDomainModal(false);
       setDomainName("");
       setDescription("");
+      fetchDomains();
     }
   };
   return (
@@ -72,23 +95,22 @@ const Main: React.FC = () => {
         )}
 
         <div style={{ flex: 1, overflowY: "auto" }}>
-          {domains.map((d, i) => (
+          {domains.map((d) => (
             <div
-              key={i}
+              key={d.id} 
               className="dx-side-item"
               onClick={() => setSelectedDomain(d)}
               style={{
-                padding: sidebarOpen ? "10px" : "10px 0",
+                padding: "10px",
                 cursor: "pointer",
-                color: d.name === selectedDomain.name ? "var(--accent)" : "var(--text-main)",
-                fontWeight: d.name === selectedDomain.name ? 600 : 400,
-                transition: "0.25s"
+                color: d.id === selectedDomain?.id ? "var(--accent)" : "var(--text-main)",
+                fontWeight: d.id === selectedDomain?.id ? 600 : 400,
               }}
             >
               {sidebarOpen ? (
                 <>
-                  {d.name}
-                  <div style={{ fontSize: "0.8rem", color: "var(--text-dim)" }}>{d.version}</div>
+                  {d.domain_name}
+                  <div style={{ fontSize: "0.8rem", color: "var(--text-dim)" }}>{d.description}</div>
                 </>
               ) : (
                 <div style={{ textAlign: "center" }}>{d.name.charAt(0)}</div>
@@ -101,7 +123,8 @@ const Main: React.FC = () => {
           <>
             <button
               className="dx-btn dx-btn-outline"
-              onClick={() => navigate("/comparison-tool")}
+              disabled={!selectedDomain}
+              onClick={() => navigate(`/comparison-tool/${selectedDomain.domain_ID}`)}
               style={{ display: "flex", alignItems: "center", gap: 8 }}
             >
               <span style={{ fontSize: 15 }}>⚖️</span> Comparison Tool
@@ -278,8 +301,8 @@ const Main: React.FC = () => {
       >
         <h3 style={{ marginTop: 0, color: "var(--accent)" }}>Details</h3>
 
-        <div className="dx-info-field"><strong>Name:</strong> {selectedDomain.name}</div>
-        <div className="dx-info-field"><strong>Version:</strong> {selectedDomain.version}</div>
+        <div className="dx-info-field"><strong>Name:</strong> {selectedDomain.domain_name}</div>
+        <div className="dx-info-field"><strong>Version:</strong> {selectedDomain.description}</div>
         <div className="dx-info-field">
           <strong>Authors:</strong>
           <ul style={{ margin: "6px 0 0 16px" }}>

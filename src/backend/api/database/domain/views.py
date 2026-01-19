@@ -16,6 +16,10 @@ class DomainRetrieveUpdateDestroyView(generics.RetrieveUpdateDestroyAPIView):
     queryset = Domain.objects.all()
     serializer_class = DomainSerializer
 
+class DomainDetailView(generics.RetrieveAPIView):
+    queryset = Domain.objects.all()
+    serializer_class = DomainSerializer
+
 @api_view(["POST"])
 def create_domain(request):
     name = request.data.get('domain_name')
@@ -33,3 +37,10 @@ def create_domain(request):
         return Response({"status": "success"}, status=201)
     except Exception as e:
         return Response({"error": str(e)}, status=400)
+
+@api_view(["POST"])
+def get_domain(request, domain_id):
+    try:
+        domain = Domain.objects.get(pk=domain_id)
+    except Metric.DoesNotExist:
+        return Response({"error": "Metric not found"}, status=status.HTTP_404_NOT_FOUND)
