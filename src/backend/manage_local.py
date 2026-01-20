@@ -22,6 +22,7 @@ Usage:
   python manage_local.py migrate
   python manage_local.py runserver
   python manage_local.py worker
+  python manage_local.py loaddata <fixture_name>
   python manage_local.py dev
 
 dev = migrate + runserver (worker runs in separate terminal)
@@ -40,6 +41,14 @@ dev = migrate + runserver (worker runs in separate terminal)
 
     if cmd == "worker":
         run(["celery", "-A", "DomainX", "worker", "-l", "info", "-P", "solo"])
+        return
+
+    if cmd == "loaddata":
+        if len(sys.argv) < 3:
+            print("Usage: python manage_local.py loaddata <fixture_name>")
+            sys.exit(1)
+        fixture = sys.argv[2]
+        run([sys.executable, "manage.py", "loaddata", fixture])
         return
 
     if cmd == "dev":

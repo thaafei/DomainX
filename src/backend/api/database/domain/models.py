@@ -7,6 +7,7 @@ class Domain(models.Model):
     description = models.CharField(max_length=255, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
     created_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True)
+    published = models.BooleanField(default=False)
 
     def __str__(self):
         return self.domain_name
