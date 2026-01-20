@@ -63,7 +63,7 @@ jobs:
       - name: Check if diagrams changed
         if: steps.check_migrations.outputs.has_migrations == 'true'
         id: diagram_status
-        working-directory: /Users/fei/Projects/DomainX/src/backend
+        working-directory: src/backend
         run: |
           if git diff --quiet DatabaseSchema*.png; then
             echo "diagrams_changed=false" >> $GITHUB_OUTPUT
@@ -73,7 +73,7 @@ jobs:
 
       - name: Commit schema diagrams
         if: steps.check_migrations.outputs.has_migrations == 'true' && steps.diagram_status.outputs.diagrams_changed == 'true'
-        working-directory: /Users/fei/Projects/DomainX/src/backend
+        working-directory: src/backend
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
