@@ -1,6 +1,6 @@
 name: Regenerate Database Schema Diagram
 
-run-name: 📊 Schema Update by ${{ github.actor }} on ${{ github.ref_name }}
+run-name: 📊 Schema Update by ${{ github.actor }} on ${{ github.head_ref }}
 
 on:
   pull_request:
