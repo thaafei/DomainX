@@ -60,24 +60,13 @@ jobs:
           python src/backend/manage.py graph_models -a -o src/backend/DatabaseSchema.png
           echo "✅ Database schema diagram regenerated"
 
-      - name: Check if diagrams changed
-        if: steps.check_migrations.outputs.has_migrations == 'true'
-        id: diagram_status
-        working-directory: src/backend
-        run: |
-          if git diff --quiet DatabaseSchema*.png; then
-            echo "diagrams_changed=false" >> $GITHUB_OUTPUT
-          else
-            echo "diagrams_changed=true" >> $GITHUB_OUTPUT
-          fi
-
       - name: Commit schema diagrams
-        if: steps.check_migrations.outputs.has_migrations == 'true' && steps.diagram_status.outputs.diagrams_changed == 'true'
+        if: steps.check_migrations.outputs.has_migrations == 'true'
         working-directory: src/backend
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
-          git add DatabaseSchema*.png
+          git add DatabaseSchema.png
           git commit -m "chore: regenerate database schema diagram [ci skip]"
 
       - name: Push changes
