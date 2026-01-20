@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-
+import { apiUrl } from "../config/api";
 interface Metric {
   metric_ID: string;
   metric_name: string;
@@ -41,7 +41,7 @@ const ComparisonToolPage: React.FC = () => {
       const formattedDomainId = formatUUID(DOMAIN_ID);
 
       const res = await fetch(
-          `http://127.0.0.1:8000/api/comparison/${formattedDomainId}/`,
+          apiUrl(`api/comparison/${formattedDomainId}/`),
           { credentials: "include" }
       );
       const responseText = await res.text();

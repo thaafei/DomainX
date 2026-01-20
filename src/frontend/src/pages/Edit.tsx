@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-
+import { apiUrl } from "../config/api";
 interface Metric {
   metric_ID: string;
   metric_name: string;
@@ -29,7 +29,7 @@ const EditValuesPage: React.FC = () => {
 
   const loadData = async () => {
     const res = await fetch(
-      `http://127.0.0.1:8000/api/comparison/${DOMAIN_ID}/`,
+      apiUrl(`/api/comparison/${DOMAIN_ID}/`),
       { credentials: "include" }
     );
 
@@ -82,8 +82,8 @@ const EditValuesPage: React.FC = () => {
       metrics: row.metrics,
     };
 
-    const res = await fetch(
-      `http://127.0.0.1:8000/api/libraries/${row.library_ID}/update-values/`,
+    const res = await fetch(apiUrl(
+      `/api/libraries/${row.library_ID}/update-values/`),
       {
         method: "POST",
         headers: { "Content-Type": "application/json" },
