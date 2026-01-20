@@ -193,18 +193,18 @@ const Main: React.FC = () => {
                 >
                   <h3>New Domain</h3>
                   <input 
-                    className="dx-input"
+                    className="dx-input" // Assuming you have a standard input class
                     placeholder="Domain Name" 
                     value={domainName}
                     onChange={(e) => setDomainName(e.target.value)}
-                    style={{ width: '100%', color: '#000', marginBottom: 12, padding: 8 }}
+                    style={{ width: '100%', marginBottom: 12, padding: 8, color: 'black' }}
                   />
                   <textarea 
                     className="dx-input"
                     placeholder="Description" 
                     value={description}
                     onChange={(e) => setDescription(e.target.value)}
-                    style={{ width: '100%', color: '#000', marginBottom: 12, padding: 8, minHeight: 60 }}
+                    style={{ width: '100%', marginBottom: 12, padding: 8, minHeight: 60, color: 'black' }}
                   />
                   <div style={{ display: 'flex', gap: 8, justifyContent: 'flex-end' }}>
                     <button className="dx-btn" onClick={() => setShowDomainModal(false)}>Cancel</button>
