@@ -11,12 +11,14 @@ class Library(models.Model):
     library_name = models.CharField(max_length=100)
     programming_language = models.CharField(max_length=50, blank=True, null=True)
     created_at = models.DateTimeField(auto_now_add=True)
-    url = models.CharField(max_length=500, blank=True, null=True, unique=True)
+    url = models.CharField(max_length=500, blank=True, null=True)
 
     class Meta:
         constraints = [
-            models.UniqueConstraint(fields=["domain", "library_name"], name="uniq_library_name_per_domain")
+            models.UniqueConstraint(fields=["domain", "library_name"], name="uniq_library_name_per_domain"),
+            models.UniqueConstraint(fields=["domain", "url"], name="uniq_url_per_domain")
         ]
+
 
     def __str__(self):
         return self.library_name

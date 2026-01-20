@@ -1,6 +1,6 @@
 import React from 'react';
-import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
-import Home from './pages/Home';
+import { BrowserRouter as Router } from 'react-router-dom';
+import { Routes, Route, Navigate } from "react-router-dom";import Home from './pages/Home';
 import Login from './pages/Login';
 import Visualize from './pages/Visualize';
 import Main from "./pages/Main";
@@ -23,10 +23,15 @@ const App: React.FC = () => {
         <Route path="/login" element={<Login />} />
         <Route path="/signup" element={<Signup />} />
         <Route path="/metrics" element={<Metrics />} />
-        <Route path="/comparison-tool" element={<ComparisonTool />} />
-        <Route path="/edit" element={<Edit />} />
-        <Route path="/libraries" element={<Libraries />} />
-        <Route path="/visualize" element={<Visualize />} />
+        {/* <Route path="/comparison-tool" element={<ComparisonTool />} /> */}
+        <Route path="/comparison-tool/:domainId" element={<ComparisonTool />} />
+        <Route path="/comparison-tool" element={<Navigate to="/" replace />} />
+        <Route path="/edit/:domainId" element={<Edit />} />
+        <Route path="/edit" element={<Navigate to="/" replace />} />
+        <Route path="/libraries/:domainId" element={<Libraries />} />
+        <Route path="/libraries" element={<Navigate to="/" replace />} />
+        <Route path="/visualize/:domainId" element={<Visualize />} />
+        <Route path="/libraries" element={<Navigate to="/" replace />} />
         <Route path="/main" element={<Main />} />
       </Routes>
     </Router>

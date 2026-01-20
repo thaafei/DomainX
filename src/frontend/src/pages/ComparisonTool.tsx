@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { useParams } from 'react-router-dom';
 
 interface Metric {
   metric_ID: string;
@@ -11,20 +12,35 @@ interface LibraryMetricRow {
   library_name: string;
   metrics: { [metricName: string]: string | number | null };
 }
-
-const DOMAIN_ID = "ecba1df1ede211f0987c0050568e534c";
-
+const formatUUID = (id: string) => id.replace(/-/g, "");
 const ComparisonToolPage: React.FC = () => {
+  const { domainId } = useParams<{ domainId: string }>();
   const navigate = useNavigate();
-
-  const [domainName] = useState("Domain X");
+  const DOMAIN_ID = domainId; 
+  
+  const [domainName, setDomainName] = useState("");
   const [metricList, setMetricList] = useState<Metric[]>([]);
   const [tableRows, setTableRows] = useState<LibraryMetricRow[]>([]);
 
   useEffect(() => {
     loadPageData();
   }, []);
+  const getDomainSpecification = async () => {
+    try {
+      const response = await fetch(`http://127.0.0.1:8000/api/domain/${domainId}/`);
+      
+      if (!response.ok) {
+        throw new Error("Failed to fetch domain specifications");
+      }
 
+      const data = await response.json();
+      setDomainName(data.domain_name)
+      return data;
+    } catch (error) {
+      console.error("Error:", error);
+      return null;
+    }
+  };
   const loadPageData = async () => {
     try {
         const formatUUID = (rawId: string) => {
@@ -38,8 +54,8 @@ const ComparisonToolPage: React.FC = () => {
             return rawId;
           };
 
-      const formattedDomainId = formatUUID(DOMAIN_ID);
-
+      const formattedDomainId = DOMAIN_ID;
+      getDomainSpecification()
       const res = await fetch(
           `http://127.0.0.1:8000/api/comparison/${formattedDomainId}/`,
           { credentials: "include" }
@@ -103,14 +119,14 @@ const ComparisonToolPage: React.FC = () => {
           <div style={{ display: "flex", gap: 14 }}>
             <button
               className="dx-btn dx-btn-primary"
-              onClick={() => navigate("/libraries")}
+              onClick={() => navigate(`/libraries/${DOMAIN_ID}`)}
             >
               + Add Library
             </button>
 
             <button
               className="dx-btn dx-btn-outline"
-              onClick={() => navigate("/edit")}
+              onClick={() => navigate(`/edit/${DOMAIN_ID}`)}
             >
               ✎ Edit Metric Values
             </button>
@@ -120,7 +136,7 @@ const ComparisonToolPage: React.FC = () => {
 
           <button
             className="dx-btn dx-btn-primary"
-            onClick={() => navigate("/visualize")}
+            onClick={() => navigate(`/visualize/${domainId}`)}
           >
             Visualize →
           </button>
