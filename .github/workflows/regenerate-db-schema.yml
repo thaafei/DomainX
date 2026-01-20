@@ -3,10 +3,7 @@ name: Regenerate Database Schema Diagram
 run-name: 📊 Schema Update by ${{ github.actor }} on ${{ github.head_ref }}
 
 on:
-  pull_request:
-    paths:
-      - 'src/backend/**/migrations/*.py'
-      - 'src/backend/requirements.txt'
+  workflow_dispatch:
 
 jobs:
   regenerate-schema:
@@ -70,18 +67,11 @@ jobs:
           git commit -m "chore: regenerate database schema diagram [ci skip]"
 
       - name: Push changes
-        if: steps.check_migrations.outputs.has_migrations == 'true' && steps.diagram_status.outputs.diagrams_changed == 'true' && github.event_name == 'push'
+        if: steps.check_migrations.outputs.has_migrations == 'true'
         run: |
           git push origin HEAD:${{ github.ref }}
 
-      - name: Comment on PR with schema update
-        if: steps.check_migrations.outputs.has_migrations == 'true' && steps.diagram_status.outputs.diagrams_changed == 'true' && github.event_name == 'pull_request'
-        uses: actions/github-script@v7
-        with:
-          script: |
-            github.rest.issues.createComment({
-              issue_number: context.issue.number,
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              body: '📊 **Database schema diagrams have been regenerated!**\n\nThe schema diagrams in `src/backend/DatabaseSchema*.png` have been updated to reflect the new migrations. Please review and commit these changes.'
-            })
+      - name: Summarize results
+        if: steps.check_migrations.outputs.has_migrations == 'true'
+        run: |
+          echo "✅ Schema diagram regenerated and committed to ${{ github.ref }}"
