@@ -38,7 +38,7 @@
     "fields": {
       "metric_name": "Stars Count",
       "description": "Number of GitHub stars",
-      "category": "Popularity",
+      "category": "550e8400-e29b-41d4-a716-446655990011",
       "weight": 1.0,
       "value_type": "int",
       "created_at": "2024-01-01T10:00:00Z"
@@ -50,7 +50,7 @@
     "fields": {
       "metric_name": "Forks Count",
       "description": "Number of GitHub forks",
-      "category": "Popularity",
+      "category": "550e8400-e29b-41d4-a716-446655990011",
       "weight": 0.8,
       "value_type": "int",
       "created_at": "2024-01-01T10:00:00Z"
@@ -62,7 +62,7 @@
     "fields": {
       "metric_name": "Open Issues",
       "description": "Number of open issues",
-      "category": "Activity",
+      "category": "550e8400-e29b-41d4-a716-446655990011",
       "weight": 0.7,
       "value_type": "int",
       "created_at": "2024-01-01T10:00:00Z"
@@ -74,7 +74,7 @@
     "fields": {
       "metric_name": "Code Coverage",
       "description": "Percentage of code covered by tests",
-      "category": "Quality",
+      "category": "550e8400-e29b-41d4-a716-446655990011",
       "weight": 1.2,
       "value_type": "float",
       "created_at": "2024-01-01T10:00:00Z"
@@ -86,7 +86,7 @@
     "fields": {
       "metric_name": "Last Commit Days Ago",
       "description": "Days since last commit",
-      "category": "Maintenance",
+      "category": "550e8400-e29b-41d4-a716-446655990004",
       "weight": 1.0,
       "value_type": "int",
       "created_at": "2024-01-01T10:00:00Z"
@@ -98,7 +98,7 @@
     "fields": {
       "metric_name": "Documentation Score",
       "description": "Quality of documentation (0-100)",
-      "category": "Quality",
+      "category": "550e8400-e29b-41d4-a716-446655990008",
       "weight": 0.9,
       "value_type": "float",
       "created_at": "2024-01-01T10:00:00Z"
@@ -713,6 +713,95 @@
       "evidence": "Documentation quality score",
       "collected_by": "doc_analyzer",
       "last_modified": "2024-01-10T10:00:00Z"
+    }
+
+  },
+  {
+    "model": "metrics.Category",
+    "pk": "550e8400-e29b-41d4-a716-446655990001",
+    "fields": {
+      "category_name": "Reusability",
+      "category_description": "The degree to which a software module or asset can be used in more than one computing program or software system."
+    }
+  },
+  {
+    "model": "metrics.Category",
+    "pk": "550e8400-e29b-41d4-a716-446655990002",
+    "fields": {
+      "category_name": "Surface Understandability",
+      "category_description": "How easily a user can comprehend the purpose and usage of the software from its interface and documentation."
+    }
+  },
+  {
+    "model": "metrics.Category",
+    "pk": "550e8400-e29b-41d4-a716-446655990003",
+    "fields": {
+      "category_name": "Surface Usability",
+      "category_description": "The ease with which users can use the software to achieve their goals effectively and efficiently."
+    }
+  },
+  {
+    "model": "metrics.Category",
+    "pk": "550e8400-e29b-41d4-a716-446655990004",
+    "fields": {
+      "category_name": "Maintainability",
+      "category_description": "The ease with which a software system or component can be modified to correct faults, improve performance, or adapt to a changed environment."
+    }
+  },
+  {
+    "model": "metrics.Category",
+    "pk": "550e8400-e29b-41d4-a716-446655990005",
+    "fields": {
+      "category_name": "Visibility/Transparency",
+      "category_description": "The degree to which the internal workings or status of the software are visible and understandable to users and developers."
+    }
+  },
+  {
+    "model": "metrics.Category",
+    "pk": "550e8400-e29b-41d4-a716-446655990006",
+    "fields": {
+      "category_name": "Surface Robustness",
+      "category_description": "The ability of the software to operate correctly in the presence of invalid inputs or stressful environmental conditions."
+    }
+  },
+  {
+    "model": "metrics.Category",
+    "pk": "550e8400-e29b-41d4-a716-446655990007",
+    "fields": {
+      "category_name": "Surface Reliability",
+      "category_description": "The probability that the software will perform its intended functions without failure under stated conditions for a specified period of time."
+    }
+  },
+  {
+    "model": "metrics.Category",
+    "pk": "550e8400-e29b-41d4-a716-446655990008",
+    "fields": {
+      "category_name": "Correctness and Verifiability",
+      "category_description": "The degree to which the software adheres to its requirements and can be proven to do so."
+    }
+  },
+  {
+    "model": "metrics.Category",
+    "pk": "550e8400-e29b-41d4-a716-446655990009",
+    "fields": {
+      "category_name": "Installability",
+      "category_description": "The ease with which the software can be installed and configured for use."
+    }
+  },
+   {
+    "model": "metrics.Category",
+    "pk": "550e8400-e29b-41d4-a716-446655990010",
+    "fields": {
+      "category_name": "Repo Metrics",
+      "category_description": "Repository information that can be gathered automatically."
+    }
+  },
+  {
+    "model": "metrics.Category",
+    "pk": "550e8400-e29b-41d4-a716-446655990011",
+    "fields": {
+      "category_name": "Summary Information",
+      "category_description": "General summary or overview information about the software or its metrics."
     }
   }
 ]
