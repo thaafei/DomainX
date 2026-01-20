@@ -294,3 +294,4 @@ db.sqlite3
 # Redis
 *.rdb
 dump.rdb
+*venv
