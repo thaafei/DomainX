@@ -176,36 +176,64 @@ const Main: React.FC = () => {
                   display: "flex",
                   justifyContent: "center",
                   alignItems: "center",
-                  zIndex: 9999, // High z-index to stay on top of everything
+                  zIndex: 9999,
                 }}
               >
-                <div
-                  style={{
-                    background: "#fff",
-                    padding: "24px",
-                    borderRadius: "12px",
-                    width: "350px",
-                    boxShadow: "0 10px 25px rgba(0,0,0,0.2)",
-                    color: "#333",
-                    display: "flex",
-                    flexDirection: "column",
-                  }}
-                >
-                  <h3>New Domain</h3>
-                  <input 
-                    className="dx-input" // Assuming you have a standard input class
-                    placeholder="Domain Name" 
-                    value={domainName}
-                    onChange={(e) => setDomainName(e.target.value)}
-                    style={{ width: '100%', marginBottom: 12, padding: 8 }}
-                  />
-                  <textarea 
-                    className="dx-input"
-                    placeholder="Description" 
-                    value={description}
-                    onChange={(e) => setDescription(e.target.value)}
-                    style={{ width: '100%', marginBottom: 12, padding: 8, minHeight: 60 }}
-                  />
+               <div
+                      style={{
+                        background: "rgba(30, 35, 45, 0.7)",
+                        backdropFilter: "blur(12px)",
+                        WebkitBackdropFilter: "blur(12px)",
+                        border: "1px solid rgba(255, 255, 255, 0.1)",
+                        padding: "24px",
+                        borderRadius: "16px",
+                        width: "350px",
+                        boxShadow: "0 15px 35px rgba(0,0,0,0.4)",
+                        color: "#fff",
+                        display: "flex",
+                        flexDirection: "column",
+                        boxSizing: "border-box"
+                      }}
+                    >
+                      <h3 style={{ marginTop: 0, marginBottom: 20 }}>New Domain</h3>
+
+                      <input
+                        className="dx-input"
+                        placeholder="Domain Name"
+                        value={domainName}
+                        onChange={(e) => setDomainName(e.target.value)}
+                        style={{
+                          width: '100%',
+                          marginBottom: 16,
+                          padding: '12px',
+                          borderRadius: '8px',
+                          border: 'none',
+                          background: "#ffffff",
+                          color: "#333",
+                          boxSizing: "border-box"
+                        }}
+                      />
+
+                      <textarea
+                        className="dx-input"
+                        placeholder="Description"
+                        value={description}
+                        onChange={(e) => setDescription(e.target.value)}
+                        style={{
+                          width: '100%',
+                          marginBottom: 16,
+                          padding: '12px',
+                          minHeight: 80,
+                          borderRadius: '8px',
+                          border: 'none',
+                          background: "#ffffff",
+                          color: "#333",
+                          resize: 'none',
+                          boxSizing: "border-box"
+                        }}
+                      />
+
+
                   <div style={{ display: 'flex', gap: 8, justifyContent: 'flex-end' }}>
                     <button className="dx-btn" onClick={() => setShowDomainModal(false)}>Cancel</button>
                     <button className="dx-btn dx-btn-primary" onClick={handleCreateDomain}>Create</button>
