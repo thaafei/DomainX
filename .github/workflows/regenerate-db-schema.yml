@@ -43,7 +43,6 @@ jobs:
 
       - name: Generate database schema diagram
         if: steps.check_migrations.outputs.has_migrations == 'true'
-        working-directory: src/backend
         run: |
           # Run Django management command to generate schema
           python src/backend/manage.py graph_models -a -o ../src/backend/DatabaseSchema.png
