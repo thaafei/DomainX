@@ -25,7 +25,7 @@ jobs:
       - name: Install dependencies
         working-directory: src/backend
         env:
-          DJANGO_SECRET_KEY: 'github-actions-temporary-key'
+          DJANGO_SECRET_KEY: ${{ secrets.DJANGO_SECRET_KEY }}
         run: |
           python -m pip install --upgrade pip
           pip install -r requirements.txt
@@ -46,7 +46,7 @@ jobs:
       - name: Generate database schema diagram
         if: steps.check_migrations.outputs.has_migrations == 'true'
         env:
-          DJANGO_SECRET_KEY: 'github-actions-temporary-key-for-schema-generation'
+          DJANGO_SECRET_KEY: ${{ secrets.DJANGO_SECRET_KEY }}
           DEBUG: 'False'
         run: |
           # Run Django management command to generate schema
