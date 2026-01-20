@@ -1,5 +1,5 @@
 name: Run Tests
-run-name: Running test suite by ${{ github.actor }} on ${{ github.ref_name }}
+run-name: Running test suite by ${{ github.actor }} on ${{ github.head_ref }}
 
 on:
   pull_request:
