@@ -4,7 +4,8 @@ interface Metric {
   metric_ID: string;
   metric_name: string;
   value_type: string;
-  category?: string;
+  category: string;
+  category_name: string;
   description?: string;
 }
 
@@ -172,7 +173,7 @@ return (
 
         <input
           className="dx-input"
-          placeholder="Category (optional)"
+          placeholder="Category"
           value={newCategory}
           onChange={(e) => setNewCategory(e.target.value)}
           style={{ marginBottom: 10 }}
@@ -213,7 +214,7 @@ return (
               >
                 <td style={{ padding: 8 }}>{m.metric_name}</td>
                 <td style={{ padding: 8 }}>{m.value_type}</td>
-                <td style={{ padding: 8 }}>{m.category || "—"}</td>
+                <td style={{ padding: 8 }}>{m.category_name || "—"}</td>
                 <td style={{ padding: 8 }}>{m.description || "—"}</td>
                 <td style={{ padding: 8 }}>
                   <button

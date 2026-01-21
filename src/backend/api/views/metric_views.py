@@ -7,7 +7,7 @@ from ..database.metrics.serializers import MetricSerializer
 
 @api_view(["GET"])
 def list_metrics(request):
-    metrics = Metric.objects.all().order_by("metric_name")
+    metrics = Metric.objects.select_related("category").all().order_by("metric_name")
     serializer = MetricSerializer(metrics, many=True)
     print(serializer.data)
     return Response(serializer.data)

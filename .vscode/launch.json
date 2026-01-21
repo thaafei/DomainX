@@ -2,7 +2,7 @@
   "version": "0.2.0",
   "configurations": [
     {
-      "name": "Debug Backend Tests",
+      "name": "RUn Backend Tests",
       "type": "python",
       "request": "launch",
       "program": "${workspaceFolder}/.venv/Scripts/pytest.exe",
@@ -16,6 +16,18 @@
       }
     },
     {
+      "name": "Launch Backend",
+      "type": "python",
+      "request": "launch",
+      "program": "${workspaceFolder}/src/backend/manage.py",
+      "args": ["runserver", "0.0.0.0:8000"],
+      "cwd": "${workspaceFolder}/src/backend",
+      "console": "integratedTerminal",
+      "env": {
+        "PYTHONPATH": "${workspaceFolder}/src/backend"
+      }
+    },
+    {
       "name": "Launch Frontend",
       "type": "node",
       "request": "launch",
@@ -23,6 +35,13 @@
       "runtimeArgs": ["start"],
       "cwd": "${workspaceFolder}/src/frontend",
       "console": "integratedTerminal"
+    }
+  ],
+  "compounds": [
+    {
+      "name": "Debug Full Stack (Backend & Frontend)",
+      "configurations": ["Launch Backend", "Launch Frontend"],
+      "stopAll": true
     }
   ]
 }
