@@ -14,6 +14,8 @@ from .views.library_views import (
     delete_library,
     update_library_values
 )
+from .database.metrics.category import router as category_router
+
 urlpatterns = [
     path('status/', status_views.status_view, name='api_status'),
     path("comparison/<uuid:domain_id>/", domain_comparison, name="domain_comparison"),
@@ -33,4 +35,4 @@ urlpatterns = [
     # path('database/metrics/', include('api.database.metrics.urls')),
     # path('database/library-metrics/', include('api.database.library_metric_values.urls')),
     # path('database/domain/', include('api.database.domain.urls')),
-]
+] + category_router.urls

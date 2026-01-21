@@ -9,38 +9,45 @@ interface Metric {
   description?: string;
 }
 
+interface Category {
+  category_ID: string;
+  category_name: string;
+}
+
 const MetricsPage: React.FC = () => {
   const [metrics, setMetrics] = useState<Metric[]>([]);
   const [newName, setNewName] = useState("");
   const [newType, setNewType] = useState("float");
-  const [newCategory, setNewCategory] = useState("");
+  const [newCategory, setNewCategory] = useState<string>("");
+  const [categories, setCategories] = useState<Category[]>([]);
   const [newDesc, setNewDesc] = useState("");
 
-  useEffect(() => {
+useEffect(() => {
+  const loadAll = async () => {
+    try {
+      const [metricsRes, categoriesRes] = await Promise.all([
+        fetch("http://127.0.0.1:8000/api/metrics/", { credentials: "include" }),
+        fetch("http://127.0.0.1:8000/api/categories/", { credentials: "include" }),
+      ]);
 
-        const loadMetrics = async () => {
-            try {
-                const res = await fetch("http://127.0.0.1:8000/api/metrics/", {
-                    credentials: "include",
-                });
+      const metricsData = await metricsRes.json();
+      const categoriesData = await categoriesRes.json();
 
-                const data = await res.json();
+      setCategories(categoriesData);
 
-                const uniqueMetricsMap = new Map();
-                (Array.isArray(data) ? data : []).forEach(metric => {
-                    uniqueMetricsMap.set(metric.metric_ID, metric);
-                });
-                const uniqueMetrics = Array.from(uniqueMetricsMap.values());
-                setMetrics(uniqueMetrics);
+      const uniqueMetricsMap = new Map();
+      metricsData.forEach((m: Metric) =>
+        uniqueMetricsMap.set(m.metric_ID, m)
+      );
+      setMetrics(Array.from(uniqueMetricsMap.values()));
 
-            } catch (err) {
-                console.error(err);
-            }
-        };
+    } catch (err) {
+      console.error(err);
+    }
+  };
 
-      loadMetrics();
-    }, []);
-
+  loadAll();
+}, []);
 
 
   const addMetric = async () => {
@@ -49,9 +56,10 @@ const MetricsPage: React.FC = () => {
     const payload = {
       metric_name: newName,
       value_type: newType,
-      category: newCategory.trim() || null,
+      category: newCategory || null, // now category_ID
       description: newDesc.trim() || null,
     };
+
 
     try {
       const res = await fetch("http://127.0.0.1:8000/api/metrics/create/", {
@@ -171,13 +179,20 @@ return (
           <option value="text">Text</option>
         </select>
 
-        <input
+        <select
           className="dx-input"
-          placeholder="Category"
           value={newCategory}
           onChange={(e) => setNewCategory(e.target.value)}
           style={{ marginBottom: 10 }}
-        />
+        >
+          <option value="">— No category —</option>
+          {categories.map((c) => (
+            <option key={c.category_ID} value={c.category_ID}>
+              {c.category_name}
+            </option>
+          ))}
+        </select>
+
 
         <input
           className="dx-input"
