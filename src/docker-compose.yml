@@ -19,6 +19,8 @@ services:
       interval: 5s
       timeout: 5s
       retries: 20
+    networks:
+      - domainx-net
 
   redis:
     image: redis:7-alpine
@@ -36,6 +38,8 @@ services:
       interval: 5s
       timeout: 5s
       retries: 20
+    networks:
+      - domainx-net
 
   backend:
     build: ./backend
@@ -51,6 +55,8 @@ services:
       - staticfiles:/app/staticfiles
       - /opt/domainx/secrets/github_app.pem:/run/secrets/github_app.pem:ro
     restart: always
+    networks:
+      - domainx-net
 
   celery:
     build: ./backend
@@ -67,6 +73,8 @@ services:
     volumes:
       - /opt/domainx/secrets/github_app.pem:/run/secrets/github_app.pem:ro
     restart: always
+    networks:
+      - domainx-net
 
   celery_beat:
     build: ./backend
@@ -81,8 +89,18 @@ services:
     volumes:
       - /opt/domainx/secrets/github_app.pem:/run/secrets/github_app.pem:ro
     restart: always
+    networks:
+      - domainx-net
 
 volumes:
   mysql_data:
   redis_data:
   staticfiles:
+
+networks:
+  domainx-net:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 10.50.0.0/24
+          gateway: 10.50.0.1
