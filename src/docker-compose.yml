@@ -1,0 +1,88 @@
+version: "3.9"
+
+services:
+  db:
+    image: mysql:8.0
+    command: --default-authentication-plugin=mysql_native_password
+    env_file:
+      - ./backend/.env
+    environment:
+      MYSQL_DATABASE: ${DB_NAME}
+      MYSQL_USER: ${DB_USER}
+      MYSQL_PASSWORD: ${DB_PASSWORD}
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
+    volumes:
+      - mysql_data:/var/lib/mysql
+    restart: always
+    healthcheck:
+      test: ["CMD-SHELL", "mysqladmin ping -h localhost -p$$MYSQL_ROOT_PASSWORD --silent"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+
+  redis:
+    image: redis:7-alpine
+    env_file:
+      - ./backend/.env
+    command: >
+      sh -c 'redis-server /usr/local/etc/redis/redis.conf
+      --requirepass "$$REDIS_PASSWORD"'
+    volumes:
+      - ./infra/redis/redis.conf:/usr/local/etc/redis/redis.conf:ro
+      - redis_data:/data
+    restart: always
+    healthcheck:
+      test: ["CMD-SHELL", 'redis-cli -a "$$REDIS_PASSWORD" ping | grep -q PONG']
+      interval: 5s
+      timeout: 5s
+      retries: 20
+
+  backend:
+    build: ./backend
+    command: gunicorn DomainX.wsgi:application --bind 0.0.0.0:8000 --workers 3 --timeout 120
+    env_file:
+      - ./backend/.env
+    depends_on:
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    volumes:
+      - staticfiles:/app/staticfiles
+      - /opt/domainx/secrets/github_app.pem:/run/secrets/github_app.pem:ro
+    restart: always
+
+  celery:
+    build: ./backend
+    command: celery -A DomainX worker -l info
+    env_file:
+      - ./backend/.env
+    depends_on:
+      backend:
+        condition: service_started
+      redis:
+        condition: service_healthy
+      db:
+        condition: service_healthy
+    volumes:
+      - /opt/domainx/secrets/github_app.pem:/run/secrets/github_app.pem:ro
+    restart: always
+
+  celery_beat:
+    build: ./backend
+    command: celery -A DomainX beat -l info
+    env_file:
+      - ./backend/.env
+    depends_on:
+      redis:
+        condition: service_healthy
+      db:
+        condition: service_healthy
+    volumes:
+      - /opt/domainx/secrets/github_app.pem:/run/secrets/github_app.pem:ro
+    restart: always
+
+volumes:
+  mysql_data:
+  redis_data:
+  staticfiles:
