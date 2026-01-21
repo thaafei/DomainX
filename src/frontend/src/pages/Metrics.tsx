@@ -1,74 +1,108 @@
 import React, { useState, useEffect } from "react";
 
 interface Metric {
-  Metric_ID: string;
-  Metric_Name: string;
-  Value_Type: string;
-  Category?: string;
-  Description?: string;
+  metric_ID: string;
+  metric_name: string;
+  value_type: string;
+  category: string;
+  category_name: string;
+  description?: string;
+}
+
+interface Category {
+  category_ID: string;
+  category_name: string;
 }
 
 const MetricsPage: React.FC = () => {
   const [metrics, setMetrics] = useState<Metric[]>([]);
   const [newName, setNewName] = useState("");
   const [newType, setNewType] = useState("float");
-  const [newCategory, setNewCategory] = useState("");
+  const [newCategory, setNewCategory] = useState<string>("");
+  const [categories, setCategories] = useState<Category[]>([]);
   const [newDesc, setNewDesc] = useState("");
 
-  useEffect(() => {
-      const loadMetrics = async () => {
-        try {
-          const res = await fetch("http://127.0.0.1:8000/api/metrics/", {
-            credentials: "include",
-          });
+useEffect(() => {
+  const loadAll = async () => {
+    try {
+      const [metricsRes, categoriesRes] = await Promise.all([
+        fetch("http://127.0.0.1:8000/api/metrics/", { credentials: "include" }),
+        fetch("http://127.0.0.1:8000/api/categories/", { credentials: "include" }),
+      ]);
 
-          const data = await res.json();
-          console.log("Metrics response:", data);
+      const metricsData = await metricsRes.json();
+      const categoriesData = await categoriesRes.json();
 
-          setMetrics(Array.isArray(data) ? data : []);
-        } catch (err) {
-          console.error(err);
-        }
-      };
+      setCategories(categoriesData);
 
-      loadMetrics();
-    }, []);
+      const uniqueMetricsMap = new Map();
+      metricsData.forEach((m: Metric) =>
+        uniqueMetricsMap.set(m.metric_ID, m)
+      );
+      setMetrics(Array.from(uniqueMetricsMap.values()));
 
+    } catch (err) {
+      console.error(err);
+    }
+  };
+
+  loadAll();
+}, []);
 
 
   const addMetric = async () => {
-      if (!newName.trim()) return;
+    if (!newName.trim()) return;
 
-      const payload = {
-        Metric_Name: newName,
-        Value_Type: newType,
-        Category: newCategory.trim() || null,
-        Description: newDesc.trim() || null,
-      };
-
-      try {
-        const res = await fetch("http://127.0.0.1:8000/api/metrics/create/", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          credentials: "include",
-          body: JSON.stringify(payload),
-        });
-
-        const data = await res.json();
-        if (!res.ok) throw new Error(data.error);
-
-        setMetrics(prev => [...prev, data]);
-
-        //clear inputs
-        setNewName("");
-        setNewType("float");
-        setNewCategory("");
-        setNewDesc("");
-
-      } catch (err) {
-        console.error(err);
-      }
+    const payload = {
+      metric_name: newName,
+      value_type: newType,
+      category: newCategory || null, // now category_ID
+      description: newDesc.trim() || null,
     };
+
+
+    try {
+      const res = await fetch("http://127.0.0.1:8000/api/metrics/create/", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        credentials: "include",
+        body: JSON.stringify(payload),
+      });
+      const responseBody = await res.text();
+
+      if (!res.ok) {
+        console.error("status:", res.status);
+        console.error("body:", responseBody);
+
+        let errorMsg = responseBody;
+        try {
+          const errorJson = JSON.parse(responseBody);
+          errorMsg = errorJson.detail || errorJson.error || responseBody;
+        } catch (e) {
+        }
+        throw new Error(`API Error (${res.status}): ${errorMsg}`);
+      }
+
+      const data = JSON.parse(responseBody);
+
+      console.log("status:", res.status);
+      console.log("body:", responseBody);
+      setMetrics(prev => {
+          const tempMap = new Map(prev.map(m => [m.metric_ID, m]));
+          tempMap.set(data.metric_ID, data);
+
+          return Array.from(tempMap.values());
+      });
+
+      setNewName("");
+      setNewType("float");
+      setNewCategory("");
+      setNewDesc("");
+
+    } catch (err) {
+      console.error(err);
+    }
+  };
 
 
   const deleteMetric = async (id: string) => {
@@ -79,7 +113,7 @@ const MetricsPage: React.FC = () => {
         });
 
         if (res.ok) {
-          setMetrics(prev => prev.filter(m => m.Metric_ID !== id));
+          setMetrics(prev => prev.filter(m => m.metric_ID !== id));
         }
       } catch (err) {
         console.error(err);
@@ -145,13 +179,20 @@ return (
           <option value="text">Text</option>
         </select>
 
-        <input
+        <select
           className="dx-input"
-          placeholder="Category (optional)"
           value={newCategory}
           onChange={(e) => setNewCategory(e.target.value)}
           style={{ marginBottom: 10 }}
-        />
+        >
+          <option value="">— No category —</option>
+          {categories.map((c) => (
+            <option key={c.category_ID} value={c.category_ID}>
+              {c.category_name}
+            </option>
+          ))}
+        </select>
+
 
         <input
           className="dx-input"
@@ -183,18 +224,18 @@ return (
           <tbody>
             {metrics.map((m) => (
               <tr
-                key={m.Metric_ID}
+                key={m.metric_ID}
                 style={{ borderBottom: "1px solid rgba(255,255,255,0.1)" }}
               >
-                <td style={{ padding: 8 }}>{m.Metric_Name}</td>
-                <td style={{ padding: 8 }}>{m.Value_Type}</td>
-                <td style={{ padding: 8 }}>{m.Category || "—"}</td>
-                <td style={{ padding: 8 }}>{m.Description || "—"}</td>
+                <td style={{ padding: 8 }}>{m.metric_name}</td>
+                <td style={{ padding: 8 }}>{m.value_type}</td>
+                <td style={{ padding: 8 }}>{m.category_name || "—"}</td>
+                <td style={{ padding: 8 }}>{m.description || "—"}</td>
                 <td style={{ padding: 8 }}>
                   <button
                     className="dx-btn dx-btn-outline"
                     style={{ borderColor: "var(--danger)", color: "var(--danger)" }}
-                    onClick={() => deleteMetric(m.Metric_ID)}
+                    onClick={() => deleteMetric(m.metric_ID)}
                   >
                     Delete
                   </button>

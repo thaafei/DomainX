@@ -1,20 +1,21 @@
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
 from rest_framework import status
-
-from ..models import Metric
-from ..serializers import MetricSerializer
+from ..database.metrics.models import Metric
+from ..database.metrics.serializers import MetricSerializer
 
 
 @api_view(["GET"])
 def list_metrics(request):
-    metrics = Metric.objects.all().order_by("Metric_Name")
+    metrics = Metric.objects.select_related("category").all().order_by("metric_name")
     serializer = MetricSerializer(metrics, many=True)
+    print(serializer.data)
     return Response(serializer.data)
 
 
 @api_view(["POST"])
 def create_metric(request):
+    print(request.data)
     serializer = MetricSerializer(data=request.data)
     if serializer.is_valid():
         serializer.save()
