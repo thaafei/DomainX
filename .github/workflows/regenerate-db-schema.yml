@@ -54,7 +54,7 @@ jobs:
           DEBUG: 'False'
         run: |
           # Run Django management command to generate schema
-          python src/backend/manage.py graph_models -a -o src/backend/DatabaseSchema.png
+          python src/backend/manage.py graph_models -a -o src/backend/DatabaseSchema_generated.png
           echo "✅ Database schema diagram regenerated"
 
       - name: Commit schema diagrams
