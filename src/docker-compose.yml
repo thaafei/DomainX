@@ -20,6 +20,19 @@ services:
     networks:
       - domainx-net
 
+  web:
+    build: ./frontend
+    depends_on:
+      - backend
+    ports:
+      - "8080:80"
+    volumes:
+      - ./infra/nginx/conf.d:/etc/nginx/conf.d:ro
+    restart: always
+    networks:
+      - domainx-net
+
+
   redis:
     image: redis:7-alpine
     env_file:
@@ -43,8 +56,6 @@ services:
     env_file:
       - .env
     build: ./backend
-    ports:
-      - "8000:8000"
     command: gunicorn DomainX.wsgi:application --bind 0.0.0.0:8000 --workers 3 --timeout 120
     depends_on:
       db:
