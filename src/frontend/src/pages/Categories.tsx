@@ -6,10 +6,12 @@ interface Category {
   category_description: string;
 }
 
+
 const CategoriesPage: React.FC = () => {
+  const [categories, setCategories] = useState<Category[]>([]);
   const [newName, setNewName] = useState("");
   const [newDesc, setNewDesc] = useState("");
-  const [categories, setCategories] = useState<Category[]>([]);
+  const [errorMsg, setErrorMsg] = useState<string>("");
 
 
 useEffect(() => {
@@ -20,6 +22,7 @@ useEffect(() => {
       );
 
       const categoriesData = await categoriesRes.json();
+      setCategories(Array.from(categoriesData.values()));
     } catch (err) {
       console.error(err);
     }
@@ -39,7 +42,7 @@ useEffect(() => {
 
 
     try {
-      const res = await fetch("http://127.0.0.1:8000/api/categories/create/", {
+      const res = await fetch("http://127.0.0.1:8000/api/categories/", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         credentials: "include",
@@ -80,20 +83,33 @@ useEffect(() => {
   };
 
 
-  const deleteCategory = async (id: string) => {
-      try {
-        const res = await fetch(`http://127.0.0.1:8000/api/categories/${id}/delete/`, {
-          method: "DELETE",
-          credentials: "include",
-        });
 
-        if (res.ok) {
-          setCategories(prev => prev.filter(m => m.category_ID !== id));
+  const deleteCategory = async (id: string) => {
+    setErrorMsg("");
+    try {
+      const res = await fetch(`http://127.0.0.1:8000/api/categories/${id}/delete/`, {
+        method: "DELETE",
+        credentials: "include",
+      });
+
+      if (res.ok) {
+        setCategories(prev => prev.filter(m => m.category_ID !== id));
+      } else {
+        let msg = "Failed to delete category.";
+        try {
+          const data = await res.json();
+          msg = data.error || msg;
+        } catch (e) {
+          // fallback to text
+          msg = await res.text();
         }
-      } catch (err) {
-        console.error(err);
+        setErrorMsg(msg);
       }
-    };
+    } catch (err) {
+      setErrorMsg("Network error while deleting category.");
+      console.error(err);
+    }
+  };
 
 return (
   <div className="dx-bg" style={{ display: "flex", height: "100vh" }}>
@@ -113,16 +129,17 @@ return (
             style={{ width: "100%", fontSize: "1rem", textAlign: "center" }}
             onClick={() => (window.location.href = "/main")}
           >
-            ← Back
+            ← Home
       </button>
 
       <button
             className="dx-btn dx-btn-outline"
             style={{ width: "100%", fontSize: "1rem", textAlign: "center" }}
-            onClick={() => (window.location.href = "/category")}
+            onClick={() => (window.location.href = "/metrics")}
           >
-            Manage Categories
+            Manage Metrics
       </button>
+      
     </div>
 
     <div
@@ -164,6 +181,9 @@ return (
       </div>
 
       <div className="dx-card" style={{ padding: 20 }}>
+        {errorMsg && (
+          <div style={{ color: '#d32f2f', fontWeight: 'bold' }}>{errorMsg}</div>
+        )}
         <h3>Existing Categories</h3>
 
         <table style={{ width: "100%", marginTop: 10, borderCollapse: "collapse" }}>

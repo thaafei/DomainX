@@ -31,8 +31,4 @@ urlpatterns = [
     path('domain/create/', create_domain, name='create_domain'),
     path('domain/', DomainListCreateView.as_view(), name='domain-list'),
     path('domain/<uuid:pk>/', DomainDetailView.as_view(), name='domain-detail'),
-    # path('database/libraries/', include('api.database.libraries.urls')),
-    # path('database/metrics/', include('api.database.metrics.urls')),
-    # path('database/library-metrics/', include('api.database.library_metric_values.urls')),
-    # path('database/domain/', include('api.database.domain.urls')),
 ] + category_router.urls

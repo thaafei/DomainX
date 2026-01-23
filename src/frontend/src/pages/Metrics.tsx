@@ -138,7 +138,7 @@ return (
             style={{ width: "100%", fontSize: "1rem", textAlign: "center" }}
             onClick={() => (window.location.href = "/main")}
           >
-            ← Back
+            ← Home
       </button>
 
       <button
