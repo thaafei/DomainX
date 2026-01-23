@@ -22,6 +22,8 @@ services:
 
   redis:
     image: redis:7-alpine
+    env_file:
+      - .env
     command: >
       sh -c 'redis-server /usr/local/etc/redis/redis.conf
       --requirepass "$$REDIS_PASSWORD"'
@@ -38,6 +40,8 @@ services:
       - domainx-net
 
   backend:
+    env_file:
+      - .env
     build: ./backend
     command: gunicorn DomainX.wsgi:application --bind 0.0.0.0:8000 --workers 3 --timeout 120
     depends_on:
@@ -53,6 +57,8 @@ services:
       - domainx-net
 
   celery:
+    env_file:
+      - .env
     build: ./backend
     command: celery -A DomainX worker -l info
     depends_on:
@@ -69,6 +75,8 @@ services:
       - domainx-net
 
   celery_beat:
+    env_file:
+      - .env
     build: ./backend
     command: celery -A DomainX beat -l info
     depends_on:
