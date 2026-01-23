@@ -80,6 +80,22 @@ Ensure you have these installed:
     ```
     The frontend application should open in your browser automatically at: `http://localhost:3000/`
 
+
+## Testing Fixtures
+To populate local database with mock data, a test_db fixture is provided. To apply the fixture, do the following steps:
+1. Activate the virtual environment under src/backend (see above for instructions)
+2. Run migrations:
+```bash
+python manage_local.py migrate
+```
+3. Load the fixture
+```bash 
+python manage_local.py loaddata test_db
+```
+
+If there are any errors, delete the db.sqlite3 file and rerun migrations and loaddata
+
+
 ## ⚠️ Proof-of-Concept (POC) Local Setup  
 *This section is only for the current prototype.  
 Domain IDs and metric names will be replaced once the app is fully implemented.*

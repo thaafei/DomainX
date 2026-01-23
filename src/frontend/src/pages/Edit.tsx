@@ -2,21 +2,21 @@ import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 
 interface Metric {
-  Metric_ID: string;
-  Metric_Name: string;
+  metric_ID: string;
+  metric_name: string;
 }
 
 interface EditableRow {
-  Library_ID: string;
-  Library_Name: string;
-  Repository_URL: string | null;
-  Programming_Language: string;
+  library_ID: string;
+  library_name: string;
+  url: string | null;
+  programming_language: string;
   metrics: { [metricName: string]: string | number | null };
 
   isEditing: boolean;
 }
 
-const DOMAIN_ID = "dd8d1992-d085-41e1-8ed0-7d292d4c2f2f";
+const DOMAIN_ID = " ecba1df1ede211f0987c0050568e534c";
 
 const EditValuesPage: React.FC = () => {
   const navigate = useNavigate();
@@ -47,7 +47,7 @@ const EditValuesPage: React.FC = () => {
   const startEdit = (id: string) => {
     setRows(prev =>
       prev.map(r =>
-        r.Library_ID === id ? { ...r, isEditing: true } : r
+        r.library_ID === id ? { ...r, isEditing: true } : r
       )
     );
   };
@@ -59,7 +59,7 @@ const EditValuesPage: React.FC = () => {
   const updateField = (id: string, field: string, value: any) => {
     setRows(prev =>
       prev.map(r =>
-        r.Library_ID === id ? { ...r, [field]: value } : r
+        r.library_ID === id ? { ...r, [field]: value } : r
       )
     );
   };
@@ -67,7 +67,7 @@ const EditValuesPage: React.FC = () => {
   const updateMetricValue = (libId: string, metric: string, value: any) => {
     setRows(prev =>
       prev.map(r =>
-        r.Library_ID === libId
+        r.library_ID === libId
           ? { ...r, metrics: { ...r.metrics, [metric]: value } }
           : r
       )
@@ -76,14 +76,14 @@ const EditValuesPage: React.FC = () => {
 
   const saveRow = async (row: EditableRow) => {
     const payload = {
-      Library_Name: row.Library_Name,
-      Repository_URL: row.Repository_URL,
-      Programming_Language: row.Programming_Language,
+      library_name: row.library_name,
+      url: row.url,
+      programming_language: row.programming_language,
       metrics: row.metrics,
     };
 
     const res = await fetch(
-      `http://127.0.0.1:8000/api/libraries/${row.Library_ID}/update-values/`,
+      `http://127.0.0.1:8000/api/libraries/${row.library_ID}/update-values/`,
       {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -132,8 +132,8 @@ const EditValuesPage: React.FC = () => {
                 <th style={{ padding: 8 }}>Language</th>
 
                 {metricList.map(m => (
-                  <th key={m.Metric_ID} style={{ padding: 8 }}>
-                    {m.Metric_Name}
+                  <th key={m.metric_ID} style={{ padding: 8 }}>
+                    {m.metric_name}
                   </th>
                 ))}
 
@@ -143,19 +143,19 @@ const EditValuesPage: React.FC = () => {
 
             <tbody>
               {rows.map(row => (
-                <tr key={row.Library_ID}>
+                <tr key={row.library_ID}>
 
                   <td style={{ padding: 8 }}>
                     {row.isEditing ? (
                       <input
                         className="dx-input"
-                        value={row.Library_Name}
+                        value={row.library_name}
                         onChange={e =>
-                          updateField(row.Library_ID, "Library_Name", e.target.value)
+                          updateField(row.library_ID, "library_name", e.target.value)
                         }
                       />
                     ) : (
-                      row.Library_Name
+                      row.library_name
                     )}
                   </td>
 
@@ -163,48 +163,48 @@ const EditValuesPage: React.FC = () => {
                     {row.isEditing ? (
                       <input
                         className="dx-input"
-                        value={row.Repository_URL || ""}
+                        value={row.url || ""}
                         onChange={e =>
-                          updateField(row.Library_ID, "Repository_URL", e.target.value)
+                          updateField(row.library_ID, "url", e.target.value)
                         }
                       />
                     ) : (
-                      row.Repository_URL || "—"
+                      row.url || "—"
                     )}
                   </td>
                   <td style={{ padding: 8 }}>
                     {row.isEditing ? (
                       <input
                         className="dx-input"
-                        value={row.Programming_Language}
+                        value={row.programming_language}
                         onChange={e =>
                           updateField(
-                            row.Library_ID,
-                            "Programming_Language",
+                            row.library_ID,
+                            "programming_language",
                             e.target.value
                           )
                         }
                       />
                     ) : (
-                      row.Programming_Language
+                      row.programming_language
                     )}
                   </td>
                   {metricList.map(m => (
-                    <td key={m.Metric_ID} style={{ padding: 8 }}>
+                    <td key={m.metric_ID} style={{ padding: 8 }}>
                       {row.isEditing ? (
                         <input
                           className="dx-input"
-                          value={row.metrics[m.Metric_Name] || ""}
+                          value={row.metrics[m.metric_name] || ""}
                           onChange={e =>
                             updateMetricValue(
-                              row.Library_ID,
-                              m.Metric_Name,
+                              row.library_ID,
+                              m.metric_name,
                               e.target.value
                             )
                           }
                         />
                       ) : (
-                        row.metrics[m.Metric_Name] ?? "—"
+                        row.metrics[m.metric_name] ?? "—"
                       )}
                     </td>
                   ))}
@@ -222,7 +222,7 @@ const EditValuesPage: React.FC = () => {
                           <button
                             className="dx-btn dx-btn-outline"
                             style={{ padding: "4px 8px" }}
-                            onClick={() => cancelEdit(row.Library_ID)}
+                            onClick={() => cancelEdit(row.library_ID)}
                           >
                             Cancel
                           </button>
@@ -231,7 +231,7 @@ const EditValuesPage: React.FC = () => {
                     ) : (
                       <button
                         className="dx-btn dx-btn-outline"
-                        onClick={() => startEdit(row.Library_ID)}
+                        onClick={() => startEdit(row.library_ID)}
                       >
                         Edit
                       </button>
