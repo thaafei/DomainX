@@ -164,10 +164,10 @@ return (
           onChange={(e) => setNewType(e.target.value)}
           style={{ marginBottom: 10 }}
         >
-          <option value="float">Float</option>
-          <option value="int">Integer</option>
-          <option value="bool">Boolean</option>
-          <option value="text">Text</option>
+          <option value="float" style={{ color:'black'}}>Float</option>
+          <option value="int" style={{ color:'black'}}>Integer</option>
+          <option value="bool" style={{ color:'black'}}>Boolean</option>
+          <option value="text" style={{ color:'black'}}>Text</option>
         </select>
 
         <input
