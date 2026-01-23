@@ -1,46 +1,25 @@
 import React, { useState, useEffect } from "react";
 
-interface Metric {
-  metric_ID: string;
-  metric_name: string;
-  value_type: string;
-  category: string;
-  category_name: string;
-  description?: string;
-}
-
 interface Category {
   category_ID: string;
   category_name: string;
+  category_description: string;
 }
 
-const MetricsPage: React.FC = () => {
-  const [metrics, setMetrics] = useState<Metric[]>([]);
+const CategoriesPage: React.FC = () => {
   const [newName, setNewName] = useState("");
-  const [newType, setNewType] = useState("float");
-  const [newCategory, setNewCategory] = useState<string>("");
-  const [categories, setCategories] = useState<Category[]>([]);
   const [newDesc, setNewDesc] = useState("");
+  const [categories, setCategories] = useState<Category[]>([]);
+
 
 useEffect(() => {
   const loadAll = async () => {
     try {
-      const [metricsRes, categoriesRes] = await Promise.all([
-        fetch("http://127.0.0.1:8000/api/metrics/", { credentials: "include" }),
-        fetch("http://127.0.0.1:8000/api/categories/", { credentials: "include" }),
-      ]);
-
-      const metricsData = await metricsRes.json();
-      const categoriesData = await categoriesRes.json();
-
-      setCategories(categoriesData);
-
-      const uniqueMetricsMap = new Map();
-      metricsData.forEach((m: Metric) =>
-        uniqueMetricsMap.set(m.metric_ID, m)
+      const [categoriesRes] = await Promise.all(
+        [fetch("http://127.0.0.1:8000/api/categories/", { credentials: "include" })]
       );
-      setMetrics(Array.from(uniqueMetricsMap.values()));
 
+      const categoriesData = await categoriesRes.json();
     } catch (err) {
       console.error(err);
     }
@@ -50,19 +29,17 @@ useEffect(() => {
 }, []);
 
 
-  const addMetric = async () => {
+  const addCategory = async () => {
     if (!newName.trim()) return;
 
     const payload = {
-      metric_name: newName,
-      value_type: newType,
-      category: newCategory || null, // now category_ID
+      category_name: newName,
       description: newDesc.trim() || null,
     };
 
 
     try {
-      const res = await fetch("http://127.0.0.1:8000/api/metrics/create/", {
+      const res = await fetch("http://127.0.0.1:8000/api/categories/create/", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         credentials: "include",
@@ -87,16 +64,14 @@ useEffect(() => {
 
       console.log("status:", res.status);
       console.log("body:", responseBody);
-      setMetrics(prev => {
-          const tempMap = new Map(prev.map(m => [m.metric_ID, m]));
+      setCategories(prev => {
+          const tempMap = new Map(prev.map(m => [m.category_ID, m]));
           tempMap.set(data.metric_ID, data);
 
           return Array.from(tempMap.values());
       });
 
       setNewName("");
-      setNewType("float");
-      setNewCategory("");
       setNewDesc("");
 
     } catch (err) {
@@ -105,15 +80,15 @@ useEffect(() => {
   };
 
 
-  const deleteMetric = async (id: string) => {
+  const deleteCategory = async (id: string) => {
       try {
-        const res = await fetch(`http://127.0.0.1:8000/api/metrics/${id}/delete/`, {
+        const res = await fetch(`http://127.0.0.1:8000/api/categories/${id}/delete/`, {
           method: "DELETE",
           credentials: "include",
         });
 
         if (res.ok) {
-          setMetrics(prev => prev.filter(m => m.metric_ID !== id));
+          setCategories(prev => prev.filter(m => m.category_ID !== id));
         }
       } catch (err) {
         console.error(err);
@@ -162,10 +137,10 @@ return (
       <div className="stars"></div>
 
       <div style={{ maxWidth: "900px", color: "white" }}>
-       <h1 style={{ color: "var(--accent)" }}>Manage Metrics</h1>
+       <h1 style={{ color: "var(--accent)" }}>Manage Categories</h1>
 
       <div className="dx-card" style={{ padding: 20, marginBottom: 24 }}>
-        <h3>Add New Metric</h3>
+        <h3>Add New Category</h3>
 
         <input
           className="dx-input"
@@ -175,33 +150,6 @@ return (
           style={{ marginBottom: 10 }}
         />
 
-        <select
-          className="dx-input"
-          value={newType}
-          onChange={(e) => setNewType(e.target.value)}
-          style={{ marginBottom: 10 }}
-        >
-          <option value="float">Float</option>
-          <option value="int">Integer</option>
-          <option value="bool">Boolean</option>
-          <option value="text">Text</option>
-        </select>
-
-        <select
-          className="dx-input"
-          value={newCategory}
-          onChange={(e) => setNewCategory(e.target.value)}
-          style={{ marginBottom: 10 }}
-        >
-          <option value="">— No category —</option>
-          {categories.map((c) => (
-            <option key={c.category_ID} value={c.category_ID}>
-              {c.category_name}
-            </option>
-          ))}
-        </select>
-
-
         <input
           className="dx-input"
           placeholder="Description (optional)"
@@ -210,40 +158,36 @@ return (
           style={{ marginBottom: 10 }}
         />
 
-        <button className="dx-btn" onClick={addMetric}>
-          Add Metric
+        <button className="dx-btn" onClick={addCategory}>
+          Add Category
         </button>
       </div>
 
       <div className="dx-card" style={{ padding: 20 }}>
-        <h3>Existing Metrics</h3>
+        <h3>Existing Categories</h3>
 
         <table style={{ width: "100%", marginTop: 10, borderCollapse: "collapse" }}>
           <thead>
             <tr>
               <th style={{ textAlign: "left", padding: 8 }}>Name</th>
-              <th style={{ textAlign: "left", padding: 8 }}>Type</th>
-              <th style={{ textAlign: "left", padding: 8 }}>Category</th>
               <th style={{ textAlign: "left", padding: 8 }}>Description</th>
               <th style={{ width: 100 }}></th>
             </tr>
           </thead>
 
           <tbody>
-            {metrics.map((m) => (
+            {categories.map((c) => (
               <tr
-                key={m.metric_ID}
+                key={c.category_ID}
                 style={{ borderBottom: "1px solid rgba(255,255,255,0.1)" }}
               >
-                <td style={{ padding: 8 }}>{m.metric_name}</td>
-                <td style={{ padding: 8 }}>{m.value_type}</td>
-                <td style={{ padding: 8 }}>{m.category_name || "—"}</td>
-                <td style={{ padding: 8 }}>{m.description || "—"}</td>
+                <td style={{ padding: 8 }}>{c.category_name}</td>
+                <td style={{ padding: 8 }}>{c.category_description || "—"}</td>
                 <td style={{ padding: 8 }}>
                   <button
                     className="dx-btn dx-btn-outline"
                     style={{ borderColor: "var(--danger)", color: "var(--danger)" }}
-                    onClick={() => deleteMetric(m.metric_ID)}
+                    onClick={() => deleteCategory(c.category_ID)}
                   >
                     Delete
                   </button>
@@ -253,8 +197,8 @@ return (
           </tbody>
         </table>
 
-        {metrics.length === 0 && (
-          <div style={{ padding: 20, opacity: 0.6 }}>No metrics yet.</div>
+        {categories.length === 0 && (
+          <div style={{ padding: 20, opacity: 0.6 }}>No categories yet.</div>
         )}
       </div>
       </div>
@@ -266,4 +210,4 @@ return (
 
 };
 
-export default MetricsPage;
+export default CategoriesPage;

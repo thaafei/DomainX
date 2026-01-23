@@ -2,7 +2,7 @@
   "version": "0.2.0",
   "configurations": [
     {
-      "name": "RUn Backend Tests",
+      "name": "Run Backend Tests",
       "type": "python",
       "request": "launch",
       "program": "${workspaceFolder}/.venv/Scripts/pytest.exe",

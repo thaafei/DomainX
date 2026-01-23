@@ -6,7 +6,6 @@
       "domain_name": "Machine Learning",
       "description": "Machine learning and neural network libraries",
       "created_at": "2024-01-01T10:00:00Z",
-      "created_by": null,
       "published": false
     }
   },
@@ -17,7 +16,6 @@
       "domain_name": "Web Development",
       "description": "Web framework and server libraries",
       "created_at": "2024-01-02T10:00:00Z",
-      "created_by": null,
       "published": false
     }
   },
@@ -28,7 +26,6 @@
       "domain_name": "Data Processing",
       "description": "Data manipulation and analysis libraries",
       "created_at": "2024-01-03T10:00:00Z",
-      "created_by": null,
       "published": false
     }
   },
