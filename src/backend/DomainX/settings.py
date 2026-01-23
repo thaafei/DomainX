@@ -76,7 +76,9 @@ INSTALLED_APPS = [
     'api.database.library_metric_values.apps.LibraryMetricValuesConfig',
     'api.database.domain.apps.DomainConfig',
     'django_celery_results',
-    'django_extensions'
+    'django_extensions',
+    'api.database.edit_history.apps.EditHistoryConfig',
+    'api.database.backup_logs.apps.BackupLogsConfig',
 ]
 AUTH_USER_MODEL = 'users.CustomUser'
 REST_FRAMEWORK = {
