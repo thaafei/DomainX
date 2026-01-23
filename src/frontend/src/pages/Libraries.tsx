@@ -62,16 +62,29 @@ const AddLibraryPage: React.FC = () => {
 
     try {
       const res = await fetch(apiUrl("/api/libraries/create/"), {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        credentials: "include",
-        body: JSON.stringify(payload),
-      });
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      credentials: "include",
+      body: JSON.stringify(payload),
+    });
 
-      const data = await res.json();
-      if (!res.ok) throw new Error(JSON.stringify(data));
+    const text = await res.text();
 
-      setLibraries(prev => [...prev, data.library]);
+    let data: any = null;
+    try {
+      data = text ? JSON.parse(text) : null;
+    } catch {
+
+    }
+
+    if (!res.ok) {
+      console.error("HTTP", res.status, "body:", text);
+      throw new Error(data ? JSON.stringify(data) : text);
+    }
+
+
+    setLibraries(prev => [...prev, data.library]);
+
 
       setName("");
       setUrl("");
