@@ -1,3 +1,6 @@
+secrets:
+  github_app_pem:
+    file: ./infra/secrets/github_app.pem
 services:
   db:
     image: mysql:8.0
@@ -64,10 +67,12 @@ services:
         condition: service_healthy
     volumes:
       - staticfiles:/app/staticfiles
-      - /opt/domainx/secrets/github_app.pem:/run/secrets/github_app.pem:ro
     restart: always
     networks:
       - domainx-net
+    secrets:
+      - source: github_app_pem
+        target: github_app.pem
 
   celery:
     env_file:
@@ -81,11 +86,12 @@ services:
         condition: service_healthy
       db:
         condition: service_healthy
-    volumes:
-      - /opt/domainx/secrets/github_app.pem:/run/secrets/github_app.pem:ro
     restart: always
     networks:
       - domainx-net
+    secrets:
+      - source: github_app_pem
+        target: github_app.pem
 
   celery_beat:
     env_file:
@@ -97,11 +103,12 @@ services:
         condition: service_healthy
       db:
         condition: service_healthy
-    volumes:
-      - /opt/domainx/secrets/github_app.pem:/run/secrets/github_app.pem:ro
     restart: always
     networks:
       - domainx-net
+    secrets:
+      - source: github_app_pem
+        target: github_app.pem
 
 volumes:
   mysql_data:
