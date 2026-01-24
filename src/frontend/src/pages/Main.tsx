@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuthStore } from "../store/useAuthStore";
+import { apiUrl } from "../config/api";
 const domains = [
   { name: "Neural Networks", version: "v1.0" },
   { name: "Domain X", version: "v2.1" },
@@ -14,7 +15,7 @@ const Main: React.FC = () => {
   const { logout } = useAuthStore();
   const handleLogout = async () => {
       try {
-          await fetch("http://127.0.0.1:8000/logout/", {
+          await fetch(apiUrl("/logout/"), {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           credentials: "include",

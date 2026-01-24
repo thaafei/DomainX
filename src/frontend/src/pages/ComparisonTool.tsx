@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-
+import { apiUrl } from "../config/api";
 interface Metric {
   metric_ID: string;
   metric_name: string;
@@ -41,14 +41,20 @@ const ComparisonToolPage: React.FC = () => {
       const formattedDomainId = formatUUID(DOMAIN_ID);
 
       const res = await fetch(
-          `http://127.0.0.1:8000/api/comparison/${formattedDomainId}/`,
+          apiUrl(`/api/comparison/${formattedDomainId}/`),
           { credentials: "include" }
-      );
-      const responseText = await res.text();
-      if (!res.ok) {
-          throw new Error(`Server Error (${res.status}): See console for details.`);
+        );
+      const contentType = res.headers.get("content-type") || "";
+      const text = await res.text();
+
+      if (!res.ok) throw new Error(`HTTP ${res.status}: ${text.slice(0,200)}`);
+
+      if (!contentType.includes("application/json")) {
+        throw new Error(`Expected JSON, got ${contentType}. Body starts with: ${text.slice(0,80)}`);
       }
-      const data = JSON.parse(responseText);
+
+      const data = JSON.parse(text);
+
       //const data = await res.json();
       setMetricList(data.metrics);
       setTableRows(data.libraries);
