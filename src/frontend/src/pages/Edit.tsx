@@ -16,7 +16,7 @@ interface EditableRow {
   isEditing: boolean;
 }
 
-const DOMAIN_ID = " ecba1df1ede211f0987c0050568e534c";
+const DOMAIN_ID = "ecba1df1ede211f0987c0050568e534c";
 
 const EditValuesPage: React.FC = () => {
   const navigate = useNavigate();
@@ -28,13 +28,33 @@ const EditValuesPage: React.FC = () => {
   }, []);
 
   const loadData = async () => {
-    const res = await fetch(
-      apiUrl(`/api/comparison/${DOMAIN_ID}/`),
-      { credentials: "include" }
-    );
+       const formatUUID = (rawId: string) => {
+            if (rawId && rawId.length === 32 && !rawId.includes('-')) {
+              return rawId.substring(0, 8) + '-' +
+                     rawId.substring(8, 12) + '-' +
+                     rawId.substring(12, 16) + '-' +
+                     rawId.substring(16, 20) + '-' +
+                     rawId.substring(20, 32);
+            }
+            return rawId;
+          };
 
-    const data = await res.json();
+      const formattedDomainId = formatUUID(DOMAIN_ID);
 
+      const res = await fetch(
+          apiUrl(`/api/comparison/${formattedDomainId}/`),
+          { credentials: "include" }
+        );
+      const contentType = res.headers.get("content-type") || "";
+      const text = await res.text();
+
+      if (!res.ok) throw new Error(`HTTP ${res.status}: ${text.slice(0,200)}`);
+
+      if (!contentType.includes("application/json")) {
+        throw new Error(`Expected JSON, got ${contentType}. Body starts with: ${text.slice(0,80)}`);
+      }
+
+      const data = JSON.parse(text);
     const editableRows = data.libraries.map((lib: any) => ({
       ...lib,
       isEditing: false,
