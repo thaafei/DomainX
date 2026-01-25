@@ -4,7 +4,10 @@ from pathlib import Path
 from unittest import mock
 
 from django.test import SimpleTestCase, override_settings
+
 os.environ.setdefault("DJANGO_SECRET_KEY", "test-secret-key-for-testing")
+os.environ.setdefault("CELERY_BROKER_URL", "memory://")
+os.environ.setdefault("DJANGO_LOCAL", "true")
 
 # Configure Django settings before importing anything else
 if not django.apps.apps.ready:
