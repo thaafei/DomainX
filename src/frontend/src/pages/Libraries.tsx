@@ -10,8 +10,6 @@ interface Library {
   programming_language: string;
 }
 
-// const DOMAIN_ID = "ecba1df1ede211f0987c0050568e534c";   // POC domain (need to delete later and replace with actual)
-
 const AddLibraryPage: React.FC = () => {
   const { domainId } = useParams<{ domainId: string }>();
   const DOMAIN_ID = domainId
@@ -38,7 +36,7 @@ const AddLibraryPage: React.FC = () => {
             return rawId;
           };
 
-      const formattedDomainId = formatUUID(DOMAIN_ID);
+      const formattedDomainId = formatUUID(DOMAIN_ID || "");
       const res = await fetch(apiUrl(`/api/libraries/${formattedDomainId}/`), {
         credentials: "include",
       });

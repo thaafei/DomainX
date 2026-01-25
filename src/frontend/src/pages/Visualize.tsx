@@ -14,8 +14,6 @@ interface LibraryRow {
   metrics: { [metricName: string]: string | number | null };
 }
 
-// const DOMAIN_ID = "ecba1df1ede211f0987c0050568e534c";
-
 const Visualize: React.FC = () => {
   const navigate = useNavigate();
   const { domainId } = useParams<{ domainId: string }>();
@@ -46,6 +44,9 @@ const Visualize: React.FC = () => {
             return rawId;
           };
 
+      if (!DOMAIN_ID) {
+        throw new Error("Domain ID is required.");
+      }
       const formattedDomainId = formatUUID(DOMAIN_ID);
       const res = await fetch(apiUrl(`/api/comparison/${formattedDomainId}/`), {
         credentials: "include"

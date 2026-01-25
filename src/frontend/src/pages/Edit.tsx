@@ -41,6 +41,7 @@ const EditValuesPage: React.FC = () => {
             return rawId;
           };
 
+      if (!DOMAIN_ID) return;
       const formattedDomainId = formatUUID(DOMAIN_ID);
 
       const res = await fetch(
