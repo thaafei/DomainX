@@ -19,6 +19,7 @@ class DatabaseConfigurationTestCase(SimpleTestCase):
     @mock.patch.dict(os.environ, {
         "DJANGO_LOCAL": "true",
         "DJANGO_DEBUG": "true",
+        "DJANGO_SECRET_KEY": "123"
     })
     @override_settings(DATABASES={
         "default": {
@@ -43,6 +44,7 @@ class DatabaseConfigurationTestCase(SimpleTestCase):
         "DB_PASSWORD": "test_password",
         "DB_HOST": "127.0.0.1",
         "DB_PORT": "3308",
+        "DJANGO_SECRET_KEY": "123"
     })
     @override_settings(DATABASES={
         "default": {
