@@ -1,7 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from "react-router-dom";
 import { useAuthStore } from "../store/useAuthStore";
-
+import { apiUrl } from "../config/api";
+const domains = [
+  { name: "Neural Networks", version: "v1.0" },
+  { name: "Domain X", version: "v2.1" },
+  { name: "Domain Y", version: "v3.0" },
+];
 
 const Main: React.FC = () => {
   const navigate = useNavigate();
@@ -39,7 +44,7 @@ const Main: React.FC = () => {
   if (loading) return <div>Loading...</div>;
   const handleLogout = async () => {
       try {
-          await fetch("http://127.0.0.1:8000/logout/", {
+          await fetch(apiUrl("/logout/"), {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           credentials: "include",

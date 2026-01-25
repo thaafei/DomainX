@@ -2,6 +2,7 @@ import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useParams } from 'react-router-dom';
 
+import { apiUrl } from "../config/api";
 interface Library {
   library_ID: string;
   library_name: string;
@@ -37,8 +38,8 @@ const AddLibraryPage: React.FC = () => {
             return rawId;
           };
 
-      const formattedDomainId = DOMAIN_ID;
-      const res = await fetch(`http://127.0.0.1:8000/api/libraries/${formattedDomainId}/`, {
+      const formattedDomainId = formatUUID(DOMAIN_ID);
+      const res = await fetch(apiUrl(`/api/libraries/${formattedDomainId}/`), {
         credentials: "include",
       });
       const responseText = await res.text();
@@ -64,17 +65,30 @@ const AddLibraryPage: React.FC = () => {
     };
 
     try {
-      const res = await fetch("http://127.0.0.1:8000/api/libraries/create/", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        credentials: "include",
-        body: JSON.stringify(payload),
-      });
+      const res = await fetch(apiUrl("/api/libraries/create/"), {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      credentials: "include",
+      body: JSON.stringify(payload),
+    });
 
-      const data = await res.json();
-      if (!res.ok) throw new Error(JSON.stringify(data));
+    const text = await res.text();
 
-      setLibraries(prev => [...prev, data.library]);
+    let data: any = null;
+    try {
+      data = text ? JSON.parse(text) : null;
+    } catch {
+
+    }
+
+    if (!res.ok) {
+      console.error("HTTP", res.status, "body:", text);
+      throw new Error(data ? JSON.stringify(data) : text);
+    }
+
+
+    setLibraries(prev => [...prev, data.library]);
+
 
       setName("");
       setUrl("");
@@ -86,7 +100,7 @@ const AddLibraryPage: React.FC = () => {
 
   const deleteLibrary = async (id: string) => {
     try {
-      const res = await fetch(`http://127.0.0.1:8000/api/libraries/${id}/delete/`, {
+      const res = await fetch(apiUrl(`/api/libraries/${id}/delete/`), {
         method: "DELETE",
         credentials: "include"
       });

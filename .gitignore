@@ -1,3 +1,6 @@
+# React build
+build/
+
 ## Core latex/pdflatex auxiliary files:
 .idea/
 venv/

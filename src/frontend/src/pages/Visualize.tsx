@@ -2,6 +2,7 @@ import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useParams } from 'react-router-dom';
 
+import { apiUrl } from "../config/api";
 interface Metric {
   metric_ID: string;
   metric_name: string;
@@ -45,8 +46,8 @@ const Visualize: React.FC = () => {
             return rawId;
           };
 
-      const formattedDomainId = DOMAIN_ID;
-      const res = await fetch(`http://127.0.0.1:8000/api/comparison/${formattedDomainId}/`, {
+      const formattedDomainId = formatUUID(DOMAIN_ID);
+      const res = await fetch(apiUrl(`/api/comparison/${formattedDomainId}/`), {
         credentials: "include"
       });
       const responseText = await res.text();
