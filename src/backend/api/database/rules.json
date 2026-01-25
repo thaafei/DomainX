@@ -1,14 +1,15 @@
 {
-  "binary_options": {
+  "bool": {
     "yes_no": {
       "display_name": "Yes / No",
       "options": ["yes", "no"],
       "templates": {
         "standard": {"yes": 1, "no": 0},
         "penalty": {"yes": 1, "no": -1},
-        "weighted": {"yes": 2, "no": 0},
+        "weighted 2": {"yes": 2, "no": 0},
+        "weighted 3": {"yes": 3, "no": 0},
         "reliability_inv": {"yes": 0, "no": 5},
-        "usability_manual": {"yes": 4, "no": 0}
+        "weighted 4": {"yes": 4, "no": 0}
       }
     },
     "yes_no_na": {
@@ -52,38 +53,34 @@
       }
     }
   },
-  "range_options": {
-    "software_counts": {
-      "sub_categories": {
-        "file_ranges": {
-          "options": ["0-9", "10-49", "50-99", "100-299", "300-599", "600-999", "1000+"],
-          "templates": {
-            "reusability_files": {"0-9": 0, "10-49": 1, "50-99": 3, "100-299": 4, "300-599": 5, "600-999": 6, "1000+": 8}
-          }
-        },
-        "step_thresholds": {
-          "options": ["<10", ">=10"],
-          "templates": {
-            "install_steps": {"<10": 1, ">=10": 0}
-          }
-        }
+  "range": {
+    "file_ranges": {
+      "display_name": "0-9 / 10-49 / 50-99 / 100-299 / 300-599 / 600-999 / 1000+",
+      "options": ["0-9", "10-49", "50-99", "100-299", "300-599", "600-999", "1000+"],
+      "templates": {
+        "reusability_files": {"0-9": 0, "10-49": 1, "50-99": 3, "100-299": 4, "300-599": 5, "600-999": 6, "1000+": 8}
       }
     },
-    "status_metrics": {
-      "sub_categories": {
-        "percentages": {
-          "options": ["50%+", "<50%", "10%+", "<10%"],
-          "templates": {
-            "issue_closure": {"50%+": 1, "<50%": 0},
-            "comment_density": {"10%+": 1, "<10%": 0}
-          }
-        },
-        "issue_tracking": {
-          "options": ["nothing", "private", "public"],
-          "templates": {
-            "tool_quality": {"nothing": 0, "private": 1, "public": 2}
-          }
-        }
+    "step_thresholds": {
+      "display_name": "<10 / >=10", 
+      "options": ["<10", ">=10"],
+      "templates": {
+        "install_steps": {"<10": 1, ">=10": 0}
+      }
+    },
+    "percentages": {
+      "display_name": "50%+ / <50% / 10%+ / <10%",
+      "options": ["50%+", "<50%", "10%+", "<10%"],
+      "templates": {
+        "issue_closure": {"50%+": 1, "<50%": 0},
+        "comment_density": {"10%+": 1, "<10%": 0}
+      }
+    },
+    "issue_tracking": {
+      "display_name": "Nothing / Private / Public",
+      "options": ["nothing", "private", "public"],
+      "templates": {
+      "tool_quality": {"nothing": 0, "private": 1, "public": 2}
       }
     }
   }

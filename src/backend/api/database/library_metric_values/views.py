@@ -7,6 +7,11 @@ from ..libraries.models import Library
 from ..metrics.models import Metric
 from django.db import transaction
 from django.shortcuts import get_object_or_404
+import json
+import os
+import ahpy
+from django.conf import settings
+
 # Create or Update a value
 class LibraryMetricValueCreateOrUpdateView(APIView):
     """
@@ -73,28 +78,6 @@ class LibraryMetricTableView(APIView):
             return Response({'error': f'A server error occurred: {str(e)}'}, 
                             status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
-# # Return all values as a table (frontend use)
-# class LibraryMetricTableView(APIView):
-#     """
-#     Returns a table where rows = libraries, columns = metrics.
-#     """
-#     def get(self, request):
-#         libraries = Library.objects.all()
-#         metrics = Metric.objects.all()
-#         table = []
-
-#         for lib in libraries:
-#             row = {'library_id': str(lib.Library_ID), 'library_name': lib.Library_Name}
-#             for metric in metrics:
-#                 try:
-#                     val = LibraryMetricValue.objects.get(library=lib, metric=metric)
-#                     row[metric.metric_name] = val.value
-#                 except LibraryMetricValue.DoesNotExist:
-#                     row[metric.metric_name] = None
-#             table.append(row)
-
-#         return Response(table)
-
 class MetricValueBulkUpdateView(APIView):
     """
     Receives a list of metric score updates and processes them efficiently.
@@ -151,4 +134,44 @@ class MetricValueBulkUpdateView(APIView):
         except Exception as e:
             # Catch database or internal errors
             return Response({"error": f"Bulk update failed: {str(e)}"}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+        
+class AHPCalculations(APIView):
+    def get(self, request):
+        # Get domain and category
+        domain_id = request.query_params.get('domain_id')
+        category = request.query_params.get('category')
+
+        # Load JSON
+        rules_path = os.path.join(settings.BASE_DIR, 'api', 'database', 'rules.json')
+        with open(rules_path, 'r') as f:
+            rules_data = json.load(f)
+
+        # Get metrics based on category
+        metrics = Metric.objects.filter(category=category)
+        libraries = Library.objects.filter(domain_id=domain_id) 
+
+        library_scores = {}
+        # Get score for each library
+        for lib in libraries:
+            # Get score of each metric
+            total_score = 0
+            for met in metrics:
+                value = LibraryMetricValue.objects.get(library=lib, metrics=met).value
+                # Get the score value
+                if met.option_category:
+                    rule_set = rules_data.get(met.value_type, {}).get(met.option_category, {}).get('templates', {}).get(met.rule, {})
+                    total_score += rule_set.get(value, 0)
+                else:
+                    total_score += value
+            library_scores[lib.library_name] = total_score
+
+        comparison = ahpy.Compare(name=category, comparisons=library_scores, precision=3)
+        ranking = comparison.target_weights
+
+        return Response({
+            "category": category,
+            "raw_scores": library_scores,
+            "ahp_ranking": ranking
+        })
+
         
