@@ -118,7 +118,7 @@ const Main: React.FC = () => {
                   <div style={{ fontSize: "0.8rem", color: "var(--text-dim)" }}>{d.description}</div>
                 </>
               ) : (
-                <div style={{ textAlign: "center" }}>{d.name.charAt(0)}</div>
+                <div style={{ textAlign: "center" }}>{d.domain_name.charAt(0)}</div>
               )}
             </div>
           ))}
@@ -224,7 +224,7 @@ const Main: React.FC = () => {
       </div>
 
       <div style={{ flex: 1, padding: "28px 34px", overflowY: "auto", color: "var(--text-main)" }}>
-        <h1 style={{ color: "var(--accent)", marginTop: 0 }}>{selectedDomain.name}</h1>
+        <h1 style={{ color: "var(--accent)", marginTop: 0 }}>{selectedDomain.domain_name}</h1>
 
         <div className="dx-card" style={{ marginBottom: 20, padding: 18 }}>
           <div style={{ marginTop: 18 }}>
