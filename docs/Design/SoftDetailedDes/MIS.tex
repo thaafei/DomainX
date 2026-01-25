@@ -2394,5 +2394,23 @@ graduate attribute of Problem Analysis and Design.
   (LO\_Explores)
 \end{enumerate}
 
+\textbf{Peer Implementation Reflection:}
+
+  Implementing team 25's module was very manageable because the MIS clearly listed the exported constants and exported access
+  programs which gave a strong starting point for the structure and naming. The most helpful part of the MIS was the access routine,
+  since it clearly stated the expected conversion approach (repeated division and remainder for decimal to dozenal, 
+  and the positional evaluation for dozenal to decimals). The main challenge i think however was that the MIS did not fully define the allowed 
+  digit-symbol mapping for the two extra dozenal digits beyond 0-9, so some of the implementation choices made required assumptions 
+  to a level (e.g., choosing \texttt{X} and \texttt{E} as canonical symbols and supporting alternate inputs). 
+  Another difficulty was deciding how strict i should make normalization, especially around things like handling whitespace, casing, optional
+  plus signs, and the leading zeros. 
+
+  To improve implementability, the MIS could include explicit examples of valid and invalid dozenal
+  strings, plus sample inputs and outputs for each access program (including edge cases like 0, negative numbers, and error
+  strings). This process really helped to reinforce the importance of specifying specific or rather strict input validation rules and canonical formatting 
+  expectations inside the MIS so people implementing do not rely on interpretation or assumption (but i guess you always have to to some extent). 
+  Overall, implementing this module helped confirm
+  how small missing details in a specification can affect consistency across different implementations, but a good MIS can still make implementation manageable.
+
 
 \end{document}
