@@ -34,7 +34,7 @@ urlpatterns = [
     path('domain/<uuid:pk>/', DomainDetailView.as_view(), name='domain-detail'),
     path('metric-rules/', MetricRulesView.as_view(), name='metric-rules'),
     path('metric-categories/', MetricCategoryView.as_view(), name='metric-categories'),
-    path('aph_category/<uuid:domain_id>/<uuid:category>', AHPCalculations.as_view(), name='aph_category')
+    path('aph/<uuid:domain_id>/', AHPCalculations.as_view(), name='aph_category')
     # path('database/libraries/', include('api.database.libraries.urls')),
     # path('database/metrics/', include('api.database.metrics.urls')),
     # path('database/library-metrics/', include('api.database.library_metric_values.urls')),

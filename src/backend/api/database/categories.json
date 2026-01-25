@@ -1,6 +1,5 @@
 {
-    "Categories": [ "Summary Information",
-                    "Installability", 
+    "Categories": [ "Installability", 
                     "Correctness and Verifiability", 
                     "Surface Reliability", 
                     "Surface Robustness", 

@@ -128,7 +128,6 @@ const MetricsPage: React.FC = () => {
       setNewType("float");
       setNewCategory("");
       setNewDesc("");
-      setRulesData(null)
       setSelectedTemplate("")
       setSelectedOptionCategory("")
 
@@ -197,6 +196,7 @@ return (
           placeholder="Metric name..."
           value={newName}
           onChange={(e) => setNewName(e.target.value)}
+          maxLength={100}
           style={{ marginBottom: 10 }}
         />
 

@@ -7,6 +7,9 @@ from django.contrib.auth.decorators import login_required
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
 from rest_framework import status
+import os
+from django.conf import settings
+import json
 
 class DomainListCreateView(generics.ListCreateAPIView):
     queryset = Domain.objects.all()
@@ -24,7 +27,13 @@ class DomainDetailView(generics.RetrieveAPIView):
 def create_domain(request):
     name = request.data.get('domain_name')
     desc = request.data.get('description')
-
+    path = os.path.join(settings.BASE_DIR, 'api', 'database', 'categories.json')
+    with open(path, 'r') as f:
+        categories = json.load(f).get('Categories', [])
+    
+    if categories:
+        equal_weight = 1.0 / len(categories)
+        category_weights = {cat: equal_weight for cat in categories}
     if not name or not desc:
         return Response({"error": "Fields missing"}, status=400)
 
@@ -32,6 +41,7 @@ def create_domain(request):
         Domain.objects.create(
             domain_name=name,
             description=desc, 
+            category_weights=category_weights
             # created_by=request.user
         )
         return Response({"status": "success"}, status=201)

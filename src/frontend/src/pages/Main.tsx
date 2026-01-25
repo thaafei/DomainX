@@ -33,6 +33,20 @@ const Main: React.FC = () => {
   };
 
   useEffect(() => {
+    getAHPRanking();
+  })
+  const getAHPRanking = async () => {
+    const response = await fetch(`http://127.0.0.1:8000/api/aph/${selectedDomain.domain_ID}/`, {
+      method: 'GET',
+      headers: { 'Content-Type': 'application/json' }
+    });
+
+    if (response.ok) {
+      console.log(response);
+    }
+  };
+
+  useEffect(() => {
     fetchDomains();
   }, []);
 
