@@ -89,8 +89,15 @@ const EditDomain: React.FC = () => {
     setError(null);
     setSuccess(false);
 
+    const errors: string[] = [];
     if (!formData.domain_name.trim() || !formData.description.trim()) {
-      setError("Name and description are required.");
+      errors.push("Name and description are required.");
+    }
+    if (!formData.creator_ids || formData.creator_ids.length === 0) {
+      errors.push("At least one creator must be selected.");
+    }
+    if (errors.length > 0) {
+      setError(errors.join(" "));
       return;
     }
 
@@ -159,7 +166,7 @@ const EditDomain: React.FC = () => {
           transition: all 0.3s ease;
         }
         .delete-domain-btn:hover:not(:disabled) {
-          background-color: #ff7875 !important;
+          background-color: var(--warning-hover) !important;
           transform: translateY(-2px);
           box-shadow: 0 4px 12px rgba(255, 77, 79, 0.4);
         }
@@ -169,6 +176,53 @@ const EditDomain: React.FC = () => {
         .cancel-btn-modal:hover:not(:disabled) {
           background-color: rgba(255, 255, 255, 0.1);
           transform: translateY(-2px);
+        }
+        .dx-field-row {
+          display: flex;
+          align-items: center;
+          gap: 12px;
+          padding: 6px 0;
+        }
+        .dx-switch {
+          position: relative;
+          display: inline-block;
+          width: 48px;
+          height: 26px;
+        }
+        .dx-switch input {
+          opacity: 0;
+          width: 0;
+          height: 0;
+        }
+        .dx-switch-slider {
+          position: absolute;
+          cursor: pointer;
+          top: 0;
+          left: 0;
+          right: 0;
+          bottom: 0;
+          background-color:  "var(--accent)";
+          border-radius: 26px;
+          transition: all 0.2s ease;
+          border: 1px solid rgba(255,255,255,0.15);
+        }
+        .dx-switch-slider:before {
+          position: absolute;
+          content: "";
+          height: 20px;
+          width: 20px;
+          left: 3px;
+          bottom: 3px;
+          background-color: #fff;
+          border-radius: 50%;
+          transition: transform 0.2s ease;
+        }
+        .dx-switch input:checked + .dx-switch-slider {
+          background-color: var(--accent-glow-bright);
+          border-color: var(--accent);
+        }
+        .dx-switch input:checked + .dx-switch-slider:before {
+          transform: translateX(22px);
         }
       `}</style>
       <div
@@ -215,6 +269,7 @@ const EditDomain: React.FC = () => {
                   name="domain_name"
                   value={formData.domain_name}
                   onChange={handleInputChange}
+                  style={{ border: (error && !formData.domain_name.trim()) ? '1px solid red' : undefined }}
                   required
                 />
               </label>
@@ -227,20 +282,23 @@ const EditDomain: React.FC = () => {
                   value={formData.description}
                   onChange={handleInputChange}
                   rows={3}
+                  style={{ border: (error && !formData.description.trim()) ? '1px solid red' : undefined }}
                   required
                 />
               </label>
 
-              <label className="dx-label">
-                <input
-                  type="checkbox"
-                  name="published"
-                  checked={formData.published}
-                  onChange={handleInputChange}
-                  style={{ marginRight: 8 }}
-                />
-                Published
-              </label>
+              <div className="dx-field-row">
+                <span className="dx-label" style={{ marginRight: 12 }}>Published</span>
+                <label className="dx-switch">
+                  <input
+                    type="checkbox"
+                    name="published"
+                    checked={formData.published}
+                    onChange={handleInputChange}
+                  />
+                  <span className="dx-switch-slider"></span>
+                </label>
+              </div>
 
               <label className="dx-label">
                 Paper Name
@@ -266,7 +324,7 @@ const EditDomain: React.FC = () => {
                 />
               </label>
 
-              <fieldset style={{ border: "1px solid #444", padding: "12px", borderRadius: "4px" }}>
+              <fieldset style={{ border: (error && (!formData.creator_ids || formData.creator_ids.length === 0)) ? '1px solid red' : '1px solid #444', padding: "12px", borderRadius: "4px" }}>
                 <legend style={{ padding: "0 8px", color: "var(--accent)" }}>
                   Creators
                 </legend>
@@ -322,7 +380,7 @@ const EditDomain: React.FC = () => {
               <button
                 type="button"
                 className="dx-btn delete-domain-btn"
-                style={{ backgroundColor: "#ff4d4f", borderColor: "#ff4d4f", color: "#fff" }}
+                style={{ backgroundColor: "var(--warning)", borderColor: "var(--warning)", color: "#fff" }}
                 onClick={() => setShowDeleteConfirm(true)}
               >
                 🗑️ Delete Domain
@@ -398,7 +456,7 @@ const EditDomain: React.FC = () => {
                           Cancel
                         </button>
                         <button
-                          className="dx-btn dx-btn-outline"
+                          className="dx-btn dx-btn-outline delete-domain-btn"
                           style={{ flex: 1, padding: "12px 24px", fontSize: "1rem", backgroundColor: "#ff4d4f", borderColor: "#ff4d4f", color: "#fff" }}
                           onClick={handleDeleteDomain}
                           disabled={isDeleting}
