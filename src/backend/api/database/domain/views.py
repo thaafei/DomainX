@@ -50,7 +50,7 @@ def create_domain(request):
     except Exception as e:
         return Response({"error": str(e)}, status=400)
 
-@api_view(["POST"])
+@api_view(["GET"])
 def get_domain(request, domain_id):
     try:
         domain = Domain.objects.get(pk=domain_id)

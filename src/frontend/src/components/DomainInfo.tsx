@@ -48,19 +48,38 @@ const DomainInfo: React.FC<DomainInfoProps> = ({ selectedDomain, sidebarOpen, se
             <div className="dx-info-field">
                 <strong>Authors:</strong>
                 <ul style={{ margin: "6px 0 0 16px" }}>
-                <li>Unknown</li>
-                <li>Unknown</li>
+                  {Array.isArray(selectedDomain?.creators) && selectedDomain.creators.length > 0 ? (
+                    selectedDomain.creators.map((u: any) => {
+                      const fullName = [u?.first_name, u?.last_name].filter(Boolean).join(" ").trim();
+                      const displayName = (fullName || undefined) || u?.username || "Unknown";
+                      const emailText = ` (${u.email})`;
+                      return (
+                        <li key={u.id}>{displayName}{emailText}</li>
+                      );
+                    })
+                  ) : (
+                    <li>Unknown</li>
+                  )}
                 </ul>
             </div>
             <div className="dx-info-field">
                 <strong>Description:</strong>
-                <p style={{ marginTop: 6, opacity: 0.75 }}>
-                Placeholder description text about the domain.
-                </p>
+                <p style={{ marginTop: 6, opacity: 0.75 }}>{selectedDomain?.description || "N/A"}</p>
             </div>
-            <div className="dx-info-field">
-                <strong>Link:</strong> <a href="#" style={{ color: "var(--accent)" }}>Research Paper</a>
-            </div>
+            {selectedDomain?.paper_url && (
+              <div className="dx-info-field">
+                <strong>Paper:</strong>{" "}
+                <a 
+                  href={selectedDomain.paper_url} 
+                  target="_blank" 
+                  rel="noopener noreferrer"
+                  style={{ color: "var(--accent)" }}
+                >
+                  {selectedDomain.paper_name || "View Paper"}
+                </a>
+              </div>
+            )}
+            
             <button
                 className="dx-btn dx-btn-outline"
                 disabled={!selectedDomain}

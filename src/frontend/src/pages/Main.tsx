@@ -43,7 +43,9 @@ const Main: React.FC = () => {
 
   const fetchDomains = async () => {
     try {
-    const response = await fetch('http://127.0.0.1:8000/api/domain/');
+    const response = await fetch('http://127.0.0.1:8000/api/domain/',{
+      method: "GET"
+    });
       if (response.ok) {
         const data = await response.json();
         setDomains(data);
