@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useParams } from 'react-router-dom';
-
+import { apiUrl } from "../config/api";
 interface Metric {
   metric_ID: string;
   metric_name: string;

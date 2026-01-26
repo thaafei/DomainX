@@ -1,6 +1,8 @@
+
+.env.*
+../.env
 .env
-.venv
-venv
+.envenv
 Secrets/
 
 # Redis
