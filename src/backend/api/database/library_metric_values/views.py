@@ -180,10 +180,9 @@ class AHPCalculations(APIView):
                 category_ahp.append(comparison)
 
         active_cat_names = [c.name for c in category_ahp]
-        raw_weights = {k: v for k, v in domain.category_weights.items() if k in active_cat_names}
-        total_weight = sum(raw_weights.values()) if raw_weights else 0
-        normalized_weights = {k: (v / total_weight if total_weight > 0 else 1/len(active_cat_names)) 
-                              for k, v in raw_weights.items()}
+        raw_weights = {cat: domain.category_weights.get(cat, 1.0) for cat in active_cat_names}
+        total_weight = sum(raw_weights.values())
+        normalized_weights = {k: (v / total_weight) for k, v in raw_weights.items()}
         global_rank = {}
         for lib in libraries:
             lib_name = lib.library_name

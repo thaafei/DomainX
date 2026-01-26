@@ -1,7 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from "react-router-dom";
 import { useAuthStore } from "../store/useAuthStore";
-
+import { 
+  BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Cell 
+} from 'recharts';
 
 const Main: React.FC = () => {
   const navigate = useNavigate();
@@ -13,6 +15,8 @@ const Main: React.FC = () => {
   const [showDomainModal, setShowDomainModal] = useState(false);
   const [domainName, setDomainName] = useState("");
   const [description, setDescription] = useState("");
+  const [globalRanking, setGlobalRanking] = useState<Record<string, number>>({});
+  const [graph, setGraph] = useState(false);
   const fetchDomains = async () => {
     try {
       const response = await fetch('http://127.0.0.1:8000/api/domain/');
@@ -23,6 +27,19 @@ const Main: React.FC = () => {
         // Set the first domain as default if none selected
         if (data.length > 0 && !selectedDomain) {
           setSelectedDomain(data[0]);
+          const response = await fetch(`http://127.0.0.1:8000/api/aph/${selectedDomain.domain_ID}/`, {
+          method: 'GET',
+          headers: { 'Content-Type': 'application/json' }
+        });
+
+        if (response.ok) {
+          const data = await response.json();
+          setGlobalRanking(data.global_ranking);
+          setGraph(true)
+        }
+        else {
+          setGraph(false);
+        }
         }
       }
     } catch (error) {
@@ -32,9 +49,6 @@ const Main: React.FC = () => {
     }
   };
 
-  useEffect(() => {
-    getAHPRanking();
-  })
   const getAHPRanking = async () => {
     const response = await fetch(`http://127.0.0.1:8000/api/aph/${selectedDomain.domain_ID}/`, {
       method: 'GET',
@@ -42,9 +56,20 @@ const Main: React.FC = () => {
     });
 
     if (response.ok) {
-      console.log(response);
+      const data = await response.json();
+      setGlobalRanking(data.global_ranking);
+      setGraph(true)
+    }
+    else {
+      setGraph(false);
     }
   };
+  const chartData = Object.entries(globalRanking)
+    .map(([name, score]) => ({
+      name,
+      score: parseFloat(((score as number) * 100).toFixed(2))
+    }))
+    .sort((a, b) => b.score - a.score);
 
   useEffect(() => {
     fetchDomains();
@@ -113,7 +138,7 @@ const Main: React.FC = () => {
             <div
               key={d.id} 
               className="dx-side-item"
-              onClick={() => setSelectedDomain(d)}
+              onClick={() => {setSelectedDomain(d); getAHPRanking();}}
               style={{
                 padding: "10px",
                 cursor: "pointer",
@@ -207,7 +232,7 @@ const Main: React.FC = () => {
                 >
                   <h3>New Domain</h3>
                   <input 
-                    className="dx-input" // Assuming you have a standard input class
+                    className="dx-input"
                     placeholder="Domain Name" 
                     value={domainName}
                     onChange={(e) => setDomainName(e.target.value)}
@@ -231,78 +256,64 @@ const Main: React.FC = () => {
         )}
 
       </div>
-
-      <div style={{ flex: 1, padding: "28px 34px", overflowY: "auto", color: "var(--text-main)" }}>
-        <h1 style={{ color: "var(--accent)", marginTop: 0 }}>{selectedDomain.name}</h1>
-
-        <div className="dx-card" style={{ marginBottom: 20, padding: 18 }}>
-          <div style={{ marginTop: 18 }}>
-              <h3 className="dx-vis-title" style={{ textAlign: "center" }}>Package Rankings (Overall)</h3>
-
-              <div className="dx-chart-area center-charts">
-                <div className="dx-chart-bar-wrap">
-                  <div className="dx-bar-slot">
-                    <div className="dx-chart-bar bar-pytorch" style={{ height: '210px' }} />
-                  </div>
-                  <div className="dx-chart-name">PyTorch</div>
-                </div>
-
-                <div className="dx-chart-bar-wrap">
-                  <div className="dx-bar-slot">
-                     <div className="dx-chart-bar bar-tensorflow" style={{ height: '260px' }} />
-                  </div>
-                  <div className="dx-chart-name">TensorFlow</div>
-                </div>
-
-                <div className="dx-chart-bar-wrap">
-                  <div className="dx-bar-slot">
-                    <div className="dx-chart-bar bar-jax" style={{ height: '180px' }} />
-                  </div>
-                  <div className="dx-chart-name">JAX</div>
-                </div>
-              </div>
-         </div>
-      </div>
-
-        <div className="dx-card" style={{ padding: 18 }}>
-
-          <div style={{ marginTop: 40 }}>
-              <h3 className="dx-vis-title" style={{ textAlign: "center" }}>Category Rankings</h3>
-
-              <div className="dx-chart-area center-charts">
-                <div className="dx-chart-bar-wrap">
-                  <div className="dx-bar-slot">
-                    <div className="dx-chart-bar bar-cyan" style={{ height: '130px' }} />
-                  </div>
-                  <div className="dx-chart-name">Usability</div>
-                </div>
-
-                <div className="dx-chart-bar-wrap">
-                  <div className="dx-bar-slot">
-                    <div className="dx-chart-bar bar-purple" style={{ height: '210px' }} />
-                  </div>
-                  <div className="dx-chart-name">Maintainability</div>
-                </div>
-
-                <div className="dx-chart-bar-wrap">
-                  <div className="dx-bar-slot">
-                    <div className="dx-chart-bar bar-blue" style={{ height: '260px' }} />
-                  </div>
-                  <div className="dx-chart-name">Reproducibility</div>
-                </div>
-
-                <div className="dx-chart-bar-wrap">
-                  <div className="dx-bar-slot">
-                    <div className="dx-chart-bar bar-green" style={{ height: '160px' }} />
-                  </div>
-                  <div className="dx-chart-name">Transparency</div>
-                </div>
-              </div>
-            </div>
-
-
+      
+      {graph && (
+        <div className="dx-card" style={{ padding: '20px', background: '#1a1a1a', marginTop: '20px' }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
+            <h3 style={{ color: 'var(--accent)', margin: 0 }}>Global AHP Ranking</h3>
+            <span style={{ fontSize: '0.8rem', color: '#888' }}>*Sum of priorities = 100%</span>
+          </div>
+          
+          <div style={{ width: '100%', height: 400 }}>
+            <ResponsiveContainer width="100%" height="100%">
+              <BarChart data={chartData} margin={{ top: 20, right: 30, left: 0, bottom: 60 }}>
+                <CartesianGrid strokeDasharray="3 3" stroke="#333" vertical={false} />
+                <XAxis 
+                  dataKey="name" 
+                  stroke="#ccc" 
+                  angle={-45} 
+                  textAnchor="end" 
+                  interval={0}
+                  tick={{ fill: '#ccc', fontSize: 11 }} 
+                />
+                <YAxis 
+                  stroke="#ccc" 
+                  tick={{ fill: '#ccc' }} 
+                  unit="%" 
+                  domain={[0, 'auto']}
+                />
+                <Tooltip 
+                  cursor={{ fill: 'rgba(255,255,255,0.05)' }}
+                  contentStyle={{ backgroundColor: '#222', border: '1px solid var(--accent)', borderRadius: '4px' }}
+                  itemStyle={{ color: 'var(--accent)' }}
+                  formatter={(value) => {
+                    const numericValue = Number(value) || 0;
+                    return [`${numericValue.toFixed(2)}%`, 'Priority Score'];
+                  }}
+                />
+                <Bar dataKey="score">
+                  {chartData.map((entry, index) => (
+                    <Cell 
+                      key={`cell-${index}`} 
+                      // The highest ranked library gets the full accent color
+                      fill={index === 0 ? 'var(--accent)' : 'rgba(var(--accent-rgb), 0.4)'} 
+                      style={{ transition: 'fill 0.3s ease' }}
+                    />
+                  ))}
+                </Bar>
+              </BarChart>
+            </ResponsiveContainer>
+          </div>
+          
+          {/* Visual Winner Summary */}
+          <div style={{ marginTop: '10px', padding: '10px', borderTop: '1px solid #333' }}>
+            <p style={{ margin: 0, fontSize: '0.9rem' }}>
+              Recommended Option: <strong style={{ color: 'var(--accent)' }}>{chartData[0].name}</strong> 
+              ({chartData[0].score}% Priority)
+            </p>
+          </div>
         </div>
-      </div>
+      )}
 
       <div
         className="dx-card"
