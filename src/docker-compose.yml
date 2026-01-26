@@ -1,20 +1,18 @@
+secrets:
+  github_app_pem:
+    file: ./infra/secrets/github_app.pem
+
 services:
   redis:
     image: redis:7-alpine
     env_file:
       - .env
     command: >
-      sh -c 'redis-server /usr/local/etc/redis/redis.conf
-      --requirepass "$$REDIS_PASSWORD"'
+      sh -c 'redis-server /usr/local/etc/redis/redis.conf --requirepass "$$REDIS_PASSWORD"'
     volumes:
       - ./infra/redis/redis.conf:/usr/local/etc/redis/redis.conf:ro
       - redis_data:/data
     restart: always
-    healthcheck:
-      test: ["CMD-SHELL", 'redis-cli -a "$$REDIS_PASSWORD" ping | grep -q PONG']
-      interval: 5s
-      timeout: 5s
-      retries: 20
     networks:
       - domainx-net
 
@@ -25,15 +23,14 @@ services:
     command: gunicorn DomainX.wsgi:application --bind 0.0.0.0:8000 --workers 3 --timeout 120
     depends_on:
       redis:
-        condition: service_healthy
+        condition: service_started
     volumes:
       - staticfiles:/app/staticfiles
     restart: always
     networks:
       - domainx-net
     secrets:
-      - source: github_app_pem
-        target: github_app.pem
+      - github_app_pem
 
   celery:
     build: ./backend
@@ -44,13 +41,12 @@ services:
       backend:
         condition: service_started
       redis:
-        condition: service_healthy
+        condition: service_started
     restart: always
     networks:
       - domainx-net
     secrets:
-      - source: github_app_pem
-        target: github_app.pem
+      - github_app_pem
 
   celery_beat:
     build: ./backend
@@ -59,13 +55,12 @@ services:
     command: celery -A DomainX beat -l info
     depends_on:
       redis:
-        condition: service_healthy
+        condition: service_started
     restart: always
     networks:
       - domainx-net
     secrets:
-      - source: github_app_pem
-        target: github_app.pem
+      - github_app_pem
 
   web:
     build: ./frontend
@@ -78,10 +73,6 @@ services:
     restart: always
     networks:
       - domainx-net
-
-secrets:
-  github_app_pem:
-    file: ./infra/secrets/github_app.pem
 
 volumes:
   redis_data:
