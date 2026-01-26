@@ -153,14 +153,24 @@ const Main: React.FC = () => {
         <div style={{ flex: 1, overflowY: "auto" }}>
           {domains.map((d) => (
             <div
-              key={d.id} 
+              key={d.domain_ID} 
               className="dx-side-item"
               onClick={() => {setSelectedDomain(d); getAHPRanking();}}
               style={{
-                padding: "10px",
+                padding: "12px 16px",
                 cursor: "pointer",
-                color: d.id === selectedDomain?.id ? "var(--accent)" : "var(--text-main)",
-                fontWeight: d.id === selectedDomain?.id ? 600 : 400,
+                borderRadius: "8px",
+                marginBottom: "6px",
+                transition: "all 0.2s ease",                
+                backgroundColor: d.domain_ID === selectedDomain?.domain_ID
+                  ? "rgba(255, 255, 255, 0.12)"
+                  : "transparent",
+                border: d.domain_ID === selectedDomain?.domain_ID 
+                  ? "1px solid rgba(255, 255, 255, 0.1)" 
+                  : "1px solid transparent",
+                
+                color: d.domain_ID === selectedDomain?.domain_ID ? "var(--accent)" : "var(--text-main)",
+                fontWeight: d.domain_ID === selectedDomain?.domain_ID ? 600 : 400,
               }}
             >
               {sidebarOpen ? (
