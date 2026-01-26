@@ -14,9 +14,41 @@ const MetricsPage: React.FC = () => {
   const [newType, setNewType] = useState("float");
   const [newCategory, setNewCategory] = useState("");
   const [newDesc, setNewDesc] = useState("");
+  const [selectedOptionCategory, setSelectedOptionCategory] = useState("");
+  const [selectedTemplate, setSelectedTemplate] = useState("");
+  const [rulesData, setRulesData] = useState<any>(null);
+  const [categories, setCategories] = useState<any>(null);
 
   useEffect(() => {
+    setSelectedOptionCategory("");
+    setSelectedTemplate("");
+  }, [newType]);
 
+  useEffect(() => {
+    const fetchRules = async () => {
+      try {
+        const response = await fetch('http://127.0.0.1:8000/api/metric-rules/'); 
+        const data = await response.json();
+        setRulesData(data);
+      } catch (error) {
+        console.error("Error fetching AHP rules:", error);
+      }
+    };
+    fetchRules();
+  }, []);
+  useEffect(() => {
+    const fetchRules = async () => {
+      try {
+        const response = await fetch('http://127.0.0.1:8000/api/metric-categories/'); 
+        const data = await response.json();
+        setCategories(data.Categories);
+      } catch (error) {
+        console.error("Error fetching AHP rules:", error);
+      }
+    };
+    fetchRules();
+  }, []);
+  useEffect(() => {
         const loadMetrics = async () => {
             try {
                 const res = await fetch(apiUrl("/api/metrics/"), {
@@ -40,14 +72,21 @@ const MetricsPage: React.FC = () => {
       loadMetrics();
     }, []);
 
-
-
+  const getAvailableCategories = () => {
+    if (!rulesData) return {};
+    if (newType === 'bool') { return rulesData.bool || {}};
+    if (newType === 'range') { return rulesData.range || {}};
+    
+    return {};
+  };
   const addMetric = async () => {
     if (!newName.trim()) return;
 
     const payload = {
       metric_name: newName,
       value_type: newType,
+      option_category: selectedOptionCategory,
+      rule: selectedTemplate || null,
       category: newCategory.trim() || null,
       description: newDesc.trim() || null,
     };
@@ -89,6 +128,8 @@ const MetricsPage: React.FC = () => {
       setNewType("float");
       setNewCategory("");
       setNewDesc("");
+      setSelectedTemplate("")
+      setSelectedOptionCategory("")
 
     } catch (err) {
       console.error(err);
@@ -155,28 +196,78 @@ return (
           placeholder="Metric name..."
           value={newName}
           onChange={(e) => setNewName(e.target.value)}
+          maxLength={100}
           style={{ marginBottom: 10 }}
         />
 
         <select
           className="dx-input"
           value={newType}
-          onChange={(e) => setNewType(e.target.value)}
+          onChange={(e) => {setNewType(e.target.value); setSelectedTemplate("");}}
           style={{ marginBottom: 10 }}
         >
-          <option value="float">Float</option>
-          <option value="int">Integer</option>
-          <option value="bool">Boolean</option>
-          <option value="text">Text</option>
+          <option value="float" style={{ color:'black'}}>Float</option>
+          <option value="int" style={{ color:'black'}}>Integer</option>
+          <option value="bool" style={{ color:'black'}}>Boolean</option>
+          <option value="range" style={{ color:'black'}}>Range</option>
+          <option value="text" style={{ color:'black'}}>Text</option>
         </select>
+        {(newType === "bool" || newType === "range") && (
+          <>
+            <select
+              className="dx-input"
+              value={selectedOptionCategory}
+              onChange={(e) => {
+                setSelectedOptionCategory(e.target.value);
+                setSelectedTemplate("");
+              }}
+              style={{ marginBottom: 10, borderColor: "var(--accent)" }}
+            >
+              <option value="">-- Select Input Category --</option>
+              {Object.entries(getAvailableCategories()).map(([key, cat]: [string, any]) => (
+                <option key={key} value={key} style={{ color: 'black' }}>
+                  {cat.display_name || key}
+                </option>
+              ))}
+            </select>
+            {selectedOptionCategory && getAvailableCategories()[selectedOptionCategory] && (
+              <select
+                className="dx-input"
+                value={selectedTemplate}
+                onChange={(e) => setSelectedTemplate(e.target.value)}
+                style={{ marginBottom: 10, backgroundColor: "rgba(var(--accent-rgb), 0.1)" }}
+              >
+                <option value="">-- Select Scoring Rule (Template) --</option>
+                {Object.keys(getAvailableCategories()[selectedOptionCategory].templates).map(tKey => (
+                  <option key={tKey} value={tKey} style={{ color: 'black' }}>
+                    {tKey.replace(/_/g, ' ')}
+                  </option>
+                ))}
+              </select>
+            )}
+          </>
+        )}
 
-        <input
-          className="dx-input"
-          placeholder="Category (optional)"
-          value={newCategory}
-          onChange={(e) => setNewCategory(e.target.value)}
-          style={{ marginBottom: 10 }}
-        />
+        {selectedTemplate && (
+          <div style={{ fontSize: '0.8rem', color: 'var(--accent)', marginBottom: 10, padding: '5px', border: '1px dashed var(--accent)' }}>
+            Rule Preview: {JSON.stringify(
+              (newType === "bool" ? rulesData.bool : rulesData.range)[selectedOptionCategory].templates[selectedTemplate]
+            )}
+          </div>
+        )}
+        <select
+              className="dx-input"
+              value={newCategory}
+              onChange={(e) => setNewCategory(e.target.value)}
+              style={{ marginBottom: 10, borderColor: "var(--accent)" }}
+            >
+              <option value="">-- Select Category (Optional) --</option>
+              {categories && categories.map((catName: string) => (
+                <option key={catName} value={catName} style={{ color: 'black' }}>
+                  {catName}
+                </option>
+              ))}
+        </select>
 
         <input
           className="dx-input"

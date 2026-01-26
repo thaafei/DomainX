@@ -1,18 +1,83 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from "react-router-dom";
 import { useAuthStore } from "../store/useAuthStore";
+import { 
+  BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Cell 
+} from 'recharts';
 import { apiUrl } from "../config/api";
-const domains = [
-  { name: "Neural Networks", version: "v1.0" },
-  { name: "Domain X", version: "v2.1" },
-  { name: "Domain Y", version: "v3.0" },
-];
 
 const Main: React.FC = () => {
   const navigate = useNavigate();
   const [sidebarOpen, setSidebarOpen] = useState(true);
-  const [selectedDomain, setSelectedDomain] = useState(domains[0]);
+  const [domains, setDomains] = useState<any[]>([]);
+  const [selectedDomain, setSelectedDomain] = useState<any>(null);;
+  const [loading, setLoading] = useState(true);
   const { logout } = useAuthStore();
+  const [showDomainModal, setShowDomainModal] = useState(false);
+  const [domainName, setDomainName] = useState("");
+  const [description, setDescription] = useState("");
+  const [globalRanking, setGlobalRanking] = useState<Record<string, number>>({});
+  const [graph, setGraph] = useState(false);
+  const [formError, setFormError] = useState("");
+  const fetchDomains = async () => {
+    try {
+    const response = await fetch('http://127.0.0.1:8000/api/domain/');
+      if (response.ok) {
+        const data = await response.json();
+        setDomains(data);
+        // Set the first domain as default if none selected
+        if (data.length > 0 && !selectedDomain) {
+          const firstDomain = data[0];
+          setSelectedDomain(firstDomain);
+          const response = await fetch(`http://127.0.0.1:8000/api/aph/${firstDomain.domain_ID}/`, {
+            method: 'GET',
+            headers: { 'Content-Type': 'application/json' }
+          });
+
+        if (response.ok) {
+          const data = await response.json();
+          setGlobalRanking(data.global_ranking);
+          setGraph(true)
+        }
+        else {
+          setGraph(false);
+          }
+        }
+      }
+    } catch (error) {
+      console.log("Error fetching domains:", error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const getAHPRanking = async () => {
+    const response = await fetch(`http://127.0.0.1:8000/api/aph/${selectedDomain.domain_ID}/`, {
+      method: 'GET',
+      headers: { 'Content-Type': 'application/json' }
+    });
+
+    if (response.ok) {
+      const data = await response.json();
+      setGlobalRanking(data.global_ranking);
+      setGraph(true)
+    }
+    else {
+      setGraph(false);
+    }
+  };
+  const chartData = Object.entries(globalRanking)
+    .map(([name, score]) => ({
+      name,
+      score: parseFloat(((score as number) * 100).toFixed(2))
+    }))
+    .sort((a, b) => b.score - a.score);
+
+  useEffect(() => {
+    fetchDomains();
+  }, []);
+
+  if (loading) return <div>Loading...</div>;
   const handleLogout = async () => {
       try {
           await fetch(apiUrl("/logout/"), {
@@ -23,8 +88,32 @@ const Main: React.FC = () => {
         logout();
         navigate("/login");
       } catch (err: any) {
-        console.error(err);
+        console.log(err);
       }
+  };
+  const handleCreateDomain = async () => {
+    if (!domainName.trim() || !description.trim()) {
+      setFormError("Both name and description are required.");
+      return;
+    }
+    setFormError("");
+    try {
+      const response = await fetch('http://127.0.0.1:8000/api/domain/create/', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ domain_name: domainName, description: description }),
+      });
+      if (response.ok) {
+        setShowDomainModal(false);
+        setDomainName("");
+        setDescription("");
+        fetchDomains();
+      } else {
+        setFormError("Failed to create domain. Please try again.");
+      }
+    } catch (error) {
+      setFormError("Network error. Could not connect to server.");
+    }
   };
   return (
     <div className="dx-bg" style={{ display: "flex", height: "100vh", overflow: "hidden" }}>
@@ -57,26 +146,35 @@ const Main: React.FC = () => {
         )}
 
         <div style={{ flex: 1, overflowY: "auto" }}>
-          {domains.map((d, i) => (
+          {domains.map((d) => (
             <div
-              key={i}
+              key={d.domain_ID} 
               className="dx-side-item"
-              onClick={() => setSelectedDomain(d)}
+              onClick={() => {setSelectedDomain(d); getAHPRanking();}}
               style={{
-                padding: sidebarOpen ? "10px" : "10px 0",
+                padding: "12px 16px",
                 cursor: "pointer",
-                color: d.name === selectedDomain.name ? "var(--accent)" : "var(--text-main)",
-                fontWeight: d.name === selectedDomain.name ? 600 : 400,
-                transition: "0.25s"
+                borderRadius: "8px",
+                marginBottom: "6px",
+                transition: "all 0.2s ease",                
+                backgroundColor: d.domain_ID === selectedDomain?.domain_ID
+                  ? "rgba(255, 255, 255, 0.12)"
+                  : "transparent",
+                border: d.domain_ID === selectedDomain?.domain_ID 
+                  ? "1px solid rgba(255, 255, 255, 0.1)" 
+                  : "1px solid transparent",
+                
+                color: d.domain_ID === selectedDomain?.domain_ID ? "var(--accent)" : "var(--text-main)",
+                fontWeight: d.domain_ID === selectedDomain?.domain_ID ? 600 : 400,
               }}
             >
               {sidebarOpen ? (
                 <>
-                  {d.name}
-                  <div style={{ fontSize: "0.8rem", color: "var(--text-dim)" }}>{d.version}</div>
+                  {d.domain_name}
+                  <div style={{ fontSize: "0.8rem", color: "var(--text-dim)" }}>{d.description}</div>
                 </>
               ) : (
-                <div style={{ textAlign: "center" }}>{d.name.charAt(0)}</div>
+                <div style={{ textAlign: "center" }}>{d.domain_name?.charAt(0) || "?"}</div>
               )}
             </div>
           ))}
@@ -86,10 +184,22 @@ const Main: React.FC = () => {
           <>
             <button
               className="dx-btn dx-btn-outline"
-              onClick={() => navigate("/comparison-tool")}
+              disabled={!selectedDomain}
+              onClick={() => navigate(`/comparison-tool/${selectedDomain.domain_ID}`)}
               style={{ display: "flex", alignItems: "center", gap: 8 }}
             >
               <span style={{ fontSize: 15 }}>⚖️</span> Comparison Tool
+            </button>
+            <button
+              className="dx-btn dx-btn-outline"
+              onClick={() => setShowDomainModal(true)}
+              style={{
+                display: "flex",
+                alignItems: "center",
+                marginTop: 8,
+              }}
+            >
+              <span style={{ fontSize: 15, marginRight: 8 }}>🌐</span> Create Domain
             </button>
             <button
               className="dx-btn dx-btn-outline"
@@ -115,82 +225,151 @@ const Main: React.FC = () => {
             >
               Logout
             </button>
+            {showDomainModal && (
+              <div
+                style={{
+                  position: "fixed",
+                  top: 0,
+                  left: 0,
+                  width: "100vw",
+                  height: "100vh",
+                  backgroundColor: "rgba(0, 0, 0, 0.6)",
+                  display: "flex",
+                  justifyContent: "center",
+                  alignItems: "center",
+                  zIndex: 9999,
+                }}
+              >
+                <div
+                  style={{
+                    background: "#fff",
+                    padding: "24px",
+                    borderRadius: "12px",
+                    width: "350px",
+                    boxShadow: "0 10px 25px rgba(0,0,0,0.2)",
+                    color: "#333",
+                    display: "flex",
+                    flexDirection: "column",
+                  }}
+                >
+                  <h3>New Domain</h3>
+                  {formError && (
+                    <div style={{ 
+                      color: '#ff4d4f', 
+                      backgroundColor: '#fff2f0', 
+                      border: '1px solid #ffccc7', 
+                      padding: '8px', 
+                      borderRadius: '4px', 
+                      marginBottom: '12px',
+                      fontSize: '0.9rem' 
+                    }}>
+                      ⚠️ {formError}
+                    </div>
+                  )}
+
+                  <input 
+                    className="dx-input"
+                    placeholder="Domain Name" 
+                    value={domainName}
+                    onChange={(e) => {
+                      setDomainName(e.target.value);
+                      if (formError) setFormError("");
+                    }}
+                    style={{ 
+                      width: '100%', 
+                      marginBottom: 12, 
+                      padding: 8, 
+                      color: 'black',
+                      border: formError && !domainName ? '1px solid red' : '1px solid #ccc'
+                    }}
+                  />
+
+                  <textarea 
+                    className="dx-input"
+                    placeholder="Description" 
+                    value={description}
+                    onChange={(e) => {
+                      setDescription(e.target.value);
+                      if (formError) setFormError("");
+                    }}
+                    style={{ 
+                      width: '100%', 
+                      marginBottom: 12, 
+                      padding: 8, 
+                      minHeight: 60, 
+                      color: 'black',
+                      border: formError && !description ? '1px solid red' : '1px solid #ccc' 
+                    }}
+                  />
+
+                  <div style={{ display: 'flex', gap: 8, justifyContent: 'flex-end' }}>
+                    <button className="dx-btn" onClick={() => {
+                      setShowDomainModal(false);
+                      setFormError("");
+                    }}>
+                      Cancel
+                    </button>
+                    <button className="dx-btn dx-btn-primary" onClick={handleCreateDomain}>
+                      Create
+                    </button>
+                  </div>
+                </div>
+              </div>
+            )}
           </>
         )}
 
       </div>
-
-      <div style={{ flex: 1, padding: "28px 34px", overflowY: "auto", color: "var(--text-main)" }}>
-        <h1 style={{ color: "var(--accent)", marginTop: 0 }}>{selectedDomain.name}</h1>
-
-        <div className="dx-card" style={{ marginBottom: 20, padding: 18 }}>
-          <div style={{ marginTop: 18 }}>
-              <h3 className="dx-vis-title" style={{ textAlign: "center" }}>Package Rankings (Overall)</h3>
-
-              <div className="dx-chart-area center-charts">
-                <div className="dx-chart-bar-wrap">
-                  <div className="dx-bar-slot">
-                    <div className="dx-chart-bar bar-pytorch" style={{ height: '210px' }} />
-                  </div>
-                  <div className="dx-chart-name">PyTorch</div>
-                </div>
-
-                <div className="dx-chart-bar-wrap">
-                  <div className="dx-bar-slot">
-                     <div className="dx-chart-bar bar-tensorflow" style={{ height: '260px' }} />
-                  </div>
-                  <div className="dx-chart-name">TensorFlow</div>
-                </div>
-
-                <div className="dx-chart-bar-wrap">
-                  <div className="dx-bar-slot">
-                    <div className="dx-chart-bar bar-jax" style={{ height: '180px' }} />
-                  </div>
-                  <div className="dx-chart-name">JAX</div>
-                </div>
-              </div>
-         </div>
-      </div>
-
-        <div className="dx-card" style={{ padding: 18 }}>
-
-          <div style={{ marginTop: 40 }}>
-              <h3 className="dx-vis-title" style={{ textAlign: "center" }}>Category Rankings</h3>
-
-              <div className="dx-chart-area center-charts">
-                <div className="dx-chart-bar-wrap">
-                  <div className="dx-bar-slot">
-                    <div className="dx-chart-bar bar-cyan" style={{ height: '130px' }} />
-                  </div>
-                  <div className="dx-chart-name">Usability</div>
-                </div>
-
-                <div className="dx-chart-bar-wrap">
-                  <div className="dx-bar-slot">
-                    <div className="dx-chart-bar bar-purple" style={{ height: '210px' }} />
-                  </div>
-                  <div className="dx-chart-name">Maintainability</div>
-                </div>
-
-                <div className="dx-chart-bar-wrap">
-                  <div className="dx-bar-slot">
-                    <div className="dx-chart-bar bar-blue" style={{ height: '260px' }} />
-                  </div>
-                  <div className="dx-chart-name">Reproducibility</div>
-                </div>
-
-                <div className="dx-chart-bar-wrap">
-                  <div className="dx-bar-slot">
-                    <div className="dx-chart-bar bar-green" style={{ height: '160px' }} />
-                  </div>
-                  <div className="dx-chart-name">Transparency</div>
-                </div>
-              </div>
-            </div>
-
-
+      
+      {graph && (
+        <div className="dx-card" style={{ padding: '20px', background: '#1a1a1a', marginTop: '20px' }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
+            <h3 style={{ color: 'var(--accent)', margin: 0 }}>Global AHP Ranking</h3>
+            <span style={{ fontSize: '0.8rem', color: '#888' }}>*Sum of priorities = 100%</span>
+          </div>
+          
+          <div style={{ width: '100%', height: 400 }}>
+            <ResponsiveContainer width="100%" height="100%">
+              <BarChart data={chartData} margin={{ top: 20, right: 30, left: 0, bottom: 60 }}>
+                <CartesianGrid strokeDasharray="3 3" stroke="#333" vertical={false} />
+                <XAxis 
+                  dataKey="name" 
+                  stroke="#ccc" 
+                  angle={-45} 
+                  textAnchor="end" 
+                  interval={0}
+                  tick={{ fill: '#ccc', fontSize: 11 }} 
+                />
+                <YAxis 
+                  stroke="#ccc" 
+                  tick={{ fill: '#ccc' }} 
+                  unit="%" 
+                  domain={[0, 'auto']}
+                />
+                <Tooltip 
+                  cursor={{ fill: 'rgba(255,255,255,0.05)' }}
+                  contentStyle={{ backgroundColor: '#222', border: '1px solid var(--accent)', borderRadius: '4px' }}
+                  itemStyle={{ color: 'var(--accent)' }}
+                  formatter={(value) => {
+                    const numericValue = Number(value) || 0;
+                    return [`${numericValue.toFixed(2)}%`, 'Priority Score'];
+                  }}
+                />
+                <Bar dataKey="score">
+                  {chartData.map((entry, index) => (
+                    <Cell 
+                      key={`cell-${index}`} 
+                      // The highest ranked library gets the full accent color
+                      fill={index === 0 ? 'var(--accent)' : 'rgba(var(--accent-rgb), 0.4)'} 
+                      style={{ transition: 'fill 0.3s ease' }}
+                    />
+                  ))}
+                </Bar>
+              </BarChart>
+            </ResponsiveContainer>
+          </div>
         </div>
-      </div>
+      )}
 
       <div
         className="dx-card"
@@ -203,8 +382,8 @@ const Main: React.FC = () => {
       >
         <h3 style={{ marginTop: 0, color: "var(--accent)" }}>Details</h3>
 
-        <div className="dx-info-field"><strong>Name:</strong> {selectedDomain.name}</div>
-        <div className="dx-info-field"><strong>Version:</strong> {selectedDomain.version}</div>
+        <div className="dx-info-field"><strong>Name:</strong> {selectedDomain?.domain_name || "N/A"}</div>
+        <div className="dx-info-field"><strong>Version:</strong> {selectedDomain?.description || "No version available"}</div>
         <div className="dx-info-field">
           <strong>Authors:</strong>
           <ul style={{ margin: "6px 0 0 16px" }}>

@@ -14,6 +14,49 @@
       "env": {
         "PYTHONPATH": "${workspaceFolder}/src/backend"
       }
+    },
+    {
+      "name": "Launch Backend",
+      "type": "python",
+      "request": "launch",
+      "program": "${workspaceFolder}/src/backend/manage.py",
+      "args": ["runserver", "0.0.0.0:8000"],
+      "cwd": "${workspaceFolder}/src/backend",
+      "console": "integratedTerminal",
+      "env": {
+        "PYTHONPATH": "${workspaceFolder}/src/backend"
+      }
+    },
+    {
+      "name": "Start Frontend Dev Server",
+      "type": "node",
+      "request": "launch",
+      "runtimeExecutable": "npm",
+      "runtimeArgs": ["start"],
+      "cwd": "${workspaceFolder}/src/frontend",
+      "console": "integratedTerminal",
+      "env": {
+        "BROWSER": "none"
+      }
+    },
+    {
+      "name": "Debug Frontend (Chrome)",
+      "type": "pwa-chrome",
+      "request": "launch",
+      "url": "http://localhost:3000",
+      "webRoot": "${workspaceFolder}/src/frontend/src",
+      "sourceMaps": true
+    }
+  ],
+  "compounds": [
+    {
+      "name": "Run Full Stack (Backend + Frontend + Debug)",
+      "configurations": [
+        "Launch Backend",
+        "Start Frontend Dev Server",
+        "Debug Frontend (Chrome)"
+      ],
+      "stopAll": true
     }
   ]
 }

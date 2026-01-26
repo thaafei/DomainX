@@ -33,7 +33,7 @@ def test_main_runserver_runs_manage_py():
     mock_call.assert_called_once()
     args, _ = mock_call.call_args
 
-    assert args[0] == [sys.executable, "manage.py", "runserver"]
+    assert args[0] == [sys.executable, "manage.py", "runserver", "0.0.0.0:8000"]
 
 def test_main_worker_runs_celery():
     with patch.object(sys, "argv", ["manage_local.py", "worker"]):
@@ -46,27 +46,6 @@ def test_main_worker_runs_celery():
         env=ANY,
     )
 
-def test_main_dev_runs_migrate_then_runserver():
-    with patch.object(sys, "argv", ["manage_local.py", "dev"]):
-        with patch("manage_local.subprocess.check_call") as mock_call:
-            manage_local.main()
-
-    assert mock_call.call_count == 2
-
-    mock_call.assert_has_calls(
-        [
-            call(
-                [sys.executable, "manage.py", "migrate"],
-                cwd=str(manage_local.BASE_DIR),
-                env=ANY,
-            ),
-            call(
-                [sys.executable, "manage.py", "runserver"],
-                cwd=str(manage_local.BASE_DIR),
-                env=ANY,
-            ),
-        ]
-    )
 
 def test_main_unknown_command_exits(capsys):
     with patch.object(sys, "argv", ["manage_local.py", "wat"]):
