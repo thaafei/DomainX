@@ -23,6 +23,7 @@ const Main: React.FC = () => {
   const [description, setDescription] = useState("");
   const [globalRanking, setGlobalRanking] = useState<Record<string, number>>({});
   const [graph, setGraph] = useState(false);
+  const [formError, setFormError] = useState("");
   const fetchDomains = async () => {
     try {
     const response = await fetch('http://127.0.0.1:8000/api/domain/');
@@ -96,17 +97,27 @@ const Main: React.FC = () => {
       }
   };
   const handleCreateDomain = async () => {
-    const response = await fetch('http://127.0.0.1:8000/api/domain/create/', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ domain_name: domainName, description: description }),
-    });
-
-    if (response.ok) {
-      setShowDomainModal(false);
-      setDomainName("");
-      setDescription("");
-      fetchDomains();
+    if (!domainName.trim() || !description.trim()) {
+      setFormError("Both name and description are required.");
+      return;
+    }
+    setFormError("");
+    try {
+      const response = await fetch('http://127.0.0.1:8000/api/domain/create/', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ domain_name: domainName, description: description }),
+      });
+      if (response.ok) {
+        setShowDomainModal(false);
+        setDomainName("");
+        setDescription("");
+        fetchDomains();
+      } else {
+        setFormError("Failed to create domain. Please try again.");
+      }
+    } catch (error) {
+      setFormError("Network error. Could not connect to server.");
     }
   };
   return (
@@ -237,23 +248,65 @@ const Main: React.FC = () => {
                   }}
                 >
                   <h3>New Domain</h3>
+                  {formError && (
+                    <div style={{ 
+                      color: '#ff4d4f', 
+                      backgroundColor: '#fff2f0', 
+                      border: '1px solid #ffccc7', 
+                      padding: '8px', 
+                      borderRadius: '4px', 
+                      marginBottom: '12px',
+                      fontSize: '0.9rem' 
+                    }}>
+                      ⚠️ {formError}
+                    </div>
+                  )}
+
                   <input 
                     className="dx-input"
                     placeholder="Domain Name" 
                     value={domainName}
-                    onChange={(e) => setDomainName(e.target.value)}
-                    style={{ width: '100%', marginBottom: 12, padding: 8, color: 'black' }}
+                    onChange={(e) => {
+                      setDomainName(e.target.value);
+                      if (formError) setFormError("");
+                    }}
+                    style={{ 
+                      width: '100%', 
+                      marginBottom: 12, 
+                      padding: 8, 
+                      color: 'black',
+                      border: formError && !domainName ? '1px solid red' : '1px solid #ccc'
+                    }}
                   />
+
                   <textarea 
                     className="dx-input"
                     placeholder="Description" 
                     value={description}
-                    onChange={(e) => setDescription(e.target.value)}
-                    style={{ width: '100%', marginBottom: 12, padding: 8, minHeight: 60, color: 'black' }}
+                    onChange={(e) => {
+                      setDescription(e.target.value);
+                      if (formError) setFormError("");
+                    }}
+                    style={{ 
+                      width: '100%', 
+                      marginBottom: 12, 
+                      padding: 8, 
+                      minHeight: 60, 
+                      color: 'black',
+                      border: formError && !description ? '1px solid red' : '1px solid #ccc' 
+                    }}
                   />
+
                   <div style={{ display: 'flex', gap: 8, justifyContent: 'flex-end' }}>
-                    <button className="dx-btn" onClick={() => setShowDomainModal(false)}>Cancel</button>
-                    <button className="dx-btn dx-btn-primary" onClick={handleCreateDomain}>Create</button>
+                    <button className="dx-btn" onClick={() => {
+                      setShowDomainModal(false);
+                      setFormError("");
+                    }}>
+                      Cancel
+                    </button>
+                    <button className="dx-btn dx-btn-primary" onClick={handleCreateDomain}>
+                      Create
+                    </button>
                   </div>
                 </div>
               </div>
