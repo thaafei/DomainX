@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-
+import { apiUrl } from "../config/api";
 interface Metric {
   metric_ID: string;
   metric_name: string;
@@ -51,7 +51,7 @@ const MetricsPage: React.FC = () => {
   useEffect(() => {
         const loadMetrics = async () => {
             try {
-                const res = await fetch("http://127.0.0.1:8000/api/metrics/", {
+                const res = await fetch(apiUrl("/api/metrics/"), {
                     credentials: "include",
                 });
 
@@ -92,7 +92,7 @@ const MetricsPage: React.FC = () => {
     };
 
     try {
-      const res = await fetch("http://127.0.0.1:8000/api/metrics/create/", {
+      const res = await fetch(apiUrl("/api/metrics/create/"), {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         credentials: "include",
@@ -139,7 +139,7 @@ const MetricsPage: React.FC = () => {
 
   const deleteMetric = async (id: string) => {
       try {
-        const res = await fetch(`http://127.0.0.1:8000/api/metrics/${id}/delete/`, {
+        const res = await fetch(apiUrl(`/api/metrics/${id}/delete/`), {
           method: "DELETE",
           credentials: "include",
         });

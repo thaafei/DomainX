@@ -8,6 +8,7 @@ class Domain(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
     category_weights = models.JSONField(default=dict, blank=True)
     created_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True)
+    published = models.BooleanField(default=False)
 
     def __str__(self):
         return self.domain_name
