@@ -19,6 +19,25 @@ const Main: React.FC = () => {
   const [globalRanking, setGlobalRanking] = useState<Record<string, number>>({});
   const [graph, setGraph] = useState(false);
   const [formError, setFormError] = useState("");
+  const [adminUsers, setAdminUsers] = useState<any[]>([]);
+  const [selectedCreatorIds, setSelectedCreatorIds] = useState<number[]>([]);
+  const fetchUsers = async () => {
+    try {
+      const response = await fetch('http://127.0.0.1:8000/api/users/?role=admin,superadmin', {
+        method: 'GET',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include'
+      });
+      if (response.ok) {
+        const data = await response.json();
+        console.log(data)
+        setAdminUsers(data);
+      }
+    } catch (error) {
+      console.log("Error fetching users:", error);
+    }
+  };
+
   const fetchDomains = async () => {
     try {
     const response = await fetch('http://127.0.0.1:8000/api/domain/');
@@ -75,6 +94,7 @@ const Main: React.FC = () => {
 
   useEffect(() => {
     fetchDomains();
+    fetchUsers();
   }, []);
 
   if (loading) return <div>Loading...</div>;
@@ -101,12 +121,17 @@ const Main: React.FC = () => {
       const response = await fetch('http://127.0.0.1:8000/api/domain/create/', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ domain_name: domainName, description: description }),
+        body: JSON.stringify({
+          domain_name: domainName,
+          description: description,
+          creator_ids: selectedCreatorIds
+        }),
       });
       if (response.ok) {
         setShowDomainModal(false);
         setDomainName("");
         setDescription("");
+        setSelectedCreatorIds([]);
         fetchDomains();
       } else {
         setFormError("Failed to create domain. Please try again.");
@@ -302,10 +327,53 @@ const Main: React.FC = () => {
                     }}
                   />
 
+                  <div style={{ marginBottom: 12 }}>
+                    <label style={{ display: 'block', marginBottom: 6, fontWeight: 500 }}>Creators:</label>
+                    <div style={{ 
+                      maxHeight: '150px', 
+                      overflowY: 'auto', 
+                      border: formError && selectedCreatorIds.length === 0 ? '1px solid red' : '1px solid #ccc',
+                      borderRadius: '4px',
+                      padding: '8px'
+                    }}>
+                      {adminUsers.length === 0 ? (
+                        <div style={{ color: '#999', fontSize: '0.9rem' }}>Loading users...</div>
+                      ) : (
+                        adminUsers.map((user) => (
+                          <label 
+                            key={user.id} 
+                            style={{ 
+                              display: 'flex', 
+                              alignItems: 'center', 
+                              padding: '4px 0',
+                              cursor: 'pointer'
+                            }}
+                          >
+                            <input 
+                              type="checkbox"
+                              checked={selectedCreatorIds.includes(user.id)}
+                              onChange={(e) => {
+                                if (e.target.checked) {
+                                  setSelectedCreatorIds([...selectedCreatorIds, user.id]);
+                                } else {
+                                  setSelectedCreatorIds(selectedCreatorIds.filter(id => id !== user.id));
+                                }
+                                if (formError) setFormError("");
+                              }}
+                              style={{ marginRight: 8 }}
+                            />
+                            <span>{user.email} ({user.username})</span>
+                          </label>
+                        ))
+                      )}
+                    </div>
+                  </div>
+
                   <div style={{ display: 'flex', gap: 8, justifyContent: 'flex-end' }}>
                     <button className="dx-btn" onClick={() => {
                       setShowDomainModal(false);
                       setFormError("");
+                      setSelectedCreatorIds([]);
                     }}>
                       Cancel
                     </button>

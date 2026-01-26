@@ -21,3 +21,4 @@ export const useAuthStore = create<AuthState>((set) => ({
     // logout API call will also clear cookies
   },
 }));
+
