@@ -40,7 +40,7 @@ const EditValuesPage: React.FC = () => {
             return rawId;
           };
 
-      const formattedDomainId = formatUUID(DOMAIN_ID);
+      const formattedDomainId = DOMAIN_ID;
 
       const res = await fetch(
           apiUrl(`/api/comparison/${formattedDomainId}/`),

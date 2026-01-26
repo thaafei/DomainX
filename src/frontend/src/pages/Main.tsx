@@ -25,18 +25,18 @@ const Main: React.FC = () => {
   const [graph, setGraph] = useState(false);
   const fetchDomains = async () => {
     try {
-      const response = await fetch('http://127.0.0.1:8000/api/domain/');
+    const response = await fetch('http://127.0.0.1:8000/api/domain/');
       if (response.ok) {
         const data = await response.json();
-        console.log(data)
         setDomains(data);
         // Set the first domain as default if none selected
         if (data.length > 0 && !selectedDomain) {
-          setSelectedDomain(data[0]);
-          const response = await fetch(`http://127.0.0.1:8000/api/aph/${selectedDomain.domain_ID}/`, {
-          method: 'GET',
-          headers: { 'Content-Type': 'application/json' }
-        });
+          const firstDomain = data[0];
+          setSelectedDomain(firstDomain);
+          const response = await fetch(`http://127.0.0.1:8000/api/aph/${firstDomain.domain_ID}/`, {
+            method: 'GET',
+            headers: { 'Content-Type': 'application/json' }
+          });
 
         if (response.ok) {
           const data = await response.json();
@@ -45,7 +45,7 @@ const Main: React.FC = () => {
         }
         else {
           setGraph(false);
-        }
+          }
         }
       }
     } catch (error) {
@@ -324,8 +324,8 @@ const Main: React.FC = () => {
       >
         <h3 style={{ marginTop: 0, color: "var(--accent)" }}>Details</h3>
 
-        <div className="dx-info-field"><strong>Name:</strong> {selectedDomain.domain_name}</div>
-        <div className="dx-info-field"><strong>Version:</strong> {selectedDomain.description}</div>
+        <div className="dx-info-field"><strong>Name:</strong> {selectedDomain?.domain_name || "N/A"}</div>
+        <div className="dx-info-field"><strong>Version:</strong> {selectedDomain?.description || "No version available"}</div>
         <div className="dx-info-field">
           <strong>Authors:</strong>
           <ul style={{ margin: "6px 0 0 16px" }}>
