@@ -10,7 +10,8 @@ import DomainInfo from "../components/DomainInfo";
 
 const Main: React.FC = () => {
   const navigate = useNavigate();
-  const [sidebarOpen, setSidebarOpen] = useState(true);
+  const [leftSidebarOpen, setLeftSidebarOpen] = useState(true);
+  const [moreInfoSidebarOpen, setMoreInfoSidebarOpen] = useState(false);
   const [domains, setDomains] = useState<any[]>([]);
   const [selectedDomain, setSelectedDomain] = useState<any>(null);;
   const [loading, setLoading] = useState(true);
@@ -145,8 +146,8 @@ const Main: React.FC = () => {
   return (
     <div className="dx-bg" style={{ display: "flex", height: "100vh", overflow: "hidden" }}>
       <DomainsList
-        sidebarOpen={sidebarOpen}
-        setSidebarOpen={setSidebarOpen}
+        sidebarOpen={leftSidebarOpen}
+        setSidebarOpen={setLeftSidebarOpen}
         domains={domains}
         selectedDomain={selectedDomain}
         setSelectedDomain={setSelectedDomain}
@@ -167,56 +168,68 @@ const Main: React.FC = () => {
       />
       
       {graph && (
-        <div className="dx-card" style={{ padding: '20px', background: '#1a1a1a', marginTop: '20px' }}>
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
-            <h3 style={{ color: 'var(--accent)', margin: 0 }}>Global AHP Ranking</h3>
-            <span style={{ fontSize: '0.8rem', color: '#888' }}>*Sum of priorities = 100%</span>
-          </div>
-          
-          <div style={{ width: '100%', height: 400 }}>
-            <ResponsiveContainer width="100%" height="100%">
-              <BarChart data={chartData} margin={{ top: 20, right: 30, left: 0, bottom: 60 }}>
-                <CartesianGrid strokeDasharray="3 3" stroke="#333" vertical={false} />
-                <XAxis 
-                  dataKey="name" 
-                  stroke="#ccc" 
-                  angle={-45} 
-                  textAnchor="end" 
-                  interval={0}
-                  tick={{ fill: '#ccc', fontSize: 11 }} 
-                />
-                <YAxis 
-                  stroke="#ccc" 
-                  tick={{ fill: '#ccc' }} 
-                  unit="%" 
-                  domain={[0, 'auto']}
-                />
-                <Tooltip 
-                  cursor={{ fill: 'rgba(255,255,255,0.05)' }}
-                  contentStyle={{ backgroundColor: '#222', border: '1px solid var(--accent)', borderRadius: '4px' }}
-                  itemStyle={{ color: 'var(--accent)' }}
-                  formatter={(value) => {
-                    const numericValue = Number(value) || 0;
-                    return [`${numericValue.toFixed(2)}%`, 'Priority Score'];
-                  }}
-                />
-                <Bar dataKey="score">
-                  {chartData.map((entry, index) => (
-                    <Cell 
-                      key={`cell-${index}`} 
-                      // The highest ranked library gets the full accent color
-                      fill={index === 0 ? 'var(--accent)' : 'rgba(var(--accent-rgb), 0.4)'} 
-                      style={{ transition: 'fill 0.3s ease' }}
-                    />
-                  ))}
-                </Bar>
-              </BarChart>
-            </ResponsiveContainer>
+        <div style={{
+          flex: 1,
+          display: 'flex',
+          flexDirection: 'column',
+          overflowY: 'auto',
+          padding: '20px',
+          gap: '20px'
+        }}>
+          <div className="dx-card" style={{ padding: '20px', background: '#1a1a1a' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
+              <h3 style={{ color: 'var(--accent)', margin: 0 }}>Global AHP Ranking</h3>
+              <span style={{ fontSize: '0.8rem', color: '#888' }}>*Sum of priorities = 100%</span>
+            </div>
+            <div style={{ width: '100%', height: 400 }}>
+              <ResponsiveContainer width="100%" height="100%">
+                <BarChart data={chartData} margin={{ top: 20, right: 30, left: 0, bottom: 60 }}>
+                  <CartesianGrid strokeDasharray="3 3" stroke="#333" vertical={false} />
+                  <XAxis 
+                    dataKey="name" 
+                    stroke="#ccc" 
+                    angle={-45} 
+                    textAnchor="end" 
+                    interval={0}
+                    tick={{ fill: '#ccc', fontSize: 11 }} 
+                  />
+                  <YAxis 
+                    stroke="#ccc" 
+                    tick={{ fill: '#ccc' }} 
+                    unit="%" 
+                    domain={[0, 'auto']}
+                  />
+                  <Tooltip 
+                    cursor={{ fill: 'rgba(255,255,255,0.05)' }}
+                    contentStyle={{ backgroundColor: '#222', border: '1px solid var(--accent)', borderRadius: '4px' }}
+                    itemStyle={{ color: 'var(--accent)' }}
+                    formatter={(value) => {
+                      const numericValue = Number(value) || 0;
+                      return [`${numericValue.toFixed(2)}%`, 'Priority Score'];
+                    }}
+                  />
+                  <Bar dataKey="score">
+                    {chartData.map((entry, index) => (
+                      <Cell 
+                        key={`cell-${index}`} 
+                        // The highest ranked library gets the full accent color
+                        fill={index === 0 ? 'var(--accent)' : 'rgba(var(--accent-rgb), 0.4)'} 
+                        style={{ transition: 'fill 0.3s ease' }}
+                      />
+                    ))}
+                  </Bar>
+                </BarChart>
+              </ResponsiveContainer>
+            </div>
           </div>
         </div>
       )}
 
-      <DomainInfo selectedDomain={selectedDomain} />
+      <DomainInfo 
+        selectedDomain={selectedDomain}
+        sidebarOpen={moreInfoSidebarOpen}
+        setSidebarOpen={setMoreInfoSidebarOpen}
+      />
     </div>
   );
 };
