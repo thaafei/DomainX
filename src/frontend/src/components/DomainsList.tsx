@@ -261,7 +261,7 @@ const DomainsList: React.FC<DomainsListProps> = ({
                             }}
                             style={{ marginRight: 8 }}
                           />
-                          <span>{user.email} ({user.username})</span>
+                          <span>{user.full_name || user.username} ({user.email})</span>
                         </label>
                       ))
                     )}
