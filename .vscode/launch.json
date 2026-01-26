@@ -28,32 +28,35 @@
       }
     },
     {
-      "name": "Launch Frontend",
+      "name": "Start Frontend Dev Server",
       "type": "node",
       "request": "launch",
       "runtimeExecutable": "npm",
       "runtimeArgs": ["start"],
       "cwd": "${workspaceFolder}/src/frontend",
-      "console": "integratedTerminal"
+      "console": "integratedTerminal",
+      "env": {
+        "BROWSER": "none"
+      }
+    },
+    {
+      "name": "Debug Frontend (Chrome)",
+      "type": "pwa-chrome",
+      "request": "launch",
+      "url": "http://localhost:3000",
+      "webRoot": "${workspaceFolder}/src/frontend/src",
+      "sourceMaps": true
     }
   ],
   "compounds": [
     {
-      "name": "Run Full Stack (Backend & Frontend)",
-      "configurations": ["Launch Backend", "Launch Frontend"],
+      "name": "Run Full Stack (Backend + Frontend + Debug)",
+      "configurations": [
+        "Launch Backend",
+        "Start Frontend Dev Server",
+        "Debug Frontend (Chrome)"
+      ],
       "stopAll": true
-    }
-  ],
-  "launchers": [
-    {
-      "name": "Attach Chrome",
-      "type": "chrome",
-      "request": "attach",
-      "port": 9222,
-      "pathMapping": {
-        "/": "${workspaceFolder}/src/frontend/",
-        "/src": "${workspaceFolder}/src/frontend/src"
-      }
     }
   ]
 }

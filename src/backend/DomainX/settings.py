@@ -126,6 +126,7 @@ WSGI_APPLICATION = 'DomainX.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/5.2/ref/settings/#databases
 
+
 if IS_LOCAL:
     # Use SQLite for local development
     DATABASES = {
@@ -149,6 +150,7 @@ else:
             },
         }
     }
+
 CELERY_BROKER_URL = os.getenv("CELERY_BROKER_URL")
 if not CELERY_BROKER_URL:
     raise RuntimeError("CELERY_BROKER_URL is not set")
