@@ -182,14 +182,14 @@ const Main: React.FC = () => {
 
         {sidebarOpen && (
           <>
-            <button
+            {/* <button
               className="dx-btn dx-btn-outline"
               disabled={!selectedDomain}
               onClick={() => navigate(`/comparison-tool/${selectedDomain.domain_ID}`)}
               style={{ display: "flex", alignItems: "center", gap: 8 }}
             >
               <span style={{ fontSize: 15 }}>⚖️</span> Comparison Tool
-            </button>
+            </button> */}
             <button
               className="dx-btn dx-btn-outline"
               onClick={() => setShowDomainModal(true)}
@@ -322,10 +322,9 @@ const Main: React.FC = () => {
       </div>
       
       {graph && (
-        <div className="dx-card" style={{ padding: '20px', background: '#1a1a1a', marginTop: '20px' }}>
+        <div className="dx-card" style={{ padding: '20px', marginTop: '20px', width: '1000px' }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
-            <h3 style={{ color: 'var(--accent)', margin: 0 }}>Global AHP Ranking</h3>
-            <span style={{ fontSize: '0.8rem', color: '#888' }}>*Sum of priorities = 100%</span>
+            <h3 style={{ color: 'var(--accent)', margin: 0, textAlign:'center' }}>Global AHP Ranking</h3>
           </div>
           
           <div style={{ width: '100%', height: 400 }}>
@@ -394,12 +393,21 @@ const Main: React.FC = () => {
         <div className="dx-info-field">
           <strong>Description:</strong>
           <p style={{ marginTop: 6, opacity: 0.75 }}>
-            Placeholder description text about the domain.
+            {selectedDomain?.description || "No description available"}
           </p>
         </div>
         <div className="dx-info-field">
           <strong>Link:</strong> <a href="#" style={{ color: "var(--accent)" }}>Research Paper</a>
+          <p style={{ padding: '10px'}}></p>
         </div>
+        <button
+          className="dx-btn dx-btn-outline"
+          disabled={!selectedDomain}
+          onClick={() => navigate(`/comparison-tool/${selectedDomain.domain_ID}`)}
+          style={{ display: "flex", alignItems: "center", gap: 8 }}
+        >
+          <span style={{ fontSize: 15 }}>⚖️</span> Comparison Tool
+        </button>
       </div>
     </div>
   );
