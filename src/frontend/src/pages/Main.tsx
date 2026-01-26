@@ -304,14 +304,6 @@ const Main: React.FC = () => {
               </BarChart>
             </ResponsiveContainer>
           </div>
-          
-          {/* Visual Winner Summary */}
-          <div style={{ marginTop: '10px', padding: '10px', borderTop: '1px solid #333' }}>
-            <p style={{ margin: 0, fontSize: '0.9rem' }}>
-              Recommended Option: <strong style={{ color: 'var(--accent)' }}>{chartData[0].name}</strong> 
-              ({chartData[0].score}% Priority)
-            </p>
-          </div>
         </div>
       )}
 
