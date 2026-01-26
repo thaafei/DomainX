@@ -1,5 +1,6 @@
 import React from 'react';
 import { useNavigate } from "react-router-dom";
+import { useAuthStore } from "../store/useAuthStore";
 
 interface DomainInfoProps {
     selectedDomain: any;
@@ -9,6 +10,12 @@ interface DomainInfoProps {
 
 const DomainInfo: React.FC<DomainInfoProps> = ({ selectedDomain, sidebarOpen, setSidebarOpen }) => {
       const navigate = useNavigate();
+      const { user } = useAuthStore();
+      
+      // Check if current user is a creator or superadmin
+      const isCreator = user && selectedDomain?.creators?.some((c: any) => c.id === user.id);
+      const isSuperAdmin = user?.role === "superadmin";
+      const canEditDomain = isCreator || isSuperAdmin;
 
     return (
         <div
@@ -78,6 +85,15 @@ const DomainInfo: React.FC<DomainInfoProps> = ({ selectedDomain, sidebarOpen, se
                   {selectedDomain.paper_name || "View Paper"}
                 </a>
               </div>
+            )}
+            {canEditDomain && (
+              <button
+                className="dx-btn dx-btn-primary"
+                onClick={() => navigate(`/edit-domain/${selectedDomain.domain_ID}`)}
+                style={{ display: "flex", alignItems: "center", gap: 8, marginTop: 8 }}
+              >
+                <span style={{ fontSize: 15 }}>✏️</span> Edit Domain
+              </button>
             )}
             
             <button
