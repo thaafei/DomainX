@@ -5,6 +5,8 @@ import {
   BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Cell 
 } from 'recharts';
 import { apiUrl } from "../config/api";
+import DomainsList from "../components/DomainsList";
+import DomainInfo from "../components/DomainInfo";
 
 const Main: React.FC = () => {
   const navigate = useNavigate();
@@ -142,252 +144,27 @@ const Main: React.FC = () => {
   };
   return (
     <div className="dx-bg" style={{ display: "flex", height: "100vh", overflow: "hidden" }}>
-
-      <div
-        className="dx-card"
-        style={{
-          width: sidebarOpen ? 260 : 60,
-          transition: "0.28s",
-          padding: sidebarOpen ? "16px" : "16px 6px",
-          display: "flex",
-          flexDirection: "column",
-          gap: 14,
-          color: "var(--text-main)"
-        }}
-      >
-        <div
-          style={{ cursor: "pointer", fontSize: 24, color: "var(--accent)" }}
-          onClick={() => setSidebarOpen(!sidebarOpen)}
-        >
-          {sidebarOpen ? "⟨" : "⟩"}
-        </div>
-
-        {sidebarOpen && (
-          <input
-            className="dx-input"
-            placeholder="Filter domains..."
-            style={{ marginBottom: 12 }}
-          />
-        )}
-
-        <div style={{ flex: 1, overflowY: "auto" }}>
-          {domains.map((d) => (
-            <div
-              key={d.domain_ID} 
-              className="dx-side-item"
-              onClick={() => {setSelectedDomain(d); getAHPRanking();}}
-              style={{
-                padding: "12px 16px",
-                cursor: "pointer",
-                borderRadius: "8px",
-                marginBottom: "6px",
-                transition: "all 0.2s ease",                
-                backgroundColor: d.domain_ID === selectedDomain?.domain_ID
-                  ? "rgba(255, 255, 255, 0.12)"
-                  : "transparent",
-                border: d.domain_ID === selectedDomain?.domain_ID 
-                  ? "1px solid rgba(255, 255, 255, 0.1)" 
-                  : "1px solid transparent",
-                
-                color: d.domain_ID === selectedDomain?.domain_ID ? "var(--accent)" : "var(--text-main)",
-                fontWeight: d.domain_ID === selectedDomain?.domain_ID ? 600 : 400,
-              }}
-            >
-              {sidebarOpen ? (
-                <>
-                  {d.domain_name}
-                  <div style={{ fontSize: "0.8rem", color: "var(--text-dim)" }}>{d.description}</div>
-                </>
-              ) : (
-                <div style={{ textAlign: "center" }}>{d.domain_name?.charAt(0) || "?"}</div>
-              )}
-            </div>
-          ))}
-        </div>
-
-        {sidebarOpen && (
-          <>
-            <button
-              className="dx-btn dx-btn-outline"
-              disabled={!selectedDomain}
-              onClick={() => navigate(`/comparison-tool/${selectedDomain.domain_ID}`)}
-              style={{ display: "flex", alignItems: "center", gap: 8 }}
-            >
-              <span style={{ fontSize: 15 }}>⚖️</span> Comparison Tool
-            </button>
-            <button
-              className="dx-btn dx-btn-outline"
-              onClick={() => setShowDomainModal(true)}
-              style={{
-                display: "flex",
-                alignItems: "center",
-                marginTop: 8,
-              }}
-            >
-              <span style={{ fontSize: 15, marginRight: 8 }}>🌐</span> Create Domain
-            </button>
-            <button
-              className="dx-btn dx-btn-outline"
-              onClick={() => navigate("/metrics")}
-              style={{
-                display: "flex",
-                alignItems: "center",
-                marginTop: 8,
-              }}
-            >
-              Edit Metrics
-            </button>
-            <button
-              className="dx-btn dx-btn-outline"
-              onClick={() => handleLogout()}
-              style={{
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
-                marginTop: 8,
-                opacity: 0.85
-              }}
-            >
-              Logout
-            </button>
-            {showDomainModal && (
-              <div
-                style={{
-                  position: "fixed",
-                  top: 0,
-                  left: 0,
-                  width: "100vw",
-                  height: "100vh",
-                  backgroundColor: "rgba(0, 0, 0, 0.6)",
-                  display: "flex",
-                  justifyContent: "center",
-                  alignItems: "center",
-                  zIndex: 9999,
-                }}
-              >
-                <div
-                  style={{
-                    background: "#fff",
-                    padding: "24px",
-                    borderRadius: "12px",
-                    width: "350px",
-                    boxShadow: "0 10px 25px rgba(0,0,0,0.2)",
-                    color: "#333",
-                    display: "flex",
-                    flexDirection: "column",
-                  }}
-                >
-                  <h3>New Domain</h3>
-                  {formError && (
-                    <div style={{ 
-                      color: '#ff4d4f', 
-                      backgroundColor: '#fff2f0', 
-                      border: '1px solid #ffccc7', 
-                      padding: '8px', 
-                      borderRadius: '4px', 
-                      marginBottom: '12px',
-                      fontSize: '0.9rem' 
-                    }}>
-                      ⚠️ {formError}
-                    </div>
-                  )}
-
-                  <input 
-                    className="dx-input"
-                    placeholder="Domain Name" 
-                    value={domainName}
-                    onChange={(e) => {
-                      setDomainName(e.target.value);
-                      if (formError) setFormError("");
-                    }}
-                    style={{ 
-                      width: '100%', 
-                      marginBottom: 12, 
-                      padding: 8, 
-                      color: 'black',
-                      border: formError && !domainName ? '1px solid red' : '1px solid #ccc'
-                    }}
-                  />
-
-                  <textarea 
-                    className="dx-input"
-                    placeholder="Description" 
-                    value={description}
-                    onChange={(e) => {
-                      setDescription(e.target.value);
-                      if (formError) setFormError("");
-                    }}
-                    style={{ 
-                      width: '100%', 
-                      marginBottom: 12, 
-                      padding: 8, 
-                      minHeight: 60, 
-                      color: 'black',
-                      border: formError && !description ? '1px solid red' : '1px solid #ccc' 
-                    }}
-                  />
-
-                  <div style={{ marginBottom: 12 }}>
-                    <label style={{ display: 'block', marginBottom: 6, fontWeight: 500 }}>Creators:</label>
-                    <div style={{ 
-                      maxHeight: '150px', 
-                      overflowY: 'auto', 
-                      border: formError && selectedCreatorIds.length === 0 ? '1px solid red' : '1px solid #ccc',
-                      borderRadius: '4px',
-                      padding: '8px'
-                    }}>
-                      {adminUsers.length === 0 ? (
-                        <div style={{ color: '#999', fontSize: '0.9rem' }}>Loading users...</div>
-                      ) : (
-                        adminUsers.map((user) => (
-                          <label 
-                            key={user.id} 
-                            style={{ 
-                              display: 'flex', 
-                              alignItems: 'center', 
-                              padding: '4px 0',
-                              cursor: 'pointer'
-                            }}
-                          >
-                            <input 
-                              type="checkbox"
-                              checked={selectedCreatorIds.includes(user.id)}
-                              onChange={(e) => {
-                                if (e.target.checked) {
-                                  setSelectedCreatorIds([...selectedCreatorIds, user.id]);
-                                } else {
-                                  setSelectedCreatorIds(selectedCreatorIds.filter(id => id !== user.id));
-                                }
-                                if (formError) setFormError("");
-                              }}
-                              style={{ marginRight: 8 }}
-                            />
-                            <span>{user.email} ({user.username})</span>
-                          </label>
-                        ))
-                      )}
-                    </div>
-                  </div>
-
-                  <div style={{ display: 'flex', gap: 8, justifyContent: 'flex-end' }}>
-                    <button className="dx-btn" onClick={() => {
-                      setShowDomainModal(false);
-                      setFormError("");
-                      setSelectedCreatorIds([]);
-                    }}>
-                      Cancel
-                    </button>
-                    <button className="dx-btn dx-btn-primary" onClick={handleCreateDomain}>
-                      Create
-                    </button>
-                  </div>
-                </div>
-              </div>
-            )}
-          </>
-        )}
-
-      </div>
+      <DomainsList
+        sidebarOpen={sidebarOpen}
+        setSidebarOpen={setSidebarOpen}
+        domains={domains}
+        selectedDomain={selectedDomain}
+        setSelectedDomain={setSelectedDomain}
+        getAHPRanking={getAHPRanking}
+        showDomainModal={showDomainModal}
+        setShowDomainModal={setShowDomainModal}
+        domainName={domainName}
+        setDomainName={setDomainName}
+        description={description}
+        setDescription={setDescription}
+        selectedCreatorIds={selectedCreatorIds}
+        setSelectedCreatorIds={setSelectedCreatorIds}
+        adminUsers={adminUsers}
+        formError={formError}
+        setFormError={setFormError}
+        handleCreateDomain={handleCreateDomain}
+        handleLogout={handleLogout}
+      />
       
       {graph && (
         <div className="dx-card" style={{ padding: '20px', background: '#1a1a1a', marginTop: '20px' }}>
@@ -439,36 +216,7 @@ const Main: React.FC = () => {
         </div>
       )}
 
-      <div
-        className="dx-card"
-        style={{
-          width: 260,
-          padding: 18,
-          borderLeft: "1px solid rgba(255,255,255,0.08)",
-          color: "var(--text-main)"
-        }}
-      >
-        <h3 style={{ marginTop: 0, color: "var(--accent)" }}>Details</h3>
-
-        <div className="dx-info-field"><strong>Name:</strong> {selectedDomain?.domain_name || "N/A"}</div>
-        <div className="dx-info-field"><strong>Version:</strong> {selectedDomain?.description || "No version available"}</div>
-        <div className="dx-info-field">
-          <strong>Authors:</strong>
-          <ul style={{ margin: "6px 0 0 16px" }}>
-            <li>Unknown</li>
-            <li>Unknown</li>
-          </ul>
-        </div>
-        <div className="dx-info-field">
-          <strong>Description:</strong>
-          <p style={{ marginTop: 6, opacity: 0.75 }}>
-            Placeholder description text about the domain.
-          </p>
-        </div>
-        <div className="dx-info-field">
-          <strong>Link:</strong> <a href="#" style={{ color: "var(--accent)" }}>Research Paper</a>
-        </div>
-      </div>
+      <DomainInfo selectedDomain={selectedDomain} />
     </div>
   );
 };
