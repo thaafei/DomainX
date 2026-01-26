@@ -91,16 +91,22 @@ def update_library_values(request, library_id):
     library.save()
     metrics_data = data.get("metrics", {})
 
-    for metric_name, value in metrics_data.items():
+    for key, value in metrics_data.items():
+        if key.endswith("_evidence"):
+            base_metric_name = key.replace("_evidence", "")
+            field_to_update = "evidence"
+        else:
+            base_metric_name = key
+            field_to_update = "value"
         try:
-            metric = Metric.objects.get(metric_name=metric_name)
+            metric = Metric.objects.get(metric_name=base_metric_name)
         except Metric.DoesNotExist:
-            continue  #ignore unrecognized metric names
+            continue
 
         LibraryMetricValue.objects.update_or_create(
             library=library,
             metric=metric,
-            defaults={"value": value}
+            defaults={field_to_update: value}
         )
 
     return Response({"success": True})
