@@ -6,6 +6,7 @@ class Domain(models.Model):
     domain_name = models.CharField(max_length=100, unique=True)
     description = models.CharField(max_length=255, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
+    category_weights = models.JSONField(default=dict, blank=True)
     created_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True)
     published = models.BooleanField(default=False)
 

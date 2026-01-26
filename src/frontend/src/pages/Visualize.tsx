@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { useParams } from 'react-router-dom';
 import { apiUrl } from "../config/api";
 interface Metric {
   metric_ID: string;
@@ -12,11 +13,12 @@ interface LibraryRow {
   metrics: { [metricName: string]: string | number | null };
 }
 
-const DOMAIN_ID = "ecba1df1ede211f0987c0050568e534c";
+// const DOMAIN_ID = "ecba1df1ede211f0987c0050568e534c";
 
 const Visualize: React.FC = () => {
   const navigate = useNavigate();
-
+  const { domainId } = useParams<{ domainId: string }>();
+  const DOMAIN_ID = domainId; 
   const [metricList, setMetricList] = useState<Metric[]>([]);
   const [libraries, setLibraries] = useState<LibraryRow[]>([]);
 
@@ -43,8 +45,8 @@ const Visualize: React.FC = () => {
             return rawId;
           };
 
-      const formattedDomainId = formatUUID(DOMAIN_ID);
-      const res = await fetch(apiUrl(`/api/comparison/${formattedDomainId}/`), {
+      const formattedDomainId = DOMAIN_ID;
+      const res = await fetch(`http://127.0.0.1:8000/api/comparison/${formattedDomainId}/`, {
         credentials: "include"
       });
       const responseText = await res.text();
@@ -115,7 +117,7 @@ const Visualize: React.FC = () => {
       >
         <button
           className="dx-btn dx-btn-outline"
-          onClick={() => navigate("/comparison-tool")}
+          onClick={() => navigate(`/comparison-tool/${domainId}`)}
         >
           ← Back
         </button>
