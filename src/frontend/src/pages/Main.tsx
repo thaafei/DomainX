@@ -5,11 +5,6 @@ import {
   BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Cell 
 } from 'recharts';
 import { apiUrl } from "../config/api";
-const domains = [
-  { name: "Neural Networks", version: "v1.0" },
-  { name: "Domain X", version: "v2.1" },
-  { name: "Domain Y", version: "v3.0" },
-];
 
 const Main: React.FC = () => {
   const navigate = useNavigate();
@@ -179,7 +174,7 @@ const Main: React.FC = () => {
                   <div style={{ fontSize: "0.8rem", color: "var(--text-dim)" }}>{d.description}</div>
                 </>
               ) : (
-                <div style={{ textAlign: "center" }}>{d.name.charAt(0)}</div>
+                <div style={{ textAlign: "center" }}>{d.domain_name?.charAt(0) || "?"}</div>
               )}
             </div>
           ))}
