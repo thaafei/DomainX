@@ -20,13 +20,13 @@ const Main: React.FC = () => {
   const [graph, setGraph] = useState(false);
   const [formError, setFormError] = useState("");
   const [categories, setCategories] = useState<any>(null)
+  const [localWeights, setLocalWeights] = useState<Record<string, number>>({});
   const fetchDomains = async () => {
     try {
     const response = await fetch('http://127.0.0.1:8000/api/domain/');
       if (response.ok) {
         const data = await response.json();
         setDomains(data);
-        // Set the first domain as default if none selected
         if (data.length > 0 && !selectedDomain) {
           const firstDomain = data[0];
           setSelectedDomain(firstDomain);
@@ -80,6 +80,47 @@ const Main: React.FC = () => {
       setGraph(false);
     }
   };
+  useEffect(() => {
+    const fetchWeights = async () => {
+      if (!selectedDomain) return;
+      try {
+        const res = await fetch(`http://127.0.0.1:8000/api/get_category_weights/${selectedDomain.domain_ID}/`);
+        if (res.ok) {
+          const data = await res.json();
+          // data should be your category_weights dict
+          setLocalWeights(data); 
+        }
+      } catch (err) { console.error(err); }
+    };
+
+    if (selectedDomain?.domain_ID) {
+      getAHPRanking(); // For graphing
+      fetchWeights();  // The weights fetch
+    }
+  }, [selectedDomain]);
+
+  const handleWeightChange = (category: string, value: string) => {
+    const numValue = parseFloat(value) || 0;
+    setLocalWeights(prev => ({
+      ...prev,
+      [category]: numValue
+    }));
+  };
+
+  const saveWeights = async () => {
+    if (!selectedDomain) return;
+    try {
+      const res = await fetch(`http://127.0.0.1:8000/api/category_weights/${selectedDomain.domain_ID}/`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ values: localWeights })
+      });
+      if (res.ok) {
+        alert("Weights updated successfully!");
+        getAHPRanking(); // Refresh the graph to reflect new weights
+      }
+    } catch (err) { console.error(err); }
+  };
   const chartData = Object.entries(globalRanking)
     .map(([name, score]) => ({
       name,
@@ -90,11 +131,6 @@ const Main: React.FC = () => {
   useEffect(() => {
     fetchDomains();
   }, []);
-  useEffect(() => {
-    if (selectedDomain?.domain_ID) {
-      getAHPRanking();
-    }
-  }, [selectedDomain]);
 
   if (loading) return <div>Loading...</div>;
   const handleLogout = async () => {
@@ -331,55 +367,91 @@ const Main: React.FC = () => {
         )}
 
       </div>
-      
-      {graph && (
-        <div className="dx-card" style={{ padding: '20px', marginTop: '20px', width: '1000px' }}>
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
-            <h3 style={{ color: 'var(--accent)', margin: 0, textAlign:'center' }}>Global AHP Ranking</h3>
+      <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: '20px', overflowY: 'auto' }}>
+        {graph && (
+          <div className="dx-card" style={{ padding: '20px', marginTop: '20px', width: '1000px' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
+              <h3 style={{ color: 'var(--accent)', margin: 0, textAlign:'center' }}>Global AHP Ranking</h3>
+            </div>
+            
+            <div style={{ width: '100%', height: 400 }}>
+              <ResponsiveContainer width="100%" height="100%">
+                <BarChart data={chartData} margin={{ top: 20, right: 30, left: 0, bottom: 60 }}>
+                  <CartesianGrid strokeDasharray="3 3" stroke="#333" vertical={false} />
+                  <XAxis 
+                    dataKey="name" 
+                    stroke="#ccc" 
+                    angle={-45} 
+                    textAnchor="end" 
+                    interval={0}
+                    tick={{ fill: '#ccc', fontSize: 11 }} 
+                  />
+                  <YAxis 
+                    stroke="#ccc" 
+                    tick={{ fill: '#ccc' }} 
+                    unit="%" 
+                    domain={[0, 'auto']}
+                  />
+                  <Tooltip 
+                    cursor={{ fill: 'rgba(255,255,255,0.05)' }}
+                    contentStyle={{ backgroundColor: '#222', border: '1px solid var(--accent)', borderRadius: '4px' }}
+                    itemStyle={{ color: 'var(--accent)' }}
+                    formatter={(value) => {
+                      const numericValue = Number(value) || 0;
+                      return [`${numericValue.toFixed(2)}%`, 'Priority Score'];
+                    }}
+                  />
+                  <Bar dataKey="score">
+                    {chartData.map((entry, index) => (
+                      <Cell 
+                        key={`cell-${index}`} 
+                        // The highest ranked library gets the full accent color
+                        fill={index === 0 ? 'var(--accent)' : 'rgba(var(--accent-rgb), 0.4)'} 
+                        style={{ transition: 'fill 0.3s ease' }}
+                      />
+                    ))}
+                  </Bar>
+                </BarChart>
+              </ResponsiveContainer>
+            </div>
           </div>
-          
-          <div style={{ width: '100%', height: 400 }}>
-            <ResponsiveContainer width="100%" height="100%">
-              <BarChart data={chartData} margin={{ top: 20, right: 30, left: 0, bottom: 60 }}>
-                <CartesianGrid strokeDasharray="3 3" stroke="#333" vertical={false} />
-                <XAxis 
-                  dataKey="name" 
-                  stroke="#ccc" 
-                  angle={-45} 
-                  textAnchor="end" 
-                  interval={0}
-                  tick={{ fill: '#ccc', fontSize: 11 }} 
-                />
-                <YAxis 
-                  stroke="#ccc" 
-                  tick={{ fill: '#ccc' }} 
-                  unit="%" 
-                  domain={[0, 'auto']}
-                />
-                <Tooltip 
-                  cursor={{ fill: 'rgba(255,255,255,0.05)' }}
-                  contentStyle={{ backgroundColor: '#222', border: '1px solid var(--accent)', borderRadius: '4px' }}
-                  itemStyle={{ color: 'var(--accent)' }}
-                  formatter={(value) => {
-                    const numericValue = Number(value) || 0;
-                    return [`${numericValue.toFixed(2)}%`, 'Priority Score'];
-                  }}
-                />
-                <Bar dataKey="score">
-                  {chartData.map((entry, index) => (
-                    <Cell 
-                      key={`cell-${index}`} 
-                      // The highest ranked library gets the full accent color
-                      fill={index === 0 ? 'var(--accent)' : 'rgba(var(--accent-rgb), 0.4)'} 
-                      style={{ transition: 'fill 0.3s ease' }}
+        )}
+        <div className="dx-card" style={{ padding: '20px', marginTop: '20px', color: "white" }}>
+          <h3 style={{ color: 'var(--accent)', marginBottom: '15px' }}>Category Weights</h3>
+          <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+            <thead>
+              <tr style={{ textAlign: 'left', borderBottom: '1px solid #333' }}>
+                <th style={{ padding: '10px' }}>Category</th>
+                <th style={{ padding: '10px' }}>Weight</th>
+              </tr>
+            </thead>
+            <tbody>
+              {categories?.map((cat: string) => (
+                <tr key={cat} style={{ borderBottom: '1px solid #222' }}>
+                  <td style={{ padding: '10px' }}>{cat}</td>
+                  <td style={{ padding: '10px' }}>
+                    <input
+                      type="number"
+                      className="dx-input"
+                      style={{ width: '80px' }}
+                      step="0.1"
+                      value={localWeights[cat] ?? 1.0} // Default to 1.0 if not set
+                      onChange={(e) => handleWeightChange(cat, e.target.value)}
                     />
-                  ))}
-                </Bar>
-              </BarChart>
-            </ResponsiveContainer>
-          </div>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+          <button 
+            className="dx-btn dx-btn-primary" 
+            style={{ marginTop: '15px' }}
+            onClick={saveWeights}
+          >
+            Update Weights
+          </button>
         </div>
-      )}
+      </div>
 
       <div
         className="dx-card"

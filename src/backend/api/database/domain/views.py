@@ -48,9 +48,23 @@ def create_domain(request):
     except Exception as e:
         return Response({"error": str(e)}, status=400)
 
+
 @api_view(["POST"])
-def get_domain(request, domain_id):
+def update_category_weights(request, domain_id):
     try:
         domain = Domain.objects.get(pk=domain_id)
-    except Metric.DoesNotExist:
-        return Response({"error": "Metric not found"}, status=status.HTTP_404_NOT_FOUND)
+        values = request.data.get("values", {})
+        for key, value in values.items():
+            domain.category_weights[key] = value
+        domain.save()
+        return Response({"success": True})
+    except Domain.DoesNotExist:
+        return Response({"error": "Domain not found"}, status=status.HTTP_404_NOT_FOUND)
+    
+@api_view(["GET"])
+def get_category_weights(request, domain_id):
+    try:
+        domain = Domain.objects.get(pk=domain_id)
+        return Response(domain.category_weights or {})
+    except Domain.DoesNotExist:
+        return Response({"error": "Domain not found"}, status=status.HTTP_404_NOT_FOUND)

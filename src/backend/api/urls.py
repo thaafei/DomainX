@@ -5,6 +5,7 @@ from .database.domain.views import create_domain, DomainListCreateView, DomainDe
 from .database.metrics.views import MetricRulesView
 from .database.metrics.views import MetricCategoryView
 from .database.library_metric_values.views import AHPCalculations
+from .database.domain.views import update_category_weights, get_category_weights
 from .views.metric_views import (
     list_metrics,
     create_metric,
@@ -32,6 +33,8 @@ urlpatterns = [
     path('domain/create/', create_domain, name='create_domain'),
     path('domain/', DomainListCreateView.as_view(), name='domain-list'),
     path('domain/<uuid:pk>/', DomainDetailView.as_view(), name='domain-detail'),
+    path('category_weights/<uuid:domain_id>/', update_category_weights, name='update_category_weights'),
+    path('get_category_weights/<uuid:domain_id>/', get_category_weights, name='get_category_weights'),
     path('metric-rules/', MetricRulesView.as_view(), name='metric-rules'),
     path('metric-categories/', MetricCategoryView.as_view(), name='metric-categories'),
     path('aph/<uuid:domain_id>/', AHPCalculations.as_view(), name='aph_category')
