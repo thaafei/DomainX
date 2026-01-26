@@ -113,14 +113,6 @@ const DomainsList: React.FC<DomainsListProps> = ({
         <>
           <button
             className="dx-btn dx-btn-outline"
-            disabled={!selectedDomain}
-            onClick={() => navigate(`/comparison-tool/${selectedDomain.domain_ID}`)}
-            style={{ display: "flex", alignItems: "center", gap: 8 }}
-          >
-            <span style={{ fontSize: 15 }}>⚖️</span> Comparison Tool
-          </button>
-          <button
-            className="dx-btn dx-btn-outline"
             onClick={() => setShowDomainModal(true)}
             style={{
               display: "flex",
@@ -130,17 +122,7 @@ const DomainsList: React.FC<DomainsListProps> = ({
           >
             <span style={{ fontSize: 15, marginRight: 8 }}>🌐</span> Create Domain
           </button>
-          <button
-            className="dx-btn dx-btn-outline"
-            onClick={() => navigate("/metrics")}
-            style={{
-              display: "flex",
-              alignItems: "center",
-              marginTop: 8,
-            }}
-          >
-            Edit Metrics
-          </button>
+          
           <button
             className="dx-btn dx-btn-outline"
             onClick={() => handleLogout()}
