@@ -16,6 +16,7 @@ services:
     networks:
       - domainx-net
 
+
   backend:
     build: ./backend
     env_file:
@@ -31,6 +32,9 @@ services:
       - domainx-net
     secrets:
       - github_app_pem
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+
 
   celery:
     build: ./backend
@@ -47,6 +51,9 @@ services:
       - domainx-net
     secrets:
       - github_app_pem
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+
 
   celery_beat:
     build: ./backend
@@ -61,6 +68,9 @@ services:
       - domainx-net
     secrets:
       - github_app_pem
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+
 
   web:
     build: ./frontend
