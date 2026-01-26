@@ -65,22 +65,28 @@ const Main: React.FC = () => {
       if (response.ok) {
         const data = await response.json();
         setDomains(data);
-        // Set the first domain as default if none selected
-        if (data.length > 0 && !selectedDomain) {
-          const firstDomain = data[0];
-          setSelectedDomain(firstDomain);
-          const response = await fetch(`http://127.0.0.1:8000/api/aph/${firstDomain.domain_ID}/`, {
+        // Restore last selected domain or default to first
+        if (data.length > 0) {
+          const savedId = localStorage.getItem("dx:lastDomainId");
+          const domainToSelect = savedId
+            ? data.find((d: any) => d.domain_ID === savedId) || data[0]
+            : (selectedDomain || data[0]);
+
+          if (!selectedDomain || domainToSelect.domain_ID !== selectedDomain.domain_ID) {
+            setSelectedDomain(domainToSelect);
+          }
+
+          const ahpRes = await fetch(`http://127.0.0.1:8000/api/aph/${domainToSelect.domain_ID}/`, {
             method: 'GET',
             headers: { 'Content-Type': 'application/json' }
           });
 
-        if (response.ok) {
-          const data = await response.json();
-          setGlobalRanking(data.global_ranking);
-          setGraph(true)
-        }
-        else {
-          setGraph(false);
+          if (ahpRes.ok) {
+            const ahpData = await ahpRes.json();
+            setGlobalRanking(ahpData.global_ranking);
+            setGraph(true)
+          } else {
+            setGraph(false);
           }
         }
       }
@@ -118,6 +124,15 @@ const Main: React.FC = () => {
     fetchDomains();
     fetchUsers();
   }, []);
+
+  // Persist last selected domain for smoother back navigation
+  useEffect(() => {
+    if (selectedDomain?.domain_ID) {
+      try {
+        localStorage.setItem("dx:lastDomainId", String(selectedDomain.domain_ID));
+      } catch {}
+    }
+  }, [selectedDomain]);
 
   if (loading) return <div>Loading...</div>;
   const handleLogout = async () => {

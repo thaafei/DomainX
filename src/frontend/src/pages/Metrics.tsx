@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import { apiUrl } from "../config/api";
 interface Metric {
   metric_ID: string;
@@ -9,6 +10,7 @@ interface Metric {
 }
 
 const MetricsPage: React.FC = () => {
+  const navigate = useNavigate();
   const [metrics, setMetrics] = useState<Metric[]>([]);
   const [newName, setNewName] = useState("");
   const [newType, setNewType] = useState("float");
@@ -168,7 +170,7 @@ return (
       <button
             className="dx-btn dx-btn-outline"
             style={{ width: "100%", fontSize: "1rem", textAlign: "center" }}
-            onClick={() => (window.location.href = "/main")}
+        onClick={() => navigate("/main")}
           >
             ← Back
       </button>
