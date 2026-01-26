@@ -15,7 +15,7 @@ const Main: React.FC = () => {
   const [domains, setDomains] = useState<any[]>([]);
   const [selectedDomain, setSelectedDomain] = useState<any>(null);;
   const [loading, setLoading] = useState(true);
-  const { logout } = useAuthStore();
+  const { logout, setUser } = useAuthStore();
   const [showDomainModal, setShowDomainModal] = useState(false);
   const [domainName, setDomainName] = useState("");
   const [description, setDescription] = useState("");
@@ -24,6 +24,22 @@ const Main: React.FC = () => {
   const [formError, setFormError] = useState("");
   const [adminUsers, setAdminUsers] = useState<any[]>([]);
   const [selectedCreatorIds, setSelectedCreatorIds] = useState<number[]>([]);
+  
+  const fetchCurrentUser = async () => {
+    try {
+      const response = await fetch(apiUrl("/me/"), {
+        method: 'GET',
+        credentials: 'include'
+      });
+      if (response.ok) {
+        const data = await response.json();
+        setUser(data.user);
+      }
+    } catch (error) {
+      console.log("Error fetching current user:", error);
+    }
+  };
+  
   const fetchUsers = async () => {
     try {
       const response = await fetch('http://127.0.0.1:8000/api/users/?role=admin,superadmin', {
@@ -98,6 +114,7 @@ const Main: React.FC = () => {
     .sort((a, b) => b.score - a.score);
 
   useEffect(() => {
+    fetchCurrentUser();
     fetchDomains();
     fetchUsers();
   }, []);
@@ -117,8 +134,17 @@ const Main: React.FC = () => {
       }
   };
   const handleCreateDomain = async () => {
+    const errors = [];
+    
     if (!domainName.trim() || !description.trim()) {
-      setFormError("Both name and description are required.");
+      errors.push("Both name and description are required.");
+    }
+    if (selectedCreatorIds.length === 0) {
+      errors.push("At least one creator must be selected.");
+    }
+    
+    if (errors.length > 0) {
+      setFormError(errors.join(" "));
       return;
     }
     setFormError("");
@@ -137,7 +163,19 @@ const Main: React.FC = () => {
         setDomainName("");
         setDescription("");
         setSelectedCreatorIds([]);
-        fetchDomains();
+        const domainsResponse = await fetch('http://127.0.0.1:8000/api/domain/', {
+          method: "GET"
+        });
+        if (domainsResponse.ok) {
+          const data = await domainsResponse.json();
+          setDomains(data);
+          if (selectedDomain) {
+            const updatedDomain = data.find((d: any) => d.domain_ID === selectedDomain.domain_ID);
+            if (updatedDomain) {
+              setSelectedDomain(updatedDomain);
+            }
+          }
+        }
       } else {
         setFormError("Failed to create domain. Please try again.");
       }

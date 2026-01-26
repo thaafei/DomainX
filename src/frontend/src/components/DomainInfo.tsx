@@ -49,25 +49,24 @@ const DomainInfo: React.FC<DomainInfoProps> = ({ selectedDomain, sidebarOpen, se
         {sidebarOpen && (
           <>
             <h3 style={{ marginTop: 0, color: "var(--accent)" }}>Details</h3>
-
             <div className="dx-info-field"><strong>Name:</strong> {selectedDomain?.domain_name || "N/A"}</div>
             <div className="dx-info-field"><strong>Version:</strong> {selectedDomain?.description || "No version available"}</div>
             <div className="dx-info-field">
-                <strong>Authors:</strong>
-                <ul style={{ margin: "6px 0 0 16px" }}>
-                  {Array.isArray(selectedDomain?.creators) && selectedDomain.creators.length > 0 ? (
-                    selectedDomain.creators.map((u: any) => {
-                      const fullName = [u?.first_name, u?.last_name].filter(Boolean).join(" ").trim();
-                      const displayName = (fullName || undefined) || u?.username || "Unknown";
-                      const emailText = ` (${u.email})`;
-                      return (
-                        <li key={u.id}>{displayName}{emailText}</li>
-                      );
-                    })
-                  ) : (
-                    <li>Unknown</li>
-                  )}
-                </ul>
+              <strong>Authors:</strong>
+              <ul style={{ margin: "6px 0 0 16px" }}>
+                {Array.isArray(selectedDomain?.creators) && selectedDomain.creators.length > 0 ? (
+                  selectedDomain.creators.map((u: any) => {
+                    const fullName = [u?.first_name, u?.last_name].filter(Boolean).join(" ").trim();
+                    const displayName = (fullName || undefined) || u?.username || "Unknown";
+                    const emailText = ` (${u.email})`;
+                    return (
+                      <li key={u.id}>{displayName}{emailText}</li>
+                    );
+                  })
+                ) : (
+                  <li>Unknown</li>
+                )}
+              </ul>
             </div>
             <div className="dx-info-field">
                 <strong>Description:</strong>

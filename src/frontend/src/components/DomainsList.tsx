@@ -1,5 +1,7 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { useNavigate } from "react-router-dom";
+import { useAuthStore } from "../store/useAuthStore";
+import { selectDomainDefinition } from 'recharts/types/state/selectors/axisSelectors';
 
 interface DomainsListProps {
   sidebarOpen: boolean;
@@ -45,6 +47,17 @@ const DomainsList: React.FC<DomainsListProps> = ({
   handleLogout,
 }) => {
   const navigate = useNavigate();
+  const { user } = useAuthStore();
+
+  // Auto-select current user when modal opens
+  useEffect(() => {
+    if (showDomainModal && user && adminUsers.length > 0) {
+      const currentUserInList = adminUsers.find(u => u.id === user.id);
+      if (currentUserInList && !selectedCreatorIds.includes(user.id)) {
+        setSelectedCreatorIds([...selectedCreatorIds, user.id]);
+      }
+    }
+  }, [showDomainModal, user, adminUsers]);
 
   return (
     <div
@@ -260,6 +273,8 @@ const DomainsList: React.FC<DomainsListProps> = ({
                     setShowDomainModal(false);
                     setFormError("");
                     setSelectedCreatorIds([]);
+                    setDomainName("");
+                    setDescription("");
                   }}>
                     Cancel
                   </button>

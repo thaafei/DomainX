@@ -18,6 +18,14 @@ class DomainListCreateView(generics.ListCreateAPIView):
 class DomainRetrieveUpdateDestroyView(generics.RetrieveUpdateDestroyAPIView):
     queryset = Domain.objects.all()
     serializer_class = DomainSerializer
+    
+    def perform_update(self, serializer):
+        # Handle creator_ids if provided
+        creator_ids = self.request.data.get('creator_ids')
+        instance = serializer.save()
+        if creator_ids is not None:
+            instance.creators.set(creator_ids)
+        return instance
 
 class DomainDetailView(generics.RetrieveAPIView):
     queryset = Domain.objects.all()
