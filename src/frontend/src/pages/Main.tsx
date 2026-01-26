@@ -19,6 +19,7 @@ const Main: React.FC = () => {
   const [globalRanking, setGlobalRanking] = useState<Record<string, number>>({});
   const [graph, setGraph] = useState(false);
   const [formError, setFormError] = useState("");
+  const [categories, setCategories] = useState<any>(null)
   const fetchDomains = async () => {
     try {
     const response = await fetch('http://127.0.0.1:8000/api/domain/');
@@ -51,6 +52,19 @@ const Main: React.FC = () => {
     }
   };
 
+  useEffect(() => {
+      const fetchRules = async () => {
+        try {
+          const response = await fetch('http://127.0.0.1:8000/api/metric-categories/'); 
+          const data = await response.json();
+          setCategories(data.Categories);
+        } catch (error) {
+          console.error("Error fetching AHP rules:", error);
+        }
+      };
+      fetchRules();
+    }, []);
+
   const getAHPRanking = async () => {
     const response = await fetch(`http://127.0.0.1:8000/api/aph/${selectedDomain.domain_ID}/`, {
       method: 'GET',
@@ -76,6 +90,11 @@ const Main: React.FC = () => {
   useEffect(() => {
     fetchDomains();
   }, []);
+  useEffect(() => {
+    if (selectedDomain?.domain_ID) {
+      getAHPRanking();
+    }
+  }, [selectedDomain]);
 
   if (loading) return <div>Loading...</div>;
   const handleLogout = async () => {
@@ -150,7 +169,7 @@ const Main: React.FC = () => {
             <div
               key={d.domain_ID} 
               className="dx-side-item"
-              onClick={() => {setSelectedDomain(d); getAHPRanking();}}
+              onClick={() => {setSelectedDomain(d);}}
               style={{
                 padding: "12px 16px",
                 cursor: "pointer",
@@ -182,14 +201,6 @@ const Main: React.FC = () => {
 
         {sidebarOpen && (
           <>
-            {/* <button
-              className="dx-btn dx-btn-outline"
-              disabled={!selectedDomain}
-              onClick={() => navigate(`/comparison-tool/${selectedDomain.domain_ID}`)}
-              style={{ display: "flex", alignItems: "center", gap: 8 }}
-            >
-              <span style={{ fontSize: 15 }}>⚖️</span> Comparison Tool
-            </button> */}
             <button
               className="dx-btn dx-btn-outline"
               onClick={() => setShowDomainModal(true)}
