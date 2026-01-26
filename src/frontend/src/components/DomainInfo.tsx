@@ -56,8 +56,7 @@ const DomainInfo: React.FC<DomainInfoProps> = ({ selectedDomain, sidebarOpen, se
               <ul style={{ margin: "6px 0 0 16px" }}>
                 {Array.isArray(selectedDomain?.creators) && selectedDomain.creators.length > 0 ? (
                   selectedDomain.creators.map((u: any) => {
-                    const fullName = [u?.first_name, u?.last_name].filter(Boolean).join(" ").trim();
-                    const displayName = (fullName || undefined) || u?.username || "Unknown";
+                    const displayName = u?.full_name || u?.username || "Unknown";
                     const emailText = ` (${u.email})`;
                     return (
                       <li key={u.id}>{displayName}{emailText}</li>

@@ -11,7 +11,9 @@ class SignupSerializer(serializers.ModelSerializer):
         return CustomUser.objects.create_user(**validated_data)
 
 class UserProfileSerializer(serializers.ModelSerializer):
+    full_name = serializers.CharField(source='get_full_name', read_only=True, allow_null=True)
+    
     class Meta:
         model = CustomUser
-        fields = ["id", "email", "username", "role", "first_name", "last_name", "is_superuser"]
-        read_only_fields = ["email", "role", "first_name", "last_name"]
+        fields = ["id", "email", "username", "role", "first_name", "last_name", "full_name"]
+        read_only_fields = ["email", "role"]
