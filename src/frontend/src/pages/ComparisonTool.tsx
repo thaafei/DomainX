@@ -28,7 +28,7 @@ const ComparisonToolPage: React.FC = () => {
   }, []);
   const getDomainSpecification = async () => {
     try {
-      const response = await fetch(`http://127.0.0.1:8000/api/domain/${domainId}/`);
+      const response = await fetch(apiUrl(`/domain/${domainId}/`));
       
       if (!response.ok) {
         throw new Error("Failed to fetch domain specifications");
@@ -54,11 +54,9 @@ const ComparisonToolPage: React.FC = () => {
             }
             return rawId;
           };
-
-      const formattedDomainId = DOMAIN_ID;
       getDomainSpecification()
       const res = await fetch(
-          apiUrl(`/api/comparison/${formattedDomainId}/`),
+          apiUrl(`/comparison/${DOMAIN_ID}/`),
           { credentials: "include" }
         );
       const contentType = res.headers.get("content-type") || "";
@@ -71,8 +69,6 @@ const ComparisonToolPage: React.FC = () => {
       }
 
       const data = JSON.parse(text);
-
-      //const data = await res.json();
       setMetricList(data.metrics);
       setTableRows(data.libraries);
     } catch (err) {

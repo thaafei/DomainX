@@ -35,7 +35,7 @@ urlpatterns = [
     path('domain/<uuid:pk>/', DomainRetrieveUpdateDestroyView.as_view(), name='domain-detail'),
     path('metric-rules/', MetricRulesView.as_view(), name='metric-rules'),
     path('metric-categories/', MetricCategoryView.as_view(), name='metric-categories'),
-    path('aph/<uuid:domain_id>/', AHPCalculations.as_view(), name='aph_category')
+    path('aph/<uuid:domain_id>/', AHPCalculations.as_view(), name='aph_category'),
     path("libraries/<uuid:library_id>/analyze/", analyze_library),
     path("domains/<uuid:domain_id>/analyze-all/", analyze_domain_libraries)
 

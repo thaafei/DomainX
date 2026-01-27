@@ -47,8 +47,7 @@ const EditValuesPage: React.FC = () => {
 
   const fetchComparisonRaw = async () => {
 
-      const formattedDomainId = DOMAIN_ID;
-    const res = await fetch(apiUrl(`/api/comparison/${formattedDomainId}/`), {
+    const res = await fetch(apiUrl(`/comparison/${DOMAIN_ID}/`), {
       credentials: "include",
     });
 
@@ -131,7 +130,7 @@ const EditValuesPage: React.FC = () => {
   };
 
   const saveRow = async (row: EditableRow) => {
-    const res = await fetch(apiUrl(`/api/libraries/${row.library_ID}/update-values/`), {
+    const res = await fetch(apiUrl(`/libraries/${row.library_ID}/update-values/`), {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       credentials: "include",
@@ -163,7 +162,7 @@ const EditValuesPage: React.FC = () => {
       setPageLoading(true);
       setLoadingText("Updating repository metrics…");
 
-      const res = await fetch(apiUrl(`/api/libraries/${libraryId}/analyze/`), {
+      const res = await fetch(apiUrl(`/libraries/${libraryId}/analyze/`), {
         method: "POST",
         credentials: "include",
       });
@@ -191,9 +190,8 @@ const EditValuesPage: React.FC = () => {
       setPageLoading(true);
       setLoadingText("Updating all repositories…");
 
-      const formattedDomainId = formatUUID(DOMAIN_ID);
 
-      const res = await fetch(apiUrl(`/api/domains/${formattedDomainId}/analyze-all/`), {
+      const res = await fetch(apiUrl(`/domains/${DOMAIN_ID}/analyze-all/`), {
         method: "POST",
         credentials: "include",
       });

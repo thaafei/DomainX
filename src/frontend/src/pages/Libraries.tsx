@@ -9,8 +9,6 @@ interface Library {
   programming_language: string;
 }
 
-// const DOMAIN_ID = "ecba1df1ede211f0987c0050568e534c";   // POC domain (need to delete later and replace with actual)
-
 const AddLibraryPage: React.FC = () => {
   const { domainId } = useParams<{ domainId: string }>();
   const DOMAIN_ID = domainId
@@ -26,19 +24,7 @@ const AddLibraryPage: React.FC = () => {
 
   const loadLibraries = async () => {
     try {
-        const formatUUID = (rawId: string) => {
-            if (rawId && rawId.length === 32 && !rawId.includes('-')) {
-              return rawId.substring(0, 8) + '-' +
-                     rawId.substring(8, 12) + '-' +
-                     rawId.substring(12, 16) + '-' +
-                     rawId.substring(16, 20) + '-' +
-                     rawId.substring(20, 32);
-            }
-            return rawId;
-          };
-
-      const formattedDomainId = DOMAIN_ID;
-      const res = await fetch(`http://127.0.0.1:8000/api/libraries/${formattedDomainId}/`, {
+      const res = await fetch(apiUrl(`/libraries/${DOMAIN_ID}/`), {
         credentials: "include",
       });
       const responseText = await res.text();
@@ -64,7 +50,7 @@ const AddLibraryPage: React.FC = () => {
     };
 
     try {
-      const res = await fetch(apiUrl("/api/libraries/create/"), {
+      const res = await fetch(apiUrl("/libraries/create/"), {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       credentials: "include",
@@ -99,7 +85,7 @@ const AddLibraryPage: React.FC = () => {
 
   const deleteLibrary = async (id: string) => {
     try {
-      const res = await fetch(apiUrl(`/api/libraries/${id}/delete/`), {
+      const res = await fetch(apiUrl(`/libraries/${id}/delete/`), {
         method: "DELETE",
         credentials: "include"
       });
