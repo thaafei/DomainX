@@ -5,6 +5,7 @@ from .database.domain.views import create_domain, DomainListCreateView, DomainDe
 from .database.metrics.views import MetricRulesView
 from .database.metrics.views import MetricCategoryView
 from .database.library_metric_values.views import AHPCalculations
+from .views.comparison_views import analyze_library, analyze_domain_libraries
 from .views.metric_views import (
     list_metrics,
     create_metric,
@@ -35,8 +36,7 @@ urlpatterns = [
     path('metric-rules/', MetricRulesView.as_view(), name='metric-rules'),
     path('metric-categories/', MetricCategoryView.as_view(), name='metric-categories'),
     path('aph/<uuid:domain_id>/', AHPCalculations.as_view(), name='aph_category')
-    # path('database/libraries/', include('api.database.libraries.urls')),
-    # path('database/metrics/', include('api.database.metrics.urls')),
-    # path('database/library-metrics/', include('api.database.library_metric_values.urls')),
-    # path('database/domain/', include('api.database.domain.urls')),
+    path("libraries/<uuid:library_id>/analyze/", analyze_library),
+    path("domains/<uuid:domain_id>/analyze-all/", analyze_domain_libraries)
+
 ]
