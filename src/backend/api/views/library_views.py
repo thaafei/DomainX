@@ -7,7 +7,6 @@ from ..database.libraries.models import Library
 from ..database.metrics.models import Metric
 from ..database.library_metric_values.models import LibraryMetricValue
 from ..database.libraries.serializers import LibrarySerializer
-from ..utils.analysis import enqueue_library_analysis
 
 @api_view(["GET"])
 def list_libraries(request, domain_id):
@@ -43,8 +42,14 @@ def create_library(request):
         "analysis_started_at", "analysis_finished_at"
     ])
 
+    # enqueue analysis
+    repo_url = serializer.validated_data["url"]
+
     try:
-        task_id = enqueue_library_analysis(new_library)
+        async_result = analyze_repo_task.delay(str(new_library.library_ID), repo_url)
+        new_library.analysis_task_id = async_result.id
+        new_library.save(update_fields=["analysis_task_id"])
+        task_id = async_result.id
     except Exception as e:
         new_library.analysis_status = Library.ANALYSIS_FAILED
         new_library.analysis_error = str(e)
