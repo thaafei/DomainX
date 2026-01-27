@@ -9,8 +9,6 @@ class MetricSerializer(serializers.ModelSerializer):
             "metric_name",
             "value_type",
             "category",
-            "option_category",
-            "rule",
             "description",
             "weight",
             "created_at",
