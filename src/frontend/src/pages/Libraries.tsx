@@ -38,7 +38,7 @@ const AddLibraryPage: React.FC = () => {
           };
 
       const formattedDomainId = DOMAIN_ID;
-      const res = await fetch(`http://127.0.0.1:8000/api/libraries/${formattedDomainId}/`, {
+      const res = await fetch(apiUrl(`/libraries/${formattedDomainId}/`), {
         credentials: "include",
       });
       const responseText = await res.text();
@@ -64,7 +64,7 @@ const AddLibraryPage: React.FC = () => {
     };
 
     try {
-      const res = await fetch(apiUrl("/api/libraries/create/"), {
+      const res = await fetch(apiUrl("/libraries/create/"), {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       credentials: "include",
@@ -99,7 +99,7 @@ const AddLibraryPage: React.FC = () => {
 
   const deleteLibrary = async (id: string) => {
     try {
-      const res = await fetch(apiUrl(`/api/libraries/${id}/delete/`), {
+      const res = await fetch(apiUrl(`/libraries/${id}/delete/`), {
         method: "DELETE",
         credentials: "include"
       });

@@ -29,7 +29,7 @@ const MetricsPage: React.FC = () => {
   useEffect(() => {
     const fetchRules = async () => {
       try {
-        const response = await fetch('http://127.0.0.1:8000/api/metric-rules/'); 
+        const response = await fetch(apiUrl('/metric-rules/')); 
         const data = await response.json();
         setRulesData(data);
       } catch (error) {
@@ -41,7 +41,7 @@ const MetricsPage: React.FC = () => {
   useEffect(() => {
     const fetchRules = async () => {
       try {
-        const response = await fetch('http://127.0.0.1:8000/api/metric-categories/'); 
+        const response = await fetch(apiUrl('/metric-categories/')); 
         const data = await response.json();
         setCategories(data.Categories);
       } catch (error) {
@@ -53,7 +53,7 @@ const MetricsPage: React.FC = () => {
   useEffect(() => {
         const loadMetrics = async () => {
             try {
-                const res = await fetch(apiUrl("/api/metrics/"), {
+                const res = await fetch(apiUrl("/metrics/"), {
                     credentials: "include",
                 });
 
@@ -94,7 +94,7 @@ const MetricsPage: React.FC = () => {
     };
 
     try {
-      const res = await fetch(apiUrl("/api/metrics/create/"), {
+      const res = await fetch(apiUrl("/metrics/create/"), {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         credentials: "include",
@@ -141,7 +141,7 @@ const MetricsPage: React.FC = () => {
 
   const deleteMetric = async (id: string) => {
       try {
-        const res = await fetch(apiUrl(`/api/metrics/${id}/delete/`), {
+        const res = await fetch(apiUrl(`/metrics/${id}/delete/`), {
           method: "DELETE",
           credentials: "include",
         });
