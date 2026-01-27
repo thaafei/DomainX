@@ -45,7 +45,7 @@ const Main: React.FC = () => {
   
   const fetchUsers = async () => {
     try {
-      const response = await fetch('http://127.0.0.1:8000/api/users/?role=admin,superadmin,user', {
+      const response = await fetch(apiUrl('/users/?role=admin,superadmin,user'), {
         method: 'GET',
         headers: { 'Content-Type': 'application/json' },
         credentials: 'include'
@@ -62,7 +62,7 @@ const Main: React.FC = () => {
 
   const fetchDomains = async () => {
     try {
-    const response = await fetch('http://127.0.0.1:8000/api/domain/',{
+    const response = await fetch(apiUrl('/domain/'),{
       method: "GET"
     });
       if (response.ok) {
@@ -79,7 +79,7 @@ const Main: React.FC = () => {
             setSelectedDomain(domainToSelect);
           }
 
-          const ahpRes = await fetch(`http://127.0.0.1:8000/api/aph/${domainToSelect.domain_ID}/`, {
+          const ahpRes = await fetch(apiUrl(`/aph/${domainToSelect.domain_ID}/`), {
             method: 'GET',
             headers: { 'Content-Type': 'application/json' }
           });
@@ -103,7 +103,7 @@ const Main: React.FC = () => {
     const fetchWeights = async () => {
       if (!selectedDomain) return;
       try {
-        const res = await fetch(`http://127.0.0.1:8000/api/get_category_weights/${selectedDomain.domain_ID}/`);
+        const res = await fetch(apiUrl(`/get_category_weights/${selectedDomain.domain_ID}/`));
         if (res.ok) {
           const data = await res.json();
           // data should be your category_weights dict
@@ -121,7 +121,7 @@ const Main: React.FC = () => {
   useEffect(() => {
       const fetchRules = async () => {
         try {
-          const response = await fetch('http://127.0.0.1:8000/api/metric-categories/'); 
+          const response = await fetch(apiUrl('/metric-categories/')); 
           const data = await response.json();
           setCategories(data.Categories);
         } catch (error) {
@@ -132,7 +132,7 @@ const Main: React.FC = () => {
     }, []);
   
   const getAHPRanking = async () => {
-    const response = await fetch(`http://127.0.0.1:8000/api/aph/${selectedDomain.domain_ID}/`, {
+    const response = await fetch(apiUrl(`/aph/${selectedDomain.domain_ID}/`), {
       method: 'GET',
       headers: { 'Content-Type': 'application/json' }
     });
@@ -150,7 +150,7 @@ const Main: React.FC = () => {
     const fetchWeights = async () => {
       if (!selectedDomain) return;
       try {
-        const res = await fetch(`http://127.0.0.1:8000/api/get_category_weights/${selectedDomain.domain_ID}/`);
+        const res = await fetch(apiUrl(`/get_category_weights/${selectedDomain.domain_ID}/`));
         if (res.ok) {
           const data = await res.json();
           // data should be your category_weights dict
@@ -176,7 +176,7 @@ const Main: React.FC = () => {
   const saveWeights = async () => {
     if (!selectedDomain) return;
     try {
-      const res = await fetch(`http://127.0.0.1:8000/api/category_weights/${selectedDomain.domain_ID}/`, {
+      const res = await fetch(apiUrl(`/category_weights/${selectedDomain.domain_ID}/`), {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ values: localWeights })
@@ -239,7 +239,7 @@ const Main: React.FC = () => {
     }
     setFormError("");
     try {
-      const response = await fetch('http://127.0.0.1:8000/api/domain/create/', {
+      const response = await fetch(apiUrl('/domain/create/'), {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -253,7 +253,7 @@ const Main: React.FC = () => {
         setDomainName("");
         setDescription("");
         setSelectedCreatorIds([]);
-        const domainsResponse = await fetch('http://127.0.0.1:8000/api/domain/', {
+        const domainsResponse = await fetch(apiUrl('/domain/'), {
           method: "GET"
         });
         if (domainsResponse.ok) {

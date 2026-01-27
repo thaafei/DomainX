@@ -38,7 +38,7 @@ const AddLibraryPage: React.FC = () => {
           };
 
       const formattedDomainId = DOMAIN_ID;
-      const res = await fetch(`http://127.0.0.1:8000/api/libraries/${formattedDomainId}/`, {
+      const res = await fetch(apiUrl(`/libraries/${formattedDomainId}/`), {
         credentials: "include",
       });
       const responseText = await res.text();

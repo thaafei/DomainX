@@ -31,7 +31,7 @@ const MetricsPage: React.FC = () => {
   useEffect(() => {
     const fetchRules = async () => {
       try {
-        const response = await fetch('http://127.0.0.1:8000/api/metric-rules/'); 
+        const response = await fetch(apiUrl('/metric-rules/')); 
         const data = await response.json();
         setRulesData(data);
       } catch (error) {
@@ -43,7 +43,7 @@ const MetricsPage: React.FC = () => {
   useEffect(() => {
     const fetchRules = async () => {
       try {
-        const response = await fetch('http://127.0.0.1:8000/api/metric-categories/'); 
+        const response = await fetch(apiUrl('/metric-categories/')); 
         const data = await response.json();
         setCategories(data.Categories);
       } catch (error) {

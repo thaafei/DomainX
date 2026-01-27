@@ -46,7 +46,7 @@ const Visualize: React.FC = () => {
           };
 
       const formattedDomainId = DOMAIN_ID;
-      const res = await fetch(`http://127.0.0.1:8000/api/comparison/${formattedDomainId}/`, {
+      const res = await fetch(apiUrl(`/comparison/${formattedDomainId}/`), {
         credentials: "include"
       });
       const responseText = await res.text();
