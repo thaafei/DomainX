@@ -42,7 +42,7 @@ const Main: React.FC = () => {
   
   const fetchUsers = async () => {
     try {
-      const response = await fetch('http://127.0.0.1:8000/api/users/?role=admin,superadmin', {
+      const response = await fetch(apiUrl('/users/?role=admin,superadmin'), {
         method: 'GET',
         headers: { 'Content-Type': 'application/json' },
         credentials: 'include'
@@ -59,7 +59,7 @@ const Main: React.FC = () => {
 
   const fetchDomains = async () => {
     try {
-    const response = await fetch('http://127.0.0.1:8000/api/domain/',{
+    const response = await fetch(apiUrl('/domain/'),{
       method: "GET"
     });
       if (response.ok) {
@@ -76,7 +76,7 @@ const Main: React.FC = () => {
             setSelectedDomain(domainToSelect);
           }
 
-          const ahpRes = await fetch(`http://127.0.0.1:8000/api/aph/${domainToSelect.domain_ID}/`, {
+          const ahpRes = await fetch(apiUrl(`/aph/${domainToSelect.domain_ID}/`), {
             method: 'GET',
             headers: { 'Content-Type': 'application/json' }
           });
@@ -98,7 +98,7 @@ const Main: React.FC = () => {
   };
 
   const getAHPRanking = async () => {
-    const response = await fetch(`http://127.0.0.1:8000/api/aph/${selectedDomain.domain_ID}/`, {
+    const response = await fetch(apiUrl(`/aph/${selectedDomain.domain_ID}/`), {
       method: 'GET',
       headers: { 'Content-Type': 'application/json' }
     });
@@ -164,7 +164,7 @@ const Main: React.FC = () => {
     }
     setFormError("");
     try {
-      const response = await fetch('http://127.0.0.1:8000/api/domain/create/', {
+      const response = await fetch(apiUrl('/domain/create/'), {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -178,7 +178,7 @@ const Main: React.FC = () => {
         setDomainName("");
         setDescription("");
         setSelectedCreatorIds([]);
-        const domainsResponse = await fetch('http://127.0.0.1:8000/api/domain/', {
+        const domainsResponse = await fetch(apiUrl('/domain/'), {
           method: "GET"
         });
         if (domainsResponse.ok) {

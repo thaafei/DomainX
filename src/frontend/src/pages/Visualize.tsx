@@ -105,7 +105,7 @@ const Visualize: React.FC = () => {
       <div
         className="dx-card"
         style={{
-          width: 160,
+          width: 120,
           padding: "22px 14px",
           display: "flex",
           flexDirection: "column",
@@ -115,6 +115,7 @@ const Visualize: React.FC = () => {
       >
         <button
           className="dx-btn dx-btn-outline"
+          style={{ width: "100%", fontSize: "1rem", textAlign: "center" }}
           onClick={() => navigate(`/comparison-tool/${domainId}`)}
         >
           ← Back
