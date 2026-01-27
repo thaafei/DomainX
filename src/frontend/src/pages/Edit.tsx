@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useRef, useLayoutEffect} from "react";
 import { useNavigate } from "react-router-dom";
 import { useParams } from 'react-router-dom';
 import { apiUrl } from "../config/api";
@@ -31,6 +31,15 @@ const EditValuesPage: React.FC = () => {
   const [loadingText, setLoadingText] = useState<string>("Loading...");
   const [updatingAll, setUpdatingAll] = useState(false);
   const [updatingLibId, setUpdatingLibId] = useState<string | null>(null);
+  const firstColRef = useRef<HTMLTableCellElement>(null);
+  const [offset, setOffset] = useState(0);
+
+  useLayoutEffect(() => {
+  if (firstColRef.current) {
+    const width = firstColRef.current.getBoundingClientRect().width;
+    setOffset(width);
+  }
+}, [rows]);
 
   useEffect(() => {
     (async () => {
@@ -215,16 +224,25 @@ const EditValuesPage: React.FC = () => {
 
   return (
     <div className="dx-bg" style={{ display: "flex", height: "100vh" }}>
-      <div className="dx-card" style={{ width: 160, padding: "22px 14px" }}>
-        <button
-          className="dx-btn dx-btn-outline"
+    <div
+      className="dx-card"
+      style={{
+        width: 120,
+        padding: "22px 14px",
+        display: "flex",
+        flexDirection: "column",
+        gap: 18,
+        borderRight: "1px solid rgba(255,255,255,0.08)",
+      }}
+    >
+      <button
+            className="dx-btn dx-btn-outline"
+            style={{ width: "100%", fontSize: "1rem", textAlign: "center" }}
+            onClick={() => navigate(`/comparison-tool/${domainId}`)}
+              >
+                ← Back
+      </button>
 
-          onClick={() => navigate(`/comparison-tool/${domainId}`)}
-          disabled={pageLoading}
-          style={{ opacity: pageLoading ? 0.7 : 1 }}
-        >
-          ← Exit
-        </button>
       </div>
 
       <div
@@ -278,8 +296,12 @@ const EditValuesPage: React.FC = () => {
             <table className="dx-table">
               <thead>
                 <tr>
-                  <th className="dx-th-sticky dx-sticky-left">Actions</th>
-                  <th className="dx-th-sticky">Name</th>
+                  <th ref={firstColRef} className="dx-th-sticky dx-sticky-left" style={{ left: 0 }}>
+                    Actions
+                  </th>
+                  <th className="dx-th-sticky dx-sticky-left" style={{ left: offset }}>
+                    Name
+                  </th>
                   <th className="dx-th-sticky">URL</th>
                   <th className="dx-th-sticky">Language</th>
                   {metricList.map((m) => (
@@ -296,7 +318,7 @@ const EditValuesPage: React.FC = () => {
 
                   return (
                     <tr key={row.library_ID}>
-                      <td className="dx-sticky-left">
+                      <td className="dx-sticky-left" style={{ left: 0 }}>
                         {row.isEditing ? (
                           <div style={{ display: "flex", gap: 6 }}>
                             <button
@@ -340,7 +362,7 @@ const EditValuesPage: React.FC = () => {
                         )}
                       </td>
 
-                      <td>
+                      <td className="dx-sticky-left" style={{ left: offset }}>
                         {row.isEditing ? (
                           <input
                             className="dx-input"
