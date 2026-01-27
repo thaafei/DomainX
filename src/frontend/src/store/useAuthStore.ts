@@ -1,7 +1,6 @@
 import { create } from "zustand";
 
 interface User {
-  id: number;
   email: string;
   role: "user" | "admin" | "superadmin";
 }
@@ -19,6 +18,6 @@ export const useAuthStore = create<AuthState>((set) => ({
 
   logout: () => {
     set({ user: null });
+    // logout API call will also clear cookies
   },
 }));
-

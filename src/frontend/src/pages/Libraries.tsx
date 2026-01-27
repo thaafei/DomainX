@@ -1,6 +1,5 @@
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { useParams } from 'react-router-dom';
 import { apiUrl } from "../config/api";
 interface Library {
   library_ID: string;
@@ -9,11 +8,9 @@ interface Library {
   programming_language: string;
 }
 
-// const DOMAIN_ID = "ecba1df1ede211f0987c0050568e534c";   // POC domain (need to delete later and replace with actual)
+const DOMAIN_ID = "ecba1df1ede211f0987c0050568e534c";   // POC domain (need to delete later and replace with actual)
 
 const AddLibraryPage: React.FC = () => {
-  const { domainId } = useParams<{ domainId: string }>();
-  const DOMAIN_ID = domainId
   const navigate = useNavigate();
   const [libraries, setLibraries] = useState<Library[]>([]);
   const [name, setName] = useState("");
@@ -37,8 +34,8 @@ const AddLibraryPage: React.FC = () => {
             return rawId;
           };
 
-      const formattedDomainId = DOMAIN_ID;
-      const res = await fetch(`http://127.0.0.1:8000/api/libraries/${formattedDomainId}/`, {
+      const formattedDomainId = formatUUID(DOMAIN_ID);
+      const res = await fetch(apiUrl(`/api/libraries/${formattedDomainId}/`), {
         credentials: "include",
       });
       const responseText = await res.text();
@@ -127,7 +124,7 @@ const AddLibraryPage: React.FC = () => {
       >
         <button
           className="dx-btn dx-btn-outline"
-          onClick={() => navigate(`/comparison-tool/${domainId}`)}
+          onClick={() => navigate("/comparison-tool")}
         >
           ← Back
         </button>

@@ -52,7 +52,6 @@
 \textbf{Date} & \textbf{Developer(s)} & \textbf{Change}\\
 \midrule
 Nov 3, 2025 & Fei & Rev -1\\
-Dec 16, 2025 & Fei & Rev 0 Based on issues extracted from TA review and peer reviews. The list of related issues can be found in this \href{https://github.com/thaafei/DomainX/pull/307}{pull request}. \\
 \bottomrule
 \end{tabularx}
 \end{table}
@@ -178,7 +177,6 @@ change.
   \item[\refstepcounter{acnum} \actheacnum \label{ac6}:] The APIs used to extract repository metrics
   \item[\refstepcounter{acnum} \actheacnum \label{ac7}:] The visualization libraries used to display data
   \item[\refstepcounter{acnum} \actheacnum \label{ac8}:] Additional export and import file formatting may be added (e.g. CSV, Excel)
-  \item[\refstepcounter{acnum} \actheacnum \label{ac9}:] The user interface features, design and colours might be changed.
 \end{description}
 \subsection{Unlikely Changes} \label{SecUchange}
 
@@ -268,12 +266,7 @@ actually be implemented.
 
 The design of the system is intended to satisfy the requirements developed in
 the SRS. In this stage, the system is decomposed into modules. The connection
-between requirements and modules is listed in Table~\ref{tb_fr_modules}.
-
-On a boarder scope all the functional requirements are covered by one module.
-In cases where multiple modules covers a single functional requirement, it is due to the required functionality requiring multiple layers of system processes. 
-For example, FR5 "Admin can create domains, using a unique domain name and optionally a short description.", the modules needed to fulfill the requirement is \mref{mDomainsPage} and \mref{mUserRole}. 
-Since the domains' page is visible to all users, but only Admin users can create domains, we require the two modules to work simultaneously to achieve this requirement.
+between requirements and modules is listed in Table~\ref{TblRT}.
 
 \section{Module Decomposition} \label{SecMD}
 
@@ -305,7 +298,7 @@ to be implemented.
 \begin{description}
 \item[Secrets:] The data structure and algorithm used to implement the browser, which is outside of the scope of the project.
 \item[Services:] The browser allows all users of the product to view and retrieve the project through the internet, and displays the contents for use.
-\item[Implemented By:] Web Browser (i.e. Chrome, Firefox, Safari, Edge)
+\item[Implemented By:] Web browser
 \end{description}
 
 \subsection{Behaviour-Hiding Module}
@@ -324,7 +317,7 @@ to be implemented.
 \subsubsection{ Application UI Module (\mref{mAppUI})}
 \begin{description}
 \item[Secrets:] The data structures and algorithms to display all visuals.
-\item[Services:] Displays and renders the interactive user interface elements. 
+\item[Services:] Displays and renders the interactive user interface elements.
 \item[Implemented By:] \href{https://react.dev/}{React}
 \item[Type of Module:] ADT
 \end{description}
@@ -332,7 +325,7 @@ to be implemented.
 \subsubsection{ Data Edit Module (\mref{mDataEdit})}
 \begin{description}
 \item[Secrets:] The data structures and algorithms to edit domain data. 
-\item[Services:]  Handles and validates user inputs of domain/package/metric data from user-inputted data and allows editing of automated data. Provides error checking for each metric based on their requirements.
+\item[Services:]  Handles and validates user inputs of domain/package/metric data.
 \item[Implemented By:] \projname
 \item[Type of Module:] ADT
 \end{description}
@@ -340,15 +333,15 @@ to be implemented.
 \subsubsection{ User Authentication Module (\mref{mUserAuth})}
 \begin{description}
 \item[Secrets:] The data structures and algorithms used to securely store, validate and manage user credentials.
-\item[Services:] Provides user registration, login, and session management services. 
-\item[Implemented By:] \href{https://www.djangoproject.com/}{Django}
-\item[Type of Module:] Abstract Object
+\item[Services:] Provides user registration, login, and session management services.
+\item[Implemented By:]  \projname
+\item[Type of Module:] Library
 \end{description}
 
 \subsubsection{ User Role Access Module (\mref{mUserRole})}
 \begin{description}
 \item[Secrets:] The data structures and algorithms used to store and validate users access level within the system.
-\item[Services:] Provides user role and capabilities related to the role, which allows other modules to restrict features and display based on the role of the user.
+\item[Services:] Provides user role and capabilities related to the role.
 \item[Implemented By:]  \projname
 \item[Type of Module:] ADT
 \end{description}
@@ -366,7 +359,7 @@ to be implemented.
 \item[Secrets:] The data structures and algorithms used for adding automatable metrics.
 \item[Services:] Handles the automated data entry into system using the Repository Api Module \mref{mRepoAPI}.
 \item[Implemented By:]  \projname
-\item[Type of Module:] ADT
+\item[Type of Module:] Library
 \end{description}
 
 \subsubsection{ Domains Page Module (\mref{mDomainsPage})}
@@ -380,7 +373,7 @@ to be implemented.
 \subsubsection{Comparison Module (\mref{mCompare})}
 \begin{description}
 \item[Secrets:] The data structures and algorithm that store the package comparison methods.
-\item[Services:] Defines available comparison methods based on user request and interfaces with the graphing module where appropriate.
+\item[Services:] Defines available comparison methods based on user request.
 \item[Implemented By:] \projname
 \item[Type of Module:] Abstract Object
 \end{description}
@@ -409,7 +402,7 @@ to be implemented.
 \subsubsection{System API Gateway Module (\mref{mSysApi})}
 \begin{description}
 \item[Secrets:] The backend apis that services the flow of business logic.
-\item[Services:] Manages application state and serves as the central communication hub for the system. First point of contact for changes to the business logic.
+\item[Services:] Manages application state and serves as the central communication hub for the system.
 \item[Implemented By:] \href{https://www.djangoproject.com/}{Django}
 \item[Type of Module:] Abstract Object
 \end{description}
@@ -425,7 +418,7 @@ to be implemented.
 
 \subsubsection{Graphing Module (\mref{mGraphing})}
 \begin{description}
-\item[Secrets:] The algorithms and external libraries required to graph and visualize user data.
+\item[Secrets:] The data structures and algorithms used for graphing data.
 \item[Services:] Takes metric data as input and outputs requested graphs.
 \item[Implemented By:] \href{https://pypi.org/project/matplotlib/}{Matplotlib}
 \item[Type of Module:] Abstract Object
@@ -434,7 +427,7 @@ to be implemented.
 \subsubsection{File Import Module (\mref{mImport})}
 \begin{description}
 \item[Secrets:] The data structures and algorithms used to import data of varying formats (e.g. Excel, CSV).
-\item[Services:] Facilitates the process of processing a inputted file into data for use by the rest of the system. Contains the external libraries and additional mechanisms to retrieve and format inputted files.
+\item[Services:] Facilitates the process of processing a inputted file into data for use by the rest of the system.
 \item[Implemented By:] \href{https://pypi.org/project/pandas/}{pandas}
 \item[Type of Module:] Abstract Object
 \end{description}
@@ -450,9 +443,9 @@ to be implemented.
 \subsubsection{Repository API Module (\mref{mRepoAPI})}
 \begin{description}
 \item[Secrets:] API endpoints, tokens, and rate limit strategies.
-\item[Services:] Fetches metrics and metadata from external repositories (e.g., GitHub, GitLab). Handles the communications with the external library and provides an abstract layer between the raw external API interface and the system interface.
+\item[Services:] Fetches metrics and metadata from external repositories (e.g., GitHub, GitLab).
 \item[Implemented By:] \href{https://docs.github.com/en/rest?apiVersion=2022-11-28}{Github API}
-\item[Type of Module:] Abstract Object
+\item[Type of Module:] Library
 \end{description}
 
 \subsubsection{Database Persistence Module (\mref{mDB})}
@@ -460,7 +453,7 @@ to be implemented.
 \item[Secrets:] The algorithms used for interacting with the database.
 \item[Services:] Provides database methods related to updating and querying the stored data and the connection to the database itself. The expected database design is shown in Figure \ref{fig:databaseschema}
 \item[Implemented By:] \href{https://www.mysql.com/}{MySQL}
-\item[Type of Module:] Abstract Object
+\item[Type of Module:] Library
 \end{description}
 
 \subsubsection{Logging Module (\mref{mLog})}
@@ -503,8 +496,7 @@ FR15 & \mref{mGraphing}, \mref{mExport}\\
 \label{tb_fr_modules}
 \end{table}
 
-Table \ref{tb_fr_modules} shows the traceability between the functional requirements and the modules.
-Note that \mref{mAppUI}, \mref{mSysApi} and \mref{mLog} is applicable to all, since they facilitate the information flow and user interaction for all the listed functional requirements and all functional requirements interactions will be logged.
+Table \ref{tb_fr_modules} shows the traceability between the functional requirements and the modules. Note that \mref{mAppUI}, \mref{mSysApi} and \mref{mLog} is applicable to all, since they facilitate the information flow and user interaction for all the listed functional requirements and all functional requirements interactions will be logged.
 
 \begin{longtable}{p{0.2\textwidth} p{0.6\textwidth}}
 \toprule
@@ -619,7 +611,6 @@ CR-LR3 & Not Relevant \\
 \caption{Trace Between Non-Functional Requirements and Modules}
 \label{tnf_modules}
 \end{longtable}
-
 Table \ref{tnf_modules} shows the traceability between the non-functional requirements and the modules.
 
 \begin{table}[H]
@@ -636,14 +627,13 @@ Table \ref{tnf_modules} shows the traceability between the non-functional requir
 \acref{ac6} & \mref{mRepoAPI}, \mref{mAutMetrics}\\
 \acref{ac7} & \mref{mGraphing}\\
 \acref{ac8} & \mref{mExport},  \mref{mImport}\\
-\acref{ac9} & \mref{mAppUI}\\
 \bottomrule
 \end{tabular}
 \caption{Trace Between Anticipated Changes and Modules}
 \label{TblACT}
 \end{table}
 Table \ref{TblACT} shows the traceability between the anticipated changes and the modules. \\
-Note that \mref{mSysApi} is applicable to all the anticipated changes, since they cover the data flow for the system.
+Note that \mref{mAppUI} and \mref{mSysApi} is applicable to all the anticipated changes, since they cover the data flow and user interface for the system.
 \mref{mLog} is also applicable to all, since changes to the underlying modules could impact the logging module.
 \\ Since \acref{ac1} can result in additional metrics, the main page that would display the domain would have to change (\mref{mDomainsPage}), the underlying methods involved in updating the data (\mref{mDataEdit}) and database itself (\mref{mDB}).
 \\ \acref{ac5} touches on what the user can see, if additional roles are added, the user page UI must be updated (\mref{mUserPage}). The configuration to store each user's preference (\mref{mConf}) and role will also be updated (\mref{mUserRole}).
@@ -670,8 +660,6 @@ because they use modules from the lower levels.
 \caption{Use hierarchy among modules}
 \label{FigUH}
 \end{figure}
-
-M\ref{mHH1} and M\ref{mHH2} are required for all functionality due to the project being a web application, they have been left out of the diagram as they are implied.
 
 \section{User Interfaces}
 
@@ -738,6 +726,7 @@ The following is the timeline for development of the modules, building up from t
 
 1 & Jan 5 -- Jan 11 & Haniye & Implement \textbf{User Authentication Module (\mref{mUserAuth})} for secure login, registration, token management, and password encryption. \\ \cline{3-4}
   &  & Ghena & Implement \textbf{User Role Access Module (\mref{mUserRole})} with Admin/Analyst/Viewer roles and middleware for route protection. \\ \cline{3-4}
+  &  & Fei & Setup Logging Module (\mref{mLog}) \\ \cline{3-4}
   &  & Fei & Setup testing framework \\ \cline{3-4}
   &  & Awurama & Build User Page (\mref{mUserPage}) \\ \hline
 
@@ -757,7 +746,6 @@ The following is the timeline for development of the modules, building up from t
 5 & Feb 2 -- Feb 8 & Awurama + Fei & Implement \textbf{Data Edit Module (\mref{mDataEdit})} with React validation, inline feedback, and API integration. \\ \cline{3-4}
   &  & Ghena & Implement \textbf{Ranking Algorithm Module (\mref{mRankAlgo})} using AHP/BWM/SSB methods with test coverage. \\ \cline{3-4}
   &  & Haniye & Develop \textbf{Graphing Module (\mref{mGraphing})} for data visualizations using \href{https://pypi.org/project/matplotlib/}{Matplotlib}. \\ \hline
-  &  & Fei & Setup Logging Module (\mref{mLog}) \\ \cline{3-4}
 
 6 & Feb 9 -- Feb 15 & Ghena + Haniye & Build \textbf{Comparison Module (\mref{mCompare})} for cross-domain and in-domain analysis, visualization, and reporting. \\ \cline{3-4}
   &  & Awurama + Fei & Conduct accessibility and usability testing. \\ \hline

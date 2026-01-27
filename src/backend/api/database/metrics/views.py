@@ -5,10 +5,6 @@ from .models import Metric
 from .serializers import MetricSerializer
 from rest_framework.generics import ListAPIView
 from .serializers import FlatMetricSerializer
-import json
-import os
-from django.conf import settings
-
 # Create or list all metrics
 class MetricListCreateView(generics.ListCreateAPIView):
     queryset = Metric.objects.all()
@@ -45,41 +41,3 @@ class MetricListView(ListAPIView):
     
     # Get all metrics in alphabetical order
     queryset = Metric.objects.all().order_by('metric_name')
-
-class MetricRulesView(APIView):
-    def get(self, request):
-        # Construct the path to your rules.json
-        path = os.path.join(settings.BASE_DIR, 'api', 'database', 'rules.json')
-        try:
-            with open(path, 'r') as f:
-                data = json.load(f)
-            return Response(data, status=status.HTTP_200_OK)
-        except FileNotFoundError:
-            return Response(
-                {'error': 'rules.json not found at ' + path}, 
-                status=status.HTTP_404_NOT_FOUND
-            )
-        except json.JSONDecodeError:
-            return Response(
-                {'error': 'Error decoding rules.json'}, 
-                status=status.HTTP_500_INTERNAL_SERVER_ERROR
-            )
-
-class MetricCategoryView(APIView):
-    def get(self, request):
-        # Construct the path to your rules.json
-        path = os.path.join(settings.BASE_DIR, 'api', 'database', 'categories.json')
-        try:
-            with open(path, 'r') as f:
-                data = json.load(f)
-            return Response(data, status=status.HTTP_200_OK)
-        except FileNotFoundError:
-            return Response(
-                {'error': 'rules.json not found at ' + path}, 
-                status=status.HTTP_404_NOT_FOUND
-            )
-        except json.JSONDecodeError:
-            return Response(
-                {'error': 'Error decoding rules.json'}, 
-                status=status.HTTP_500_INTERNAL_SERVER_ERROR
-            )

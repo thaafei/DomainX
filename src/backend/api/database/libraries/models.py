@@ -9,17 +9,14 @@ class Library(models.Model):
     library_ID = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     domain = models.ForeignKey(Domain, on_delete=models.CASCADE, related_name='libraries')
     library_name = models.CharField(max_length=100)
-    ahp_results = models.JSONField(default=dict, blank=True)
     programming_language = models.CharField(max_length=50, blank=True, null=True)
     created_at = models.DateTimeField(auto_now_add=True)
-    url = models.CharField(max_length=500, blank=True, null=True)
+    url = models.CharField(max_length=500, blank=True, null=True, unique=True)
 
     class Meta:
         constraints = [
-            models.UniqueConstraint(fields=["domain", "library_name"], name="uniq_library_name_per_domain"),
-            models.UniqueConstraint(fields=["domain", "url"], name="uniq_url_per_domain")
+            models.UniqueConstraint(fields=["domain", "library_name"], name="uniq_library_name_per_domain")
         ]
-
 
     def __str__(self):
         return self.library_name
