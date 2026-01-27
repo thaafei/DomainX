@@ -45,7 +45,7 @@ const Main: React.FC = () => {
   
   const fetchUsers = async () => {
     try {
-      const response = await fetch(apiUrl('/users/?role=admin,superadmin,user'), {
+      const response = await fetch(apiUrl('/users/?role=admin,superadmin'), {
         method: 'GET',
         headers: { 'Content-Type': 'application/json' },
         credentials: 'include'
