@@ -2,17 +2,17 @@ import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 
 interface Metric {
-  Metric_ID: string;
-  Metric_Name: string;
+  metric_ID: string;
+  metric_name: string;
 }
 
 interface LibraryMetricRow {
-  Library_ID: string;
-  Library_Name: string;
+  library_ID: string;
+  library_name: string;
   metrics: { [metricName: string]: string | number | null };
 }
 
-const DOMAIN_ID = "dd8d1992-d085-41e1-8ed0-7d292d4c2f2f";
+const DOMAIN_ID = "ecba1df1ede211f0987c0050568e534c";
 
 const ComparisonToolPage: React.FC = () => {
   const navigate = useNavigate();
@@ -27,11 +27,29 @@ const ComparisonToolPage: React.FC = () => {
 
   const loadPageData = async () => {
     try {
+        const formatUUID = (rawId: string) => {
+            if (rawId && rawId.length === 32 && !rawId.includes('-')) {
+              return rawId.substring(0, 8) + '-' +
+                     rawId.substring(8, 12) + '-' +
+                     rawId.substring(12, 16) + '-' +
+                     rawId.substring(16, 20) + '-' +
+                     rawId.substring(20, 32);
+            }
+            return rawId;
+          };
+
+      const formattedDomainId = formatUUID(DOMAIN_ID);
+
       const res = await fetch(
-        `http://127.0.0.1:8000/api/comparison/${DOMAIN_ID}/`,
-        { credentials: "include" }
+          `http://127.0.0.1:8000/api/comparison/${formattedDomainId}/`,
+          { credentials: "include" }
       );
-      const data = await res.json();
+      const responseText = await res.text();
+      if (!res.ok) {
+          throw new Error(`Server Error (${res.status}): See console for details.`);
+      }
+      const data = JSON.parse(responseText);
+      //const data = await res.json();
       setMetricList(data.metrics);
       setTableRows(data.libraries);
     } catch (err) {
@@ -114,8 +132,8 @@ const ComparisonToolPage: React.FC = () => {
               <tr>
                 <th style={{ padding: 8, textAlign: "left" }}>Library</th>
                 {metricList.map((m) => (
-                  <th key={m.Metric_ID} style={{ padding: 8, textAlign: "left" }}>
-                    {m.Metric_Name}
+                  <th key={m.metric_ID} style={{ padding: 8, textAlign: "left" }}>
+                    {m.metric_name}
                   </th>
                 ))}
               </tr>
@@ -124,14 +142,14 @@ const ComparisonToolPage: React.FC = () => {
             <tbody>
               {tableRows.map((row) => (
                 <tr
-                  key={row.Library_ID}
+                  key={row.library_ID}
                   style={{ borderBottom: "1px solid rgba(255,255,255,0.1)" }}
                 >
-                  <td style={{ padding: 8 }}>{row.Library_Name}</td>
+                  <td style={{ padding: 8 }}>{row.library_name}</td>
 
                   {metricList.map((m) => (
-                    <td key={m.Metric_ID} style={{ padding: 8 }}>
-                      {row.metrics[m.Metric_Name] ?? "—"}
+                    <td key={m.metric_ID} style={{ padding: 8 }}>
+                      {row.metrics[m.metric_name] ?? "—"}
                     </td>
                   ))}
                 </tr>

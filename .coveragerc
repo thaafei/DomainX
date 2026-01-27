@@ -1,0 +1,15 @@
+[run]
+omit =
+    */__init__.py
+    */asgi.py
+    */wsgi.py
+    */settings.py
+    */urls.py
+    */celery.py
+    */manage.py
+    */api/admin.py
+    */apps.py
+    */users/admin.py
+    */domain/admin.py
+    */libraries/admin.py
+    */migrations/*.py

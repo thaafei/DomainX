@@ -1,3 +1,14 @@
 .env
 .venv
 venv
+Secrets/
+
+# Redis
+*.rdb
+dump.rdb
+
+# Redis
+*.rdb
+dump.rdb
+**/*.rdb
+
