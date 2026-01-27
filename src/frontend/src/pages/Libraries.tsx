@@ -1,5 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { useParams } from 'react-router-dom';
+import { apiUrl } from "../config/api";
 interface Library {
   library_ID: string;
   library_name: string;
@@ -7,9 +9,11 @@ interface Library {
   programming_language: string;
 }
 
-const DOMAIN_ID = "ecba1df1ede211f0987c0050568e534c";   // POC domain (need to delete later and replace with actual)
+// const DOMAIN_ID = "ecba1df1ede211f0987c0050568e534c";   // POC domain (need to delete later and replace with actual)
 
 const AddLibraryPage: React.FC = () => {
+  const { domainId } = useParams<{ domainId: string }>();
+  const DOMAIN_ID = domainId
   const navigate = useNavigate();
   const [libraries, setLibraries] = useState<Library[]>([]);
   const [name, setName] = useState("");
@@ -33,7 +37,7 @@ const AddLibraryPage: React.FC = () => {
             return rawId;
           };
 
-      const formattedDomainId = formatUUID(DOMAIN_ID);
+      const formattedDomainId = DOMAIN_ID;
       const res = await fetch(`http://127.0.0.1:8000/api/libraries/${formattedDomainId}/`, {
         credentials: "include",
       });
@@ -60,17 +64,30 @@ const AddLibraryPage: React.FC = () => {
     };
 
     try {
-      const res = await fetch("http://127.0.0.1:8000/api/libraries/create/", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        credentials: "include",
-        body: JSON.stringify(payload),
-      });
+      const res = await fetch(apiUrl("/api/libraries/create/"), {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      credentials: "include",
+      body: JSON.stringify(payload),
+    });
 
-      const data = await res.json();
-      if (!res.ok) throw new Error(JSON.stringify(data));
+    const text = await res.text();
 
-      setLibraries(prev => [...prev, data.library]);
+    let data: any = null;
+    try {
+      data = text ? JSON.parse(text) : null;
+    } catch {
+
+    }
+
+    if (!res.ok) {
+      console.error("HTTP", res.status, "body:", text);
+      throw new Error(data ? JSON.stringify(data) : text);
+    }
+
+
+    setLibraries(prev => [...prev, data.library]);
+
 
       setName("");
       setUrl("");
@@ -82,7 +99,7 @@ const AddLibraryPage: React.FC = () => {
 
   const deleteLibrary = async (id: string) => {
     try {
-      const res = await fetch(`http://127.0.0.1:8000/api/libraries/${id}/delete/`, {
+      const res = await fetch(apiUrl(`/api/libraries/${id}/delete/`), {
         method: "DELETE",
         credentials: "include"
       });
@@ -110,7 +127,7 @@ const AddLibraryPage: React.FC = () => {
       >
         <button
           className="dx-btn dx-btn-outline"
-          onClick={() => navigate("/comparison-tool")}
+          onClick={() => navigate(`/comparison-tool/${domainId}`)}
         >
           ← Back
         </button>

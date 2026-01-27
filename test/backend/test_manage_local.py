@@ -33,7 +33,8 @@ def test_main_runserver_runs_manage_py():
     mock_call.assert_called_once()
     args, _ = mock_call.call_args
 
-    assert args[0] == [sys.executable, "manage.py", "runserver"]
+
+    assert args[0] == [sys.executable, "manage.py", "runserver", "0.0.0.0:8000"]
 
 def test_main_worker_runs_celery():
     with patch.object(sys, "argv", ["manage_local.py", "worker"]):

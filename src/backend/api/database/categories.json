@@ -1,0 +1,16 @@
+{
+    "Categories": [ "Installability", 
+                    "Correctness and Verifiability", 
+                    "Surface Reliability", 
+                    "Surface Robustness", 
+                    "Surface Usability", 
+                    "Maintainability", 
+                    "Reusability", 
+                    "Visibility/Transparency", 
+                    "Surface Understandability",
+                    "Raw Metrics (Measured via git_stats)",
+                    "Raw Metrics (Measured via scc)", 
+                    "Repo Metrics (Measured via GitHub)"
+                ]
+
+}

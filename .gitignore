@@ -1,3 +1,6 @@
+# React build
+build/
+
 ## Core latex/pdflatex auxiliary files:
 .idea/
 venv/
@@ -294,3 +297,4 @@ db.sqlite3
 # Redis
 *.rdb
 dump.rdb
+*venv

@@ -94,7 +94,7 @@ def github_get(path: str, *, params=None, timeout=20):
 
     headers = {
         "Accept": "application/vnd.github+json",
-        "Authorization": f"Bearer {token}",
+        "Authorization": f"token {token}",
         "X-GitHub-Api-Version": "2022-11-28",
     }
     url = path if path.startswith("http") else f"{API_BASE}{path}"

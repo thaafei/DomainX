@@ -3,6 +3,8 @@ Django==5.2.7
 django-cors-headers==4.9.0
 djangorestframework==3.16.1
 djangorestframework_simplejwt==5.5.1
+django-extensions==4.1
+pydotplus==2.0.2
 PyJWT[crypto]==2.10.1
 sqlparse==0.5.3
 typing_extensions==4.15.0
@@ -19,6 +21,7 @@ redis==5.0.8
 django-celery-results==2.5.1
 gunicorn==21.2.0
 whitenoise==6.7.0
+ahpy==2.1
 
 
 
