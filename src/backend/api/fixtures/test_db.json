@@ -1,13 +1,61 @@
 [
   {
+    "model": "users.CustomUser",
+    "pk": 1,
+    "fields": {
+      "username": "johndoe",
+      "email": "john@example.com",
+      "password": "pbkdf2_sha256$600000$xyz123$abc456==",
+      "role": "admin",
+      "is_active": true,
+      "is_staff": false,
+      "is_superuser": false,
+      "first_name": "John",
+      "last_name": "Doe",
+      "date_joined": "2024-01-01T09:00:00Z"
+    }
+  },
+  {
+    "model": "users.CustomUser",
+    "pk": 2,
+    "fields": {
+      "username": "janedoe",
+      "email": "jane@example.com",
+      "password": "pbkdf2_sha256$600000$xyz456$def789==",
+      "role": "user",
+      "is_active": true,
+      "is_staff": false,
+      "is_superuser": false,
+      "first_name": "Jane",
+      "last_name": "Doe",
+      "date_joined": "2024-01-01T09:30:00Z"
+    }
+  },
+  {
+    "model": "users.CustomUser",
+    "pk": 3,
+    "fields": {
+      "username": "bobsmith",
+      "email": "bob@example.com",
+      "password": "pbkdf2_sha256$600000$xyz789$ghi012==",
+      "role": "user",
+      "is_active": true,
+      "is_staff": false,
+      "is_superuser": false,
+      "first_name": "Bob",
+      "last_name": "Smith",
+      "date_joined": "2024-01-01T10:00:00Z"
+    }
+  },
+  {
     "model": "domain.Domain",
     "pk": "550e8400-e29b-41d4-a716-446655440001",
     "fields": {
       "domain_name": "Machine Learning",
       "description": "Machine learning and neural network libraries",
       "created_at": "2024-01-01T10:00:00Z",
-      "created_by": null,
-      "published": false
+      "published": false,
+      "creators": [1, 2]
     }
   },
   {
@@ -17,8 +65,8 @@
       "domain_name": "Web Development",
       "description": "Web framework and server libraries",
       "created_at": "2024-01-02T10:00:00Z",
-      "created_by": null,
-      "published": false
+      "published": false,
+      "creators": [2, 3]
     }
   },
   {
@@ -28,8 +76,8 @@
       "domain_name": "Data Processing",
       "description": "Data manipulation and analysis libraries",
       "created_at": "2024-01-03T10:00:00Z",
-      "created_by": null,
-      "published": false
+      "published": false,
+      "creators": [1]
     }
   },
   {

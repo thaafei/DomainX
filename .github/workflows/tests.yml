@@ -28,6 +28,11 @@ jobs:
           pip install pytest pytest-cov
 
       - name: Run tests with coverage
+        env:
+          DJANGO_SECRET_KEY: test-secret-key
+          DJANGO_LOCAL: "true"
+          DJANGO_DEBUG: "true"
+          CELERY_BROKER_URL: "memory://"
         run: |
           pytest test/ \
             --cov=src/backend \
