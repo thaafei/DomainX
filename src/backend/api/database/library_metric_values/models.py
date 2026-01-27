@@ -11,7 +11,7 @@ class LibraryMetricValue(models.Model):
 
     library = models.ForeignKey(Library, on_delete=models.CASCADE)
     metric = models.ForeignKey(Metric, on_delete=models.CASCADE)
-    value = models.FloatField(default=0.0, null=True, blank=True)
+    value = models.JSONField(null=True, blank=True)
     evidence = models.TextField(blank=True, null=True)
     collected_by = models.CharField(max_length=100, blank=True, null=True)
     last_modified = models.DateTimeField(auto_now=True)

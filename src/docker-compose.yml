@@ -1,0 +1,97 @@
+secrets:
+  github_app_pem:
+    file: ./infra/secrets/github_app.pem
+
+services:
+  redis:
+    image: redis:7-alpine
+    env_file:
+      - .env
+    command: >
+      sh -c 'redis-server /usr/local/etc/redis/redis.conf --requirepass "$$REDIS_PASSWORD"'
+    volumes:
+      - ./infra/redis/redis.conf:/usr/local/etc/redis/redis.conf:ro
+      - redis_data:/data
+    restart: always
+    networks:
+      - domainx-net
+
+
+  backend:
+    build: ./backend
+    env_file:
+      - .env
+    command: gunicorn DomainX.wsgi:application --bind 0.0.0.0:8000 --workers 3 --timeout 120
+    depends_on:
+      redis:
+        condition: service_started
+    volumes:
+      - staticfiles:/app/staticfiles
+    restart: always
+    networks:
+      - domainx-net
+    secrets:
+      - github_app_pem
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+
+
+  celery:
+    build: ./backend
+    env_file:
+      - .env
+    command: celery -A DomainX worker -l info
+    depends_on:
+      backend:
+        condition: service_started
+      redis:
+        condition: service_started
+    restart: always
+    networks:
+      - domainx-net
+    secrets:
+      - github_app_pem
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+
+
+  celery_beat:
+    build: ./backend
+    env_file:
+      - .env
+    command: celery -A DomainX beat -l info
+    depends_on:
+      redis:
+        condition: service_started
+    restart: always
+    networks:
+      - domainx-net
+    secrets:
+      - github_app_pem
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+
+
+  web:
+    build: ./frontend
+    depends_on:
+      - backend
+    ports:
+      - "8080:80"
+    volumes:
+      - ./infra/nginx/conf.d:/etc/nginx/conf.d:ro
+    restart: always
+    networks:
+      - domainx-net
+
+volumes:
+  redis_data:
+  staticfiles:
+
+networks:
+  domainx-net:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 10.50.0.0/24
+          gateway: 10.50.0.1

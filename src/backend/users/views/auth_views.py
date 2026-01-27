@@ -61,3 +61,16 @@ class LogoutView(APIView):
         response.delete_cookie("access_token")
         response.delete_cookie("refresh_token")
         return response
+
+
+class UserListView(APIView):
+    def get(self, request):
+        from ..models import CustomUser
+        role = request.query_params.get('role', None)
+        users = CustomUser.objects.all()
+        
+        if role:
+            roles = [r.strip() for r in role.split(',')]            
+            users = users.filter(role__in=roles)
+        
+        return Response(UserProfileSerializer(users, many=True).data)
