@@ -16,6 +16,8 @@ class Metric(models.Model):
     description = models.CharField(max_length=255, blank=True, null=True)
     category = models.CharField(max_length=50, blank=True, null=True)
     weight = models.FloatField(default=1.0)
+    option_category = models.CharField(max_length=100, blank=True, null=True)
+    rule = models.CharField(max_length=100, blank=True, null=True)
     value_type = models.CharField(max_length=10, choices=value_types, default="float")
     created_at = models.DateTimeField(auto_now_add=True)
 

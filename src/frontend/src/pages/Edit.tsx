@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { useParams } from 'react-router-dom';
 import { apiUrl } from "../config/api";
 
 interface Metric {
@@ -19,9 +20,9 @@ interface EditableRow {
   analysis_status?: AnalysisStatus;
 }
 
-const DOMAIN_ID = "ecba1df1ede211f0987c0050568e534c";
-
 const EditValuesPage: React.FC = () => {
+  const { domainId } = useParams<{ domainId: string }>();
+  const DOMAIN_ID = domainId; 
   const navigate = useNavigate();
 
   const [metricList, setMetricList] = useState<Metric[]>([]);
@@ -43,25 +44,10 @@ const EditValuesPage: React.FC = () => {
     })();
   }, []);
 
-  const formatUUID = (rawId: string) => {
-    if (rawId && rawId.length === 32 && !rawId.includes("-")) {
-      return (
-        rawId.substring(0, 8) +
-        "-" +
-        rawId.substring(8, 12) +
-        "-" +
-        rawId.substring(12, 16) +
-        "-" +
-        rawId.substring(16, 20) +
-        "-" +
-        rawId.substring(20, 32)
-      );
-    }
-    return rawId;
-  };
-  const fetchComparisonRaw = async () => {
-    const formattedDomainId = formatUUID(DOMAIN_ID);
 
+  const fetchComparisonRaw = async () => {
+
+      const formattedDomainId = DOMAIN_ID;
     const res = await fetch(apiUrl(`/api/comparison/${formattedDomainId}/`), {
       credentials: "include",
     });
@@ -234,7 +220,8 @@ const EditValuesPage: React.FC = () => {
       <div className="dx-card" style={{ width: 160, padding: "22px 14px" }}>
         <button
           className="dx-btn dx-btn-outline"
-          onClick={() => navigate("/comparison-tool")}
+
+          onClick={() => navigate(`/comparison-tool/${domainId}`)}
           disabled={pageLoading}
           style={{ opacity: pageLoading ? 0.7 : 1 }}
         >
