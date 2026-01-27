@@ -35,6 +35,7 @@ def domain_comparison(request, domain_id):
         for row in table:
             if row["library_ID"] == str(val.library.library_ID):
                 row["metrics"][metric_name] = val.value
+                row["metrics"][f'{metric_name}_evidence'] = val.evidence
                 break
 
     return Response({

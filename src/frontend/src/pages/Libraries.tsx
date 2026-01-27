@@ -64,7 +64,7 @@ const AddLibraryPage: React.FC = () => {
     };
 
     try {
-      const res = await fetch(apiUrl("/api/libraries/create/"), {
+      const res = await fetch(apiUrl("/libraries/create/"), {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       credentials: "include",
@@ -99,7 +99,7 @@ const AddLibraryPage: React.FC = () => {
 
   const deleteLibrary = async (id: string) => {
     try {
-      const res = await fetch(apiUrl(`/api/libraries/${id}/delete/`), {
+      const res = await fetch(apiUrl(`/libraries/${id}/delete/`), {
         method: "DELETE",
         credentials: "include"
       });
