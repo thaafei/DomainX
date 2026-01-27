@@ -1,7 +1,7 @@
 from django.urls import path, include
 from .views import status_views
 from .views.comparison_views import domain_comparison
-from .database.domain.views import create_domain, DomainListCreateView, DomainDetailView
+from .database.domain.views import create_domain, DomainListCreateView, DomainDetailView, DomainRetrieveUpdateDestroyView
 from .database.metrics.views import MetricRulesView
 from .database.metrics.views import MetricCategoryView
 from .database.library_metric_values.views import AHPCalculations
@@ -35,6 +35,7 @@ urlpatterns = [
     path('domain/<uuid:pk>/', DomainDetailView.as_view(), name='domain-detail'),
     path('category_weights/<uuid:domain_id>/', update_category_weights, name='update_category_weights'),
     path('get_category_weights/<uuid:domain_id>/', get_category_weights, name='get_category_weights'),
+    path('domain/<uuid:pk>/', DomainRetrieveUpdateDestroyView.as_view(), name='domain-detail'),
     path('metric-rules/', MetricRulesView.as_view(), name='metric-rules'),
     path('metric-categories/', MetricCategoryView.as_view(), name='metric-categories'),
     path('aph/<uuid:domain_id>/', AHPCalculations.as_view(), name='aph_category')

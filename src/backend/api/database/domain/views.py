@@ -18,6 +18,14 @@ class DomainListCreateView(generics.ListCreateAPIView):
 class DomainRetrieveUpdateDestroyView(generics.RetrieveUpdateDestroyAPIView):
     queryset = Domain.objects.all()
     serializer_class = DomainSerializer
+    
+    def perform_update(self, serializer):
+        # Handle creator_ids if provided
+        creator_ids = self.request.data.get('creator_ids')
+        instance = serializer.save()
+        if creator_ids is not None:
+            instance.creators.set(creator_ids)
+        return instance
 
 class DomainDetailView(generics.RetrieveAPIView):
     queryset = Domain.objects.all()
@@ -27,6 +35,7 @@ class DomainDetailView(generics.RetrieveAPIView):
 def create_domain(request):
     name = request.data.get('domain_name')
     desc = request.data.get('description')
+    creator_ids = request.data.get('creator_ids')
     path = os.path.join(settings.BASE_DIR, 'api', 'database', 'categories.json')
     with open(path, 'r') as f:
         categories = json.load(f).get('Categories', [])
@@ -38,12 +47,13 @@ def create_domain(request):
         return Response({"error": "Fields missing"}, status=400)
 
     try:
-        Domain.objects.create(
+        domain = Domain.objects.create(
             domain_name=name,
             description=desc, 
             category_weights=category_weights
-            # created_by=request.user
         )
+        if creator_ids:
+            domain.creators.set(creator_ids)
         return Response({"status": "success"}, status=201)
     except Exception as e:
         return Response({"error": str(e)}, status=400)
