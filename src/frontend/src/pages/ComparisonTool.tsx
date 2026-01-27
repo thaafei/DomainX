@@ -58,7 +58,7 @@ const ComparisonToolPage: React.FC = () => {
       const formattedDomainId = DOMAIN_ID;
       getDomainSpecification()
       const res = await fetch(
-          apiUrl(`/api/comparison/${formattedDomainId}/`),
+          apiUrl(`/comparison/${formattedDomainId}/`),
           { credentials: "include" }
         );
       const contentType = res.headers.get("content-type") || "";

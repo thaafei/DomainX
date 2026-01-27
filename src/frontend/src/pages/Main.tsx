@@ -5,44 +5,91 @@ import {
   BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Cell 
 } from 'recharts';
 import { apiUrl } from "../config/api";
+import DomainsList from "../components/DomainsList";
+import DomainInfo from "../components/DomainInfo";
 
 const Main: React.FC = () => {
   const navigate = useNavigate();
+  const [leftSidebarOpen, setLeftSidebarOpen] = useState(true);
+  const [moreInfoSidebarOpen, setMoreInfoSidebarOpen] = useState(false);
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const [domains, setDomains] = useState<any[]>([]);
   const [selectedDomain, setSelectedDomain] = useState<any>(null);;
   const [loading, setLoading] = useState(true);
-  const { logout } = useAuthStore();
+  const { logout, setUser } = useAuthStore();
   const [showDomainModal, setShowDomainModal] = useState(false);
   const [domainName, setDomainName] = useState("");
   const [description, setDescription] = useState("");
   const [globalRanking, setGlobalRanking] = useState<Record<string, number>>({});
   const [graph, setGraph] = useState(false);
   const [formError, setFormError] = useState("");
-  const [categories, setCategories] = useState<any>(null)
+  const [adminUsers, setAdminUsers] = useState<any[]>([]);
+  const [selectedCreatorIds, setSelectedCreatorIds] = useState<number[]>([]);
   const [localWeights, setLocalWeights] = useState<Record<string, number>>({});
+  const [categories, setCategories] = useState<any>(null)
+  
+  const fetchCurrentUser = async () => {
+    try {
+      const response = await fetch(apiUrl("/me/"), {
+        method: 'GET',
+        credentials: 'include'
+      });
+      if (response.ok) {
+        const data = await response.json();
+        setUser(data.user);
+      }
+    } catch (error) {
+      console.log("Error fetching current user:", error);
+    }
+  };
+  
+  const fetchUsers = async () => {
+    try {
+      const response = await fetch('http://127.0.0.1:8000/api/users/?role=admin,superadmin,user', {
+        method: 'GET',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include'
+      });
+      if (response.ok) {
+        const data = await response.json();
+        console.log(data)
+        setAdminUsers(data);
+      }
+    } catch (error) {
+      console.log("Error fetching users:", error);
+    }
+  };
+
   const fetchDomains = async () => {
     try {
-    const response = await fetch('http://127.0.0.1:8000/api/domain/');
+    const response = await fetch('http://127.0.0.1:8000/api/domain/',{
+      method: "GET"
+    });
       if (response.ok) {
         const data = await response.json();
         setDomains(data);
-        // Set the first domain as default if none selected
-        if (data.length > 0 && !selectedDomain) {
-          const firstDomain = data[0];
-          setSelectedDomain(firstDomain);
-          const response = await fetch(`http://127.0.0.1:8000/api/aph/${firstDomain.domain_ID}/`, {
+        // Restore last selected domain or default to first
+        if (data.length > 0) {
+          const savedId = localStorage.getItem("dx:lastDomainId");
+          const domainToSelect = savedId
+            ? data.find((d: any) => d.domain_ID === savedId) || data[0]
+            : (selectedDomain || data[0]);
+
+          if (!selectedDomain || domainToSelect.domain_ID !== selectedDomain.domain_ID) {
+            setSelectedDomain(domainToSelect);
+          }
+
+          const ahpRes = await fetch(`http://127.0.0.1:8000/api/aph/${domainToSelect.domain_ID}/`, {
             method: 'GET',
             headers: { 'Content-Type': 'application/json' }
           });
 
-        if (response.ok) {
-          const data = await response.json();
-          setGlobalRanking(data.global_ranking);
-          setGraph(true)
-        }
-        else {
-          setGraph(false);
+          if (ahpRes.ok) {
+            const ahpData = await ahpRes.json();
+            setGlobalRanking(ahpData.global_ranking);
+            setGraph(true)
+          } else {
+            setGraph(false);
           }
         }
       }
@@ -52,6 +99,24 @@ const Main: React.FC = () => {
       setLoading(false);
     }
   };
+  useEffect(() => {
+    const fetchWeights = async () => {
+      if (!selectedDomain) return;
+      try {
+        const res = await fetch(`http://127.0.0.1:8000/api/get_category_weights/${selectedDomain.domain_ID}/`);
+        if (res.ok) {
+          const data = await res.json();
+          // data should be your category_weights dict
+          setLocalWeights(data); 
+        }
+      } catch (err) { console.error(err); }
+    };
+
+    if (selectedDomain?.domain_ID) {
+      getAHPRanking(); // For graphing
+      fetchWeights();  // The weights fetch
+    }
+  }, [selectedDomain]);
 
   useEffect(() => {
       const fetchRules = async () => {
@@ -65,7 +130,7 @@ const Main: React.FC = () => {
       };
       fetchRules();
     }, []);
-
+  
   const getAHPRanking = async () => {
     const response = await fetch(`http://127.0.0.1:8000/api/aph/${selectedDomain.domain_ID}/`, {
       method: 'GET',
@@ -130,8 +195,19 @@ const Main: React.FC = () => {
     .sort((a, b) => b.score - a.score);
 
   useEffect(() => {
+    fetchCurrentUser();
     fetchDomains();
+    fetchUsers();
   }, []);
+
+  // Persist last selected domain for smoother back navigation
+  useEffect(() => {
+    if (selectedDomain?.domain_ID) {
+      try {
+        localStorage.setItem("dx:lastDomainId", String(selectedDomain.domain_ID));
+      } catch {}
+    }
+  }, [selectedDomain]);
 
   if (loading) return <div>Loading...</div>;
   const handleLogout = async () => {
@@ -148,8 +224,17 @@ const Main: React.FC = () => {
       }
   };
   const handleCreateDomain = async () => {
+    const errors = [];
+    
     if (!domainName.trim() || !description.trim()) {
-      setFormError("Both name and description are required.");
+      errors.push("Both name and description are required.");
+    }
+    if (selectedCreatorIds.length === 0) {
+      errors.push("At least one creator must be selected.");
+    }
+    
+    if (errors.length > 0) {
+      setFormError(errors.join(" "));
       return;
     }
     setFormError("");
@@ -157,13 +242,30 @@ const Main: React.FC = () => {
       const response = await fetch('http://127.0.0.1:8000/api/domain/create/', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ domain_name: domainName, description: description }),
+        body: JSON.stringify({
+          domain_name: domainName,
+          description: description,
+          creator_ids: selectedCreatorIds
+        }),
       });
       if (response.ok) {
         setShowDomainModal(false);
         setDomainName("");
         setDescription("");
-        fetchDomains();
+        setSelectedCreatorIds([]);
+        const domainsResponse = await fetch('http://127.0.0.1:8000/api/domain/', {
+          method: "GET"
+        });
+        if (domainsResponse.ok) {
+          const data = await domainsResponse.json();
+          setDomains(data);
+          if (selectedDomain) {
+            const updatedDomain = data.find((d: any) => d.domain_ID === selectedDomain.domain_ID);
+            if (updatedDomain) {
+              setSelectedDomain(updatedDomain);
+            }
+          }
+        }
       } else {
         setFormError("Failed to create domain. Please try again.");
       }
@@ -172,202 +274,223 @@ const Main: React.FC = () => {
     }
   };
   return (
-    <div className="dx-bg" style={{ display: "flex", height: "100vh", overflow: "hidden" }}>
+    // <div className="dx-bg" style={{ display: "flex", height: "100vh", overflow: "hidden" }}>
+    //   <div
+    //     className="dx-card"
+    //     style={{
+    //       width: sidebarOpen ? 260 : 60,
+    //       transition: "0.28s",
+    //       padding: sidebarOpen ? "16px" : "16px 6px",
+    //       display: "flex",
+    //       flexDirection: "column",
+    //       gap: 14,
+    //       color: "var(--text-main)"
+    //     }}
+    //   >
+    //     <div
+    //       style={{ cursor: "pointer", fontSize: 24, color: "var(--accent)" }}
+    //       onClick={() => setSidebarOpen(!sidebarOpen)}
+    //     >
+    //       {sidebarOpen ? "⟨" : "⟩"}
+    //     </div>
 
-      <div
-        className="dx-card"
-        style={{
-          width: sidebarOpen ? 260 : 60,
-          transition: "0.28s",
-          padding: sidebarOpen ? "16px" : "16px 6px",
-          display: "flex",
-          flexDirection: "column",
-          gap: 14,
-          color: "var(--text-main)"
-        }}
-      >
-        <div
-          style={{ cursor: "pointer", fontSize: 24, color: "var(--accent)" }}
-          onClick={() => setSidebarOpen(!sidebarOpen)}
-        >
-          {sidebarOpen ? "⟨" : "⟩"}
-        </div>
+    //     {sidebarOpen && (
+    //       <input
+    //         className="dx-input"
+    //         placeholder="Filter domains..."
+    //         style={{ marginBottom: 12 }}
+    //       />
+    //     )}
 
-        {sidebarOpen && (
-          <input
-            className="dx-input"
-            placeholder="Filter domains..."
-            style={{ marginBottom: 12 }}
-          />
-        )}
-
-        <div style={{ flex: 1, overflowY: "auto" }}>
-          {domains.map((d) => (
-            <div
-              key={d.domain_ID} 
-              className="dx-side-item"
-              onClick={() => {setSelectedDomain(d);}}
-              style={{
-                padding: "12px 16px",
-                cursor: "pointer",
-                borderRadius: "8px",
-                marginBottom: "6px",
-                transition: "all 0.2s ease",                
-                backgroundColor: d.domain_ID === selectedDomain?.domain_ID
-                  ? "rgba(255, 255, 255, 0.12)"
-                  : "transparent",
-                border: d.domain_ID === selectedDomain?.domain_ID 
-                  ? "1px solid rgba(255, 255, 255, 0.1)" 
-                  : "1px solid transparent",
+    //     <div style={{ flex: 1, overflowY: "auto" }}>
+    //       {domains.map((d) => (
+    //         <div
+    //           key={d.domain_ID} 
+    //           className="dx-side-item"
+    //           onClick={() => {setSelectedDomain(d);}}
+    //           style={{
+    //             padding: "12px 16px",
+    //             cursor: "pointer",
+    //             borderRadius: "8px",
+    //             marginBottom: "6px",
+    //             transition: "all 0.2s ease",                
+    //             backgroundColor: d.domain_ID === selectedDomain?.domain_ID
+    //               ? "rgba(255, 255, 255, 0.12)"
+    //               : "transparent",
+    //             border: d.domain_ID === selectedDomain?.domain_ID 
+    //               ? "1px solid rgba(255, 255, 255, 0.1)" 
+    //               : "1px solid transparent",
                 
-                color: d.domain_ID === selectedDomain?.domain_ID ? "var(--accent)" : "var(--text-main)",
-                fontWeight: d.domain_ID === selectedDomain?.domain_ID ? 600 : 400,
-              }}
-            >
-              {sidebarOpen ? (
-                <>
-                  {d.domain_name}
-                  <div style={{ fontSize: "0.8rem", color: "var(--text-dim)" }}>{d.description}</div>
-                </>
-              ) : (
-                <div style={{ textAlign: "center" }}>{d.domain_name?.charAt(0) || "?"}</div>
-              )}
-            </div>
-          ))}
-        </div>
+    //             color: d.domain_ID === selectedDomain?.domain_ID ? "var(--accent)" : "var(--text-main)",
+    //             fontWeight: d.domain_ID === selectedDomain?.domain_ID ? 600 : 400,
+    //           }}
+    //         >
+    //           {sidebarOpen ? (
+    //             <>
+    //               {d.domain_name}
+    //               <div style={{ fontSize: "0.8rem", color: "var(--text-dim)" }}>{d.description}</div>
+    //             </>
+    //           ) : (
+    //             <div style={{ textAlign: "center" }}>{d.domain_name?.charAt(0) || "?"}</div>
+    //           )}
+    //         </div>
+    //       ))}
+    //     </div>
 
-        {sidebarOpen && (
-          <>
-            <button
-              className="dx-btn dx-btn-outline"
-              onClick={() => setShowDomainModal(true)}
-              style={{
-                display: "flex",
-                alignItems: "center",
-                marginTop: 8,
-              }}
-            >
-              <span style={{ fontSize: 15, marginRight: 8 }}>🌐</span> Create Domain
-            </button>
-            <button
-              className="dx-btn dx-btn-outline"
-              onClick={() => navigate("/metrics")}
-              style={{
-                display: "flex",
-                alignItems: "center",
-                marginTop: 8,
-              }}
-            >
-              Edit Metrics
-            </button>
-            <button
-              className="dx-btn dx-btn-outline"
-              onClick={() => handleLogout()}
-              style={{
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
-                marginTop: 8,
-                opacity: 0.85
-              }}
-            >
-              Logout
-            </button>
-            {showDomainModal && (
-              <div
-                style={{
-                  position: "fixed",
-                  top: 0,
-                  left: 0,
-                  width: "100vw",
-                  height: "100vh",
-                  backgroundColor: "rgba(0, 0, 0, 0.6)",
-                  display: "flex",
-                  justifyContent: "center",
-                  alignItems: "center",
-                  zIndex: 9999,
-                }}
-              >
-                <div
-                  style={{
-                    background: "#fff",
-                    padding: "24px",
-                    borderRadius: "12px",
-                    width: "350px",
-                    boxShadow: "0 10px 25px rgba(0,0,0,0.2)",
-                    color: "#333",
-                    display: "flex",
-                    flexDirection: "column",
-                  }}
-                >
-                  <h3>New Domain</h3>
-                  {formError && (
-                    <div style={{ 
-                      color: '#ff4d4f', 
-                      backgroundColor: '#fff2f0', 
-                      border: '1px solid #ffccc7', 
-                      padding: '8px', 
-                      borderRadius: '4px', 
-                      marginBottom: '12px',
-                      fontSize: '0.9rem' 
-                    }}>
-                      ⚠️ {formError}
-                    </div>
-                  )}
+    //     {/* {sidebarOpen && (
+    //       <>
+    //         <button
+    //           className="dx-btn dx-btn-outline"
+    //           onClick={() => setShowDomainModal(true)}
+    //           style={{
+    //             display: "flex",
+    //             alignItems: "center",
+    //             marginTop: 8,
+    //           }}
+    //         >
+    //           <span style={{ fontSize: 15, marginRight: 8 }}>🌐</span> Create Domain
+    //         </button>
+    //         <button
+    //           className="dx-btn dx-btn-outline"
+    //           onClick={() => navigate("/metrics")}
+    //           style={{
+    //             display: "flex",
+    //             alignItems: "center",
+    //             marginTop: 8,
+    //           }}
+    //         >
+    //           Edit Metrics
+    //         </button>
+    //         <button
+    //           className="dx-btn dx-btn-outline"
+    //           onClick={() => handleLogout()}
+    //           style={{
+    //             display: "flex",
+    //             alignItems: "center",
+    //             justifyContent: "center",
+    //             marginTop: 8,
+    //             opacity: 0.85
+    //           }}
+    //         >
+    //           Logout
+    //         </button>
+    //         {showDomainModal && (
+    //           <div
+    //             style={{
+    //               position: "fixed",
+    //               top: 0,
+    //               left: 0,
+    //               width: "100vw",
+    //               height: "100vh",
+    //               backgroundColor: "rgba(0, 0, 0, 0.6)",
+    //               display: "flex",
+    //               justifyContent: "center",
+    //               alignItems: "center",
+    //               zIndex: 9999,
+    //             }}
+    //           >
+    //             <div
+    //               style={{
+    //                 background: "#fff",
+    //                 padding: "24px",
+    //                 borderRadius: "12px",
+    //                 width: "350px",
+    //                 boxShadow: "0 10px 25px rgba(0,0,0,0.2)",
+    //                 color: "#333",
+    //                 display: "flex",
+    //                 flexDirection: "column",
+    //               }}
+    //             >
+    //               <h3>New Domain</h3>
+    //               {formError && (
+    //                 <div style={{ 
+    //                   color: '#ff4d4f', 
+    //                   backgroundColor: '#fff2f0', 
+    //                   border: '1px solid #ffccc7', 
+    //                   padding: '8px', 
+    //                   borderRadius: '4px', 
+    //                   marginBottom: '12px',
+    //                   fontSize: '0.9rem' 
+    //                 }}>
+    //                   ⚠️ {formError}
+    //                 </div>
+    //               )}
 
-                  <input 
-                    className="dx-input"
-                    placeholder="Domain Name" 
-                    value={domainName}
-                    onChange={(e) => {
-                      setDomainName(e.target.value);
-                      if (formError) setFormError("");
-                    }}
-                    style={{ 
-                      width: '100%', 
-                      marginBottom: 12, 
-                      padding: 8, 
-                      color: 'black',
-                      border: formError && !domainName ? '1px solid red' : '1px solid #ccc'
-                    }}
-                  />
+    //               <input 
+    //                 className="dx-input"
+    //                 placeholder="Domain Name" 
+    //                 value={domainName}
+    //                 onChange={(e) => {
+    //                   setDomainName(e.target.value);
+    //                   if (formError) setFormError("");
+    //                 }}
+    //                 style={{ 
+    //                   width: '100%', 
+    //                   marginBottom: 12, 
+    //                   padding: 8, 
+    //                   color: 'black',
+    //                   border: formError && !domainName ? '1px solid red' : '1px solid #ccc'
+    //                 }}
+    //               />
 
-                  <textarea 
-                    className="dx-input"
-                    placeholder="Description" 
-                    value={description}
-                    onChange={(e) => {
-                      setDescription(e.target.value);
-                      if (formError) setFormError("");
-                    }}
-                    style={{ 
-                      width: '100%', 
-                      marginBottom: 12, 
-                      padding: 8, 
-                      minHeight: 60, 
-                      color: 'black',
-                      border: formError && !description ? '1px solid red' : '1px solid #ccc' 
-                    }}
-                  />
+    //               <textarea 
+    //                 className="dx-input"
+    //                 placeholder="Description" 
+    //                 value={description}
+    //                 onChange={(e) => {
+    //                   setDescription(e.target.value);
+    //                   if (formError) setFormError("");
+    //                 }}
+    //                 style={{ 
+    //                   width: '100%', 
+    //                   marginBottom: 12, 
+    //                   padding: 8, 
+    //                   minHeight: 60, 
+    //                   color: 'black',
+    //                   border: formError && !description ? '1px solid red' : '1px solid #ccc' 
+    //                 }}
+    //               />
 
-                  <div style={{ display: 'flex', gap: 8, justifyContent: 'flex-end' }}>
-                    <button className="dx-btn" onClick={() => {
-                      setShowDomainModal(false);
-                      setFormError("");
-                    }}>
-                      Cancel
-                    </button>
-                    <button className="dx-btn dx-btn-primary" onClick={handleCreateDomain}>
-                      Create
-                    </button>
-                  </div>
-                </div>
-              </div>
-            )}
-          </>
-        )}
+    //               <div style={{ display: 'flex', gap: 8, justifyContent: 'flex-end' }}>
+    //                 <button className="dx-btn" onClick={() => {
+    //                   setShowDomainModal(false);
+    //                   setFormError("");
+    //                 }}>
+    //                   Cancel
+    //                 </button>
+    //                 <button className="dx-btn dx-btn-primary" onClick={handleCreateDomain}>
+    //                   Create
+    //                 </button>
+    //               </div>
+    //             </div>
+    //           </div>
+    //         )}
+    //       </>
+    //     )} */}
 
-      </div>
+    //   </div>
+    <div className="dx-bg" style={{ display: "flex", height: "100vh", overflow: "hidden" }}>
+      <DomainsList
+        sidebarOpen={leftSidebarOpen}
+        setSidebarOpen={setLeftSidebarOpen}
+        domains={domains}
+        selectedDomain={selectedDomain}
+        setSelectedDomain={setSelectedDomain}
+        getAHPRanking={getAHPRanking}
+        showDomainModal={showDomainModal}
+        setShowDomainModal={setShowDomainModal}
+        domainName={domainName}
+        setDomainName={setDomainName}
+        description={description}
+        setDescription={setDescription}
+        selectedCreatorIds={selectedCreatorIds}
+        setSelectedCreatorIds={setSelectedCreatorIds}
+        adminUsers={adminUsers}
+        formError={formError}
+        setFormError={setFormError}
+        handleCreateDomain={handleCreateDomain}
+        handleLogout={handleLogout}
+      />      
       <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: '20px', overflowY: 'auto' }}>
         {graph && (
           <div className="dx-card" style={{ padding: '20px', marginTop: '20px', width: '1000px' }}>
@@ -454,7 +577,7 @@ const Main: React.FC = () => {
         </div>
       </div>
 
-      <div
+      {/* <div
         className="dx-card"
         style={{
           width: 260,
@@ -492,7 +615,13 @@ const Main: React.FC = () => {
         >
           <span style={{ fontSize: 15 }}>⚖️</span> Comparison Tool
         </button>
-      </div>
+      </div> */}
+
+      <DomainInfo 
+        selectedDomain={selectedDomain}
+        sidebarOpen={moreInfoSidebarOpen}
+        setSidebarOpen={setMoreInfoSidebarOpen}
+      />
     </div>
   );
 };

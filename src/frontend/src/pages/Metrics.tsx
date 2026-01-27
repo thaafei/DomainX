@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import { apiUrl } from "../config/api";
 interface Metric {
   metric_ID: string;
@@ -11,6 +12,7 @@ interface Metric {
 }
 
 const MetricsPage: React.FC = () => {
+  const navigate = useNavigate();
   const [metrics, setMetrics] = useState<Metric[]>([]);
   const [newName, setNewName] = useState("");
   const [newType, setNewType] = useState("float");
@@ -53,7 +55,7 @@ const MetricsPage: React.FC = () => {
   useEffect(() => {
         const loadMetrics = async () => {
             try {
-                const res = await fetch(apiUrl("/api/metrics/"), {
+                const res = await fetch(apiUrl("/metrics/"), {
                     credentials: "include",
                 });
 
@@ -94,7 +96,7 @@ const MetricsPage: React.FC = () => {
     };
 
     try {
-      const res = await fetch(apiUrl("/api/metrics/create/"), {
+      const res = await fetch(apiUrl("/metrics/create/"), {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         credentials: "include",
@@ -141,7 +143,7 @@ const MetricsPage: React.FC = () => {
 
   const deleteMetric = async (id: string) => {
       try {
-        const res = await fetch(apiUrl(`/api/metrics/${id}/delete/`), {
+        const res = await fetch(apiUrl(`/metrics/${id}/delete/`), {
           method: "DELETE",
           credentials: "include",
         });
@@ -170,7 +172,7 @@ return (
       <button
             className="dx-btn dx-btn-outline"
             style={{ width: "100%", fontSize: "1rem", textAlign: "center" }}
-            onClick={() => (window.location.href = "/main")}
+        onClick={() => navigate("/main")}
           >
             ← Back
       </button>

@@ -43,7 +43,7 @@ const EditValuesPage: React.FC = () => {
       const formattedDomainId = DOMAIN_ID;
 
       const res = await fetch(
-          apiUrl(`/api/comparison/${formattedDomainId}/`),
+          apiUrl(`/comparison/${formattedDomainId}/`),
           { credentials: "include" }
         );
       const contentType = res.headers.get("content-type") || "";
@@ -105,7 +105,7 @@ const EditValuesPage: React.FC = () => {
     };
 
     const res = await fetch(apiUrl(
-      `/api/libraries/${row.library_ID}/update-values/`),
+      `/libraries/${row.library_ID}/update-values/`),
       {
         method: "POST",
         headers: { "Content-Type": "application/json" },
