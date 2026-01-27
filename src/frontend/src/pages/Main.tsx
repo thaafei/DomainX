@@ -251,17 +251,6 @@ const Main: React.FC = () => {
             </button>
             <button
               className="dx-btn dx-btn-outline"
-              onClick={() => setShowDomainModal(true)}
-              style={{
-                display: "flex",
-                alignItems: "center",
-                marginTop: 8,
-              }}
-            >
-              <span style={{ fontSize: 15, marginRight: 8 }}>🌐</span> Create Domain
-            </button>
-            <button
-              className="dx-btn dx-btn-outline"
               onClick={() => navigate("/metrics")}
               style={{
                 display: "flex",
