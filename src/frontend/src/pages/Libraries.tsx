@@ -24,7 +24,10 @@ const AddLibraryPage: React.FC = () => {
 
   const loadLibraries = async () => {
     try {
+
+
       const res = await fetch(apiUrl(`/libraries/${DOMAIN_ID}/`), {
+
         credentials: "include",
       });
       const responseText = await res.text();

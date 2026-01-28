@@ -34,16 +34,7 @@ const Visualize: React.FC = () => {
 
   const loadData = async () => {
     try {
-         const formatUUID = (rawId: string) => {
-            if (rawId && rawId.length === 32 && !rawId.includes('-')) {
-              return rawId.substring(0, 8) + '-' +
-                     rawId.substring(8, 12) + '-' +
-                     rawId.substring(12, 16) + '-' +
-                     rawId.substring(16, 20) + '-' +
-                     rawId.substring(20, 32);
-            }
-            return rawId;
-          };
+
       const res = await fetch(apiUrl(`/comparison/${DOMAIN_ID}/`), {
         credentials: "include"
       });

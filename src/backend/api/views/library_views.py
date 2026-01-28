@@ -7,7 +7,6 @@ from ..database.libraries.models import Library
 from ..database.metrics.models import Metric
 from ..database.library_metric_values.models import LibraryMetricValue
 from ..database.libraries.serializers import LibrarySerializer
-from ..utils.analysis import enqueue_library_analysis
 
 @api_view(["GET"])
 def list_libraries(request, domain_id):
@@ -43,8 +42,14 @@ def create_library(request):
         "analysis_started_at", "analysis_finished_at"
     ])
 
+    # enqueue analysis
+    repo_url = serializer.validated_data["url"]
+
     try:
-        task_id = enqueue_library_analysis(new_library)
+        async_result = analyze_repo_task.delay(str(new_library.library_ID), repo_url)
+        new_library.analysis_task_id = async_result.id
+        new_library.save(update_fields=["analysis_task_id"])
+        task_id = async_result.id
     except Exception as e:
         new_library.analysis_status = Library.ANALYSIS_FAILED
         new_library.analysis_error = str(e)
@@ -86,16 +91,22 @@ def update_library_values(request, library_id):
     library.save()
     metrics_data = data.get("metrics", {})
 
-    for metric_name, value in metrics_data.items():
+    for key, value in metrics_data.items():
+        if key.endswith("_evidence"):
+            base_metric_name = key.replace("_evidence", "")
+            field_to_update = "evidence"
+        else:
+            base_metric_name = key
+            field_to_update = "value"
         try:
-            metric = Metric.objects.get(metric_name=metric_name)
+            metric = Metric.objects.get(metric_name=base_metric_name)
         except Metric.DoesNotExist:
-            continue  #ignore unrecognized metric names
+            continue
 
         LibraryMetricValue.objects.update_or_create(
             library=library,
             metric=metric,
-            defaults={"value": value}
+            defaults={field_to_update: value}
         )
 
     return Response({"success": True})
