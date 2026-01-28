@@ -6,6 +6,7 @@ from .database.metrics.views import MetricRulesView
 from .database.metrics.views import MetricCategoryView
 from .database.library_metric_values.views import AHPCalculations
 from .database.domain.views import update_category_weights, get_category_weights
+from .views.comparison_views import analyze_library, analyze_domain_libraries
 from .views.metric_views import (
     list_metrics,
     create_metric,
