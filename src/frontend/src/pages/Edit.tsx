@@ -1,5 +1,6 @@
-import React, { useEffect, useLayoutEffect, useRef, useState } from "react";
-import { useNavigate, useParams } from "react-router-dom";
+import React, { useEffect, useState, useRef, useLayoutEffect} from "react";
+import { useNavigate } from "react-router-dom";
+import { useParams } from 'react-router-dom';
 import { apiUrl } from "../config/api";
 
 interface Metric {
@@ -21,31 +22,39 @@ interface EditableRow {
 
 const EditValuesPage: React.FC = () => {
   const { domainId } = useParams<{ domainId: string }>();
-  const DOMAIN_ID = domainId ?? "";
+  const DOMAIN_ID = domainId;
   const navigate = useNavigate();
 
   const [metricList, setMetricList] = useState<Metric[]>([]);
   const [rows, setRows] = useState<EditableRow[]>([]);
-
   const [pageLoading, setPageLoading] = useState(false);
-  const [loadingText, setLoadingText] = useState("Loading...");
+  const [loadingText, setLoadingText] = useState<string>("Loading...");
   const [updatingAll, setUpdatingAll] = useState(false);
   const [updatingLibId, setUpdatingLibId] = useState<string | null>(null);
-
   const firstColRef = useRef<HTMLTableCellElement>(null);
   const [offset, setOffset] = useState(0);
+
   useLayoutEffect(() => {
-    if (!firstColRef.current) return;
+  if (firstColRef.current) {
     const width = firstColRef.current.getBoundingClientRect().width;
     setOffset(width);
-  }, [rows.length]); 
+  }
+}, [rows]);
 
-  const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
-  const isTerminal = (s?: AnalysisStatus) => s === "success" || s === "failed";
-  const isActive = (s?: AnalysisStatus) => s === "pending" || s === "running";
+  useEffect(() => {
+    (async () => {
+      try {
+        setPageLoading(true);
+        setLoadingText("Loading table…");
+        await loadData();
+      } finally {
+        setPageLoading(false);
+      }
+    })();
+  }, []);
+
 
   const fetchComparisonRaw = async () => {
-    if (!DOMAIN_ID) throw new Error("Missing domainId");
 
     const res = await fetch(apiUrl(`/comparison/${DOMAIN_ID}/`), {
       credentials: "include",
@@ -54,11 +63,9 @@ const EditValuesPage: React.FC = () => {
     const contentType = res.headers.get("content-type") || "";
     const text = await res.text();
 
-    if (!res.ok) {
-      throw new Error(`HTTP ${res.status}: ${text.slice(0, 200)}`);
-    }
+    if (!res.ok) throw new Error(text);
     if (!contentType.includes("application/json")) {
-      throw new Error(`Expected JSON, got ${contentType}. Body: ${text.slice(0, 120)}`);
+      throw new Error(`Expected JSON, got ${contentType}. Body: ${text.slice(0, 100)}`);
     }
 
     return JSON.parse(text);
@@ -67,35 +74,25 @@ const EditValuesPage: React.FC = () => {
   const loadData = async () => {
     const data = await fetchComparisonRaw();
 
-    const editableRows: EditableRow[] = (data.libraries || []).map((lib: any) => ({
+    const editableRows: EditableRow[] = data.libraries.map((lib: any) => ({
       ...lib,
       isEditing: false,
     }));
 
-    setMetricList(data.metrics || []);
+    setMetricList(data.metrics);
     setRows(editableRows);
   };
 
-  useEffect(() => {
-    (async () => {
-      if (!DOMAIN_ID) return;
-      try {
-        setPageLoading(true);
-        setLoadingText("Loading table…");
-        await loadData();
-      } catch (e) {
-        console.error(e);
-      } finally {
-        setPageLoading(false);
-      }
-    })();
-  }, [DOMAIN_ID]);
+  const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
+
+  const isTerminal = (s?: AnalysisStatus) => s === "success" || s === "failed";
+  const isActive = (s?: AnalysisStatus) => s === "pending" || s === "running";
 
   const waitForLibraryDone = async (libraryId: string) => {
     for (let i = 0; i < 80; i++) {
       await sleep(1500);
       const data = await fetchComparisonRaw();
-      const lib = (data.libraries || []).find((x: any) => x.library_ID === libraryId);
+      const lib = data.libraries.find((x: any) => x.library_ID === libraryId);
       if (isTerminal(lib?.analysis_status)) return;
     }
   };
@@ -104,14 +101,14 @@ const EditValuesPage: React.FC = () => {
     for (let i = 0; i < 120; i++) {
       await sleep(1500);
       const data = await fetchComparisonRaw();
-      const anyActive = (data.libraries || []).some((l: any) => isActive(l.analysis_status));
+      const anyActive = data.libraries.some((l: any) => isActive(l.analysis_status));
       if (!anyActive) return;
     }
   };
 
   const startEdit = (id: string) => {
     setRows((prev) =>
-      prev.map((r) => (r.library_ID === id ? { ...r, isEditing: true } : { ...r, isEditing: false }))
+      prev.map((r) => (r.library_ID === id ? { ...r, isEditing: true } : r))
     );
   };
 
@@ -120,59 +117,52 @@ const EditValuesPage: React.FC = () => {
       setPageLoading(true);
       setLoadingText("Refreshing…");
       await loadData();
-    } catch (e) {
-      console.error(e);
     } finally {
       setPageLoading(false);
     }
   };
 
-  const updateField = (id: string, field: keyof EditableRow, value: any) => {
-    setRows((prev) => prev.map((r) => (r.library_ID === id ? { ...r, [field]: value } : r)));
+  const updateField = (id: string, field: string, value: any) => {
+    setRows((prev) =>
+      prev.map((r) => (r.library_ID === id ? { ...r, [field]: value } : r))
+    );
   };
 
-  const updateMetricValue = (
-    libId: string,
-    metric: string,
-    value: any,
-    isEvidence: boolean = false
-  ) => {
+  const updateMetricValue = (libId: string, metric: string, value: any, isEvidence: boolean = false) => {
     const key = isEvidence ? `${metric}_evidence` : metric;
     setRows((prev) =>
       prev.map((r) =>
-        r.library_ID === libId ? { ...r, metrics: { ...r.metrics, [key]: value } } : r
+        r.library_ID === libId
+          ? { ...r, metrics: { ...r.metrics, [key]: value } }
+          : r
       )
     );
   };
 
   const saveRow = async (row: EditableRow) => {
-    try {
-      setPageLoading(true);
-      setLoadingText("Saving…");
+    const res = await fetch(apiUrl(`/libraries/${row.library_ID}/update-values/`), {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      credentials: "include",
+      body: JSON.stringify({
+        library_name: row.library_name,
+        url: row.url,
+        programming_language: row.programming_language,
+        metrics: row.metrics,
+      }),
+    });
 
-      const res = await fetch(apiUrl(`/libraries/${row.library_ID}/update-values/`), {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        credentials: "include",
-        body: JSON.stringify({
-          library_name: row.library_name,
-          url: row.url,
-          programming_language: row.programming_language,
-          metrics: row.metrics,
-        }),
-      });
-
-      if (!res.ok) {
-        const text = await res.text();
-        console.error("Save failed:", res.status, text);
-        return;
+    if (res.ok) {
+      try {
+        setPageLoading(true);
+        setLoadingText("Saving…");
+        await loadData();
+      } finally {
+        setPageLoading(false);
       }
-
-      await loadData();
-    } catch (e) {
-      console.error(e);
-    } finally {
-      setPageLoading(false);
+    } else {
+      const text = await res.text();
+      console.error("Save failed:", res.status, text);
     }
   };
 
@@ -198,8 +188,6 @@ const EditValuesPage: React.FC = () => {
 
       setLoadingText("Refreshing table…");
       await loadData();
-    } catch (e) {
-      console.error(e);
     } finally {
       setUpdatingLibId(null);
       setPageLoading(false);
@@ -211,6 +199,7 @@ const EditValuesPage: React.FC = () => {
       setUpdatingAll(true);
       setPageLoading(true);
       setLoadingText("Updating all repositories…");
+
 
       const res = await fetch(apiUrl(`/domains/${DOMAIN_ID}/analyze-all/`), {
         method: "POST",
@@ -228,8 +217,6 @@ const EditValuesPage: React.FC = () => {
 
       setLoadingText("Refreshing table…");
       await loadData();
-    } catch (e) {
-      console.error(e);
     } finally {
       setUpdatingAll(false);
       setPageLoading(false);
@@ -238,24 +225,25 @@ const EditValuesPage: React.FC = () => {
 
   return (
     <div className="dx-bg" style={{ display: "flex", height: "100vh" }}>
-      <div
-        className="dx-card"
-        style={{
-          width: 120,
-          padding: "22px 14px",
-          display: "flex",
-          flexDirection: "column",
-          gap: 18,
-          borderRight: "1px solid rgba(255,255,255,0.08)",
-        }}
-      >
-        <button
-          className="dx-btn dx-btn-outline"
-          style={{ width: "100%", fontSize: "1rem", textAlign: "center" }}
-          onClick={() => navigate(`/comparison-tool/${domainId}`)}
-        >
-          ← Back
-        </button>
+    <div
+      className="dx-card"
+      style={{
+        width: 120,
+        padding: "22px 14px",
+        display: "flex",
+        flexDirection: "column",
+        gap: 18,
+        borderRight: "1px solid rgba(255,255,255,0.08)",
+      }}
+    >
+      <button
+            className="dx-btn dx-btn-outline"
+            style={{ width: "100%", fontSize: "1rem", textAlign: "center" }}
+            onClick={() => navigate(`/comparison-tool/${domainId}`)}
+              >
+                ← Back
+      </button>
+
       </div>
 
       <div
@@ -279,7 +267,9 @@ const EditValuesPage: React.FC = () => {
           </div>
         )}
 
-        <h1 style={{ color: "var(--accent)", marginBottom: 20 }}>Edit Metric Values</h1>
+        <h1 style={{ color: "var(--accent)", marginBottom: 20 }}>
+          Edit Metric Values
+        </h1>
 
         <div
           className="dx-card"
@@ -291,14 +281,14 @@ const EditValuesPage: React.FC = () => {
             flexDirection: "column",
           }}
         >
-          <div style={{ marginBottom: 8 }}>
+          <div style={{ marginBottom: 2 }}>
             <button
               className="dx-btn dx-btn-outline dx-btn-inline"
               onClick={runAnalysisForAll}
-              disabled={pageLoading || updatingAll || !DOMAIN_ID}
+              disabled={pageLoading || updatingAll}
               style={{ opacity: pageLoading || updatingAll ? 0.7 : 1 }}
             >
-              {pageLoading && updatingAll && <span className="dx-spinner" />}
+              {(pageLoading && updatingAll) && <span className="dx-spinner" />}
               {updatingAll ? "Updating..." : "Update All"}
             </button>
           </div>
@@ -307,11 +297,7 @@ const EditValuesPage: React.FC = () => {
             <table className="dx-table">
               <thead>
                 <tr>
-                  <th
-                    ref={firstColRef}
-                    className="dx-th-sticky dx-sticky-left"
-                    style={{ left: 0 }}
-                  >
+                  <th ref={firstColRef} className="dx-th-sticky dx-sticky-left" style={{ left: 0 }}>
                     Actions
                   </th>
                   <th className="dx-th-sticky dx-sticky-left" style={{ left: offset }}>
@@ -376,6 +362,7 @@ const EditValuesPage: React.FC = () => {
                           </div>
                         )}
                       </td>
+
                       <td className="dx-sticky-left" style={{ left: offset }}>
                         {row.isEditing ? (
                           <input
@@ -395,7 +382,7 @@ const EditValuesPage: React.FC = () => {
                         {row.isEditing ? (
                           <input
                             className="dx-input"
-                            value={row.url ?? ""}
+                            value={row.url || ""}
                             onChange={(e) => updateField(row.library_ID, "url", e.target.value)}
                             disabled={pageLoading}
                           />
@@ -404,12 +391,11 @@ const EditValuesPage: React.FC = () => {
                         )}
                       </td>
 
-                
                       <td>
                         {row.isEditing ? (
                           <input
                             className="dx-input"
-                            value={row.programming_language ?? ""}
+                            value={row.programming_language || ""}
                             onChange={(e) =>
                               updateField(row.library_ID, "programming_language", e.target.value)
                             }
@@ -420,54 +406,19 @@ const EditValuesPage: React.FC = () => {
                         )}
                       </td>
 
-        
                       {metricList.map((m) => (
-                        <td key={m.metric_ID} style={{ verticalAlign: "top" }}>
+                        <td key={m.metric_ID}>
                           {row.isEditing ? (
-                            <div style={{ display: "flex", flexDirection: "column", gap: 4 }}>
-                              <input
-                                className="dx-input"
-                                placeholder="Value"
-                                value={row.metrics[m.metric_name] ?? ""}
-                                onChange={(e) =>
-                                  updateMetricValue(
-                                    row.library_ID,
-                                    m.metric_name,
-                                    e.target.value,
-                                    false
-                                  )
-                                }
-                                disabled={pageLoading}
-                              />
-                              <input
-                                className="dx-input"
-                                placeholder="Evidence…"
-                                style={{ fontSize: "0.8rem", opacity: 0.8 }}
-                                value={row.metrics[`${m.metric_name}_evidence`] ?? ""}
-                                onChange={(e) =>
-                                  updateMetricValue(
-                                    row.library_ID,
-                                    m.metric_name,
-                                    e.target.value,
-                                    true
-                                  )
-                                }
-                                disabled={pageLoading}
-                              />
-                            </div>
+                            <input
+                              className="dx-input"
+                              value={row.metrics[m.metric_name] ?? ""}
+                              onChange={(e) =>
+                                updateMetricValue(row.library_ID, m.metric_name, e.target.value)
+                              }
+                              disabled={pageLoading}
+                            />
                           ) : (
-                            <div>
-                              <div>{row.metrics[m.metric_name] ?? "—"}</div>
-                              <div
-                                style={{
-                                  fontSize: "0.75rem",
-                                  color: "var(--text-dim)",
-                                  fontStyle: "italic",
-                                }}
-                              >
-                                {row.metrics[`${m.metric_name}_evidence`] || ""}
-                              </div>
-                            </div>
+                            row.metrics[m.metric_name] ?? "—"
                           )}
                         </td>
                       ))}
