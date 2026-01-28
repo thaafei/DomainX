@@ -54,11 +54,8 @@ const ComparisonToolPage: React.FC = () => {
             }
             return rawId;
           };
-
-      const formattedDomainId = DOMAIN_ID;
       getDomainSpecification()
-      const res = await fetch(
-          apiUrl(`/comparison/${formattedDomainId}/`),
+      const res = await fetch(apiUrl(`/comparison/${DOMAIN_ID}/`),
           { credentials: "include" }
         );
       const contentType = res.headers.get("content-type") || "";
@@ -71,8 +68,6 @@ const ComparisonToolPage: React.FC = () => {
       }
 
       const data = JSON.parse(text);
-
-      //const data = await res.json();
       setMetricList(data.metrics);
       setTableRows(data.libraries);
     } catch (err) {
@@ -86,7 +81,7 @@ const ComparisonToolPage: React.FC = () => {
       <div
         className="dx-card"
         style={{
-          width: 160,
+          width: 120,
           padding: "22px 14px",
           display: "flex",
           flexDirection: "column",
@@ -96,6 +91,7 @@ const ComparisonToolPage: React.FC = () => {
       >
         <button
           className="dx-btn dx-btn-outline"
+          style={{ width: "100%", fontSize: "1rem", textAlign: "center" }}
           onClick={() => navigate("/main")}
         >
           ← Back

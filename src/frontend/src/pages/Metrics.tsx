@@ -43,7 +43,8 @@ const MetricsPage: React.FC = () => {
   useEffect(() => {
     const fetchRules = async () => {
       try {
-        const response = await fetch(apiUrl('/metric-categories/')); 
+
+        const response = await fetch(apiUrl('/metric-categories/'));
         const data = await response.json();
         setCategories(data.Categories);
       } catch (error) {
@@ -161,7 +162,7 @@ return (
     <div
       className="dx-card"
       style={{
-        width: 160,
+        width: 120,
         padding: "22px 14px",
         display: "flex",
         flexDirection: "column",

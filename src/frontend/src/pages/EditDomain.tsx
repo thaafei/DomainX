@@ -228,7 +228,7 @@ const EditDomain: React.FC = () => {
       <div
         className="dx-card"
         style={{
-          width: 160,
+          width: 120,
           padding: "22px 14px",
           display: "flex",
           flexDirection: "column",

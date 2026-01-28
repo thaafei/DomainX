@@ -40,9 +40,8 @@ urlpatterns = [
     path('metric-categories/', MetricCategoryView.as_view(), name='metric-categories'),
     path('category_weights/<uuid:domain_id>/', update_category_weights, name='update_category_weights'),
     path('get_category_weights/<uuid:domain_id>/', get_category_weights, name='get_category_weights'),
-    path('aph/<uuid:domain_id>/', AHPCalculations.as_view(), name='aph_category')
-    # path('database/libraries/', include('api.database.libraries.urls')),
-    # path('database/metrics/', include('api.database.metrics.urls')),
-    # path('database/library-metrics/', include('api.database.library_metric_values.urls')),
-    # path('database/domain/', include('api.database.domain.urls')),
+    path('aph/<uuid:domain_id>/', AHPCalculations.as_view(), name='aph_category'),
+    path("libraries/<uuid:library_id>/analyze/", analyze_library),
+    path("domains/<uuid:domain_id>/analyze-all/", analyze_domain_libraries)
+
 ]

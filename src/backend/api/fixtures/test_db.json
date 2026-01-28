@@ -108,7 +108,7 @@
     "model": "metrics.Metric",
     "pk": "550e8400-e29b-41d4-a716-446655550003",
     "fields": {
-      "metric_name": "Open Issues",
+      "metric_name": "Open Issues Count",
       "description": "Number of open issues",
       "category": "Activity",
       "weight": 0.7,
