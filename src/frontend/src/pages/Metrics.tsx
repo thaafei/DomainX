@@ -5,6 +5,8 @@ interface Metric {
   metric_ID: string;
   metric_name: string;
   value_type: string;
+  option_category?: string,
+  rule?: string,
   category?: string;
   description?: string;
 }
@@ -292,6 +294,8 @@ return (
             <tr>
               <th style={{ textAlign: "left", padding: 8 }}>Name</th>
               <th style={{ textAlign: "left", padding: 8 }}>Type</th>
+              <th style={{ textAlign: "left", padding: 8 }}>Input Category</th>
+              <th style={{ textAlign: "left", padding: 8 }}>Scoring Rule</th>
               <th style={{ textAlign: "left", padding: 8 }}>Category</th>
               <th style={{ textAlign: "left", padding: 8 }}>Description</th>
               <th style={{ width: 100 }}></th>
@@ -306,6 +310,15 @@ return (
               >
                 <td style={{ padding: 8 }}>{m.metric_name}</td>
                 <td style={{ padding: 8 }}>{m.value_type}</td>
+                <td style={{ padding: 8 }}>{m.value_type === "bool" ? rulesData.bool[m.option_category || "yes_no"].display_name : m.value_type === "range" ? rulesData.range[m.option_category ||"file_ranges"].display_name : "—"}</td>
+                <td style={{ padding: 8 }}>{m.value_type === "bool" || m.value_type === "range" ? (
+                  <code>
+                    {JSON.stringify(
+                      m.value_type === "bool" 
+                        ? rulesData.bool[m.option_category || "yes_no"].templates[m.rule || "standard"]
+                        : rulesData.range[m.option_category || "file_ranges"].templates[m.rule || "standard"]
+                    )}
+                  </code> ) : ("—")}</td>
                 <td style={{ padding: 8 }}>{m.category || "—"}</td>
                 <td style={{ padding: 8 }}>{m.description || "—"}</td>
                 <td style={{ padding: 8 }}>

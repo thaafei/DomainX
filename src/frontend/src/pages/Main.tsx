@@ -12,6 +12,7 @@ const Main: React.FC = () => {
   const navigate = useNavigate();
   const [leftSidebarOpen, setLeftSidebarOpen] = useState(true);
   const [moreInfoSidebarOpen, setMoreInfoSidebarOpen] = useState(false);
+  const [sidebarOpen, setSidebarOpen] = useState(true);
   const [domains, setDomains] = useState<any[]>([]);
   const [selectedDomain, setSelectedDomain] = useState<any>(null);;
   const [loading, setLoading] = useState(true);
@@ -24,6 +25,8 @@ const Main: React.FC = () => {
   const [formError, setFormError] = useState("");
   const [adminUsers, setAdminUsers] = useState<any[]>([]);
   const [selectedCreatorIds, setSelectedCreatorIds] = useState<number[]>([]);
+  const [localWeights, setLocalWeights] = useState<Record<string, number>>({});
+  const [categories, setCategories] = useState<any>(null)
   
   const fetchCurrentUser = async () => {
     try {
@@ -96,7 +99,38 @@ const Main: React.FC = () => {
       setLoading(false);
     }
   };
+  useEffect(() => {
+    const fetchWeights = async () => {
+      if (!selectedDomain) return;
+      try {
+        const res = await fetch(apiUrl(`/get_category_weights/${selectedDomain.domain_ID}/`));
+        if (res.ok) {
+          const data = await res.json();
+          // data should be your category_weights dict
+          setLocalWeights(data); 
+        }
+      } catch (err) { console.error(err); }
+    };
 
+    if (selectedDomain?.domain_ID) {
+      getAHPRanking(); // For graphing
+      fetchWeights();  // The weights fetch
+    }
+  }, [selectedDomain]);
+
+  useEffect(() => {
+      const fetchRules = async () => {
+        try {
+          const response = await fetch(apiUrl('/metric-categories/')); 
+          const data = await response.json();
+          setCategories(data.Categories);
+        } catch (error) {
+          console.error("Error fetching AHP rules:", error);
+        }
+      };
+      fetchRules();
+    }, []);
+  
   const getAHPRanking = async () => {
     const response = await fetch(apiUrl(`/aph/${selectedDomain.domain_ID}/`), {
       method: 'GET',
@@ -111,6 +145,47 @@ const Main: React.FC = () => {
     else {
       setGraph(false);
     }
+  };
+  useEffect(() => {
+    const fetchWeights = async () => {
+      if (!selectedDomain) return;
+      try {
+        const res = await fetch(apiUrl(`/get_category_weights/${selectedDomain.domain_ID}/`));
+        if (res.ok) {
+          const data = await res.json();
+          // data should be your category_weights dict
+          setLocalWeights(data); 
+        }
+      } catch (err) { console.error(err); }
+    };
+
+    if (selectedDomain?.domain_ID) {
+      getAHPRanking(); // For graphing
+      fetchWeights();  // The weights fetch
+    }
+  }, [selectedDomain]);
+
+  const handleWeightChange = (category: string, value: string) => {
+    const numValue = parseFloat(value) || 0;
+    setLocalWeights(prev => ({
+      ...prev,
+      [category]: numValue
+    }));
+  };
+
+  const saveWeights = async () => {
+    if (!selectedDomain) return;
+    try {
+      const res = await fetch(apiUrl(`/category_weights/${selectedDomain.domain_ID}/`), {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ values: localWeights })
+      });
+      if (res.ok) {
+        alert("Weights updated successfully!");
+        getAHPRanking(); // Refresh the graph to reflect new weights
+      }
+    } catch (err) { console.error(err); }
   };
   const chartData = Object.entries(globalRanking)
     .map(([name, score]) => ({
@@ -220,22 +295,14 @@ const Main: React.FC = () => {
         setFormError={setFormError}
         handleCreateDomain={handleCreateDomain}
         handleLogout={handleLogout}
-      />
-      
-      {graph && (
-        <div style={{
-          flex: 1,
-          display: 'flex',
-          flexDirection: 'column',
-          overflowY: 'auto',
-          padding: '20px',
-          gap: '20px'
-        }}>
-          <div className="dx-card" style={{ padding: '20px', background: '#1a1a1a' }}>
+      />      
+      <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: '20px', overflowY: 'auto' }}>
+        {graph && (
+          <div className="dx-card" style={{ padding: '20px', marginTop: '20px', width: '1000px' }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
-              <h3 style={{ color: 'var(--accent)', margin: 0 }}>Global AHP Ranking</h3>
-              <span style={{ fontSize: '0.8rem', color: '#888' }}>*Sum of priorities = 100%</span>
+              <h3 style={{ color: 'var(--accent)', margin: 0, textAlign:'center' }}>Global AHP Ranking</h3>
             </div>
+            
             <div style={{ width: '100%', height: 400 }}>
               <ResponsiveContainer width="100%" height="100%">
                 <BarChart data={chartData} margin={{ top: 20, right: 30, left: 0, bottom: 60 }}>
@@ -277,9 +344,43 @@ const Main: React.FC = () => {
               </ResponsiveContainer>
             </div>
           </div>
+        )}
+        <div className="dx-card" style={{ padding: '20px', marginTop: '20px', color: "white" }}>
+          <h3 style={{ color: 'var(--accent)', marginBottom: '15px' }}>Category Weights</h3>
+          <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+            <thead>
+              <tr style={{ textAlign: 'left', borderBottom: '1px solid #333' }}>
+                <th style={{ padding: '10px' }}>Category</th>
+                <th style={{ padding: '10px' }}>Weight</th>
+              </tr>
+            </thead>
+            <tbody>
+              {categories?.map((cat: string) => (
+                <tr key={cat} style={{ borderBottom: '1px solid #222' }}>
+                  <td style={{ padding: '10px' }}>{cat}</td>
+                  <td style={{ padding: '10px' }}>
+                    <input
+                      type="number"
+                      className="dx-input"
+                      style={{ width: '80px' }}
+                      step="0.1"
+                      value={localWeights[cat] ?? 1.0} // Default to 1.0 if not set
+                      onChange={(e) => handleWeightChange(cat, e.target.value)}
+                    />
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+          <button 
+            className="dx-btn dx-btn-primary" 
+            style={{ marginTop: '15px' }}
+            onClick={saveWeights}
+          >
+            Update Weights
+          </button>
         </div>
-      )}
-
+      </div>
       <DomainInfo 
         selectedDomain={selectedDomain}
         sidebarOpen={moreInfoSidebarOpen}

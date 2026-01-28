@@ -9,6 +9,7 @@ class Metric(models.Model):
         ("float", "Float"),
         ("int", "Integer"),
         ("bool", "Boolean"),
+        ("range", "Range"),
         ("text", "Text"),
     ]
     metric_ID = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)

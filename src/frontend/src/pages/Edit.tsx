@@ -43,7 +43,7 @@ const EditValuesPage: React.FC = () => {
       const formattedDomainId = DOMAIN_ID;
 
       const res = await fetch(
-          apiUrl(`/api/comparison/${formattedDomainId}/`),
+          apiUrl(`/comparison/${formattedDomainId}/`),
           { credentials: "include" }
         );
       const contentType = res.headers.get("content-type") || "";
@@ -85,11 +85,12 @@ const EditValuesPage: React.FC = () => {
     );
   };
 
-  const updateMetricValue = (libId: string, metric: string, value: any) => {
+  const updateMetricValue = (libId: string, metric: string, value: any, isEvidence: boolean = false) => {
+    const key = isEvidence ? `${metric}_evidence` : metric;
     setRows(prev =>
       prev.map(r =>
         r.library_ID === libId
-          ? { ...r, metrics: { ...r.metrics, [metric]: value } }
+          ? { ...r, metrics: { ...r.metrics, [key]: value } }
           : r
       )
     );
@@ -104,7 +105,7 @@ const EditValuesPage: React.FC = () => {
     };
 
     const res = await fetch(apiUrl(
-      `/api/libraries/${row.library_ID}/update-values/`),
+      `/libraries/${row.library_ID}/update-values/`),
       {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -211,21 +212,30 @@ const EditValuesPage: React.FC = () => {
                     )}
                   </td>
                   {metricList.map(m => (
-                    <td key={m.metric_ID} style={{ padding: 8 }}>
+                    <td key={m.metric_ID} style={{ padding: 8, verticalAlign: 'top' }}>
                       {row.isEditing ? (
-                        <input
-                          className="dx-input"
-                          value={row.metrics[m.metric_name] || ""}
-                          onChange={e =>
-                            updateMetricValue(
-                              row.library_ID,
-                              m.metric_name,
-                              e.target.value
-                            )
-                          }
-                        />
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                          <input
+                            className="dx-input"
+                            placeholder="Value"
+                            value={row.metrics[m.metric_name] || ""}
+                            onChange={e => updateMetricValue(row.library_ID, m.metric_name, e.target.value, false)}
+                          />
+                          <input
+                            className="dx-input"
+                            placeholder="Evidence..."
+                            style={{ fontSize: '0.8rem', opacity: 0.8 }}
+                            value={row.metrics[`${m.metric_name}_evidence`] || ""}
+                            onChange={e => updateMetricValue(row.library_ID, m.metric_name, e.target.value, true)}
+                          />
+                        </div>
                       ) : (
-                        row.metrics[m.metric_name] ?? "—"
+                        <div>
+                          <div>{row.metrics[m.metric_name] ?? "—"}</div>
+                          <div style={{ fontSize: '0.75rem', color: 'var(--text-dim)', fontStyle: 'italic' }}>
+                            {row.metrics[`${m.metric_name}_evidence`] || ""}
+                          </div>
+                        </div>
                       )}
                     </td>
                   ))}
