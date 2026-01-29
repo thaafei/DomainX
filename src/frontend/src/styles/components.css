@@ -14,13 +14,16 @@
   color: var(--text-main);
   outline: none;
   transition: border 0.2s ease;
+  color: white;
 }
 
 .dx-input:focus {
   border: 1px solid var(--accent);
 }
 
-
+.dx-input-select {
+  color: black;
+}
 
 .dx-btn {
   padding: 9px 18px;

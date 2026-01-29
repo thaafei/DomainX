@@ -570,21 +570,11 @@ const MetricsPage: React.FC = () => {
                       else onEditTypeChange(val);
                     }}
                   >
-                    <option value="float" style={{ color: "black" }}>
-                      Float
-                    </option>
-                    <option value="int" style={{ color: "black" }}>
-                      Integer
-                    </option>
-                    <option value="bool" style={{ color: "black" }}>
-                      Boolean
-                    </option>
-                    <option value="range" style={{ color: "black" }}>
-                      Range
-                    </option>
-                    <option value="text" style={{ color: "black" }}>
-                      Text
-                    </option>
+                    <option value="float" className="dx-input-select"> Float </option>
+                    <option value="int" className="dx-input-select"> Integer </option>
+                    <option value="bool" className="dx-input-select"> Boolean </option>
+                    <option value="range" className="dx-input-select"> Range </option>
+                    <option value="text" className="dx-input-select"> Text </option>
                   </select>
                 </div>
 
@@ -598,9 +588,9 @@ const MetricsPage: React.FC = () => {
                     }
                     style={{ borderColor: "var(--accent)" }}
                   >
-                    <option value="">-- Select Category --</option>
+                    <option  className="dx-input-select" value="">-- Select Category --</option>
                     {categories.map((catName) => (
-                      <option key={catName} value={catName} style={{ color: "black" }}>
+                      <option className="dx-input-select" key={catName} value={catName}>
                         {catName}
                       </option>
                     ))}

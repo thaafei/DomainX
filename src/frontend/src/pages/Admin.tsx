@@ -25,8 +25,6 @@ const AdminPage: React.FC = () => {
   const [users, setUsers] = useState<User[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  
-  // Edit modal state
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [editingUser, setEditingUser] = useState<User | null>(null);
   const [editFormData, setEditFormData] = useState({
@@ -401,9 +399,9 @@ const AdminPage: React.FC = () => {
                   }
                   style={{ width: "100%" }}
                 >
-                  <option value="user">User</option>
-                  <option value="admin">Admin</option>
-                  <option value="superadmin">Superadmin</option>
+                  <option className="dx-input-select" value="user">User</option>
+                  <option className="dx-input-select" value="admin">Admin</option>
+                  <option className="dx-input-select" value="superadmin">Superadmin</option>
                 </select>
               </div>
 
