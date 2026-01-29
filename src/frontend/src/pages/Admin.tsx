@@ -170,7 +170,7 @@ const AdminPage: React.FC = () => {
   }
 
   return (
-    <div className="dx-bg" style={{ display: "flex", height: "100vh" }}>
+    <div className="dx-bg" style={{ display: "flex", height: "100vh", minWidth: "450px" }}>
       <div
         style={{
           flex: 1,
@@ -207,13 +207,14 @@ const AdminPage: React.FC = () => {
             }}
           >
             <div className="dx-table-wrap dx-table-scroll" style={{ flex: 1, minHeight: 0 }}>
-              <table className="dx-table">
+              <table className="dx-table" style={{ tableLayout: "auto" }}>
                 <thead>
                   <tr>
                     <th className="dx-th-sticky">Actions</th>
                     <th className="dx-th-sticky">Email</th>
                     <th className="dx-th-sticky">Username</th>
-                    <th className="dx-th-sticky">Full Name</th>
+                    <th className="dx-th-sticky">First Name</th>
+                    <th className="dx-th-sticky">Last Name</th>
                     <th className="dx-th-sticky">Role</th>
                     <th className="dx-th-sticky">Associated Domains</th>
                   </tr>
@@ -229,19 +230,20 @@ const AdminPage: React.FC = () => {
                   ) : (
                     users.map((u) => (
                       <tr key={u.id} style={{ borderBottom: "1px solid rgba(255,255,255,0.08)" }}>
-                        <td style={{ minWidth: 80 }}>
+                        <td style={{ minWidth: 80, whiteSpace: "normal", wordWrap: "break-word" }}>
                           <button
                             className="dx-btn dx-btn-outline"
                             onClick={() => openEditModal(u)}
-                            style={{ fontSize: "0.85rem", padding: "4px 12px" }}
+                            style={{ fontSize: "0.85rem", padding: "6px 15px", justifySelf: "center"}}
                           >
                             Edit
                           </button>
                         </td>
-                        <td style={{ minWidth: 200 }}>{u.email}</td>
-                        <td style={{ minWidth: 120 }}>{u.username}</td>
-                        <td style={{ minWidth: 150 }}>{u.full_name || "—"}</td>
-                        <td style={{ minWidth: 120 }}>
+                        <td style={{ minWidth: 200, maxWidth: 300, whiteSpace: "normal", wordWrap: "break-word", overflowWrap: "anywhere" }}>{u.email}</td>
+                        <td style={{ minWidth: 120, maxWidth: 200, whiteSpace: "normal", wordWrap: "break-word" }}>{u.username}</td>
+                        <td style={{ minWidth: 100, maxWidth: 150, whiteSpace: "normal", wordWrap: "break-word" }}>{u.first_name || "—"}</td>
+                        <td style={{ minWidth: 100, maxWidth: 150, whiteSpace: "normal", wordWrap: "break-word" }}>{u.last_name || "—"}</td>
+                        <td style={{ minWidth: 120, whiteSpace: "normal", wordWrap: "break-word" }}>
                           <span
                             style={{
                               padding: "4px 12px",
@@ -265,7 +267,7 @@ const AdminPage: React.FC = () => {
                             {u.role}
                           </span>
                         </td>
-                        <td style={{ minWidth: 250 }}>
+                        <td style={{ minWidth: 200, maxWidth: 300, whiteSpace: "normal", wordWrap: "break-word" }}>
                           {u.role === "admin" || u.role === "superadmin" ? (
                             u.domains && u.domains.length > 0 ? (
                               <div style={{ display: "flex", flexWrap: "wrap", gap: "6px" }}>
@@ -311,7 +313,6 @@ const AdminPage: React.FC = () => {
         </div>
       </div>
 
-      {/* Edit User Modal */}
       {isEditModalOpen && editingUser && (
         <div
           style={{
