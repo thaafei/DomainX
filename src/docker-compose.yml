@@ -83,7 +83,7 @@ services:
       - ./infra/nginx/conf.d:/etc/nginx/conf.d:ro
       - ./infra/nginx/certs:/etc/letsencrypt:ro
       - ./infra/nginx/www:/var/www/certbot:ro
-      - - ./infra/nginx/selfsigned:/etc/nginx/selfsigned:ro
+      - ./infra/nginx/selfsigned:/etc/nginx/selfsigned:ro
     restart: always
     networks:
       - domainx-net
