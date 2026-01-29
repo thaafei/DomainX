@@ -22,7 +22,7 @@
       "username": "janedoe",
       "email": "jane@example.com",
       "password": "pbkdf2_sha256$600000$xyz456$def789==",
-      "role": "user",
+      "role": "admin",
       "is_active": true,
       "is_staff": false,
       "is_superuser": false,
@@ -66,7 +66,7 @@
       "description": "Web framework and server libraries",
       "created_at": "2024-01-02T10:00:00Z",
       "published": false,
-      "creators": [2, 3]
+      "creators": [2]
     }
   },
   {

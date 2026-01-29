@@ -1,5 +1,6 @@
 from rest_framework import serializers
 from .models import CustomUser
+from api.database.domain.models import Domain
 
 class SignupSerializer(serializers.ModelSerializer):
     username = serializers.CharField(required=True)
@@ -17,3 +18,20 @@ class UserProfileSerializer(serializers.ModelSerializer):
         model = CustomUser
         fields = ["id", "email", "username", "role", "first_name", "last_name", "full_name"]
         read_only_fields = ["email", "role"]
+
+class UserWithDomainsSerializer(serializers.ModelSerializer):
+    full_name = serializers.CharField(source='get_full_name', read_only=True, allow_null=True)
+    domains = serializers.SerializerMethodField()
+    
+    class Meta:
+        model = CustomUser
+        fields = ["id", "email", "username", "role", "first_name", "last_name", "full_name", "domains"]
+        read_only_fields = ["email", "role"]
+    
+    def get_domains(self, obj):
+        # Only include domains for admin and superadmin users
+        if obj.role in ['admin', 'superadmin']:
+            # Use prefetched data to avoid N+1 queries
+            domains = obj.created_domains.all()
+            return [{'domain_ID': str(d.domain_ID), 'domain_name': d.domain_name} for d in domains]
+        return []

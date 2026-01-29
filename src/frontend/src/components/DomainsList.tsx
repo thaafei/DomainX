@@ -1,7 +1,7 @@
 import React, { useEffect } from 'react';
 import { useNavigate } from "react-router-dom";
 import { useAuthStore } from "../store/useAuthStore";
-import { selectDomainDefinition } from 'recharts/types/state/selectors/axisSelectors';
+
 
 interface DomainsListProps {
   sidebarOpen: boolean;
@@ -48,6 +48,7 @@ const DomainsList: React.FC<DomainsListProps> = ({
 }) => {
   const navigate = useNavigate();
   const { user } = useAuthStore();
+  const isSuperAdmin = user?.role === "superadmin";
 
   useEffect(() => {
     if (showDomainModal && user && adminUsers.length > 0) {
@@ -123,6 +124,20 @@ const DomainsList: React.FC<DomainsListProps> = ({
 
       {sidebarOpen && (
         <>
+          { isSuperAdmin && (
+            <button
+              className="dx-btn dx-btn-outline"
+              onClick={() => navigate("/admin")}
+              style={{
+                display: "flex",
+                alignItems: "center",
+                marginTop: 8,
+              }}
+            >
+              <span style={{ fontSize: 15, marginRight: 8 }}>👥</span> Manage Users
+            </button>
+          )}
+          
           <button
             className="dx-btn dx-btn-outline"
             onClick={() => setShowDomainModal(true)}
