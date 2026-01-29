@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState, useRef, useLayoutEffect } from "react";
+import React, { useEffect, useMemo, useRef, useLayoutEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { apiUrl } from "../config/api";
 
@@ -13,11 +13,22 @@ interface Metric {
   weight?: number;
 }
 
+type ModalMode = "create" | "edit" | null;
+
 const MetricsPage: React.FC = () => {
   const navigate = useNavigate();
 
   const [metrics, setMetrics] = useState<Metric[]>([]);
 
+  // Data
+  const [rulesData, setRulesData] = useState<any>(null);
+  const [categories, setCategories] = useState<string[]>([]);
+
+  // Modal
+  const [modalMode, setModalMode] = useState<ModalMode>(null);
+  const isModalOpen = modalMode !== null;
+
+  // Create fields
   const [newName, setNewName] = useState("");
   const [newType, setNewType] = useState("float");
   const [newCategory, setNewCategory] = useState("");
@@ -25,9 +36,7 @@ const MetricsPage: React.FC = () => {
   const [selectedOptionCategory, setSelectedOptionCategory] = useState("");
   const [selectedTemplate, setSelectedTemplate] = useState("");
 
-  const [rulesData, setRulesData] = useState<any>(null);
-  const [categories, setCategories] = useState<string[]>([]);
-
+  // Edit fields
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editName, setEditName] = useState("");
   const [editType, setEditType] = useState("float");
@@ -36,6 +45,7 @@ const MetricsPage: React.FC = () => {
   const [editOptionCategory, setEditOptionCategory] = useState("");
   const [editTemplate, setEditTemplate] = useState("");
 
+  // Sticky Offset Logic
   const firstColRef = useRef<HTMLTableCellElement>(null);
   const [offset, setOffset] = useState(0);
 
@@ -44,12 +54,7 @@ const MetricsPage: React.FC = () => {
       const width = firstColRef.current.getBoundingClientRect().width;
       setOffset(width);
     }
-  }, [metrics, editingId]);
-
-  useEffect(() => {
-    setSelectedOptionCategory("");
-    setSelectedTemplate("");
-  }, [newType]);
+  }, [metrics]);
 
   useEffect(() => {
     const fetchRules = async () => {
@@ -77,21 +82,22 @@ const MetricsPage: React.FC = () => {
     fetchCategories();
   }, []);
 
-  useEffect(() => {
-    const loadMetrics = async () => {
-      try {
-        const res = await fetch(apiUrl("/metrics/"), { credentials: "include" });
-        const data = await res.json();
+  const loadMetrics = async () => {
+    try {
+      const res = await fetch(apiUrl("/metrics/"), { credentials: "include" });
+      const data = await res.json();
 
-        const uniqueMetricsMap = new Map<string, Metric>();
-        (Array.isArray(data) ? data : []).forEach((metric: Metric) => {
-          uniqueMetricsMap.set(metric.metric_ID, metric);
-        });
-        setMetrics(Array.from(uniqueMetricsMap.values()));
-      } catch (err) {
-        console.error(err);
-      }
-    };
+      const uniqueMetricsMap = new Map<string, Metric>();
+      (Array.isArray(data) ? data : []).forEach((metric: Metric) => {
+        uniqueMetricsMap.set(metric.metric_ID, metric);
+      });
+      setMetrics(Array.from(uniqueMetricsMap.values()));
+    } catch (err) {
+      console.error(err);
+    }
+  };
+
+  useEffect(() => {
     loadMetrics();
   }, []);
 
@@ -108,7 +114,30 @@ const MetricsPage: React.FC = () => {
     return getAvailableCategoriesForType(newType);
   }, [rulesData, newType]);
 
-  const startEdit = (m: Metric) => {
+  // Keep create rule fields consistent when type changes
+  useEffect(() => {
+    setSelectedOptionCategory("");
+    setSelectedTemplate("");
+  }, [newType]);
+
+  const onEditTypeChange = (newVal: string) => {
+    setEditType(newVal);
+    setEditOptionCategory("");
+    setEditTemplate("");
+  };
+
+  const openCreateModal = () => {
+    setModalMode("create");
+    setNewName("");
+    setNewType("float");
+    setNewCategory("");
+    setNewDesc("");
+    setSelectedOptionCategory("");
+    setSelectedTemplate("");
+  };
+
+  const openEditModal = (m: Metric) => {
+    setModalMode("edit");
     setEditingId(m.metric_ID);
     setEditName(m.metric_name || "");
     setEditType(m.value_type || "float");
@@ -118,24 +147,13 @@ const MetricsPage: React.FC = () => {
     setEditTemplate(m.rule || "");
   };
 
-  const cancelEdit = () => {
+  const closeModal = () => {
+    setModalMode(null);
     setEditingId(null);
-    setEditName("");
-    setEditType("float");
-    setEditCategory("");
-    setEditDesc("");
-    setEditOptionCategory("");
-    setEditTemplate("");
   };
 
-  const onEditTypeChange = (newVal: string) => {
-    setEditType(newVal);
-    setEditOptionCategory("");
-    setEditTemplate("");
-  };
-
-  const addMetric = async () => {
-    if (!newName.trim()) return;
+  const addMetric = async (): Promise<boolean> => {
+    if (!newName.trim()) return false;
 
     const payload: any = {
       metric_name: newName.trim(),
@@ -145,8 +163,8 @@ const MetricsPage: React.FC = () => {
     };
 
     if (isRuleType(newType)) {
-      if (!selectedOptionCategory) return;
-      if (!selectedTemplate) return;
+      if (!selectedOptionCategory) return false;
+      if (!selectedTemplate) return false;
       payload.option_category = selectedOptionCategory;
       payload.rule = selectedTemplate;
     } else {
@@ -180,20 +198,16 @@ const MetricsPage: React.FC = () => {
         return Array.from(map.values());
       });
 
-      setNewName("");
-      setNewType("float");
-      setNewCategory("");
-      setNewDesc("");
-      setSelectedOptionCategory("");
-      setSelectedTemplate("");
+      return true;
     } catch (err) {
       console.error(err);
+      return false;
     }
   };
 
-  const saveEdit = async () => {
-    if (!editingId) return;
-    if (!editName.trim()) return;
+  const saveEdit = async (): Promise<boolean> => {
+    if (!editingId) return false;
+    if (!editName.trim()) return false;
 
     const payload: any = {
       metric_name: editName.trim(),
@@ -203,8 +217,8 @@ const MetricsPage: React.FC = () => {
     };
 
     if (isRuleType(editType)) {
-      if (!editOptionCategory) return;
-      if (!editTemplate) return;
+      if (!editOptionCategory) return false;
+      if (!editTemplate) return false;
       payload.option_category = editOptionCategory;
       payload.rule = editTemplate;
     } else {
@@ -238,9 +252,10 @@ const MetricsPage: React.FC = () => {
         return Array.from(map.values());
       });
 
-      cancelEdit();
+      return true;
     } catch (err) {
       console.error(err);
+      return false;
     }
   };
 
@@ -253,7 +268,6 @@ const MetricsPage: React.FC = () => {
 
       if (res.ok) {
         setMetrics((prev) => prev.filter((m) => m.metric_ID !== id));
-        if (editingId === id) cancelEdit();
       }
     } catch (err) {
       console.error(err);
@@ -274,21 +288,40 @@ const MetricsPage: React.FC = () => {
   const displayRulePreview = (m: Metric) => {
     if (!rulesData) return "—";
     if (m.value_type === "bool") {
-      const obj =
-        rulesData?.bool?.[m.option_category || "yes_no"]?.templates?.[m.rule || "standard"];
+      const obj = rulesData?.bool?.[m.option_category || "yes_no"]?.templates?.[m.rule || "standard"];
       return obj ? JSON.stringify(obj) : "—";
     }
     if (m.value_type === "range") {
-      const obj =
-        rulesData?.range?.[m.option_category || "file_ranges"]?.templates?.[m.rule || "standard"];
+      const obj = rulesData?.range?.[m.option_category || "file_ranges"]?.templates?.[m.rule || "standard"];
       return obj ? JSON.stringify(obj) : "—";
     }
     return "—";
   };
 
+  // Modal-derived data
+  const modalType = modalMode === "create" ? newType : editType;
+  const modalAvailableCats = getAvailableCategoriesForType(modalType);
+  const modalOptionCategory = modalMode === "create" ? selectedOptionCategory : editOptionCategory;
+  const modalTemplate = modalMode === "create" ? selectedTemplate : editTemplate;
+
+  const modalPreview =
+    modalOptionCategory && modalTemplate
+      ? modalAvailableCats?.[modalOptionCategory]?.templates?.[modalTemplate] ?? null
+      : null;
+
+  // Esc to close
+  useEffect(() => {
+    if (!isModalOpen) return;
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === "Escape") closeModal();
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [isModalOpen]);
+
   return (
     <div className="dx-bg" style={{ display: "flex", height: "100vh" }}>
-
+      {/* Left sidebar */}
       <div
         className="dx-card"
         style={{
@@ -309,175 +342,50 @@ const MetricsPage: React.FC = () => {
         </button>
       </div>
 
+      {/* Main content */}
       <div
-          style={{
-            flex: 1,
-            padding: "40px 60px",
-            color: "white",
-            overflow: "hidden",
-            display: "flex",
-            flexDirection: "column",
-            minWidth: 0,
-            position: "relative",
-          }}
-        >
-
+        style={{
+          flex: 1,
+          padding: "40px 60px",
+          color: "white",
+          overflow: "hidden",
+          display: "flex",
+          flexDirection: "column",
+          minWidth: 0,
+          position: "relative",
+        }}
+      >
         <div className="stars"></div>
 
         <div style={{ color: "white", display: "flex", flexDirection: "column", flex: 1, minHeight: 0 }}>
-          <h1 style={{ color: "var(--accent)" }}>Manage Metrics</h1>
+          <h1 style={{ color: "var(--accent)", marginBottom: 14 }}>Manage Metrics</h1>
 
-          <div className="dx-card" style={{ padding: 20, marginBottom: 24 }}>
-            <h3>Add New Metric</h3>
-
-            <input
-              className="dx-input"
-              placeholder="Metric name..."
-              value={newName}
-              onChange={(e) => setNewName(e.target.value)}
-              maxLength={100}
-              style={{ marginBottom: 10 }}
-            />
-
-            <select
-              className="dx-input"
-              value={newType}
-              onChange={(e) => setNewType(e.target.value)}
-              style={{ marginBottom: 10 }}
-            >
-              <option value="float" style={{ color: "black" }}>
-                Float
-              </option>
-              <option value="int" style={{ color: "black" }}>
-                Integer
-              </option>
-              <option value="bool" style={{ color: "black" }}>
-                Boolean
-              </option>
-              <option value="range" style={{ color: "black" }}>
-                Range
-              </option>
-              <option value="text" style={{ color: "black" }}>
-                Text
-              </option>
-            </select>
-
-            {(newType === "bool" || newType === "range") && (
-              <>
-                <select
-                  className="dx-input"
-                  value={selectedOptionCategory}
-                  onChange={(e) => {
-                    setSelectedOptionCategory(e.target.value);
-                    setSelectedTemplate("");
-                  }}
-                  style={{ marginBottom: 10, borderColor: "var(--accent)" }}
-                >
-                  <option value="">-- Select Input Category --</option>
-                  {Object.entries(createAvailableCats).map(([key, cat]: [string, any]) => (
-                    <option key={key} value={key} style={{ color: "black" }}>
-                      {cat.display_name || key}
-                    </option>
-                  ))}
-                </select>
-
-                {selectedOptionCategory && createAvailableCats[selectedOptionCategory] && (
-                  <select
-                    className="dx-input"
-                    value={selectedTemplate}
-                    onChange={(e) => setSelectedTemplate(e.target.value)}
-                    style={{
-                      marginBottom: 10,
-                      backgroundColor: "rgba(var(--accent-rgb), 0.1)",
-                    }}
-                  >
-                    <option value="">-- Select Scoring Rule (Template) --</option>
-                    {Object.keys(createAvailableCats[selectedOptionCategory].templates || {}).map(
-                      (tKey) => (
-                        <option key={tKey} value={tKey} style={{ color: "black" }}>
-                          {tKey.replace(/_/g, " ")}
-                        </option>
-                      )
-                    )}
-                  </select>
-                )}
-
-                {selectedTemplate &&
-                  selectedOptionCategory &&
-                  createAvailableCats[selectedOptionCategory] && (
-                    <div
-                      style={{
-                        fontSize: "0.8rem",
-                        color: "var(--accent)",
-                        marginBottom: 10,
-                        padding: "5px",
-                        border: "1px dashed var(--accent)",
-                      }}
-                    >
-                      Rule Preview:{" "}
-                      {JSON.stringify(
-                        createAvailableCats[selectedOptionCategory].templates[selectedTemplate]
-                      )}
-                    </div>
-                  )}
-              </>
-            )}
-
-            <select
-              className="dx-input"
-              value={newCategory}
-              onChange={(e) => setNewCategory(e.target.value)}
-              style={{ marginBottom: 10, borderColor: "var(--accent)" }}
-            >
-              <option value="">-- Select Category (Optional) --</option>
-              {categories.map((catName) => (
-                <option key={catName} value={catName} style={{ color: "black" }}>
-                  {catName}
-                </option>
-              ))}
-            </select>
-
-            <input
-              className="dx-input"
-              placeholder="Description (optional)"
-              value={newDesc}
-              onChange={(e) => setNewDesc(e.target.value)}
-              style={{ marginBottom: 10 }}
-            />
-
-            <button className="dx-btn" onClick={addMetric}>
-              Add Metric
+          {/* Top-left button OUTSIDE table card */}
+          <div style={{ display: "flex", justifyContent: "flex-start", marginBottom: 6 }}>
+            <button className="dx-btn dx-btn-primary" onClick={openCreateModal}>
+              Add New Metric
             </button>
           </div>
 
+          {/* Table card */}
           <div
-              className="dx-card"
-              style={{
-                padding: 20,
-                flex: 1,
-                minHeight: 0,
-                display: "flex",
-                flexDirection: "column",
-              }}
-            >
-
-            <h3>Existing Metrics</h3>
-
+            className="dx-card"
+            style={{
+              padding: 14,
+              flex: 1,
+              minHeight: 0,
+              display: "flex",
+              flexDirection: "column",
+            }}
+          >
             <div className="dx-table-wrap dx-table-scroll" style={{ flex: 1, minHeight: 0 }}>
               <table className="dx-table">
                 <thead>
                   <tr>
-                    <th
-                      ref={firstColRef}
-                      className="dx-th-sticky dx-sticky-left"
-                      style={{ left: 0 }}
-                    >
+                    <th ref={firstColRef} className="dx-th-sticky dx-sticky-left" style={{ left: 0 }}>
                       Actions
                     </th>
-                    <th
-                      className="dx-th-sticky dx-sticky-left"
-                      style={{ left: offset }}
-                    >
+                    <th className="dx-th-sticky dx-sticky-left" style={{ left: offset }}>
                       Name
                     </th>
                     <th className="dx-th-sticky">Type</th>
@@ -489,213 +397,364 @@ const MetricsPage: React.FC = () => {
                 </thead>
 
                 <tbody>
-                  {metrics.map((m) => {
-                    const isEditing = editingId === m.metric_ID;
-                    const editAvailableCats = getAvailableCategoriesForType(editType);
+                  {metrics.map((m) => (
+                    <tr key={m.metric_ID} style={{ borderBottom: "1px solid rgba(255,255,255,0.08)" }}>
+                      {/* Actions */}
+                      <td className="dx-sticky-left" style={{ left: 0 }}>
+                        <div style={{ display: "flex", gap: 6 }}>
+                          <button className="dx-btn dx-btn-outline" onClick={() => openEditModal(m)}>
+                            Edit
+                          </button>
+                          <button
+                            className="dx-btn dx-btn-outline"
+                            style={{ borderColor: "var(--danger)", color: "var(--danger)" }}
+                            onClick={() => deleteMetric(m.metric_ID)}
+                          >
+                            Delete
+                          </button>
+                        </div>
+                      </td>
 
-                    return (
-                      <tr
-                        key={m.metric_ID}
-                        style={{ borderBottom: "1px solid rgba(255,255,255,0.08)" }}
+                      {/* Name */}
+                      <td
+                        className="dx-sticky-left"
+                        style={{
+                          left: offset,
+                          minWidth: 120,
+                          maxWidth: 180,
+                          whiteSpace: "normal",
+                          overflowWrap: "anywhere",
+                          wordBreak: "break-word",
+                        }}
                       >
+                        {m.metric_name}
+                      </td>
 
-                        <td className="dx-sticky-left" style={{ left: 0 }}>
-                          {isEditing ? (
-                            <div style={{ display: "flex", gap: 6 }}>
-                              <button className="dx-btn dx-btn-primary" onClick={saveEdit}>
-                                Save
-                              </button>
-                              <button className="dx-btn dx-btn-outline" onClick={cancelEdit}>
-                                Cancel
-                              </button>
-                            </div>
-                          ) : (
-                            <div style={{ display: "flex", gap: 6 }}>
-                              <button
-                                className="dx-btn dx-btn-outline"
-                                onClick={() => startEdit(m)}
-                              >
-                                Edit
-                              </button>
-                              <button
-                                className="dx-btn dx-btn-outline"
-                                style={{ borderColor: "var(--danger)", color: "var(--danger)" }}
-                                onClick={() => deleteMetric(m.metric_ID)}
-                              >
-                                Delete
-                              </button>
-                            </div>
-                          )}
-                        </td>
-                        <td className="dx-sticky-left" style={{ left: offset, minWidth: 100, maxWidth: 160, whiteSpace: "normal", wordBreak: "break-word" }}>
-                          {isEditing ? (
-                            <input
-                              className="dx-input"
-                              value={editName}
-                              onChange={(e) => setEditName(e.target.value)}
-                              maxLength={100}
-                            />
-                          ) : (
-                            m.metric_name
-                          )}
-                        </td>
+                      {/* Type */}
+                      <td
+                        style={{
+                          minWidth: 60,
+                          maxWidth: 90,
+                          whiteSpace: "normal",
+                          overflowWrap: "anywhere",
+                          wordBreak: "break-word",
+                        }}
+                      >
+                        {m.value_type}
+                      </td>
 
-                        <td style={{ minWidth: 40, maxWidth: 80, whiteSpace: "normal", wordBreak: "break-word" } }>
-                          {isEditing ? (
-                            <select
-                              className="dx-input"
-                              value={editType}
-                              onChange={(e) => onEditTypeChange(e.target.value)}
-                            >
-                              <option value="float" style={{ color: "black" }}>
-                                Float
-                              </option>
-                              <option value="int" style={{ color: "black" }}>
-                                Integer
-                              </option>
-                              <option value="bool" style={{ color: "black" }}>
-                                Boolean
-                              </option>
-                              <option value="range" style={{ color: "black" }}>
-                                Range
-                              </option>
-                              <option value="text" style={{ color: "black" }}>
-                                Text
-                              </option>
-                            </select>
-                          ) : (
-                            m.value_type
-                          )}
-                        </td>
+                      {/* Input Category */}
+                      <td
+                        style={{
+                          minWidth: 120,
+                          maxWidth: 220,
+                          whiteSpace: "normal",
+                          overflowWrap: "anywhere",
+                          wordBreak: "break-word",
+                        }}
+                      >
+                        {displayInputCategory(m)}
+                      </td>
 
-                        <td style={{ minWidth: 80, maxWidth: 200, whiteSpace: "normal", wordBreak: "break-word" }}>
-                          {isEditing ? (
-                            isRuleType(editType) ? (
-                              <select
-                                className="dx-input"
-                                value={editOptionCategory}
-                                onChange={(e) => {
-                                  setEditOptionCategory(e.target.value);
-                                  setEditTemplate("");
-                                }}
-                                style={{ borderColor: "var(--accent)" }}
-                              >
-                                <option value="">-- Select Input Category --</option>
-                                {Object.entries(editAvailableCats).map(
-                                  ([key, cat]: [string, any]) => (
-                                    <option key={key} value={key} style={{ color: "black" }}>
-                                      {cat.display_name || key}
-                                    </option>
-                                  )
-                                )}
-                              </select>
-                            ) : (
-                              "—"
-                            )
-                          ) : (
-                            displayInputCategory(m)
-                          )}
-                        </td>
+                      {/* Scoring Rule */}
+                      <td
+                        style={{
+                          minWidth: 160,
+                          maxWidth: 320,
+                          whiteSpace: "normal",
+                          overflowWrap: "anywhere",
+                          wordBreak: "break-word",
+                        }}
+                      >
+                        <code
+                          style={{
+                            display: "block",
+                            whiteSpace: "pre-wrap",
+                            overflowWrap: "anywhere",
+                            wordBreak: "break-word",
+                          }}
+                        >
+                          {displayRulePreview(m)}
+                        </code>
+                      </td>
 
-                        <td style={{ minWidth: 60, maxWidth: 200, whiteSpace: "normal", wordBreak: "break-word" }}>
+                      {/* Category */}
+                      <td
+                        style={{
+                          minWidth: 120,
+                          maxWidth: 220,
+                          whiteSpace: "normal",
+                          overflowWrap: "anywhere",
+                          wordBreak: "break-word",
+                        }}
+                      >
+                        {m.category || "—"}
+                      </td>
 
-                          {isEditing ? (
-                            isRuleType(editType) ? (
-                              <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
-                                <select
-                                  className="dx-input"
-                                  value={editTemplate}
-                                  onChange={(e) => setEditTemplate(e.target.value)}
-                                  disabled={!editOptionCategory}
-                                  style={{ backgroundColor: "rgba(var(--accent-rgb), 0.1)" }}
-                                >
-                                  <option value="">-- Select Scoring Rule (Template) --</option>
-                                  {editOptionCategory &&
-                                    editAvailableCats[editOptionCategory] &&
-                                    Object.keys(
-                                      editAvailableCats[editOptionCategory].templates || {}
-                                    ).map((tKey) => (
-                                      <option key={tKey} value={tKey} style={{ color: "black" }}>
-                                        {tKey.replace(/_/g, " ")}
-                                      </option>
-                                    ))}
-                                </select>
-
-                                {editTemplate &&
-                                  editOptionCategory &&
-                                  editAvailableCats[editOptionCategory] && (
-                                    <div
-                                      style={{
-                                        fontSize: "0.8rem",
-                                        color: "var(--accent)",
-                                        padding: "6px 8px",
-                                        border: "1px dashed var(--accent)",
-                                        borderRadius: 8,
-                                        background: "rgba(255,255,255,0.03)",
-                                        wordBreak: "break-word",
-                                      }}
-                                    >
-                                      Rule Preview:{" "}
-                                      {JSON.stringify(
-                                        editAvailableCats[editOptionCategory].templates[
-                                          editTemplate
-                                        ]
-                                      )}
-                                    </div>
-                                  )}
-                              </div>
-                            ) : (
-                              "—"
-                            )
-                          ) : (
-                            <code style={{ whiteSpace: "pre-wrap" }}>{displayRulePreview(m)}</code>
-                          )}
-                        </td>
-
-                        <td style={{ minWidth: 60, maxWidth: 200, whiteSpace: "normal", wordBreak: "break-word" }}>
-                          {isEditing ? (
-                            <select
-                              className="dx-input"
-                              value={editCategory}
-                              onChange={(e) => setEditCategory(e.target.value)}
-                              style={{ borderColor: "var(--accent)" }}
-                            >
-                              <option value="">-- Select Category (Optional) --</option>
-                              {categories.map((catName) => (
-                                <option key={catName} value={catName} style={{ color: "black" }}>
-                                  {catName}
-                                </option>
-                              ))}
-                            </select>
-                          ) : (
-                            m.category || "—"
-                          )}
-                        </td>
-
-                        <td style={{ minWidth: 60, maxWidth: 260, whiteSpace: "normal", wordBreak: "break-word" }}>
-                          {isEditing ? (
-                            <input
-                              className="dx-input"
-                              value={editDesc}
-                              onChange={(e) => setEditDesc(e.target.value)}
-                              placeholder="Description (optional)"
-                            />
-                          ) : (
-                            m.description || "—"
-                          )}
-                        </td>
-                      </tr>
-                    );
-                  })}
+                      {/* Description */}
+                      <td
+                        style={{
+                          minWidth: 160,
+                          maxWidth: 280,
+                          whiteSpace: "normal",
+                          overflowWrap: "anywhere",
+                          wordBreak: "break-word",
+                        }}
+                      >
+                        {m.description || "—"}
+                      </td>
+                    </tr>
+                  ))}
                 </tbody>
               </table>
 
-              {metrics.length === 0 && (
-                <div style={{ padding: 20, opacity: 0.6 }}>No metrics yet.</div>
-              )}
+              {metrics.length === 0 && <div style={{ padding: 20, opacity: 0.6 }}>No metrics yet.</div>}
             </div>
           </div>
         </div>
+
+        {isModalOpen && (
+          <div
+            className="dx-backdrop"
+            role="dialog"
+            aria-modal="true"
+            onMouseDown={(e) => {
+              if (e.target === e.currentTarget) closeModal();
+            }}
+            style={{ display: "flex", alignItems: "center", justifyContent: "center" , backgroundColor: "rgba(0, 0, 0, 0.6)",zIndex: 9999}}
+
+          >
+            <div
+                  className="dx-card"
+                  onMouseDown={(e) => e.stopPropagation()}
+                  style={{
+                          width: "min(900px, 92vw)",
+                          maxHeight: "85vh",
+                          overflow: "auto",
+                          padding: 18,
+                          position: "relative",
+
+                          background: "rgba(18, 18, 26, 0.98)",
+
+                          border: "1px solid rgba(255,255,255,0.08)",
+                          borderRadius: 16,
+                          boxShadow: "0px 10px 25px rgba(0, 0, 0, 0.2)",
+
+                        }}
+                >
+
+
+              <div
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "space-between",
+                  marginBottom: 14,
+                }}
+              >
+                <div style={{ fontSize: "1.15rem", fontWeight: 700, color: "var(--accent)" }}>
+                  {modalMode === "create" ? "Add New Metric" : "Edit Metric"}
+                </div>
+
+                <button
+                  className="dx-btn dx-btn-outline"
+                  onClick={closeModal}
+                  aria-label="Close"
+                  style={{ padding: "6px 10px" }}
+                >
+                  ✕
+                </button>
+              </div>
+
+              {/* Form grid */}
+              <div
+                style={{
+                  display: "grid",
+                  gridTemplateColumns: "repeat(2, minmax(0, 1fr))",
+                  gap: 12,
+                }}
+              >
+                {/* Name */}
+                <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
+                  <label style={{ opacity: 0.85 }}>Metric Name</label>
+                  <input
+                    className="dx-input"
+                    value={modalMode === "create" ? newName : editName}
+                    onChange={(e) =>
+                      modalMode === "create" ? setNewName(e.target.value) : setEditName(e.target.value)
+                    }
+                    maxLength={100}
+                    placeholder="e.g. Documentation quality"
+                  />
+                </div>
+
+                {/* Type */}
+                <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
+                  <label style={{ opacity: 0.85 }}>Type</label>
+                  <select
+                    className="dx-input"
+                    value={modalMode === "create" ? newType : editType}
+                    onChange={(e) => {
+                      const val = e.target.value;
+                      if (modalMode === "create") setNewType(val);
+                      else onEditTypeChange(val);
+                    }}
+                  >
+                    <option value="float" style={{ color: "black" }}>
+                      Float
+                    </option>
+                    <option value="int" style={{ color: "black" }}>
+                      Integer
+                    </option>
+                    <option value="bool" style={{ color: "black" }}>
+                      Boolean
+                    </option>
+                    <option value="range" style={{ color: "black" }}>
+                      Range
+                    </option>
+                    <option value="text" style={{ color: "black" }}>
+                      Text
+                    </option>
+                  </select>
+                </div>
+
+                {/* Category */}
+                <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
+                  <label style={{ opacity: 0.85 }}>Category (optional)</label>
+                  <select
+                    className="dx-input"
+                    value={modalMode === "create" ? newCategory : editCategory}
+                    onChange={(e) =>
+                      modalMode === "create" ? setNewCategory(e.target.value) : setEditCategory(e.target.value)
+                    }
+                    style={{ borderColor: "var(--accent)" }}
+                  >
+                    <option value="">-- Select Category --</option>
+                    {categories.map((catName) => (
+                      <option key={catName} value={catName} style={{ color: "black" }}>
+                        {catName}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+
+                {/* Description */}
+                <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
+                  <label style={{ opacity: 0.85 }}>Description (optional)</label>
+                  <input
+                    className="dx-input"
+                    value={modalMode === "create" ? newDesc : editDesc}
+                    onChange={(e) =>
+                      modalMode === "create" ? setNewDesc(e.target.value) : setEditDesc(e.target.value)
+                    }
+                    placeholder="Short description…"
+                  />
+                </div>
+
+                {/* Rule fields */}
+                {isRuleType(modalType) && (
+                  <div
+                    style={{
+                      gridColumn: "1 / -1",
+                      display: "grid",
+                      gridTemplateColumns: "repeat(2, minmax(0, 1fr))",
+                      gap: 12,
+                    }}
+                  >
+                    {/* Input Category */}
+                    <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
+                      <label style={{ opacity: 0.85 }}>Input Category</label>
+                      <select
+                        className="dx-input"
+                        value={modalMode === "create" ? selectedOptionCategory : editOptionCategory}
+                        onChange={(e) => {
+                          const v = e.target.value;
+                          if (modalMode === "create") {
+                            setSelectedOptionCategory(v);
+                            setSelectedTemplate("");
+                          } else {
+                            setEditOptionCategory(v);
+                            setEditTemplate("");
+                          }
+                        }}
+                        style={{ borderColor: "var(--accent)" }}
+                      >
+                        <option value="">-- Select Input Category --</option>
+                        {Object.entries(modalAvailableCats).map(([key, cat]: [string, any]) => (
+                          <option key={key} value={key} style={{ color: "black" }}>
+                            {cat.display_name || key}
+                          </option>
+                        ))}
+                      </select>
+                    </div>
+
+                    {/* Template */}
+                    <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
+                      <label style={{ opacity: 0.85 }}>Scoring Rule (template)</label>
+                      <select
+                        className="dx-input"
+                        value={modalMode === "create" ? selectedTemplate : editTemplate}
+                        onChange={(e) =>
+                          modalMode === "create" ? setSelectedTemplate(e.target.value) : setEditTemplate(e.target.value)
+                        }
+                        disabled={!modalOptionCategory}
+                        style={{ backgroundColor: "rgba(var(--accent-rgb), 0.1)" }}
+                      >
+                        <option value="">-- Select Template --</option>
+                        {(modalOptionCategory
+                          ? Object.keys(modalAvailableCats?.[modalOptionCategory]?.templates || {})
+                          : []
+                        ).map((tKey) => (
+                          <option key={tKey} value={tKey} style={{ color: "black" }}>
+                            {tKey.replace(/_/g, " ")}
+                          </option>
+                        ))}
+                      </select>
+                    </div>
+
+                    {/* Preview */}
+                    {modalPreview && (
+                      <div
+                        style={{
+                          gridColumn: "1 / -1",
+                          padding: "10px 12px",
+                          border: "1px dashed var(--accent)",
+                          borderRadius: 10,
+                          background: "rgba(255,255,255,0.03)",
+                          color: "var(--accent)",
+                          overflowWrap: "anywhere",
+                        }}
+                      >
+                        <div style={{ fontSize: "0.85rem", marginBottom: 6, opacity: 0.9 }}>
+                          Rule Preview
+                        </div>
+                        <code style={{ display: "block", whiteSpace: "pre-wrap", color: "inherit" }}>
+                          {JSON.stringify(modalPreview, null, 2)}
+                        </code>
+                      </div>
+                    )}
+                  </div>
+                )}
+              </div>
+
+              {/* Footer */}
+              <div style={{ display: "flex", justifyContent: "flex-end", gap: 10, marginTop: 16 }}>
+                <button className="dx-btn dx-btn-outline" onClick={closeModal}>
+                  Cancel
+                </button>
+                <button
+                  className="dx-btn dx-btn-primary"
+                  onClick={async () => {
+                    const ok = modalMode === "create" ? await addMetric() : await saveEdit();
+                    if (ok) closeModal();
+                  }}
+                >
+                  Save
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );
