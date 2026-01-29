@@ -23,12 +23,14 @@ const ComparisonToolPage: React.FC = () => {
   const [tableRows, setTableRows] = useState<LibraryMetricRow[]>([]);
 
   useEffect(() => {
-    loadPageData();
-  }, []);
+      if (!DOMAIN_ID) return;
+      loadPageData();
+    }, [DOMAIN_ID]);
+
 
   const getDomainSpecification = async () => {
     try {
-      const response = await fetch(apiUrl(`/domain/${domainId}/`), {
+      const response = await fetch(apiUrl(`/domain/${DOMAIN_ID}/`), {
         credentials: "include",
       });
 
@@ -47,7 +49,7 @@ const ComparisonToolPage: React.FC = () => {
     try {
       await getDomainSpecification();
 
-      const res = await fetch(apiUrl(`/comparison/${DOMAIN_ID}/`), {
+      const res = await fetch(apiUrl(`/library_metric_values/comparison/${DOMAIN_ID}/`), {
         credentials: "include",
       });
 

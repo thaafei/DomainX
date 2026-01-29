@@ -1,9 +1,16 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuthStore } from "../store/useAuthStore";
-import { 
-  BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Cell 
-} from 'recharts';
+import {
+  BarChart,
+  Bar,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip,
+  ResponsiveContainer,
+  Cell,
+} from "recharts";
 import { apiUrl } from "../config/api";
 import DomainsList from "../components/DomainsList";
 import DomainInfo from "../components/DomainInfo";
@@ -12,27 +19,32 @@ const Main: React.FC = () => {
   const navigate = useNavigate();
   const [leftSidebarOpen, setLeftSidebarOpen] = useState(true);
   const [moreInfoSidebarOpen, setMoreInfoSidebarOpen] = useState(false);
-  const [sidebarOpen, setSidebarOpen] = useState(true);
+
   const [domains, setDomains] = useState<any[]>([]);
-  const [selectedDomain, setSelectedDomain] = useState<any>(null);;
+  const [selectedDomain, setSelectedDomain] = useState<any>(null);
   const [loading, setLoading] = useState(true);
+
   const { logout, setUser } = useAuthStore();
+
   const [showDomainModal, setShowDomainModal] = useState(false);
   const [domainName, setDomainName] = useState("");
   const [description, setDescription] = useState("");
+
   const [globalRanking, setGlobalRanking] = useState<Record<string, number>>({});
   const [graph, setGraph] = useState(false);
+
   const [formError, setFormError] = useState("");
   const [adminUsers, setAdminUsers] = useState<any[]>([]);
   const [selectedCreatorIds, setSelectedCreatorIds] = useState<number[]>([]);
+
   const [localWeights, setLocalWeights] = useState<Record<string, number>>({});
-  const [categories, setCategories] = useState<any>(null)
-  
+  const [categories, setCategories] = useState<string[] | null>(null);
+
   const fetchCurrentUser = async () => {
     try {
       const response = await fetch(apiUrl("/me/"), {
-        method: 'GET',
-        credentials: 'include'
+        method: "GET",
+        credentials: "include",
       });
       if (response.ok) {
         const data = await response.json();
@@ -42,17 +54,16 @@ const Main: React.FC = () => {
       console.log("Error fetching current user:", error);
     }
   };
-  
+
   const fetchUsers = async () => {
     try {
-      const response = await fetch(apiUrl('/users/?role=admin,superadmin'), {
-        method: 'GET',
-        headers: { 'Content-Type': 'application/json' },
-        credentials: 'include'
+      const response = await fetch(apiUrl("/users/?role=admin,superadmin"), {
+        method: "GET",
+        headers: { "Content-Type": "application/json" },
+        credentials: "include",
       });
       if (response.ok) {
         const data = await response.json();
-        console.log(data)
         setAdminUsers(data);
       }
     } catch (error) {
@@ -60,37 +71,62 @@ const Main: React.FC = () => {
     }
   };
 
+  const getAHPRanking = async (domainId: string) => {
+    try {
+      const response = await fetch(apiUrl(`/library_metric_values/ahp/${domainId}/`), {
+        method: "GET",
+        headers: { "Content-Type": "application/json" },
+        credentials: "include",
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        setGlobalRanking(data.global_ranking || {});
+        setGraph(true);
+      } else {
+        setGraph(false);
+      }
+    } catch (err) {
+      console.error("AHP fetch failed:", err);
+      setGraph(false);
+    }
+  };
+
+  const fetchWeights = async (domainId: string) => {
+    try {
+      const res = await fetch(apiUrl(`/get_category_weights/${domainId}/`), {
+        method: "GET",
+        credentials: "include",
+      });
+      if (res.ok) {
+        const data = await res.json();
+        setLocalWeights(data || {});
+      }
+    } catch (err) {
+      console.error("Weights fetch failed:", err);
+    }
+  };
+
   const fetchDomains = async () => {
     try {
-    const response = await fetch(apiUrl('/domain/'),{
-      method: "GET"
-    });
+      const response = await fetch(apiUrl("/domain/"), {
+        method: "GET",
+        credentials: "include",
+      });
+
       if (response.ok) {
         const data = await response.json();
         setDomains(data);
-        // Restore last selected domain or default to first
+
         if (data.length > 0) {
           const savedId = localStorage.getItem("dx:lastDomainId");
           const domainToSelect = savedId
-            ? data.find((d: any) => d.domain_ID === savedId) || data[0]
-            : (selectedDomain || data[0]);
+            ? data.find((d: any) => String(d.domain_ID) === String(savedId)) || data[0]
+            : data[0];
 
-          if (!selectedDomain || domainToSelect.domain_ID !== selectedDomain.domain_ID) {
-            setSelectedDomain(domainToSelect);
-          }
+          setSelectedDomain(domainToSelect);
 
-          const ahpRes = await fetch(apiUrl(`/aph/${domainToSelect.domain_ID}/`), {
-            method: 'GET',
-            headers: { 'Content-Type': 'application/json' }
-          });
-
-          if (ahpRes.ok) {
-            const ahpData = await ahpRes.json();
-            setGlobalRanking(ahpData.global_ranking);
-            setGraph(true)
-          } else {
-            setGraph(false);
-          }
+          await getAHPRanking(domainToSelect.domain_ID);
         }
       }
     } catch (error) {
@@ -99,100 +135,25 @@ const Main: React.FC = () => {
       setLoading(false);
     }
   };
+
   useEffect(() => {
-    const fetchWeights = async () => {
-      if (!selectedDomain) return;
+    const fetchRules = async () => {
       try {
-        const res = await fetch(apiUrl(`/get_category_weights/${selectedDomain.domain_ID}/`));
-        if (res.ok) {
-          const data = await res.json();
-          // data should be your category_weights dict
-          setLocalWeights(data); 
-        }
-      } catch (err) { console.error(err); }
-    };
+        const response = await fetch(apiUrl("/metrics/categories/"), {
+          method: "GET",
+          credentials: "include",
+        });
+        if (!response.ok) return;
 
-    if (selectedDomain?.domain_ID) {
-      getAHPRanking(); // For graphing
-      fetchWeights();  // The weights fetch
-    }
-  }, [selectedDomain]);
-
-  useEffect(() => {
-      const fetchRules = async () => {
-        try {
-          const response = await fetch(apiUrl('/metric-categories/')); 
-          const data = await response.json();
-          setCategories(data.Categories);
-        } catch (error) {
-          console.error("Error fetching AHP rules:", error);
-        }
-      };
-      fetchRules();
-    }, []);
-  
-  const getAHPRanking = async () => {
-    const response = await fetch(apiUrl(`/aph/${selectedDomain.domain_ID}/`), {
-      method: 'GET',
-      headers: { 'Content-Type': 'application/json' }
-    });
-
-    if (response.ok) {
-      const data = await response.json();
-      setGlobalRanking(data.global_ranking);
-      setGraph(true)
-    }
-    else {
-      setGraph(false);
-    }
-  };
-  useEffect(() => {
-    const fetchWeights = async () => {
-      if (!selectedDomain) return;
-      try {
-        const res = await fetch(apiUrl(`/get_category_weights/${selectedDomain.domain_ID}/`));
-        if (res.ok) {
-          const data = await res.json();
-          // data should be your category_weights dict
-          setLocalWeights(data); 
-        }
-      } catch (err) { console.error(err); }
-    };
-
-    if (selectedDomain?.domain_ID) {
-      getAHPRanking(); // For graphing
-      fetchWeights();  // The weights fetch
-    }
-  }, [selectedDomain]);
-
-  const handleWeightChange = (category: string, value: string) => {
-    const numValue = parseFloat(value) || 0;
-    setLocalWeights(prev => ({
-      ...prev,
-      [category]: numValue
-    }));
-  };
-
-  const saveWeights = async () => {
-    if (!selectedDomain) return;
-    try {
-      const res = await fetch(apiUrl(`/category_weights/${selectedDomain.domain_ID}/`), {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ values: localWeights })
-      });
-      if (res.ok) {
-        alert("Weights updated successfully!");
-        getAHPRanking(); // Refresh the graph to reflect new weights
+        const data = await response.json();
+        setCategories(data?.Categories || []);
+      } catch (error) {
+        console.error("Error fetching AHP rules:", error);
       }
-    } catch (err) { console.error(err); }
-  };
-  const chartData = Object.entries(globalRanking)
-    .map(([name, score]) => ({
-      name,
-      score: parseFloat(((score as number) * 100).toFixed(2))
-    }))
-    .sort((a, b) => b.score - a.score);
+    };
+
+    fetchRules();
+  }, []);
 
   useEffect(() => {
     fetchCurrentUser();
@@ -200,72 +161,105 @@ const Main: React.FC = () => {
     fetchUsers();
   }, []);
 
-  // Persist last selected domain for smoother back navigation
   useEffect(() => {
-    if (selectedDomain?.domain_ID) {
-      try {
-        localStorage.setItem("dx:lastDomainId", String(selectedDomain.domain_ID));
-      } catch {}
-    }
+    if (!selectedDomain?.domain_ID) return;
+
+    const id = selectedDomain.domain_ID;
+
+    try {
+      localStorage.setItem("dx:lastDomainId", String(id));
+    } catch {}
+
+    getAHPRanking(id);
+    fetchWeights(id);
   }, [selectedDomain]);
 
-  if (loading) return <div>Loading...</div>;
-  const handleLogout = async () => {
-      try {
-          await fetch(apiUrl("/logout/"), {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          credentials: "include",
-        });
-        logout();
-        navigate("/login");
-      } catch (err: any) {
-        console.log(err);
-      }
+  const handleWeightChange = (category: string, value: string) => {
+    const numValue = parseFloat(value) || 0;
+    setLocalWeights((prev) => ({
+      ...prev,
+      [category]: numValue,
+    }));
   };
+
+  const saveWeights = async () => {
+    if (!selectedDomain?.domain_ID) return;
+
+    try {
+      const res = await fetch(apiUrl(`/category_weights/${selectedDomain.domain_ID}/`), {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        credentials: "include",
+        body: JSON.stringify({ values: localWeights }),
+      });
+
+      if (res.ok) {
+        alert("Weights updated successfully!");
+        getAHPRanking(selectedDomain.domain_ID);
+      }
+    } catch (err) {
+      console.error(err);
+    }
+  };
+
+  const chartData = Object.entries(globalRanking)
+    .map(([name, score]) => ({
+      name,
+      score: parseFloat(((score as number) * 100).toFixed(2)),
+    }))
+    .sort((a, b) => b.score - a.score);
+
+  if (loading) return <div>Loading...</div>;
+
+  const handleLogout = async () => {
+    try {
+      await fetch(apiUrl("/logout/"), {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        credentials: "include",
+      });
+      logout();
+      navigate("/login");
+    } catch (err: any) {
+      console.log(err);
+    }
+  };
+
   const handleCreateDomain = async () => {
-    const errors = [];
-    
+    const errors: string[] = [];
+
     if (!domainName.trim() || !description.trim()) {
       errors.push("Both name and description are required.");
     }
     if (selectedCreatorIds.length === 0) {
       errors.push("At least one creator must be selected.");
     }
-    
+
     if (errors.length > 0) {
       setFormError(errors.join(" "));
       return;
     }
+
     setFormError("");
+
     try {
-      const response = await fetch(apiUrl('/domain/create/'), {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+      const response = await fetch(apiUrl("/domain/create/"), {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        credentials: "include",
         body: JSON.stringify({
           domain_name: domainName,
-          description: description,
-          creator_ids: selectedCreatorIds
+          description,
+          creator_ids: selectedCreatorIds,
         }),
       });
+
       if (response.ok) {
         setShowDomainModal(false);
         setDomainName("");
         setDescription("");
         setSelectedCreatorIds([]);
-        const domainsResponse = await fetch(apiUrl('/domain/'), {
-          method: "GET"
-        });
-        if (domainsResponse.ok) {
-          const data = await domainsResponse.json();
-          setDomains(data);
-          if (selectedDomain) {
-            const updatedDomain = data.find((d: any) => d.domain_ID === selectedDomain.domain_ID);
-            if (updatedDomain) {
-              setSelectedDomain(updatedDomain);
-            }
-          }
-        }
+        await fetchDomains(); // refresh list
       } else {
         setFormError("Failed to create domain. Please try again.");
       }
@@ -273,6 +267,7 @@ const Main: React.FC = () => {
       setFormError("Network error. Could not connect to server.");
     }
   };
+
   return (
     <div className="dx-bg" style={{ display: "flex", height: "100vh", overflow: "hidden" }}>
       <DomainsList
@@ -281,7 +276,7 @@ const Main: React.FC = () => {
         domains={domains}
         selectedDomain={selectedDomain}
         setSelectedDomain={setSelectedDomain}
-        getAHPRanking={getAHPRanking}
+        getAHPRanking={() => selectedDomain?.domain_ID && getAHPRanking(selectedDomain.domain_ID)}
         showDomainModal={showDomainModal}
         setShowDomainModal={setShowDomainModal}
         domainName={domainName}
@@ -295,48 +290,43 @@ const Main: React.FC = () => {
         setFormError={setFormError}
         handleCreateDomain={handleCreateDomain}
         handleLogout={handleLogout}
-      />      
-      <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: '20px', overflowY: 'auto' }}>
+      />
+
+      <div style={{ flex: 1, display: "flex", flexDirection: "column", gap: "20px", overflowY: "auto" }}>
         {graph && (
-          <div className="dx-card" style={{ padding: '20px', marginTop: '20px', width: '1000px' }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
-              <h3 style={{ color: 'var(--accent)', margin: 0, textAlign:'center' }}>Global AHP Ranking</h3>
+          <div className="dx-card" style={{ padding: "20px", marginTop: "20px", width: "1000px" }}>
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "20px" }}>
+              <h3 style={{ color: "var(--accent)", margin: 0, textAlign: "center" }}>Global AHP Ranking</h3>
             </div>
-            
-            <div style={{ width: '100%', height: 400 }}>
+
+            <div style={{ width: "100%", height: 400 }}>
               <ResponsiveContainer width="100%" height="100%">
                 <BarChart data={chartData} margin={{ top: 20, right: 30, left: 0, bottom: 60 }}>
                   <CartesianGrid strokeDasharray="3 3" stroke="#333" vertical={false} />
-                  <XAxis 
-                    dataKey="name" 
-                    stroke="#ccc" 
-                    angle={-45} 
-                    textAnchor="end" 
+                  <XAxis
+                    dataKey="name"
+                    stroke="#ccc"
+                    angle={-45}
+                    textAnchor="end"
                     interval={0}
-                    tick={{ fill: '#ccc', fontSize: 11 }} 
+                    tick={{ fill: "#ccc", fontSize: 11 }}
                   />
-                  <YAxis 
-                    stroke="#ccc" 
-                    tick={{ fill: '#ccc' }} 
-                    unit="%" 
-                    domain={[0, 'auto']}
-                  />
-                  <Tooltip 
-                    cursor={{ fill: 'rgba(255,255,255,0.05)' }}
-                    contentStyle={{ backgroundColor: '#222', border: '1px solid var(--accent)', borderRadius: '4px' }}
-                    itemStyle={{ color: 'var(--accent)' }}
+                  <YAxis stroke="#ccc" tick={{ fill: "#ccc" }} unit="%" domain={[0, "auto"]} />
+                  <Tooltip
+                    cursor={{ fill: "rgba(255,255,255,0.05)" }}
+                    contentStyle={{ backgroundColor: "#222", border: "1px solid var(--accent)", borderRadius: "4px" }}
+                    itemStyle={{ color: "var(--accent)" }}
                     formatter={(value) => {
                       const numericValue = Number(value) || 0;
-                      return [`${numericValue.toFixed(2)}%`, 'Priority Score'];
+                      return [`${numericValue.toFixed(2)}%`, "Priority Score"];
                     }}
                   />
                   <Bar dataKey="score">
-                    {chartData.map((entry, index) => (
-                      <Cell 
-                        key={`cell-${index}`} 
-                        // The highest ranked library gets the full accent color
-                        fill={index === 0 ? 'var(--accent)' : 'rgba(var(--accent-rgb), 0.4)'} 
-                        style={{ transition: 'fill 0.3s ease' }}
+                    {chartData.map((_, index) => (
+                      <Cell
+                        key={`cell-${index}`}
+                        fill={index === 0 ? "var(--accent)" : "rgba(var(--accent-rgb), 0.4)"}
+                        style={{ transition: "fill 0.3s ease" }}
                       />
                     ))}
                   </Bar>
@@ -345,26 +335,27 @@ const Main: React.FC = () => {
             </div>
           </div>
         )}
-        <div className="dx-card" style={{ padding: '20px', marginTop: '20px', color: "white" }}>
-          <h3 style={{ color: 'var(--accent)', marginBottom: '15px' }}>Category Weights</h3>
-          <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+
+        <div className="dx-card" style={{ padding: "20px", marginTop: "20px", color: "white" }}>
+          <h3 style={{ color: "var(--accent)", marginBottom: "15px" }}>Category Weights</h3>
+          <table style={{ width: "100%", borderCollapse: "collapse" }}>
             <thead>
-              <tr style={{ textAlign: 'left', borderBottom: '1px solid #333' }}>
-                <th style={{ padding: '10px' }}>Category</th>
-                <th style={{ padding: '10px' }}>Weight</th>
+              <tr style={{ textAlign: "left", borderBottom: "1px solid #333" }}>
+                <th style={{ padding: "10px" }}>Category</th>
+                <th style={{ padding: "10px" }}>Weight</th>
               </tr>
             </thead>
             <tbody>
               {categories?.map((cat: string) => (
-                <tr key={cat} style={{ borderBottom: '1px solid #222' }}>
-                  <td style={{ padding: '10px' }}>{cat}</td>
-                  <td style={{ padding: '10px' }}>
+                <tr key={cat} style={{ borderBottom: "1px solid #222" }}>
+                  <td style={{ padding: "10px" }}>{cat}</td>
+                  <td style={{ padding: "10px" }}>
                     <input
                       type="number"
                       className="dx-input"
-                      style={{ width: '80px' }}
+                      style={{ width: "80px" }}
                       step="0.1"
-                      value={localWeights[cat] ?? 1.0} // Default to 1.0 if not set
+                      value={localWeights[cat] ?? 1.0}
                       onChange={(e) => handleWeightChange(cat, e.target.value)}
                     />
                   </td>
@@ -372,20 +363,14 @@ const Main: React.FC = () => {
               ))}
             </tbody>
           </table>
-          <button 
-            className="dx-btn dx-btn-primary" 
-            style={{ marginTop: '15px' }}
-            onClick={saveWeights}
-          >
+
+          <button className="dx-btn dx-btn-primary" style={{ marginTop: "15px" }} onClick={saveWeights}>
             Update Weights
           </button>
         </div>
       </div>
-      <DomainInfo 
-        selectedDomain={selectedDomain}
-        sidebarOpen={moreInfoSidebarOpen}
-        setSidebarOpen={setMoreInfoSidebarOpen}
-      />
+
+      <DomainInfo selectedDomain={selectedDomain} sidebarOpen={moreInfoSidebarOpen} setSidebarOpen={setMoreInfoSidebarOpen} />
     </div>
   );
 };
