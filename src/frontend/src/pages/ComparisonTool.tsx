@@ -106,6 +106,7 @@ const ComparisonToolPage: React.FC = () => {
           color: "white",
         }}
       >
+      <div className="stars"></div>
         <h1 style={{ color: "var(--accent)", marginBottom: 20 }}>
           {domainName} – Comparison Tool
         </h1>

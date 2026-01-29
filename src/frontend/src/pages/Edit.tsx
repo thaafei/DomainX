@@ -258,6 +258,7 @@ const EditValuesPage: React.FC = () => {
           position: "relative",
         }}
       >
+      <div className="stars"></div>
         {pageLoading && (
           <div className="dx-backdrop" aria-live="polite" aria-busy="true">
             <div className="dx-backdrop-card">
