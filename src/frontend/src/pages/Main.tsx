@@ -94,7 +94,7 @@ const Main: React.FC = () => {
 
   const fetchWeights = async (domainId: string) => {
     try {
-      const res = await fetch(apiUrl(`/get_category_weights/${domainId}/`), {
+      const res = await fetch(apiUrl(`/domain/${domainId}/category-weights/`), {
         method: "GET",
         credentials: "include",
       });
@@ -186,7 +186,7 @@ const Main: React.FC = () => {
     if (!selectedDomain?.domain_ID) return;
 
     try {
-      const res = await fetch(apiUrl(`/category_weights/${selectedDomain.domain_ID}/`), {
+      const res = await fetch(apiUrl(`/domain/${selectedDomain.domain_ID}/category-weights/`), {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         credentials: "include",
@@ -243,7 +243,7 @@ const Main: React.FC = () => {
     setFormError("");
 
     try {
-      const response = await fetch(apiUrl("/domain/create/"), {
+      const response = await fetch(apiUrl("/domain/"), {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         credentials: "include",
