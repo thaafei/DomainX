@@ -54,7 +54,7 @@ const MetricsPage: React.FC = () => {
   useEffect(() => {
     const fetchRules = async () => {
       try {
-        const response = await fetch(apiUrl("/metric-rules/"));
+        const response = await fetch(apiUrl("/metrics/rules/"));
         const data = await response.json();
         setRulesData(data);
       } catch (error) {
@@ -67,7 +67,7 @@ const MetricsPage: React.FC = () => {
   useEffect(() => {
     const fetchCategories = async () => {
       try {
-        const response = await fetch(apiUrl("/metric-categories/"));
+        const response = await fetch(apiUrl("/metrics/categories/"));
         const data = await response.json();
         setCategories(Array.isArray(data?.Categories) ? data.Categories : []);
       } catch (error) {
@@ -105,9 +105,10 @@ const MetricsPage: React.FC = () => {
     return {};
   };
 
-  const createAvailableCats = useMemo(() => {
+  useMemo(() => {
     return getAvailableCategoriesForType(newType);
   }, [rulesData, newType]);
+
   useEffect(() => {
     setSelectedOptionCategory("");
     setSelectedTemplate("");
@@ -166,7 +167,7 @@ const MetricsPage: React.FC = () => {
     }
 
     try {
-      const res = await fetch(apiUrl("/metrics/create/"), {
+      const res = await fetch(apiUrl("/metrics/"), {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         credentials: "include",
@@ -220,7 +221,7 @@ const MetricsPage: React.FC = () => {
     }
 
     try {
-      const res = await fetch(apiUrl(`/metrics/${editingId}/update/`), {
+      const res = await fetch(apiUrl(`/metrics/${editingId}/`), {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
         credentials: "include",
@@ -254,7 +255,7 @@ const MetricsPage: React.FC = () => {
 
   const deleteMetric = async (id: string) => {
     try {
-      const res = await fetch(apiUrl(`/metrics/${id}/delete/`), {
+      const res = await fetch(apiUrl(`/metrics/${id}/`), {
         method: "DELETE",
         credentials: "include",
       });
@@ -300,6 +301,7 @@ const MetricsPage: React.FC = () => {
     modalOptionCategory && modalTemplate
       ? modalAvailableCats?.[modalOptionCategory]?.templates?.[modalTemplate] ?? null
       : null;
+
   useEffect(() => {
     if (!isModalOpen) return;
     const onKey = (e: KeyboardEvent) => {
@@ -348,7 +350,6 @@ const MetricsPage: React.FC = () => {
         <div style={{ color: "white", display: "flex", flexDirection: "column", flex: 1, minHeight: 0 }}>
           <h1 style={{ color: "var(--accent)", marginBottom: 14 }}>Manage Metrics</h1>
 
-
           <div
             className="dx-card"
             style={{
@@ -359,11 +360,12 @@ const MetricsPage: React.FC = () => {
               flexDirection: "column",
             }}
           >
-          <div style={{ display: "flex", justifyContent: "flex-start", marginBottom: 6 }}>
-            <button className="dx-btn dx-btn-primary" onClick={openCreateModal}>
-              Add New Metric
-            </button>
-          </div>
+            <div style={{ display: "flex", justifyContent: "flex-start", marginBottom: 6 }}>
+              <button className="dx-btn dx-btn-primary" onClick={openCreateModal}>
+                Add New Metric
+              </button>
+            </div>
+
             <div className="dx-table-wrap dx-table-scroll" style={{ flex: 1, minHeight: 0 }}>
               <table className="dx-table">
                 <thead>
@@ -399,6 +401,7 @@ const MetricsPage: React.FC = () => {
                           </button>
                         </div>
                       </td>
+
                       <td
                         className="dx-sticky-left"
                         style={{
@@ -446,14 +449,7 @@ const MetricsPage: React.FC = () => {
                           wordBreak: "break-word",
                         }}
                       >
-                        <code
-                          style={{
-                            display: "block",
-                            whiteSpace: "pre-wrap",
-                            overflowWrap: "anywhere",
-                            wordBreak: "break-word",
-                          }}
-                        >
+                        <code style={{ display: "block", whiteSpace: "pre-wrap", overflowWrap: "anywhere" }}>
                           {displayRulePreview(m)}
                         </code>
                       </td>
@@ -499,29 +495,29 @@ const MetricsPage: React.FC = () => {
             onMouseDown={(e) => {
               if (e.target === e.currentTarget) closeModal();
             }}
-            style={{ display: "flex", alignItems: "center", justifyContent: "center" , backgroundColor: "rgba(0, 0, 0, 0.6)",zIndex: 9999}}
-
+            style={{
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              backgroundColor: "rgba(0, 0, 0, 0.6)",
+              zIndex: 9999,
+            }}
           >
             <div
-                  className="dx-card"
-                  onMouseDown={(e) => e.stopPropagation()}
-                  style={{
-                          width: "min(900px, 92vw)",
-                          maxHeight: "85vh",
-                          overflow: "auto",
-                          padding: 18,
-                          position: "relative",
-
-                          background: "rgba(18, 18, 26, 0.98)",
-
-                          border: "1px solid rgba(255,255,255,0.08)",
-                          borderRadius: 16,
-                          boxShadow: "0px 10px 25px rgba(0, 0, 0, 0.2)",
-
-                        }}
-                >
-
-
+              className="dx-card"
+              onMouseDown={(e) => e.stopPropagation()}
+              style={{
+                width: "min(900px, 92vw)",
+                maxHeight: "85vh",
+                overflow: "auto",
+                padding: 18,
+                position: "relative",
+                background: "rgba(18, 18, 26, 0.98)",
+                border: "1px solid rgba(255,255,255,0.08)",
+                borderRadius: 16,
+                boxShadow: "0px 10px 25px rgba(0, 0, 0, 0.2)",
+              }}
+            >
               <div
                 style={{
                   display: "flex",
@@ -543,8 +539,7 @@ const MetricsPage: React.FC = () => {
                   ✕
                 </button>
               </div>
-
-              <div
+            <div
                 style={{
                   display: "grid",
                   gridTemplateColumns: "repeat(2, minmax(0, 1fr))",
@@ -560,7 +555,7 @@ const MetricsPage: React.FC = () => {
                       modalMode === "create" ? setNewName(e.target.value) : setEditName(e.target.value)
                     }
                     maxLength={100}
-                    placeholder="e.g. Documentation quality"
+                    placeholder="e.g. Commits (Last 5 Years)"
                   />
                 </div>
 
@@ -612,17 +607,7 @@ const MetricsPage: React.FC = () => {
                   </select>
                 </div>
 
-                <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
-                  <label style={{ opacity: 0.85 }}>Description (optional)</label>
-                  <input
-                    className="dx-input"
-                    value={modalMode === "create" ? newDesc : editDesc}
-                    onChange={(e) =>
-                      modalMode === "create" ? setNewDesc(e.target.value) : setEditDesc(e.target.value)
-                    }
-                    placeholder="Short description…"
-                  />
-                </div>
+                <div />
 
                 {isRuleType(modalType) && (
                   <div
@@ -694,9 +679,7 @@ const MetricsPage: React.FC = () => {
                           overflowWrap: "anywhere",
                         }}
                       >
-                        <div style={{ fontSize: "0.85rem", marginBottom: 6, opacity: 0.9 }}>
-                          Rule Preview
-                        </div>
+                        <div style={{ fontSize: "0.85rem", marginBottom: 6, opacity: 0.9 }}>Rule Preview</div>
                         <code style={{ display: "block", whiteSpace: "pre-wrap", color: "inherit" }}>
                           {JSON.stringify(modalPreview, null, 2)}
                         </code>
@@ -704,6 +687,26 @@ const MetricsPage: React.FC = () => {
                     )}
                   </div>
                 )}
+                <div style={{ gridColumn: "1 / -1", display: "flex", flexDirection: "column", gap: 6 }}>
+                  <label style={{ opacity: 0.85 }}>Description (optional)</label>
+                  <textarea
+                    className="dx-input"
+                    value={modalMode === "create" ? newDesc : editDesc}
+                    onChange={(e) =>
+                      modalMode === "create" ? setNewDesc(e.target.value) : setEditDesc(e.target.value)
+                    }
+                    placeholder="Description…"
+                    rows={4}
+                    style={{
+                      resize: "vertical",
+                      minHeight: 110,
+                      paddingTop: 10,
+                      lineHeight: 1.35,
+                      borderColor: "rgba(255,255,255,0.12)",
+                      background: "rgba(255,255,255,0.03)",
+                    }}
+                  />
+                </div>
               </div>
 
               <div style={{ display: "flex", justifyContent: "flex-end", gap: 10, marginTop: 16 }}>
