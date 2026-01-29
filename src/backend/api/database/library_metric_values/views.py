@@ -1,188 +1,243 @@
-from rest_framework import generics, status
+from rest_framework import status
+from rest_framework.decorators import api_view
 from rest_framework.response import Response
 from rest_framework.views import APIView
-from .models import LibraryMetricValue
-from .serializers import LibraryMetricValueSerializer
+
+from django.conf import settings
+from django.db import transaction
+from django.shortcuts import get_object_or_404
+
+import ahpy
+import json
+import os
+
 from ..domain.models import Domain
 from ..libraries.models import Library
 from ..metrics.models import Metric
-from django.db import transaction
-from django.shortcuts import get_object_or_404
-import json
-import os
-import ahpy
-from django.conf import settings
+from .models import LibraryMetricValue
+from ...utils.analysis import enqueue_library_analysis
 
-# Create or Update a value
-class LibraryMetricValueCreateOrUpdateView(APIView):
-    """
-    Create or update a LibraryMetricValue given library and metric.
-    """
-    def post(self, request):
-        library_id = request.data.get('library')
-        metric_id = request.data.get('metric')
-        value = request.data.get('value')
 
-        if not (library_id and metric_id and value is not None):
-            return Response({'error': 'library, metric, and value are required.'}, status=status.HTTP_400_BAD_REQUEST)
+@api_view(["POST"])
+def analyze_library(request, library_id):
+    lib = get_object_or_404(Library, pk=library_id)
 
-        obj, created = LibraryMetricValue.objects.update_or_create(
-            library_id=library_id,
-            metric_id=metric_id,
-            defaults={'value': value}
+    try:
+        task_id = enqueue_library_analysis(lib)
+        if task_id is None:
+            return Response({"error": lib.analysis_error}, status=status.HTTP_400_BAD_REQUEST)
+
+        return Response(
+            {"message": "Analysis queued.", "library_id": str(lib.library_ID), "task_id": task_id},
+            status=status.HTTP_202_ACCEPTED,
         )
+    except Exception as e:
+        lib.analysis_status = Library.ANALYSIS_FAILED
+        lib.analysis_error = str(e)
+        lib.save(update_fields=["analysis_status", "analysis_error"])
+        return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
-        serializer = LibraryMetricValueSerializer(obj)
-        return Response({
-            'message': 'Created' if created else 'Updated',
-            'data': serializer.data
-        }, status=status.HTTP_201_CREATED if created else status.HTTP_200_OK)
 
+@api_view(["POST"])
+def analyze_domain_libraries(request, domain_id):
+    domain = get_object_or_404(Domain, pk=domain_id)
+    libs = Library.objects.filter(domain=domain)
 
-# Retrieve a value by library and metric
-class LibraryMetricTableView(APIView):
-    """
-    Returns a table where rows = libraries, columns = metrics,
-    FILTERED by the 'domain_id' query parameter.
-    """
-    def get(self, request):
-        #Get the domain_id from the query parameters
-        domain_id = request.query_params.get('domain_id')
+    queued, failed = [], []
 
-        if not domain_id:
-            return Response({'error': 'The domain_id query parameter is required.'}, 
-                            status=status.HTTP_400_BAD_REQUEST)
+    for lib in libs:
         try:
-            libraries = Library.objects.filter(domain_id=domain_id) 
-            metrics = Metric.objects.all()
-            table = []
-
-            for lib in libraries:
-                row = {
-                    'library_id': str(lib.library_ID), 
-                    'library_name': lib.library_name,
-                    'domain': str(lib.domain.domain_ID) if hasattr(lib, 'domain') else domain_id
-                }
-                
-                for metric in metrics:
-                    try:
-                        val = LibraryMetricValue.objects.get(library=lib, metric=metric)
-                        row[metric.metric_name] = val.value
-                    except LibraryMetricValue.DoesNotExist:
-                        row[metric.metric_name] = None
-                
-                table.append(row)
-
-            return Response(table)
-            
+            task_id = enqueue_library_analysis(lib)
+            if task_id:
+                queued.append({"library_id": str(lib.library_ID), "task_id": task_id})
+            else:
+                failed.append({"library_id": str(lib.library_ID), "error": lib.analysis_error})
         except Exception as e:
-            return Response({'error': f'A server error occurred: {str(e)}'}, 
-                            status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+            lib.analysis_status = Library.ANALYSIS_FAILED
+            lib.analysis_error = str(e)
+            lib.save(update_fields=["analysis_status", "analysis_error"])
+            failed.append({"library_id": str(lib.library_ID), "error": str(e)})
+
+    return Response(
+        {
+            "message": "Analysis queued for domain libraries.",
+            "queued": queued,
+            "failed": failed,
+            "total": libs.count(),
+        },
+        status=status.HTTP_202_ACCEPTED,
+    )
+
+
+@api_view(["GET"])
+def domain_comparison(request, domain_id):
+    domain = get_object_or_404(Domain, pk=domain_id)
+
+    libraries = Library.objects.filter(domain=domain)
+    metrics = Metric.objects.all()
+
+    table = []
+    by_lib = {}
+
+    for lib in libraries:
+        row = {
+            "library_ID": str(lib.library_ID),
+            "library_name": lib.library_name,
+            "url": lib.url,
+            "programming_language": lib.programming_language,
+            "analysis_status": lib.analysis_status,
+            "analysis_task_id": lib.analysis_task_id,
+            "analysis_error": lib.analysis_error,
+            "analysis_finished_at": lib.analysis_finished_at,
+            "metrics": {m.metric_name: None for m in metrics},
+        }
+        table.append(row)
+        by_lib[row["library_ID"]] = row
+
+    values = (
+        LibraryMetricValue.objects
+        .filter(library__in=libraries)
+        .select_related("library", "metric")
+    )
+
+    for val in values:
+        lib_id = str(val.library.library_ID)
+        metric_name = val.metric.metric_name
+        if lib_id in by_lib:
+            by_lib[lib_id]["metrics"][metric_name] = val.value
+            by_lib[lib_id]["metrics"][f"{metric_name}_evidence"] = val.evidence
+
+    return Response(
+        {
+            "metrics": [{"metric_ID": str(m.metric_ID), "metric_name": m.metric_name} for m in metrics],
+            "libraries": table,
+        },
+        status=status.HTTP_200_OK,
+    )
+
+
+class LibraryMetricValueUpdateView(APIView):
+    def post(self, request, library_id):
+        library = get_object_or_404(Library, pk=library_id)
+
+        metrics_data = request.data.get("metrics", {})
+        if not isinstance(metrics_data, dict):
+            return Response({"error": "metrics must be an object/dict"}, status=status.HTTP_400_BAD_REQUEST)
+
+        for key, value in metrics_data.items():
+            if key.endswith("_evidence"):
+                metric_name = key.replace("_evidence", "")
+                field_to_update = "evidence"
+            else:
+                metric_name = key
+                field_to_update = "value"
+
+            value_to_store = None if value in ("", None) else value
+
+            metric = Metric.objects.filter(metric_name=metric_name).first()
+            if not metric:
+                continue
+
+            LibraryMetricValue.objects.update_or_create(
+                library=library,
+                metric=metric,
+                defaults={field_to_update: value_to_store},
+            )
+
+        return Response({"success": True}, status=status.HTTP_200_OK)
+
 
 class MetricValueBulkUpdateView(APIView):
-    """
-    Receives a list of metric score updates and processes them efficiently.
-    Expected data format:
-    [
-      {"library_id": "...", "metric_id": "...", "value": 0.5},
-      ...
-    ]
-    """
     def post(self, request):
-        updates = request.data  # This is the list of objects from the frontend
-        
+        updates = request.data
+
         if not isinstance(updates, list):
             return Response({"error": "Expected a list of updates."}, status=status.HTTP_400_BAD_REQUEST)
-        
         if not updates:
             return Response({"status": "No data received to update."}, status=status.HTTP_200_OK)
 
         try:
             with transaction.atomic():
                 for item in updates:
-                    library_id = item.get('library_id')
-                    metric_id = item.get('metric_id')
-                    value = item.get('value')
-                    
+                    library_id = item.get("library_id")
+                    metric_id = item.get("metric_id")
+                    value = item.get("value")
+
                     if not library_id or not metric_id:
-                        continue  # Skip malformed data
+                        continue
 
-                    # Handle empty/null input by setting value to None (as per model)
-                    if value == '' or value is None:
-                        float_value = None
-                    else:
-                        # Attempt to parse as float
-                        try:
-                            float_value = float(value)
-                        except ValueError:
-                            # Log and skip invalid non-numeric value
-                            print(f"Skipping invalid value for L:{library_id}, M:{metric_id}: {value}")
-                            continue
+                    value_to_store = None if value in ("", None) else value
 
-                    # Retrieve objects or return an error if relationship fails
                     library = get_object_or_404(Library, pk=library_id)
                     metric = get_object_or_404(Metric, pk=metric_id)
 
-                    # Create or update the record in a single database operation
                     LibraryMetricValue.objects.update_or_create(
                         library=library,
                         metric=metric,
-                        defaults={'value': float_value}
+                        defaults={"value": value_to_store},
                     )
-            
-            return Response({"status": f"Successfully updated {len(updates)} metric values."}, status=status.HTTP_200_OK)
+
+            return Response(
+                {"status": f"Successfully updated {len(updates)} metric values."},
+                status=status.HTTP_200_OK,
+            )
 
         except Exception as e:
-            # Catch database or internal errors
             return Response({"error": f"Bulk update failed: {str(e)}"}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
-        
+
+
 class AHPCalculations(APIView):
     def get(self, request, domain_id):
-        # Get domain and category
-        domain = Domain.objects.get(domain_ID=domain_id)
+        domain = get_object_or_404(Domain, pk=domain_id)
 
-        # Load JSON
-        rules_path = os.path.join(settings.BASE_DIR, 'api', 'database', 'rules.json')
-        cat_path = os.path.join(settings.BASE_DIR, 'api', 'database', 'categories.json')
+        rules_path = os.path.join(settings.BASE_DIR, "api", "database", "rules.json")
+        cat_path = os.path.join(settings.BASE_DIR, "api", "database", "categories.json")
 
-        with open(rules_path, 'r') as f: rules_data = json.load(f)
-        with open(cat_path, 'r') as f: all_categories = json.load(f).get('Categories', [])
+        with open(rules_path, "r") as f:
+            rules_data = json.load(f)
+        with open(cat_path, "r") as f:
+            all_categories = json.load(f).get("Categories", [])
 
-        # Get libraries
-        libraries = Library.objects.filter(domain_id=domain_id) 
+        libraries = Library.objects.filter(domain=domain)
 
         category_ahp = []
-        
-        # Get score for each category
         for category_name in all_categories:
-            # Get metrics based on category
             metrics = Metric.objects.filter(category=category_name)
-            if not metrics.exists(): continue
-            
+            if not metrics.exists():
+                continue
+
             library_scores = {}
-            # Get score for each library
             for lib in libraries:
                 total_score = 0
                 for met in metrics:
                     try:
-                        value = LibraryMetricValue.objects.get(library=lib, metric=met).value
+                        val_obj = LibraryMetricValue.objects.get(library=lib, metric=met)
+                        value = val_obj.value
+
                         if met.option_category:
-                            rule_set = rules_data.get(met.value_type, {}).get(met.option_category, {}).get('templates', {}).get(met.rule, {})
+                            rule_set = (
+                                rules_data.get(met.value_type, {})
+                                .get(met.option_category, {})
+                                .get("templates", {})
+                                .get(met.rule, {})
+                            )
                             total_score += rule_set.get(value, 0)
                         else:
                             total_score += float(value or 0)
-                    except (LibraryMetricValue.DoesNotExist, ValueError):
-                        continue                
+
+                    except (LibraryMetricValue.DoesNotExist, ValueError, TypeError):
+                        continue
+
                 library_scores[lib.library_name] = total_score if total_score > 0 else 0.0001
-            
+
             if library_scores:
-                comparison = ahpy.Compare(name=category_name, comparisons=library_scores, precision=4)
-                category_ahp.append(comparison)
+                category_ahp.append(ahpy.Compare(name=category_name, comparisons=library_scores, precision=4))
 
         active_cat_names = [c.name for c in category_ahp]
         raw_weights = {cat: domain.category_weights.get(cat, 1.0) for cat in active_cat_names}
-        total_weight = sum(raw_weights.values())
+        total_weight = sum(raw_weights.values()) or 1.0
         normalized_weights = {k: (v / total_weight) for k, v in raw_weights.items()}
+
         global_rank = {}
         for lib in libraries:
             lib_name = lib.library_name
@@ -190,26 +245,21 @@ class AHPCalculations(APIView):
             lib_cat_scores = {}
 
             for child in category_ahp:
-                # Local weight of this library in this category
                 local_weight = child.target_weights.get(lib_name, 0)
-                # Weight of this category in the domain
                 cat_priority = normalized_weights.get(child.name, 0)
-                
-                # Weighted Sum
-                overall_score += (local_weight * cat_priority)
+                overall_score += local_weight * cat_priority
                 lib_cat_scores[child.name] = local_weight
-            
-            global_rank[lib_name] = round(overall_score, 4)
-            
-            # Save results
-            lib.ahp_results = {
-                "category_scores": lib_cat_scores,
-                "overall_score": global_rank[lib_name]
-            }
-            lib.save()
 
-        return Response({
-            "domain": domain.domain_name,
-            "global_ranking": global_rank,
-            "category_details": {c.name: c.target_weights for c in category_ahp}
-        })
+            global_rank[lib_name] = round(overall_score, 4)
+
+            lib.ahp_results = {"category_scores": lib_cat_scores, "overall_score": global_rank[lib_name]}
+            lib.save(update_fields=["ahp_results"])
+
+        return Response(
+            {
+                "domain": domain.domain_name,
+                "global_ranking": global_rank,
+                "category_details": {c.name: c.target_weights for c in category_ahp},
+            },
+            status=status.HTTP_200_OK,
+        )

@@ -25,8 +25,9 @@ def test_get_domain_ID_returns_string_uuid():
 def test_defaults_and_blank_fields():
     domain = Domain.objects.create(domain_name="Gamma", description="")
     assert domain.published is False
-    assert domain.paper_name == ""
+    assert domain.paper_name is None
     assert domain.paper_url == ""
+    assert domain.category_weights == {}
     assert isinstance(domain.category_weights, dict)
 
 
