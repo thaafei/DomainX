@@ -1,5 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { useParams } from 'react-router-dom';
+import { apiUrl } from "../config/api";
 
 interface Metric {
   metric_ID: string;
@@ -11,20 +13,35 @@ interface LibraryMetricRow {
   library_name: string;
   metrics: { [metricName: string]: string | number | null };
 }
-
-const DOMAIN_ID = "ecba1df1ede211f0987c0050568e534c";
-
+const formatUUID = (id: string) => id.replace(/-/g, "");
 const ComparisonToolPage: React.FC = () => {
+  const { domainId } = useParams<{ domainId: string }>();
   const navigate = useNavigate();
-
-  const [domainName] = useState("Domain X");
+  const DOMAIN_ID = domainId; 
+  
+  const [domainName, setDomainName] = useState("");
   const [metricList, setMetricList] = useState<Metric[]>([]);
   const [tableRows, setTableRows] = useState<LibraryMetricRow[]>([]);
 
   useEffect(() => {
     loadPageData();
   }, []);
+  const getDomainSpecification = async () => {
+    try {
+      const response = await fetch(apiUrl(`/domain/${domainId}/`));
+      
+      if (!response.ok) {
+        throw new Error("Failed to fetch domain specifications");
+      }
 
+      const data = await response.json();
+      setDomainName(data.domain_name)
+      return data;
+    } catch (error) {
+      console.error("Error:", error);
+      return null;
+    }
+  };
   const loadPageData = async () => {
     try {
         const formatUUID = (rawId: string) => {
@@ -37,19 +54,20 @@ const ComparisonToolPage: React.FC = () => {
             }
             return rawId;
           };
-
-      const formattedDomainId = formatUUID(DOMAIN_ID);
-
-      const res = await fetch(
-          `http://127.0.0.1:8000/api/comparison/${formattedDomainId}/`,
+      getDomainSpecification()
+      const res = await fetch(apiUrl(`/comparison/${DOMAIN_ID}/`),
           { credentials: "include" }
-      );
-      const responseText = await res.text();
-      if (!res.ok) {
-          throw new Error(`Server Error (${res.status}): See console for details.`);
+        );
+      const contentType = res.headers.get("content-type") || "";
+      const text = await res.text();
+
+      if (!res.ok) throw new Error(`HTTP ${res.status}: ${text.slice(0,200)}`);
+
+      if (!contentType.includes("application/json")) {
+        throw new Error(`Expected JSON, got ${contentType}. Body starts with: ${text.slice(0,80)}`);
       }
-      const data = JSON.parse(responseText);
-      //const data = await res.json();
+
+      const data = JSON.parse(text);
       setMetricList(data.metrics);
       setTableRows(data.libraries);
     } catch (err) {
@@ -63,7 +81,7 @@ const ComparisonToolPage: React.FC = () => {
       <div
         className="dx-card"
         style={{
-          width: 160,
+          width: 120,
           padding: "22px 14px",
           display: "flex",
           flexDirection: "column",
@@ -73,6 +91,7 @@ const ComparisonToolPage: React.FC = () => {
       >
         <button
           className="dx-btn dx-btn-outline"
+          style={{ width: "100%", fontSize: "1rem", textAlign: "center" }}
           onClick={() => navigate("/main")}
         >
           ← Back
@@ -103,14 +122,14 @@ const ComparisonToolPage: React.FC = () => {
           <div style={{ display: "flex", gap: 14 }}>
             <button
               className="dx-btn dx-btn-primary"
-              onClick={() => navigate("/libraries")}
+              onClick={() => navigate(`/libraries/${DOMAIN_ID}`)}
             >
               + Add Library
             </button>
 
             <button
               className="dx-btn dx-btn-outline"
-              onClick={() => navigate("/edit")}
+              onClick={() => navigate(`/edit/${DOMAIN_ID}`)}
             >
               ✎ Edit Metric Values
             </button>
@@ -120,7 +139,7 @@ const ComparisonToolPage: React.FC = () => {
 
           <button
             className="dx-btn dx-btn-primary"
-            onClick={() => navigate("/visualize")}
+            onClick={() => navigate(`/visualize/${domainId}`)}
           >
             Visualize →
           </button>

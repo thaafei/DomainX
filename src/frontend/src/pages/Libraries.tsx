@@ -1,5 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { useParams } from 'react-router-dom';
+import { apiUrl } from "../config/api";
 interface Library {
   library_ID: string;
   library_name: string;
@@ -7,9 +9,9 @@ interface Library {
   programming_language: string;
 }
 
-const DOMAIN_ID = "ecba1df1ede211f0987c0050568e534c";   // POC domain (need to delete later and replace with actual)
-
 const AddLibraryPage: React.FC = () => {
+  const { domainId } = useParams<{ domainId: string }>();
+  const DOMAIN_ID = domainId
   const navigate = useNavigate();
   const [libraries, setLibraries] = useState<Library[]>([]);
   const [name, setName] = useState("");
@@ -22,19 +24,10 @@ const AddLibraryPage: React.FC = () => {
 
   const loadLibraries = async () => {
     try {
-        const formatUUID = (rawId: string) => {
-            if (rawId && rawId.length === 32 && !rawId.includes('-')) {
-              return rawId.substring(0, 8) + '-' +
-                     rawId.substring(8, 12) + '-' +
-                     rawId.substring(12, 16) + '-' +
-                     rawId.substring(16, 20) + '-' +
-                     rawId.substring(20, 32);
-            }
-            return rawId;
-          };
 
-      const formattedDomainId = formatUUID(DOMAIN_ID);
-      const res = await fetch(`http://127.0.0.1:8000/api/libraries/${formattedDomainId}/`, {
+
+      const res = await fetch(apiUrl(`/libraries/${DOMAIN_ID}/`), {
+
         credentials: "include",
       });
       const responseText = await res.text();
@@ -60,17 +53,30 @@ const AddLibraryPage: React.FC = () => {
     };
 
     try {
-      const res = await fetch("http://127.0.0.1:8000/api/libraries/create/", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        credentials: "include",
-        body: JSON.stringify(payload),
-      });
+      const res = await fetch(apiUrl("/libraries/create/"), {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      credentials: "include",
+      body: JSON.stringify(payload),
+    });
 
-      const data = await res.json();
-      if (!res.ok) throw new Error(JSON.stringify(data));
+    const text = await res.text();
 
-      setLibraries(prev => [...prev, data.library]);
+    let data: any = null;
+    try {
+      data = text ? JSON.parse(text) : null;
+    } catch {
+
+    }
+
+    if (!res.ok) {
+      console.error("HTTP", res.status, "body:", text);
+      throw new Error(data ? JSON.stringify(data) : text);
+    }
+
+
+    setLibraries(prev => [...prev, data.library]);
+
 
       setName("");
       setUrl("");
@@ -82,7 +88,7 @@ const AddLibraryPage: React.FC = () => {
 
   const deleteLibrary = async (id: string) => {
     try {
-      const res = await fetch(`http://127.0.0.1:8000/api/libraries/${id}/delete/`, {
+      const res = await fetch(apiUrl(`/libraries/${id}/delete/`), {
         method: "DELETE",
         credentials: "include"
       });
@@ -100,7 +106,7 @@ const AddLibraryPage: React.FC = () => {
       <div
         className="dx-card"
         style={{
-          width: 160,
+          width: 120,
           padding: "22px 14px",
           display: "flex",
           flexDirection: "column",
@@ -110,7 +116,8 @@ const AddLibraryPage: React.FC = () => {
       >
         <button
           className="dx-btn dx-btn-outline"
-          onClick={() => navigate("/comparison-tool")}
+          style={{ width: "100%", fontSize: "1rem", textAlign: "center" }}
+          onClick={() => navigate(`/comparison-tool/${domainId}`)}
         >
           ← Back
         </button>

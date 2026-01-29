@@ -3,10 +3,16 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 from .models import LibraryMetricValue
 from .serializers import LibraryMetricValueSerializer
+from ..domain.models import Domain
 from ..libraries.models import Library
 from ..metrics.models import Metric
 from django.db import transaction
 from django.shortcuts import get_object_or_404
+import json
+import os
+import ahpy
+from django.conf import settings
+
 # Create or Update a value
 class LibraryMetricValueCreateOrUpdateView(APIView):
     """
@@ -73,28 +79,6 @@ class LibraryMetricTableView(APIView):
             return Response({'error': f'A server error occurred: {str(e)}'}, 
                             status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
-# # Return all values as a table (frontend use)
-# class LibraryMetricTableView(APIView):
-#     """
-#     Returns a table where rows = libraries, columns = metrics.
-#     """
-#     def get(self, request):
-#         libraries = Library.objects.all()
-#         metrics = Metric.objects.all()
-#         table = []
-
-#         for lib in libraries:
-#             row = {'library_id': str(lib.Library_ID), 'library_name': lib.Library_Name}
-#             for metric in metrics:
-#                 try:
-#                     val = LibraryMetricValue.objects.get(library=lib, metric=metric)
-#                     row[metric.metric_name] = val.value
-#                 except LibraryMetricValue.DoesNotExist:
-#                     row[metric.metric_name] = None
-#             table.append(row)
-
-#         return Response(table)
-
 class MetricValueBulkUpdateView(APIView):
     """
     Receives a list of metric score updates and processes them efficiently.
@@ -152,3 +136,80 @@ class MetricValueBulkUpdateView(APIView):
             # Catch database or internal errors
             return Response({"error": f"Bulk update failed: {str(e)}"}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
         
+class AHPCalculations(APIView):
+    def get(self, request, domain_id):
+        # Get domain and category
+        domain = Domain.objects.get(domain_ID=domain_id)
+
+        # Load JSON
+        rules_path = os.path.join(settings.BASE_DIR, 'api', 'database', 'rules.json')
+        cat_path = os.path.join(settings.BASE_DIR, 'api', 'database', 'categories.json')
+
+        with open(rules_path, 'r') as f: rules_data = json.load(f)
+        with open(cat_path, 'r') as f: all_categories = json.load(f).get('Categories', [])
+
+        # Get libraries
+        libraries = Library.objects.filter(domain_id=domain_id) 
+
+        category_ahp = []
+        
+        # Get score for each category
+        for category_name in all_categories:
+            # Get metrics based on category
+            metrics = Metric.objects.filter(category=category_name)
+            if not metrics.exists(): continue
+            
+            library_scores = {}
+            # Get score for each library
+            for lib in libraries:
+                total_score = 0
+                for met in metrics:
+                    try:
+                        value = LibraryMetricValue.objects.get(library=lib, metric=met).value
+                        if met.option_category:
+                            rule_set = rules_data.get(met.value_type, {}).get(met.option_category, {}).get('templates', {}).get(met.rule, {})
+                            total_score += rule_set.get(value, 0)
+                        else:
+                            total_score += float(value or 0)
+                    except (LibraryMetricValue.DoesNotExist, ValueError):
+                        continue                
+                library_scores[lib.library_name] = total_score if total_score > 0 else 0.0001
+            
+            if library_scores:
+                comparison = ahpy.Compare(name=category_name, comparisons=library_scores, precision=4)
+                category_ahp.append(comparison)
+
+        active_cat_names = [c.name for c in category_ahp]
+        raw_weights = {cat: domain.category_weights.get(cat, 1.0) for cat in active_cat_names}
+        total_weight = sum(raw_weights.values())
+        normalized_weights = {k: (v / total_weight) for k, v in raw_weights.items()}
+        global_rank = {}
+        for lib in libraries:
+            lib_name = lib.library_name
+            overall_score = 0
+            lib_cat_scores = {}
+
+            for child in category_ahp:
+                # Local weight of this library in this category
+                local_weight = child.target_weights.get(lib_name, 0)
+                # Weight of this category in the domain
+                cat_priority = normalized_weights.get(child.name, 0)
+                
+                # Weighted Sum
+                overall_score += (local_weight * cat_priority)
+                lib_cat_scores[child.name] = local_weight
+            
+            global_rank[lib_name] = round(overall_score, 4)
+            
+            # Save results
+            lib.ahp_results = {
+                "category_scores": lib_cat_scores,
+                "overall_score": global_rank[lib_name]
+            }
+            lib.save()
+
+        return Response({
+            "domain": domain.domain_name,
+            "global_ranking": global_rank,
+            "category_details": {c.name: c.target_weights for c in category_ahp}
+        })
