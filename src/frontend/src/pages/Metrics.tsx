@@ -20,15 +20,12 @@ const MetricsPage: React.FC = () => {
 
   const [metrics, setMetrics] = useState<Metric[]>([]);
 
-  // Data
   const [rulesData, setRulesData] = useState<any>(null);
   const [categories, setCategories] = useState<string[]>([]);
 
-  // Modal
   const [modalMode, setModalMode] = useState<ModalMode>(null);
   const isModalOpen = modalMode !== null;
 
-  // Create fields
   const [newName, setNewName] = useState("");
   const [newType, setNewType] = useState("float");
   const [newCategory, setNewCategory] = useState("");
@@ -36,7 +33,6 @@ const MetricsPage: React.FC = () => {
   const [selectedOptionCategory, setSelectedOptionCategory] = useState("");
   const [selectedTemplate, setSelectedTemplate] = useState("");
 
-  // Edit fields
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editName, setEditName] = useState("");
   const [editType, setEditType] = useState("float");
@@ -45,7 +41,6 @@ const MetricsPage: React.FC = () => {
   const [editOptionCategory, setEditOptionCategory] = useState("");
   const [editTemplate, setEditTemplate] = useState("");
 
-  // Sticky Offset Logic
   const firstColRef = useRef<HTMLTableCellElement>(null);
   const [offset, setOffset] = useState(0);
 
@@ -113,8 +108,6 @@ const MetricsPage: React.FC = () => {
   const createAvailableCats = useMemo(() => {
     return getAvailableCategoriesForType(newType);
   }, [rulesData, newType]);
-
-  // Keep create rule fields consistent when type changes
   useEffect(() => {
     setSelectedOptionCategory("");
     setSelectedTemplate("");
@@ -298,7 +291,6 @@ const MetricsPage: React.FC = () => {
     return "—";
   };
 
-  // Modal-derived data
   const modalType = modalMode === "create" ? newType : editType;
   const modalAvailableCats = getAvailableCategoriesForType(modalType);
   const modalOptionCategory = modalMode === "create" ? selectedOptionCategory : editOptionCategory;
@@ -308,8 +300,6 @@ const MetricsPage: React.FC = () => {
     modalOptionCategory && modalTemplate
       ? modalAvailableCats?.[modalOptionCategory]?.templates?.[modalTemplate] ?? null
       : null;
-
-  // Esc to close
   useEffect(() => {
     if (!isModalOpen) return;
     const onKey = (e: KeyboardEvent) => {
@@ -321,7 +311,6 @@ const MetricsPage: React.FC = () => {
 
   return (
     <div className="dx-bg" style={{ display: "flex", height: "100vh" }}>
-      {/* Left sidebar */}
       <div
         className="dx-card"
         style={{
@@ -342,7 +331,6 @@ const MetricsPage: React.FC = () => {
         </button>
       </div>
 
-      {/* Main content */}
       <div
         style={{
           flex: 1,
@@ -360,14 +348,7 @@ const MetricsPage: React.FC = () => {
         <div style={{ color: "white", display: "flex", flexDirection: "column", flex: 1, minHeight: 0 }}>
           <h1 style={{ color: "var(--accent)", marginBottom: 14 }}>Manage Metrics</h1>
 
-          {/* Top-left button OUTSIDE table card */}
-          <div style={{ display: "flex", justifyContent: "flex-start", marginBottom: 6 }}>
-            <button className="dx-btn dx-btn-primary" onClick={openCreateModal}>
-              Add New Metric
-            </button>
-          </div>
 
-          {/* Table card */}
           <div
             className="dx-card"
             style={{
@@ -378,6 +359,11 @@ const MetricsPage: React.FC = () => {
               flexDirection: "column",
             }}
           >
+          <div style={{ display: "flex", justifyContent: "flex-start", marginBottom: 6 }}>
+            <button className="dx-btn dx-btn-primary" onClick={openCreateModal}>
+              Add New Metric
+            </button>
+          </div>
             <div className="dx-table-wrap dx-table-scroll" style={{ flex: 1, minHeight: 0 }}>
               <table className="dx-table">
                 <thead>
@@ -399,7 +385,6 @@ const MetricsPage: React.FC = () => {
                 <tbody>
                   {metrics.map((m) => (
                     <tr key={m.metric_ID} style={{ borderBottom: "1px solid rgba(255,255,255,0.08)" }}>
-                      {/* Actions */}
                       <td className="dx-sticky-left" style={{ left: 0 }}>
                         <div style={{ display: "flex", gap: 6 }}>
                           <button className="dx-btn dx-btn-outline" onClick={() => openEditModal(m)}>
@@ -414,8 +399,6 @@ const MetricsPage: React.FC = () => {
                           </button>
                         </div>
                       </td>
-
-                      {/* Name */}
                       <td
                         className="dx-sticky-left"
                         style={{
@@ -430,7 +413,6 @@ const MetricsPage: React.FC = () => {
                         {m.metric_name}
                       </td>
 
-                      {/* Type */}
                       <td
                         style={{
                           minWidth: 60,
@@ -443,7 +425,6 @@ const MetricsPage: React.FC = () => {
                         {m.value_type}
                       </td>
 
-                      {/* Input Category */}
                       <td
                         style={{
                           minWidth: 120,
@@ -456,7 +437,6 @@ const MetricsPage: React.FC = () => {
                         {displayInputCategory(m)}
                       </td>
 
-                      {/* Scoring Rule */}
                       <td
                         style={{
                           minWidth: 160,
@@ -478,7 +458,6 @@ const MetricsPage: React.FC = () => {
                         </code>
                       </td>
 
-                      {/* Category */}
                       <td
                         style={{
                           minWidth: 120,
@@ -491,7 +470,6 @@ const MetricsPage: React.FC = () => {
                         {m.category || "—"}
                       </td>
 
-                      {/* Description */}
                       <td
                         style={{
                           minWidth: 160,
@@ -566,7 +544,6 @@ const MetricsPage: React.FC = () => {
                 </button>
               </div>
 
-              {/* Form grid */}
               <div
                 style={{
                   display: "grid",
@@ -574,7 +551,6 @@ const MetricsPage: React.FC = () => {
                   gap: 12,
                 }}
               >
-                {/* Name */}
                 <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
                   <label style={{ opacity: 0.85 }}>Metric Name</label>
                   <input
@@ -588,7 +564,6 @@ const MetricsPage: React.FC = () => {
                   />
                 </div>
 
-                {/* Type */}
                 <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
                   <label style={{ opacity: 0.85 }}>Type</label>
                   <select
@@ -618,7 +593,6 @@ const MetricsPage: React.FC = () => {
                   </select>
                 </div>
 
-                {/* Category */}
                 <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
                   <label style={{ opacity: 0.85 }}>Category (optional)</label>
                   <select
@@ -638,7 +612,6 @@ const MetricsPage: React.FC = () => {
                   </select>
                 </div>
 
-                {/* Description */}
                 <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
                   <label style={{ opacity: 0.85 }}>Description (optional)</label>
                   <input
@@ -651,7 +624,6 @@ const MetricsPage: React.FC = () => {
                   />
                 </div>
 
-                {/* Rule fields */}
                 {isRuleType(modalType) && (
                   <div
                     style={{
@@ -661,7 +633,6 @@ const MetricsPage: React.FC = () => {
                       gap: 12,
                     }}
                   >
-                    {/* Input Category */}
                     <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
                       <label style={{ opacity: 0.85 }}>Input Category</label>
                       <select
@@ -688,7 +659,6 @@ const MetricsPage: React.FC = () => {
                       </select>
                     </div>
 
-                    {/* Template */}
                     <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
                       <label style={{ opacity: 0.85 }}>Scoring Rule (template)</label>
                       <select
@@ -712,7 +682,6 @@ const MetricsPage: React.FC = () => {
                       </select>
                     </div>
 
-                    {/* Preview */}
                     {modalPreview && (
                       <div
                         style={{
@@ -737,7 +706,6 @@ const MetricsPage: React.FC = () => {
                 )}
               </div>
 
-              {/* Footer */}
               <div style={{ display: "flex", justifyContent: "flex-end", gap: 10, marginTop: 16 }}>
                 <button className="dx-btn dx-btn-outline" onClick={closeModal}>
                   Cancel
