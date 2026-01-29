@@ -161,70 +161,6 @@ const EditDomain: React.FC = () => {
 
   return (
     <div className="dx-bg" style={{ display: "flex", height: "100vh" }}>
-      <style>{`
-        .delete-domain-btn {
-          transition: all 0.3s ease;
-        }
-        .delete-domain-btn:hover:not(:disabled) {
-          background-color: var(--warning-hover) !important;
-          transform: translateY(-2px);
-          box-shadow: 0 4px 12px rgba(255, 77, 79, 0.4);
-        }
-        .cancel-btn-modal {
-          transition: all 0.3s ease;
-        }
-        .cancel-btn-modal:hover:not(:disabled) {
-          background-color: rgba(255, 255, 255, 0.1);
-          transform: translateY(-2px);
-        }
-        .dx-field-row {
-          display: flex;
-          align-items: center;
-          gap: 12px;
-          padding: 6px 0;
-        }
-        .dx-switch {
-          position: relative;
-          display: inline-block;
-          width: 48px;
-          height: 26px;
-        }
-        .dx-switch input {
-          opacity: 0;
-          width: 0;
-          height: 0;
-        }
-        .dx-switch-slider {
-          position: absolute;
-          cursor: pointer;
-          top: 0;
-          left: 0;
-          right: 0;
-          bottom: 0;
-          background-color:  "var(--accent)";
-          border-radius: 26px;
-          transition: all 0.2s ease;
-          border: 1px solid rgba(255,255,255,0.15);
-        }
-        .dx-switch-slider:before {
-          position: absolute;
-          content: "";
-          height: 20px;
-          width: 20px;
-          left: 3px;
-          bottom: 3px;
-          background-color: #fff;
-          border-radius: 50%;
-          transition: transform 0.2s ease;
-        }
-        .dx-switch input:checked + .dx-switch-slider {
-          background-color: var(--accent-glow-bright);
-          border-color: var(--accent);
-        }
-        .dx-switch input:checked + .dx-switch-slider:before {
-          transform: translateX(22px);
-        }
-      `}</style>
       <div
         className="dx-card"
         style={{
@@ -233,7 +169,7 @@ const EditDomain: React.FC = () => {
           display: "flex",
           flexDirection: "column",
           gap: 18,
-          borderRight: "1px solid rgba(255,255,255,0.08)",
+          borderRight: "1px solid var(--gray)",
         }}
       >
         <button
@@ -380,7 +316,7 @@ const EditDomain: React.FC = () => {
               <button
                 type="button"
                 className="dx-btn delete-domain-btn"
-                style={{ backgroundColor: "var(--warning)", borderColor: "var(--warning)", color: "#fff" }}
+                style={{ backgroundColor: "var(--warning)", borderColor: "var(--warning)", color: "var(--text-main)" }}
                 onClick={() => setShowDeleteConfirm(true)}
               >
                 🗑️ Delete Domain
@@ -404,7 +340,7 @@ const EditDomain: React.FC = () => {
               >
                 <div
                   style={{
-                    background: "#fff",
+                    background: "var(--text-main)" ,
                     padding: "24px",
                     borderRadius: "12px",
                     width: "350px",
@@ -426,7 +362,7 @@ const EditDomain: React.FC = () => {
                         <div style={{ 
                           width: 24, 
                           height: 24, 
-                          border: "3px solid #f0f0f0",
+                          border: "3px solid var(--text-main)",
                           borderTop: "3px solid var(--accent)",
                           borderRadius: "50%",
                           animation: "spin 1s linear infinite"
@@ -457,7 +393,7 @@ const EditDomain: React.FC = () => {
                         </button>
                         <button
                           className="dx-btn dx-btn-outline delete-domain-btn"
-                          style={{ flex: 1, padding: "12px 24px", fontSize: "1rem", backgroundColor: "#ff4d4f", borderColor: "#ff4d4f", color: "#fff" }}
+                          style={{ flex: 1, padding: "12px 24px", fontSize: "1rem", backgroundColor: "var(--warning)", borderColor: "var(--warning)", color: "var(--text-main)" }}
                           onClick={handleDeleteDomain}
                           disabled={isDeleting}
                         >

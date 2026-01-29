@@ -6,7 +6,8 @@
   --accent-glow: rgba(22,199,254,0.15);
   --accent-glow-bright: rgba(125, 212, 252, 0.995);
   --warning: #ff4d4f;
-  --warning-hover: #ff7875;
+  --warning-hover: #f05e5c;
+  --gray: #ffffff14;
 }
 
 html, body, #root {
