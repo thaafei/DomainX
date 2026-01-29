@@ -24,8 +24,10 @@ const AddLibraryPage: React.FC = () => {
   const [language, setLanguage] = useState("");
 
   useEffect(() => {
-    loadLibraries();
-  }, []);
+  if (!DOMAIN_ID) return;
+      loadLibraries();
+    }, [DOMAIN_ID]);
+
 
   const closeModal = () => {
     setModalOpen(false);
@@ -47,7 +49,7 @@ const AddLibraryPage: React.FC = () => {
     try {
       setPageError("");
 
-      const res = await fetch(apiUrl(`/libraries/${DOMAIN_ID}/`), {
+      const res = await fetch(apiUrl(`/libraries/by_domain/${DOMAIN_ID}/`), {
         credentials: "include",
       });
 
@@ -55,7 +57,7 @@ const AddLibraryPage: React.FC = () => {
       if (!res.ok) throw new Error(`Server Error (${res.status})`);
 
       const data = JSON.parse(responseText);
-      setLibraries(Array.isArray(data?.libraries) ? data.libraries : []);
+      setLibraries(Array.isArray(data) ? data : []);
     } catch (err) {
       console.error(err);
       setPageError("Failed to load libraries.");
@@ -89,7 +91,7 @@ const AddLibraryPage: React.FC = () => {
     try {
       setFormError("");
 
-      const res = await fetch(apiUrl("/libraries/create/"), {
+      const res = await fetch(apiUrl("/libraries/"), {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         credentials: "include",
@@ -124,7 +126,7 @@ const AddLibraryPage: React.FC = () => {
 
   const deleteLibrary = async (id: string) => {
     try {
-      const res = await fetch(apiUrl(`/libraries/${id}/delete/`), {
+      const res = await fetch(apiUrl(`/libraries/${id}/`), {
         method: "DELETE",
         credentials: "include",
       });
