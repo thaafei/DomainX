@@ -169,3 +169,69 @@ def test_domain_comparison_returns_metrics_and_library_table(api_client, domain,
     assert by_name["A"]["metrics"]["Forks Count"] is None
     assert by_name["B"]["metrics"]["Stars Count"] is None
     assert by_name["B"]["metrics"]["Forks Count"] is None
+
+
+@pytest.mark.django_db
+def test_update_values_creates_and_saves_values(api_client, domain, metric1, metric2):
+    lib = Library.objects.create(domain=domain, library_name="L1", url=None)
+
+    payload = {"metrics": {"Stars Count": 10, "Forks Count": 2}}
+
+    resp = api_client.post(f"/api/library_metric_values/libraries/{lib.library_ID}/update-values/", payload, format="json")
+    assert resp.status_code == status.HTTP_200_OK
+    assert resp.json() == {"success": True}
+
+    v1 = LibraryMetricValue.objects.get(library=lib, metric=metric1)
+    v2 = LibraryMetricValue.objects.get(library=lib, metric=metric2)
+    assert v1.value == 10
+    assert v2.value == 2
+
+
+@pytest.mark.django_db
+def test_update_values_upserts_existing_value(api_client, domain, metric1):
+    lib = Library.objects.create(domain=domain, library_name="L2", url=None)
+    LibraryMetricValue.objects.create(library=lib, metric=metric1, value=1)
+
+    payload = {"metrics": {"Stars Count": 777}}
+
+    resp = api_client.post(f"/api/library_metric_values/libraries/{lib.library_ID}/update-values/", payload, format="json")
+    assert resp.status_code == status.HTTP_200_OK
+
+    updated = LibraryMetricValue.objects.get(library=lib, metric=metric1)
+    assert updated.value == 777
+
+
+@pytest.mark.django_db
+def test_update_values_updates_evidence_field(api_client, domain, metric1):
+    lib = Library.objects.create(domain=domain, library_name="L3", url=None)
+
+    payload = {"metrics": {"Stars Count_evidence": "sample-evidence"}}
+
+    resp = api_client.post(f"/api/library_metric_values/libraries/{lib.library_ID}/update-values/", payload, format="json")
+    assert resp.status_code == status.HTTP_200_OK
+
+    v = LibraryMetricValue.objects.get(library=lib, metric=metric1)
+    assert v.evidence == "sample-evidence"
+
+
+@pytest.mark.django_db
+def test_update_values_ignores_unknown_metrics(api_client, domain):
+    lib = Library.objects.create(domain=domain, library_name="L4", url=None)
+
+    payload = {"metrics": {"Not A Real Metric": 123}}
+
+    resp = api_client.post(f"/api/library_metric_values/libraries/{lib.library_ID}/update-values/", payload, format="json")
+    assert resp.status_code == status.HTTP_200_OK
+
+    assert not LibraryMetricValue.objects.filter(library=lib, metric__metric_name="Not A Real Metric").exists()
+
+
+@pytest.mark.django_db
+def test_update_values_rejects_non_dict_metrics(api_client, domain):
+    lib = Library.objects.create(domain=domain, library_name="L5", url=None)
+
+    payload = {"metrics": ["bad", "list"]}
+
+    resp = api_client.post(f"/api/library_metric_values/libraries/{lib.library_ID}/update-values/", payload, format="json")
+    assert resp.status_code == status.HTTP_400_BAD_REQUEST
+    assert resp.json()["error"] == "metrics must be an object/dict"
