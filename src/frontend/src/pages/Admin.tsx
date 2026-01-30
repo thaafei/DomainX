@@ -2,6 +2,7 @@ import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { apiUrl } from "../config/api";
 import { useAuthStore } from "../store/useAuthStore";
+import SuccessNotification from "../components/SuccessNotification";
 
 interface Domain {
   domain_ID: string;
@@ -36,6 +37,14 @@ const AdminPage: React.FC = () => {
   const [allDomains, setAllDomains] = useState<Domain[]>([]);
   const [updateLoading, setUpdateLoading] = useState(false);
   const [updateError, setUpdateError] = useState<string | null>(null);
+  const [showUpdateSuccess, setShowUpdateSuccess] = useState(false);
+
+  useEffect(() => {
+    if (showUpdateSuccess) {
+      const timer = setTimeout(() => setShowUpdateSuccess(false), 3000);
+      return () => clearTimeout(timer);
+    }
+  }, [showUpdateSuccess]);
 
   useEffect(() => {
     if (user === undefined) {
@@ -127,6 +136,7 @@ const AdminPage: React.FC = () => {
       }
 
       await fetchUsers();
+      setShowUpdateSuccess(true);
       closeEditModal();
     } catch (err) {
       setUpdateError(err instanceof Error ? err.message : "An error occurred");
@@ -330,11 +340,15 @@ const AdminPage: React.FC = () => {
           <div
             className="dx-card"
             style={{
-              width: "90%",
-              maxWidth: "600px",
-              maxHeight: "80vh",
-              overflow: "auto",
-              padding: "24px",
+                width: "min(900px, 50vw)",
+                maxHeight: "85vh",
+                overflow: "auto",
+                padding: 18,
+                position: "relative",
+                background: "rgba(18, 18, 26, 0.98)",
+                border: "1px solid rgba(255,255,255,0.08)",
+                borderRadius: 16,
+                boxShadow: "0px 10px 25px rgba(0, 0, 0, 0.2)",
             }}
             onClick={(e) => e.stopPropagation()}
           >
@@ -363,6 +377,7 @@ const AdminPage: React.FC = () => {
                 </label>
                 <input
                   className="dx-input"
+                  style={{ width: "95%" }}
                   type="text"
                   value={editFormData.first_name}
                   onChange={(e) =>
@@ -378,6 +393,7 @@ const AdminPage: React.FC = () => {
                 </label>
                 <input
                   className="dx-input"
+                  style={{ width: "95%" }}
                   type="text"
                   value={editFormData.last_name}
                   onChange={(e) =>
@@ -476,6 +492,8 @@ const AdminPage: React.FC = () => {
           </div>
         </div>
       )}
+
+      <SuccessNotification show={showUpdateSuccess} message="User updated successfully!" />
     </div>
   );
 };

@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { apiUrl } from "../config/api";
+import SuccessNotification from "../components/SuccessNotification";
 
 const EditDomain: React.FC = () => {
   const { domain_id } = useParams<{ domain_id: string }>();
@@ -133,7 +134,6 @@ const EditDomain: React.FC = () => {
 
       if (response.ok) {
         setDeleteComplete(true);
-        // Clear localStorage so the next domain selection starts fresh
         try {
           localStorage.removeItem("dx:lastDomainId");
         } catch {}
@@ -291,11 +291,6 @@ const EditDomain: React.FC = () => {
               </fieldset>
 
               {error && <div className="dx-error">{error}</div>}
-              {success && (
-                <div style={{ color: "var(--accent)", padding: "10px", borderRadius: "4px", backgroundColor: "rgba(var(--accent-rgb), 0.1)" }}>
-                  ✓ Domain updated successfully! Redirecting...
-                </div>
-              )}
 
               <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8 }}>
                 <button
@@ -407,6 +402,8 @@ const EditDomain: React.FC = () => {
             )}
           </div>
         </div>
+
+        <SuccessNotification show={success} message="Domain updated successfully! Redirecting..." />
       </div>
     </div>
   );

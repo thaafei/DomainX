@@ -90,7 +90,7 @@ const DomainInfo: React.FC<DomainInfoProps> = ({ selectedDomain, sidebarOpen, se
               <>
                 <button
                   className="dx-btn dx-btn-primary"
-                  onClick={() => navigate("/edit-domain/${selectedDomain.domain_ID}")}
+                  onClick={() => navigate(`/edit-domain/${selectedDomain.domain_ID}`)}
                   style={{ display: "flex", alignItems: "center", gap: 8}}
                 >
                   <span style={{ fontSize: 15 }}>✏️</span> Edit Domain
@@ -107,7 +107,7 @@ const DomainInfo: React.FC<DomainInfoProps> = ({ selectedDomain, sidebarOpen, se
             <button
                 className="dx-btn dx-btn-outline"
                 disabled={!selectedDomain}
-                onClick={() => navigate("/comparison-tool/${selectedDomain.domain_ID}")}
+                onClick={() => navigate(`/comparison-tool/${selectedDomain.domain_ID}`)}
                 style={{ display: "flex", alignItems: "center", gap: 8 }}
               >
                 <span style={{ fontSize: 15 }}>⚖️</span> Comparison Tool
