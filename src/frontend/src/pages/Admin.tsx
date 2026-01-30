@@ -32,6 +32,8 @@ const AdminPage: React.FC = () => {
     first_name: "",
     last_name: "",
     role: "",
+    user_name: "",
+    email: "",
     domain_ids: [] as string[],
   });
   const [allDomains, setAllDomains] = useState<Domain[]>([]);
@@ -105,6 +107,8 @@ const AdminPage: React.FC = () => {
       last_name: u.last_name || "",
       role: u.role,
       domain_ids: u.domains?.map(d => d.domain_ID) || [],
+      user_name: u.username,
+      email: u.email
     });
     setUpdateError(null);
     setIsEditModalOpen(true);
@@ -398,6 +402,38 @@ const AdminPage: React.FC = () => {
                   value={editFormData.last_name}
                   onChange={(e) =>
                     setEditFormData({ ...editFormData, last_name: e.target.value })
+                  }
+                  placeholder="Last name"
+                />
+              </div>
+
+              <div>
+                <label style={{ display: "block", marginBottom: 8, color: "var(--text-main)" }}>
+                  Username
+                </label>
+                <input
+                  className="dx-input"
+                  style={{ width: "95%" }}
+                  type="text"
+                  value={editFormData.user_name}
+                  onChange={(e) =>
+                    setEditFormData({ ...editFormData, user_name: e.target.value })
+                  }
+                  placeholder="Last name"
+                />
+              </div>
+
+              <div>
+                <label style={{ display: "block", marginBottom: 8, color: "var(--text-main)" }}>
+                  Email
+                </label>
+                <input
+                  className="dx-input"
+                  style={{ width: "95%" }}
+                  type="text"
+                  value={editFormData.email}
+                  onChange={(e) =>
+                    setEditFormData({ ...editFormData, email: e.target.value })
                   }
                   placeholder="Last name"
                 />
