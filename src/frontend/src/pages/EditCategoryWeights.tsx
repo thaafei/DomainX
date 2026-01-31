@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useMemo } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { apiUrl } from "../config/api";
 
@@ -7,6 +7,7 @@ const EditCategoryWeights: React.FC = () => {
   const navigate = useNavigate();
   const [categories, setCategories] = useState<string[]>([]);
   const [localWeights, setLocalWeights] = useState<Record<string, number>>({});
+  const [initialWeights, setInitialWeights] = useState<Record<string, number>>({});
   const [loading, setLoading] = useState(true);
   const [saveStatus, setSaveStatus] = useState<string | null>(null);
 
@@ -14,137 +15,197 @@ const EditCategoryWeights: React.FC = () => {
     const fetchData = async () => {
       if (!domainId) return;
       try {
-        // Fetch Categories
         const catRes = await fetch(apiUrl("/metrics/categories/"), { credentials: "include" });
         const catData = await catRes.json();
-        setCategories(catData?.Categories || []);
+        const cats = catData?.Categories || [];
+        setCategories(cats);
 
-        // Fetch Current Weights
         const weightRes = await fetch(apiUrl(`/domain/${domainId}/category-weights/`), { credentials: "include" });
+        let weights: Record<string, number> = {};
         if (weightRes.ok) {
-          const weightData = await weightRes.json();
-          setLocalWeights(weightData || {});
+          weights = await weightRes.json();
         }
+        
+        // Ensure every category has a value, default to 1/N for a fresh start
+        const balancedWeights = cats.reduce((acc: any, cat: string) => {
+          acc[cat] = weights[cat] !== undefined ? weights[cat] : (1 / cats.length);
+          return acc;
+        }, {});
+
+        setLocalWeights(balancedWeights);
+        setInitialWeights(balancedWeights);
       } catch (err) {
-        console.error("Error loading weights page:", err);
+        console.error(err);
       } finally {
         setLoading(false);
       }
     };
     fetchData();
   }, [domainId]);
+  const handleInputChange = (cat: string, value: string) => {
+    // Remove any non-numeric characters except the decimal point
+    const cleanValue = value.replace(/[^0-9.]/g, "");
+    const numericValue = parseFloat(cleanValue) || 0;
+    
+    // Convert percentage back to decimal (0-1 range) for state
+    const decimalValue = numericValue / 100;
+    
+    // Limit to 1 (100%) to prevent slider overflow
+    const finalValue = Math.min(decimalValue, 1);
+    
+    setLocalWeights(prev => ({ ...prev, [cat]: finalValue }));
+    if (saveStatus) setSaveStatus(null);
+  };
+  // Derived Values
+  const totalSum = useMemo(() => 
+    categories.reduce((sum, cat) => sum + (localWeights[cat] ?? 0), 0), 
+  [localWeights, categories]);
 
-  const handleWeightChange = (category: string, value: string) => {
-    setLocalWeights((prev) => ({ ...prev, [category]: parseFloat(value) || 0 }));
+  const isTotalValid = Math.abs(totalSum - 1.0) < 0.001;
+
+  // Actions
+  const handleSliderChange = (cat: string, val: number) => {
+    setLocalWeights(prev => ({ ...prev, [cat]: val }));
+    if (saveStatus) setSaveStatus(null);
   };
 
-    const saveWeights = async () => {
-        // 1. Calculate the sum across ALL categories, not just the changed ones
-        const totalWeight = categories.reduce((sum, cat) => {
-            // Use the localWeight if it exists, otherwise assume the default 1.0 
-            // (or whatever your default logic is in the table)
-            const weight = localWeights[cat] !== undefined ? localWeights[cat] : 1.0;
-            return sum + weight;
-        }, 0);
+  const handleNormalize = () => {
+    const equalValue = 1 / categories.length;
+    const normalized = categories.reduce((acc: any, cat) => {
+      acc[cat] = equalValue;
+      return acc;
+    }, {});
+    setLocalWeights(normalized);
+  };
 
-        // 2. Validation
-        if (Math.abs(totalWeight - 1.0) > 0.0001) {
-            setSaveStatus(`Error: Weights must sum to 1.0 (Current Total: ${totalWeight.toFixed(2)})`);
-            return; 
-        }
+  const handleReset = () => {
+    setLocalWeights(initialWeights);
+  };
 
-        // 3. Proceed to save if valid
-        try {
-            // We send the full map. It's best to construct the full object here 
-            // so the backend definitely gets all metrics, even unchanged ones.
-            const fullWeightsPayload = categories.reduce((acc, cat) => {
-            acc[cat] = localWeights[cat] !== undefined ? localWeights[cat] : 1.0;
-            return acc;
-            }, {} as Record<string, number>);
+  const saveWeights = async () => {
+    if (!isTotalValid) {
+      setSaveStatus(`Error: Total must be 100% (Current: ${(totalSum * 100).toFixed(1)}%)`);
+      return;
+    }
+    try {
+      const res = await fetch(apiUrl(`/domain/${domainId}/category-weights/`), {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        credentials: "include",
+        body: JSON.stringify({ values: localWeights }),
+      });
+      if (res.ok) {
+        setSaveStatus("Saved successfully!");
+        setTimeout(() => navigate("/main"), 1500);
+      }
+    } catch (err) {
+      setSaveStatus("Network error.");
+    }
+  };
 
-            const res = await fetch(apiUrl(`/domain/${domainId}/category-weights/`), {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            credentials: "include",
-            body: JSON.stringify({ values: fullWeightsPayload }),
-            });
-
-            if (res.ok) {
-            setSaveStatus("Saved successfully!");
-            setTimeout(() => navigate("/"), 2000);
-            }
-        } catch (err) {
-            setSaveStatus("Network error.");
-        }
-    };
+  // Sort categories for the Preview column (Highest to Lowest)
+  const sortedPreview = [...categories].sort((a, b) => (localWeights[b] ?? 0) - (localWeights[a] ?? 0));
 
   if (loading) return <div className="dx-bg" style={{ color: "white", padding: "20px" }}>Loading...</div>;
 
   return (
-    <div className="dx-bg" style={{ minHeight: "100vh", padding: "40px", display: "flex", justifyContent: "center" }}>
-      <div className="dx-card" style={{ width: "100%", maxWidth: "600px", height: "fit-content", padding: "30px" }}>
-        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "30px" }}>
-          <h2 style={{ color: "var(--accent)", margin: 0 }}>Edit Category Weights</h2>
+    <div className="dx-bg" style={{ minHeight: "100vh", padding: "20px", color: "#e0e0e0", fontFamily: "sans-serif" }}>
+      {/* Header Bar */}
+      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", maxWidth: "1200px", margin: "0 auto 20px" }}>
+        <div style={{ display: "flex", alignItems: "center", gap: "15px" }}>
+          <h3 style={{ margin: 0, color: isTotalValid ? "#52c41a" : "#ff4d4f" }}>Total = {(totalSum * 100).toFixed(0)}%</h3>
+          <span style={{ color: isTotalValid ? "#52c41a" : "#ff4d4f", fontSize: "1.2rem" }}>
+            {isTotalValid ? "✅" : "⚠️"}
+          </span>
+        </div>
+        
+        <div style={{ display: "flex", gap: "10px" }}>
+          <button className="dx-btn" style={{ backgroundColor: "#333" }} onClick={handleReset}>↺ Reset</button>
+          <button className="dx-btn" style={{ backgroundColor: "#333" }} onClick={handleNormalize}>⇋ Normalize</button>
+          <button className="dx-btn dx-btn-primary" onClick={saveWeights} disabled={!isTotalValid}>
+             {saveStatus === "Saved successfully!" ? "Saved ✓" : "Save"}
+          </button>
           <button className="dx-btn" onClick={() => navigate("/main")} style={{ backgroundColor: "#444" }}>Back</button>
         </div>
+      </div>
 
-        <table style={{ width: "100%", borderCollapse: "collapse", color: "white" }}>
-          <thead>
-            <tr style={{ textAlign: "left", borderBottom: "1px solid #333" }}>
-              <th style={{ padding: "12px" }}>Category</th>
-              <th style={{ padding: "12px" }}>Weight</th>
-            </tr>
-          </thead>
-          <tbody>
-            {categories.map((cat) => (
-              <tr key={cat} style={{ borderBottom: "1px solid #222" }}>
-                <td style={{ padding: "12px" }}>{cat}</td>
-                <td style={{ padding: "12px" }}>
+      {saveStatus && !isTotalValid && (
+        <div style={{ textAlign: "center", color: "#ff4d4f", marginBottom: "10px" }}>{saveStatus}</div>
+      )}
+
+      <div style={{ display: "flex", gap: "40px", maxWidth: "1200px", margin: "0 auto" }}>
+        
+        {/* Left Column: Sliders */}
+        <div className="dx-card" style={{ flex: 1, padding: "25px" }}>
+          <h4 style={{ marginTop: 0, color: "var(--accent)" }}>Weights</h4>
+          {categories.map(cat => (
+            <div key={cat} style={{ marginBottom: "20px" }}>
+              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "8px" }}>
+                <span style={{ fontSize: "0.9rem" }}>{cat}</span>
+                
+                {/* NEW: Editable Input Field */}
+                <div style={{ display: "flex", alignItems: "center", gap: "5px" }}>
                   <input
-                    type="number"
+                    type="text"
                     className="dx-input"
-                    style={{ width: "100px" }}
-                    step="0.1"
-                    value={localWeights[cat] ?? 1.0}
-                    onChange={(e) => handleWeightChange(cat, e.target.value)}
+                    style={{ 
+                      width: "60px", 
+                      padding: "2px 5px", 
+                      textAlign: "right", 
+                      background: "#1a1a1a", 
+                      border: "1px solid #333",
+                      borderRadius: "4px",
+                      color: "white",
+                      fontSize: "0.85rem"
+                    }}
+                    value={((localWeights[cat] ?? 0) * 100).toFixed(1)}
+                    onChange={(e) => handleInputChange(cat, e.target.value)}
                   />
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-        <div style={{ 
-            marginTop: "10px", 
-            textAlign: "right", 
-            color: Math.abs(categories.reduce((sum, cat) => sum + (localWeights[cat] ?? 1.0), 0) - 1) < 0.0001 ? "#52c41a" : "#ff4d4f" 
-            }}>
-            <strong>
-                Total Sum: {categories.reduce((sum, cat) => sum + (localWeights[cat] ?? 1.0), 0).toFixed(2)}
-            </strong>
-        </div>
-        <div style={{ marginTop: "30px" }}>
-        <button 
-            className="dx-btn dx-btn-primary" 
-            style={{ padding: "10px 25px" }} 
-            onClick={saveWeights}
-            disabled={saveStatus === "Saved successfully!"}
-        >
-            {saveStatus === "Saved successfully!" ? "Saved" : "Save and Apply Changes"}
-        </button>
+                  <span style={{ fontSize: "0.85rem" }}>%</span>
+                </div>
+              </div>
 
-        {saveStatus && (
-            <span style={{ 
-            color: saveStatus.includes("Error") || saveStatus.includes("Network") ? "#ff4d4f" : "#52c41a", 
-            fontWeight: "bold",
-            fontSize: "0.9rem",
-            transition: "opacity 0.3s ease"
-            }}>
-            {saveStatus === "Saved successfully!" && "✓ "} 
-            {saveStatus}
-            </span>
-        )}
+              {/* Slider stays synced because it uses the same localWeights[cat] */}
+              <input 
+                type="range"
+                min="0"
+                max="1"
+                step="0.001" // Increased step precision for smoother typing sync
+                value={localWeights[cat] ?? 0}
+                onChange={(e) => handleSliderChange(cat, parseFloat(e.target.value))}
+                style={{ width: "100%", cursor: "pointer", accentColor: "var(--accent)" }}
+              />
+            </div>
+          ))}
         </div>
-    </div>
+
+        {/* Right Column: Preview Bar Graph */}
+        <div className="dx-card" style={{ flex: 1, padding: "25px" }}>
+          <h4 style={{ marginTop: 0, color: "var(--accent)" }}>Preview (Priority)</h4>
+          <div style={{ display: "flex", flexDirection: "column", gap: "15px" }}>
+            {sortedPreview.map(cat => (
+              <div key={cat}>
+                <div style={{ display: "flex", justifyContent: "space-between", fontSize: "0.85rem", marginBottom: "4px" }}>
+                  <span>{cat}</span>
+                  <span>{((localWeights[cat] ?? 0) * 100).toFixed(1)}%</span>
+                </div>
+                <div style={{ height: "12px", width: "100%", backgroundColor: "#222", borderRadius: "6px", overflow: "hidden" }}>
+                  <div 
+                    style={{ 
+                      height: "100%", 
+                      width: `${(localWeights[cat] ?? 0) * 100}%`, 
+                      backgroundColor: "var(--accent)",
+                      transition: "width 0.3s ease",
+                      opacity: 0.8
+                    }} 
+                  />
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+
+      </div>
     </div>
   );
 };
