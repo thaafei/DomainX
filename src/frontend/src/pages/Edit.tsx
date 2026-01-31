@@ -1,6 +1,6 @@
-import React, { useEffect, useState, useRef, useLayoutEffect} from "react";
+import React, { useEffect, useState, useRef, useLayoutEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { useParams } from 'react-router-dom';
+import { useParams } from "react-router-dom";
 import { apiUrl } from "../config/api";
 
 interface Metric {
@@ -17,7 +17,13 @@ interface EditableRow {
   programming_language: string;
   metrics: { [metricName: string]: string | number | null };
   isEditing: boolean;
+
   analysis_status?: AnalysisStatus;
+  analysis_error?: string | null;
+
+  gitstats_status?: AnalysisStatus;
+  gitstats_error?: string | null;
+  gitstats_report_url?: string | null;
 }
 
 const EditValuesPage: React.FC = () => {
@@ -27,37 +33,43 @@ const EditValuesPage: React.FC = () => {
 
   const [metricList, setMetricList] = useState<Metric[]>([]);
   const [rows, setRows] = useState<EditableRow[]>([]);
+
   const [pageLoading, setPageLoading] = useState(false);
-  const [loadingText, setLoadingText] = useState<string>("Loading...");
+
+  const [infoMsg, setInfoMsg] = useState<string | null>(null);
+  const [errorMsg, setErrorMsg] = useState<string | null>(null);
+
   const [updatingAll, setUpdatingAll] = useState(false);
   const [updatingLibId, setUpdatingLibId] = useState<string | null>(null);
+
   const firstColRef = useRef<HTMLTableCellElement>(null);
   const [offset, setOffset] = useState(0);
 
   useLayoutEffect(() => {
-  if (firstColRef.current) {
-    const width = firstColRef.current.getBoundingClientRect().width;
-    setOffset(width);
-  }
-}, [rows]);
+    if (firstColRef.current) {
+      const width = firstColRef.current.getBoundingClientRect().width;
+      setOffset(width);
+    }
+  }, [rows]);
 
   useEffect(() => {
-      (async () => {
-        try {
-          setPageLoading(true);
-          setLoadingText("Loading table…");
-          if (!DOMAIN_ID) return;
-          await loadData();
-        } finally {
-          setPageLoading(false);
-        }
-      })();
-    }, [DOMAIN_ID]);
-
-
+    (async () => {
+      try {
+        setPageLoading(true);
+        setInfoMsg("Loading table…");
+        setErrorMsg(null);
+        if (!DOMAIN_ID) return;
+        await loadData();
+        setInfoMsg(null);
+      } catch (e: any) {
+        setErrorMsg(e?.message || "Failed to load table.");
+      } finally {
+        setPageLoading(false);
+      }
+    })();
+  }, [DOMAIN_ID]);
 
   const fetchComparisonRaw = async () => {
-
     const res = await fetch(apiUrl(`/library_metric_values/comparison/${DOMAIN_ID}/`), {
       credentials: "include",
     });
@@ -85,94 +97,75 @@ const EditValuesPage: React.FC = () => {
     setRows(editableRows);
   };
 
-  const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
-
-  const isTerminal = (s?: AnalysisStatus) => s === "success" || s === "failed";
-  const isActive = (s?: AnalysisStatus) => s === "pending" || s === "running";
-
-  const waitForLibraryDone = async (libraryId: string) => {
-    for (let i = 0; i < 80; i++) {
-      await sleep(1500);
-      const data = await fetchComparisonRaw();
-      const lib = data.libraries.find((x: any) => x.library_ID === libraryId);
-      if (isTerminal(lib?.analysis_status)) return;
-    }
-  };
-
-  const waitForAllDone = async () => {
-    for (let i = 0; i < 120; i++) {
-      await sleep(1500);
-      const data = await fetchComparisonRaw();
-      const anyActive = data.libraries.some((l: any) => isActive(l.analysis_status));
-      if (!anyActive) return;
-    }
-  };
 
   const startEdit = (id: string) => {
-    setRows((prev) =>
-      prev.map((r) => (r.library_ID === id ? { ...r, isEditing: true } : r))
-    );
+    setRows((prev) => prev.map((r) => (r.library_ID === id ? { ...r, isEditing: true } : r)));
   };
 
   const cancelEdit = async () => {
     try {
       setPageLoading(true);
-      setLoadingText("Refreshing…");
+      setInfoMsg("Refreshing…");
+      setErrorMsg(null);
       await loadData();
+      setInfoMsg(null);
+    } catch (e: any) {
+      setErrorMsg(e?.message || "Failed to refresh.");
     } finally {
       setPageLoading(false);
     }
   };
 
   const updateField = (id: string, field: string, value: any) => {
-    setRows((prev) =>
-      prev.map((r) => (r.library_ID === id ? { ...r, [field]: value } : r))
-    );
+    setRows((prev) => prev.map((r) => (r.library_ID === id ? { ...r, [field]: value } : r)));
   };
 
   const updateMetricValue = (libId: string, metric: string, value: any, isEvidence: boolean = false) => {
     const key = isEvidence ? `${metric}_evidence` : metric;
     setRows((prev) =>
-      prev.map((r) =>
-        r.library_ID === libId
-          ? { ...r, metrics: { ...r.metrics, [key]: value } }
-          : r
-      )
+      prev.map((r) => (r.library_ID === libId ? { ...r, metrics: { ...r.metrics, [key]: value } } : r))
     );
   };
 
   const saveRow = async (row: EditableRow) => {
-    const res = await fetch(apiUrl(`/library_metric_values/libraries/${row.library_ID}/update-values/`), {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      credentials: "include",
-      body: JSON.stringify({
-        library_name: row.library_name,
-        url: row.url,
-        programming_language: row.programming_language,
-        metrics: row.metrics,
-      }),
-    });
+    try {
+      setPageLoading(true);
+      setInfoMsg("Saving…");
+      setErrorMsg(null);
 
-    if (res.ok) {
-      try {
-        setPageLoading(true);
-        setLoadingText("Saving…");
-        await loadData();
-      } finally {
-        setPageLoading(false);
+      const res = await fetch(apiUrl(`/library_metric_values/libraries/${row.library_ID}/update-values/`), {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        credentials: "include",
+        body: JSON.stringify({
+          library_name: row.library_name,
+          url: row.url,
+          programming_language: row.programming_language,
+          metrics: row.metrics,
+        }),
+      });
+
+      if (!res.ok) {
+        const text = await res.text();
+        throw new Error(text || "Save failed.");
       }
-    } else {
-      const text = await res.text();
-      console.error("Save failed:", res.status, text);
+
+      await loadData();
+      setInfoMsg("Saved.");
+      setTimeout(() => setInfoMsg(null), 1500);
+    } catch (e: any) {
+      setErrorMsg(e?.message || "Save failed.");
+    } finally {
+      setPageLoading(false);
     }
   };
 
   const runAnalysisForLibrary = async (libraryId: string) => {
     try {
       setUpdatingLibId(libraryId);
-      setPageLoading(true);
-      setLoadingText("Updating repository metrics…");
+      setErrorMsg(null);
+
+      setInfoMsg("Analysis started (API+SCC + GitStats). You can keep editing. Reload the page later to see results.");
 
       const res = await fetch(apiUrl(`/library_metric_values/libraries/${libraryId}/analyze/`), {
         method: "POST",
@@ -181,27 +174,29 @@ const EditValuesPage: React.FC = () => {
 
       if (!res.ok) {
         const text = await res.text();
-        console.error("Update failed:", res.status, text);
-        return;
+        throw new Error(text || "Analyze request failed.");
       }
 
-      setLoadingText("Running analysis…");
-      await waitForLibraryDone(libraryId);
-
-      setLoadingText("Refreshing table…");
-      await loadData();
+      setRows((prev) =>
+        prev.map((r) =>
+          r.library_ID === libraryId
+            ? { ...r, analysis_status: "running", gitstats_status: "running" }
+            : r
+        )
+      );
+    } catch (e: any) {
+      setErrorMsg(e?.message || "Failed to start analysis.");
     } finally {
       setUpdatingLibId(null);
-      setPageLoading(false);
     }
   };
 
   const runAnalysisForAll = async () => {
     try {
       setUpdatingAll(true);
-      setPageLoading(true);
-      setLoadingText("Updating all repositories…");
+      setErrorMsg(null);
 
+      setInfoMsg("Analysis started for all libraries (API+SCC + GitStats). Keep editing. Reload later to see results.");
 
       const res = await fetch(apiUrl(`/library_metric_values/${DOMAIN_ID}/analyze-all/`), {
         method: "POST",
@@ -210,42 +205,48 @@ const EditValuesPage: React.FC = () => {
 
       if (!res.ok) {
         const text = await res.text();
-        console.error("Update all failed:", res.status, text);
-        return;
+        throw new Error(text || "Analyze-all request failed.");
       }
 
-      setLoadingText("Running analyses…");
-      await waitForAllDone();
-
-      setLoadingText("Refreshing table…");
-      await loadData();
+      setRows((prev) => prev.map((r) => ({ ...r, analysis_status: "running", gitstats_status: "running" })));
+    } catch (e: any) {
+      setErrorMsg(e?.message || "Failed to start analysis for all.");
     } finally {
       setUpdatingAll(false);
-      setPageLoading(false);
     }
   };
 
+  const countStatus = (key: "analysis_status" | "gitstats_status") => {
+    const pending = rows.filter((r) => r[key] === "pending").length;
+    const running = rows.filter((r) => r[key] === "running").length;
+    const success = rows.filter((r) => r[key] === "success").length;
+    const failed = rows.filter((r) => r[key] === "failed").length;
+    return { pending, running, success, failed };
+  };
+
+  const apiScc = countStatus("analysis_status");
+  const gitstats = countStatus("gitstats_status");
+
   return (
     <div className="dx-bg" style={{ display: "flex", height: "100vh" }}>
-    <div
-      className="dx-card"
-      style={{
-        width: 120,
-        padding: "22px 14px",
-        display: "flex",
-        flexDirection: "column",
-        gap: 18,
-        borderRight: "1px solid rgba(255,255,255,0.08)",
-      }}
-    >
-      <button
-            className="dx-btn dx-btn-outline"
-            style={{ width: "100%", fontSize: "1rem", textAlign: "center" }}
-            onClick={() => navigate(`/comparison-tool/${domainId}`)}
-              >
-                ← Back
-      </button>
-
+      <div
+        className="dx-card"
+        style={{
+          width: 120,
+          padding: "22px 14px",
+          display: "flex",
+          flexDirection: "column",
+          gap: 18,
+          borderRight: "1px solid rgba(255,255,255,0.08)",
+        }}
+      >
+        <button
+          className="dx-btn dx-btn-outline"
+          style={{ width: "100%", fontSize: "1rem", textAlign: "center" }}
+          onClick={() => navigate(`/comparison-tool/${domainId}`)}
+        >
+          ← Back
+        </button>
       </div>
 
       <div
@@ -260,19 +261,9 @@ const EditValuesPage: React.FC = () => {
           position: "relative",
         }}
       >
-      <div className="stars"></div>
-        {pageLoading && (
-          <div className="dx-backdrop" aria-live="polite" aria-busy="true">
-            <div className="dx-backdrop-card">
-              <span className="dx-spinner" />
-              <span>{loadingText}</span>
-            </div>
-          </div>
-        )}
+        <div className="stars"></div>
 
-        <h1 style={{ color: "var(--accent)", marginBottom: 20 }}>
-          Edit Metric Values
-        </h1>
+        <h1 style={{ color: "var(--accent)", marginBottom: 20 }}>Edit Metric Values</h1>
 
         <div
           className="dx-card"
@@ -284,16 +275,45 @@ const EditValuesPage: React.FC = () => {
             flexDirection: "column",
           }}
         >
-          <div style={{ marginBottom: 2 }}>
+
+          <div style={{ marginBottom: 8, display: "flex", gap: 10, alignItems: "center" }}>
+
             <button
               className="dx-btn dx-btn-outline dx-btn-inline"
               onClick={runAnalysisForAll}
               disabled={pageLoading || updatingAll}
               style={{ opacity: pageLoading || updatingAll ? 0.7 : 1 }}
             >
-              {(pageLoading && updatingAll) && <span className="dx-spinner" />}
               {updatingAll ? "Updating..." : "Update All"}
             </button>
+
+            <button
+              className="dx-btn dx-btn-outline dx-btn-inline"
+              onClick={cancelEdit}
+              disabled={pageLoading}
+              style={{ opacity: pageLoading ? 0.7 : 1 }}
+              title="Reload table from server"
+            >
+              Reload
+            </button>
+          </div>
+
+          {infoMsg && (
+            <div style={{ marginBottom: 10, opacity: 0.9, fontSize: 14 }}>
+              {infoMsg}
+            </div>
+          )}
+          {errorMsg && (
+            <div style={{ marginBottom: 10, color: "#ff8f8f", fontSize: 14 }}>
+              {errorMsg}
+            </div>
+          )}
+
+          <div style={{ marginBottom: 10, fontSize: 13, opacity: 0.85 }}>
+
+            <div style={{ marginTop: 6, opacity: 0.8 }}>
+              Auto-reload is disabled for comfortable editing. When you want updated results, click <b>Reload</b> (or refresh the page).
+            </div>
           </div>
 
           <div className="dx-table-wrap dx-table-scroll" style={{ flex: 1, minHeight: 0 }}>
@@ -343,14 +363,13 @@ const EditValuesPage: React.FC = () => {
                             </button>
                           </div>
                         ) : (
-                          <div style={{ display: "flex", gap: 6 }}>
+                          <div style={{ display: "flex", gap: 6, alignItems: "center" }}>
                             <button
                               className="dx-btn dx-btn-outline dx-btn-inline"
                               onClick={() => runAnalysisForLibrary(row.library_ID)}
                               disabled={pageLoading || rowUpdating}
                               style={{ opacity: pageLoading || rowUpdating ? 0.7 : 1 }}
                             >
-                              {rowUpdating && <span className="dx-spinner" />}
                               {rowUpdating ? "Updating..." : "Update"}
                             </button>
 
@@ -364,6 +383,36 @@ const EditValuesPage: React.FC = () => {
                             </button>
                           </div>
                         )}
+
+                        <div style={{ marginTop: 6, fontSize: 12, opacity: 0.85, lineHeight: 1.3 }}>
+                          <div>
+                              API+SCC: {row.analysis_status || "—"}
+                              {(row.analysis_status === "pending" || row.analysis_status === "running") && "..."}
+                            </div>
+                          <div>
+                            GitStats: {row.gitstats_status || "—"}
+                            {(row.analysis_status === "pending" || row.analysis_status === "running") && "..."}
+                            {row.gitstats_report_url && row.gitstats_status === "success" && (
+                              <>
+                                {" "}
+                                <a
+                                  href={row.gitstats_report_url}
+                                  target="_blank"
+                                  rel="noreferrer"
+                                  style={{ color: "var(--accent)" }}
+                                >
+                                  View report
+                                </a>
+                              </>
+                            )}
+                          </div>
+                          {(row.analysis_error || row.gitstats_error) && (
+                            <div style={{ color: "#ff8f8f" }}>
+                              {row.analysis_error ? `API+SCC error: ${row.analysis_error}` : ""}
+                              {row.gitstats_error ? ` GitStats error: ${row.gitstats_error}` : ""}
+                            </div>
+                          )}
+                        </div>
                       </td>
 
                       <td className="dx-sticky-left" style={{ left: offset }}>
@@ -371,9 +420,7 @@ const EditValuesPage: React.FC = () => {
                           <input
                             className="dx-input"
                             value={row.library_name}
-                            onChange={(e) =>
-                              updateField(row.library_ID, "library_name", e.target.value)
-                            }
+                            onChange={(e) => updateField(row.library_ID, "library_name", e.target.value)}
                             disabled={pageLoading}
                           />
                         ) : (
@@ -399,9 +446,7 @@ const EditValuesPage: React.FC = () => {
                           <input
                             className="dx-input"
                             value={row.programming_language || ""}
-                            onChange={(e) =>
-                              updateField(row.library_ID, "programming_language", e.target.value)
-                            }
+                            onChange={(e) => updateField(row.library_ID, "programming_language", e.target.value)}
                             disabled={pageLoading}
                           />
                         ) : (
@@ -415,9 +460,7 @@ const EditValuesPage: React.FC = () => {
                             <input
                               className="dx-input"
                               value={row.metrics[m.metric_name] ?? ""}
-                              onChange={(e) =>
-                                updateMetricValue(row.library_ID, m.metric_name, e.target.value)
-                              }
+                              onChange={(e) => updateMetricValue(row.library_ID, m.metric_name, e.target.value)}
                               disabled={pageLoading}
                             />
                           ) : (
@@ -431,6 +474,14 @@ const EditValuesPage: React.FC = () => {
               </tbody>
             </table>
           </div>
+          <div style={{ marginBottom: 10, fontSize: 13, opacity: 0.85 }}>
+          <div>
+              API+SCC: running {apiScc.running}, pending {apiScc.pending}, success {apiScc.success}, failed {apiScc.failed}
+            </div>
+            <div>
+              GitStats: running {gitstats.running}, pending {gitstats.pending}, success {gitstats.success}, failed {gitstats.failed}
+            </div>
+            </div>
         </div>
       </div>
     </div>
