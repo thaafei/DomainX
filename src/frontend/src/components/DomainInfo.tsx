@@ -96,6 +96,14 @@ const DomainInfo: React.FC<DomainInfoProps> = ({ selectedDomain, sidebarOpen, se
                   <span style={{ fontSize: 15 }}>✏️</span> Edit Domain
                 </button>
                 <button
+                  className="dx-btn dx-btn-primary"
+                  disabled={!selectedDomain}
+                  onClick={() => navigate(`/edit-weights/${selectedDomain.domain_ID}`)}
+                  style={{ display: "flex", alignItems: "center", gap: 8}}
+                >
+                  <span style={{ fontSize: 15, marginRight: 8 }}>📊</span> Edit Category Weights
+                </button>
+                <button
                     className="dx-btn dx-btn-primary"
                     onClick={() => navigate("/metrics")}
                     style={{  display: "flex", alignItems: "center", gap: 8}}
@@ -105,7 +113,7 @@ const DomainInfo: React.FC<DomainInfoProps> = ({ selectedDomain, sidebarOpen, se
               </>
              )}
             <button
-                className="dx-btn dx-btn-outline"
+                className="dx-btn dx-btn-primary"
                 disabled={!selectedDomain}
                 onClick={() => navigate(`/comparison-tool/${selectedDomain.domain_ID}`)}
                 style={{ display: "flex", alignItems: "center", gap: 8 }}

@@ -363,10 +363,6 @@ const Main: React.FC = () => {
               ))}
             </tbody>
           </table>
-
-          <button className="dx-btn dx-btn-primary" style={{ marginTop: "15px" }} onClick={saveWeights}>
-            Update Weights
-          </button>
         </div>
       </div>
 
