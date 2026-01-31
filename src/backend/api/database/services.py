@@ -337,7 +337,87 @@ class RepoAnalyzer:
             logger.exception("CRITICAL FAILURE in analysis for %s", self.github_url)
             raise
 
+    def _run_gitstats(self, repo_dir: str, out_dir: str) -> dict[str, int]:
+        os.makedirs(out_dir, exist_ok=True)
+
+        cmd = ["git_stats", "generate"]
+
+        env = os.environ.copy()
+        env["LC_ALL"] = "C"
+        env["LANG"] = "C"
+
+        try:
+            p = subprocess.run(
+                cmd,
+                cwd=repo_dir,
+                check=True,
+                stdout=subprocess.PIPE,
+                stderr=subprocess.PIPE,
+                text=False,
+                timeout=60 * 30,
+                env=env,
+            )
+
+            stdout_text = p.stdout.decode("utf-8", errors="replace")
+            stderr_text = p.stderr.decode("utf-8", errors="replace")
+
+        except FileNotFoundError:
+            raise Exception("git_stats is not installed or not on PATH.")
+        except subprocess.TimeoutExpired:
+            raise Exception("git_stats timed out.")
+        except subprocess.CalledProcessError as e:
+            err = (e.stderr or b"").decode("utf-8", errors="replace")
+            raise Exception(f"git_stats failed: {err[-1000:]}")
+
+        generated = os.path.join(repo_dir, "git_stats")
+        if not os.path.isdir(generated):
+            raise Exception("git_stats output folder not found after running.")
+
+        dest = os.path.join(out_dir, "git_stats")
+        if os.path.exists(dest):
+            shutil.rmtree(dest, ignore_errors=True)
+        shutil.copytree(generated, dest)
+
+        return {"GitStats Report Generated": 1}
+
+    def run_gitstats_only(self, work_dir: str, serve_dir: str) -> dict:
+        work_dir = os.path.abspath(work_dir)
+        serve_dir = os.path.abspath(serve_dir)
+
+        os.makedirs(work_dir, exist_ok=True)
+        os.makedirs(serve_dir, exist_ok=True)
+
+        try:
+            repo_dir = self._clone_repo_to_dir(work_dir)
+            gitstats_results = self._run_gitstats(repo_dir, out_dir=serve_dir)
+            return {"repo_name": self.repo_name, "metric_data": gitstats_results}
+        finally:
+            repo_path = os.path.join(work_dir, "repo")
+            shutil.rmtree(repo_path, ignore_errors=True)
 
 
+def _clone_repo_to_dir(self, root_dir: str) -> str:
 
+        repo_dir = os.path.join(root_dir, "repo")
+
+        if os.path.exists(repo_dir):
+            shutil.rmtree(repo_dir, ignore_errors=True)
+
+        clone_url = f"https://github.com/{self.repo_owner}/{self.repo_name}.git"
+        cmd = ["git", "clone", clone_url, repo_dir]
+
+        try:
+            subprocess.run(
+                cmd,
+                check=True,
+                stdout=subprocess.PIPE,
+                stderr=subprocess.PIPE,
+                text=True,
+                timeout=60 * 20,
+            )
+            return repo_dir
+        except subprocess.TimeoutExpired:
+            raise Exception("Clone timed out.")
+        except subprocess.CalledProcessError as e:
+            raise Exception(f"Clone failed: {e.stderr[-500:]}")
 
