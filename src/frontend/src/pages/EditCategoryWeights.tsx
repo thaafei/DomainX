@@ -52,7 +52,29 @@ const EditCategoryWeights: React.FC = () => {
     setLocalWeights(prev => ({ ...prev, [cat]: Math.max(0, Math.min(1, decimalVal)) }));
     if (saveStatus) setSaveStatus(null);
   };
+  const handleSave = async () => {
+    if (!isTotalValid || !domainId) return;
 
+    try {
+      const response = await fetch(apiUrl(`/domain/${domainId}/category-weights/`), {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(localWeights),
+        credentials: "include",
+      });
+
+      if (response.ok) {
+        setSaveStatus("Weights updated successfully!");
+        // Optional: Navigate after a small delay to show success
+        setTimeout(() => navigate("/main"), 1500);
+      } else {
+        setSaveStatus("Error saving weights.");
+      }
+    } catch (err) {
+      console.error(err);
+      setSaveStatus("Failed to reach server.");
+    }
+  };
   const handleNormalize = () => {
     const equalValue = 1 / categories.length;
     setLocalWeights(categories.reduce((acc: any, cat) => ({ ...acc, [cat]: equalValue }), {}));
@@ -75,7 +97,19 @@ const EditCategoryWeights: React.FC = () => {
         <div style={{ display: "flex", gap: "12px" }}>
           <button className="dx-btn" style={{ background: "#2a2d3e", border: "1px solid #444" }} onClick={() => setLocalWeights(initialWeights)}>Reset Equal</button>
           <button className="dx-btn" style={{ background: "#2a2d3e", border: "1px solid #444" }} onClick={handleNormalize}>Normalize</button>
-          <button className="dx-btn dx-btn-primary" onClick={() => navigate("/main")}>Save</button>
+          <button 
+            className="dx-btn dx-btn-primary" 
+            onClick={handleSave}
+            disabled={!isTotalValid}
+            style={{ 
+              opacity: isTotalValid ? 1 : 0.5, 
+              cursor: isTotalValid ? "pointer" : "not-allowed",
+              backgroundColor: isTotalValid ? "#4a9eff" : "#2a2d3e",
+              transition: "all 0.3s ease"
+            }}
+          >
+            Save
+          </button>
         </div>
       </div>
 
