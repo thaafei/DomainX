@@ -1,16 +1,20 @@
-from ..tasks import analyze_repo_task
+from ..tasks import analyze_repo_task, analyze_repo_gitstats_task
 from ..database.libraries.models import Library
-
 def enqueue_library_analysis(library: Library):
     library.analysis_status = Library.ANALYSIS_PENDING
     library.analysis_task_id = None
     library.analysis_error = None
     library.analysis_started_at = None
     library.analysis_finished_at = None
-    library.save(update_fields=[
-        "analysis_status", "analysis_task_id", "analysis_error",
-        "analysis_started_at", "analysis_finished_at"
-    ])
+
+    library.gitstats_status = Library.GITSTATS_PENDING
+    library.gitstats_task_id = None
+    library.gitstats_error = None
+    library.gitstats_started_at = None
+    library.gitstats_finished_at = None
+    library.gitstats_report_path = None
+
+    library.save()
 
     if not library.url:
         library.analysis_status = Library.ANALYSIS_FAILED
@@ -18,7 +22,14 @@ def enqueue_library_analysis(library: Library):
         library.save(update_fields=["analysis_status", "analysis_error"])
         return None
 
-    async_result = analyze_repo_task.delay(str(library.library_ID), library.url)
-    library.analysis_task_id = async_result.id
-    library.save(update_fields=["analysis_task_id"])
-    return async_result.id
+    a = analyze_repo_task.delay(str(library.library_ID), library.url)
+    g = analyze_repo_gitstats_task.apply_async(
+        args=[str(library.library_ID), library.url],
+        queue="gitstats",
+    )
+
+    library.analysis_task_id = a.id
+    library.gitstats_task_id = g.id
+    library.save(update_fields=["analysis_task_id", "gitstats_task_id"])
+
+    return {"analysis_task_id": a.id, "gitstats_task_id": g.id}

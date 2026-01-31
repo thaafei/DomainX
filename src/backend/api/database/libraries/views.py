@@ -18,12 +18,10 @@ class LibraryListCreateView(generics.ListCreateAPIView):
         serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
 
-        # ✅ domain is a Domain instance (already validated)
         domain = serializer.validated_data.get("domain")
         if domain is None:
             return Response({"error": "Domain is required."}, status=status.HTTP_400_BAD_REQUEST)
 
-        # ✅ save normally (domain already inside validated_data)
         new_library = serializer.save()
 
         # mark pending

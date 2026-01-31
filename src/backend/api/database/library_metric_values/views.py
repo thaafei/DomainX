@@ -17,18 +17,22 @@ from ..metrics.models import Metric
 from .models import LibraryMetricValue
 from ...utils.analysis import enqueue_library_analysis
 
-
 @api_view(["POST"])
 def analyze_library(request, library_id):
     lib = get_object_or_404(Library, pk=library_id)
 
     try:
-        task_id = enqueue_library_analysis(lib)
-        if task_id is None:
+        result = enqueue_library_analysis(lib)
+        if result is None:
             return Response({"error": lib.analysis_error}, status=status.HTTP_400_BAD_REQUEST)
 
         return Response(
-            {"message": "Analysis queued.", "library_id": str(lib.library_ID), "task_id": task_id},
+            {
+                "message": "Analysis queued.",
+                "library_id": str(lib.library_ID),
+                "analysis_task_id": result.get("analysis_task_id"),
+                "gitstats_task_id": result.get("gitstats_task_id"),
+            },
             status=status.HTTP_202_ACCEPTED,
         )
     except Exception as e:
@@ -47,9 +51,13 @@ def analyze_domain_libraries(request, domain_id):
 
     for lib in libs:
         try:
-            task_id = enqueue_library_analysis(lib)
-            if task_id:
-                queued.append({"library_id": str(lib.library_ID), "task_id": task_id})
+            result = enqueue_library_analysis(lib)
+            if result:
+                queued.append({
+                    "library_id": str(lib.library_ID),
+                    "analysis_task_id": result.get("analysis_task_id"),
+                    "gitstats_task_id": result.get("gitstats_task_id"),
+                })
             else:
                 failed.append({"library_id": str(lib.library_ID), "error": lib.analysis_error})
         except Exception as e:
@@ -89,6 +97,15 @@ def domain_comparison(request, domain_id):
             "analysis_task_id": lib.analysis_task_id,
             "analysis_error": lib.analysis_error,
             "analysis_finished_at": lib.analysis_finished_at,
+            "gitstats_status": getattr(lib, "gitstats_status", None),
+            "gitstats_task_id": getattr(lib, "gitstats_task_id", None),
+            "gitstats_error": getattr(lib, "gitstats_error", None),
+            "gitstats_finished_at": getattr(lib, "gitstats_finished_at", None),
+            "gitstats_report_url": (
+                f"/gitstats/{lib.library_ID}/git_stats/index.html"
+                if getattr(lib, "gitstats_status", None) == Library.GITSTATS_SUCCESS
+                else None
+            ),
             "metrics": {m.metric_name: None for m in metrics},
         }
         table.append(row)
