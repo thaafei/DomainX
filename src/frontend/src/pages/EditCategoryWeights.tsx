@@ -38,28 +38,44 @@ const EditCategoryWeights: React.FC = () => {
     setLocalWeights((prev) => ({ ...prev, [category]: parseFloat(value) || 0 }));
   };
 
-  const saveWeights = async () => {
-    try {
-        const res = await fetch(apiUrl(`/domain/${domainId}/category-weights/`), {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        credentials: "include",
-        body: JSON.stringify({ values: localWeights }),
-        });
+    const saveWeights = async () => {
+        // 1. Calculate the sum across ALL categories, not just the changed ones
+        const totalWeight = categories.reduce((sum, cat) => {
+            // Use the localWeight if it exists, otherwise assume the default 1.0 
+            // (or whatever your default logic is in the table)
+            const weight = localWeights[cat] !== undefined ? localWeights[cat] : 1.0;
+            return sum + weight;
+        }, 0);
 
-        if (res.ok) {
-        setSaveStatus("Saved successfully!");
-        
-        setTimeout(() => {
-            navigate("/main");
-        }, 1000);
-        } else {
-        setSaveStatus("Error saving weights.");
+        // 2. Validation
+        if (Math.abs(totalWeight - 1.0) > 0.0001) {
+            setSaveStatus(`Error: Weights must sum to 1.0 (Current Total: ${totalWeight.toFixed(2)})`);
+            return; 
         }
-    } catch (err) {
-        console.error(err);
-        setSaveStatus("Network error.");
-    }
+
+        // 3. Proceed to save if valid
+        try {
+            // We send the full map. It's best to construct the full object here 
+            // so the backend definitely gets all metrics, even unchanged ones.
+            const fullWeightsPayload = categories.reduce((acc, cat) => {
+            acc[cat] = localWeights[cat] !== undefined ? localWeights[cat] : 1.0;
+            return acc;
+            }, {} as Record<string, number>);
+
+            const res = await fetch(apiUrl(`/domain/${domainId}/category-weights/`), {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            credentials: "include",
+            body: JSON.stringify({ values: fullWeightsPayload }),
+            });
+
+            if (res.ok) {
+            setSaveStatus("Saved successfully!");
+            setTimeout(() => navigate("/"), 2000);
+            }
+        } catch (err) {
+            setSaveStatus("Network error.");
+        }
     };
 
   if (loading) return <div className="dx-bg" style={{ color: "white", padding: "20px" }}>Loading...</div>;
@@ -97,7 +113,15 @@ const EditCategoryWeights: React.FC = () => {
             ))}
           </tbody>
         </table>
-
+        <div style={{ 
+            marginTop: "10px", 
+            textAlign: "right", 
+            color: Math.abs(categories.reduce((sum, cat) => sum + (localWeights[cat] ?? 1.0), 0) - 1) < 0.0001 ? "#52c41a" : "#ff4d4f" 
+            }}>
+            <strong>
+                Total Sum: {categories.reduce((sum, cat) => sum + (localWeights[cat] ?? 1.0), 0).toFixed(2)}
+            </strong>
+        </div>
         <div style={{ marginTop: "30px" }}>
         <button 
             className="dx-btn dx-btn-primary" 
