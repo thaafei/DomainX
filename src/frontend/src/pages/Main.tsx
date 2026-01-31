@@ -335,37 +335,7 @@ const Main: React.FC = () => {
             </div>
           </div>
         )}
-
-        <div className="dx-card" style={{ padding: "20px", marginTop: "20px", color: "white" }}>
-          <h3 style={{ color: "var(--accent)", marginBottom: "15px" }}>Category Weights</h3>
-          <table style={{ width: "100%", borderCollapse: "collapse" }}>
-            <thead>
-              <tr style={{ textAlign: "left", borderBottom: "1px solid #333" }}>
-                <th style={{ padding: "10px" }}>Category</th>
-                <th style={{ padding: "10px" }}>Weight</th>
-              </tr>
-            </thead>
-            <tbody>
-              {categories?.map((cat: string) => (
-                <tr key={cat} style={{ borderBottom: "1px solid #222" }}>
-                  <td style={{ padding: "10px" }}>{cat}</td>
-                  <td style={{ padding: "10px" }}>
-                    <input
-                      type="number"
-                      className="dx-input"
-                      style={{ width: "80px" }}
-                      step="0.1"
-                      value={localWeights[cat] ?? 1.0}
-                      onChange={(e) => handleWeightChange(cat, e.target.value)}
-                    />
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-      </div>
-
+    </div>
       <DomainInfo selectedDomain={selectedDomain} sidebarOpen={moreInfoSidebarOpen} setSidebarOpen={setMoreInfoSidebarOpen} />
     </div>
   );
