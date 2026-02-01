@@ -117,7 +117,7 @@ const Main: React.FC = () => {
       score: parseFloat(((score as number) * 100).toFixed(2)),
       color: getPastelColor(index),
     }))
-    .sort((a, b) => b.score - a.score);
+    .sort((a, b) => b.score - a.score).slice(0, 10);;
   const fetchCurrentUser = async () => {
     try {
       const response = await fetch(apiUrl("/me/"), {
