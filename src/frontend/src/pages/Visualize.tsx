@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-
+import { useParams } from 'react-router-dom';
+import { apiUrl } from "../config/api";
 interface Metric {
   metric_ID: string;
   metric_name: string;
@@ -12,11 +13,12 @@ interface LibraryRow {
   metrics: { [metricName: string]: string | number | null };
 }
 
-const DOMAIN_ID = "ecba1df1ede211f0987c0050568e534c";
+// const DOMAIN_ID = "ecba1df1ede211f0987c0050568e534c";
 
 const Visualize: React.FC = () => {
   const navigate = useNavigate();
-
+  const { domainId } = useParams<{ domainId: string }>();
+  const DOMAIN_ID = domainId; 
   const [metricList, setMetricList] = useState<Metric[]>([]);
   const [libraries, setLibraries] = useState<LibraryRow[]>([]);
 
@@ -27,31 +29,31 @@ const Visualize: React.FC = () => {
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    loadData();
-  }, []);
+  if (!DOMAIN_ID) return;
+      loadData();
+    }, [DOMAIN_ID]);
+
 
   const loadData = async () => {
     try {
-         const formatUUID = (rawId: string) => {
-            if (rawId && rawId.length === 32 && !rawId.includes('-')) {
-              return rawId.substring(0, 8) + '-' +
-                     rawId.substring(8, 12) + '-' +
-                     rawId.substring(12, 16) + '-' +
-                     rawId.substring(16, 20) + '-' +
-                     rawId.substring(20, 32);
-            }
-            return rawId;
-          };
 
-      const formattedDomainId = formatUUID(DOMAIN_ID);
-      const res = await fetch(`http://127.0.0.1:8000/api/comparison/${formattedDomainId}/`, {
+      const res = await fetch(apiUrl(`/library_metric_values/comparison/${DOMAIN_ID}/`), {
         credentials: "include"
       });
+      const contentType = res.headers.get("content-type") || "";
       const responseText = await res.text();
+
       if (!res.ok) {
-          throw new Error(`Server Error (${res.status}): See console for details.`);
+          console.error("Visualize load error:", res.status, responseText);
+          throw new Error(`Server Error (${res.status})`);
       }
+
+      if (!contentType.includes("application/json")) {
+          throw new Error(`Expected JSON, got ${contentType}. Body: ${responseText.slice(0, 120)}`);
+      }
+
       const data = JSON.parse(responseText);
+
 
       setMetricList(data.metrics);
       setLibraries(data.libraries);
@@ -105,7 +107,7 @@ const Visualize: React.FC = () => {
       <div
         className="dx-card"
         style={{
-          width: 160,
+          width: 120,
           padding: "22px 14px",
           display: "flex",
           flexDirection: "column",
@@ -115,7 +117,8 @@ const Visualize: React.FC = () => {
       >
         <button
           className="dx-btn dx-btn-outline"
-          onClick={() => navigate("/comparison-tool")}
+          style={{ width: "100%", fontSize: "1rem", textAlign: "center" }}
+          onClick={() => navigate(`/comparison-tool/${domainId}`)}
         >
           ← Back
         </button>

@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
-
+import { apiUrl } from "../config/api";
 const Signup: React.FC = () => {
   const [email, setEmail] = useState("");
   const [username, setUsername] = useState("");
@@ -15,7 +15,7 @@ const Signup: React.FC = () => {
     setError(null);
 
     try {
-      const result = await fetch("http://127.0.0.1:8000/signup/", {
+      const result = await fetch(apiUrl("/signup/"), {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ email, username, password }),
