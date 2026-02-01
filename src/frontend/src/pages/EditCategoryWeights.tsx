@@ -59,13 +59,13 @@ const EditCategoryWeights: React.FC = () => {
       const response = await fetch(apiUrl(`/domain/${domainId}/category-weights/`), {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(localWeights),
+        // Wrap the data in a "values" key here:
+        body: JSON.stringify({ values: localWeights }), 
         credentials: "include",
       });
 
       if (response.ok) {
         setSaveStatus("Weights updated successfully!");
-        // Optional: Navigate after a small delay to show success
         setTimeout(() => navigate("/main"), 1500);
       } else {
         setSaveStatus("Error saving weights.");
@@ -74,7 +74,7 @@ const EditCategoryWeights: React.FC = () => {
       console.error(err);
       setSaveStatus("Failed to reach server.");
     }
-  };
+};
   const handleNormalize = () => {
     const equalValue = 1 / categories.length;
     setLocalWeights(categories.reduce((acc: any, cat) => ({ ...acc, [cat]: equalValue }), {}));
