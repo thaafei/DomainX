@@ -1,7 +1,7 @@
 import React, { useEffect } from 'react';
 import { useNavigate } from "react-router-dom";
 import { useAuthStore } from "../store/useAuthStore";
-import { selectDomainDefinition } from 'recharts/types/state/selectors/axisSelectors';
+
 
 interface DomainsListProps {
   sidebarOpen: boolean;
@@ -48,8 +48,8 @@ const DomainsList: React.FC<DomainsListProps> = ({
 }) => {
   const navigate = useNavigate();
   const { user } = useAuthStore();
+  const isSuperAdmin = user?.role === "superadmin";
 
-  // Auto-select current user when modal opens
   useEffect(() => {
     if (showDomainModal && user && adminUsers.length > 0) {
       const currentUserInList = adminUsers.find(u => u.id === user.id);
@@ -124,28 +124,28 @@ const DomainsList: React.FC<DomainsListProps> = ({
 
       {sidebarOpen && (
         <>
-          <button
-            className="dx-btn dx-btn-outline"
-            onClick={() => setShowDomainModal(true)}
-            style={{
-              display: "flex",
-              alignItems: "center",
-              marginTop: 8,
-            }}
-          >
-            <span style={{ fontSize: 15, marginRight: 8 }}>🌐</span> Create Domain
-          </button>
-          
+          { isSuperAdmin && (
+            <>
+              <button
+                className="dx-btn dx-btn-primary"
+                onClick={() => navigate("/admin")}
+                style={{ display: "flex", alignItems: "center", gap: 8 }}
+              >
+                <span style={{ fontSize: 15, marginRight: 8 }}>👥</span> Manage Users
+              </button>
+              <button
+                className="dx-btn dx-btn-primary"
+                onClick={() => setShowDomainModal(true)}
+                style={{ display: "flex", alignItems: "center", gap: 8}}
+              >
+                <span style={{ fontSize: 15, marginRight: 8 }}>🌐</span> Create Domain
+              </button>
+            </>
+          )}
           <button
             className="dx-btn dx-btn-outline"
             onClick={() => handleLogout()}
-            style={{
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-              marginTop: 8,
-              opacity: 0.85
-            }}
+            style={{ display: "flex", alignItems: "center", gap: 8}}
           >
             Logout
           </button>
@@ -166,14 +166,19 @@ const DomainsList: React.FC<DomainsListProps> = ({
             >
               <div
                 style={{
-                  background: "#fff",
-                  padding: "24px",
-                  borderRadius: "12px",
-                  width: "350px",
-                  boxShadow: "0 10px 25px rgba(0,0,0,0.2)",
-                  color: "#333",
-                  display: "flex",
-                  flexDirection: "column",
+                    background: "rgba(18, 18, 26, 0.98)",
+                    padding: "24px",
+                    border: "1px solid rgba(255,255,255,0.08)",
+                    borderRadius: 16,
+                    width: "350px",
+                    maxHeight: "85vh",
+                    overflow: "auto",
+                    boxShadow: "0 10px 25px rgba(0,0,0,0.2)",
+                    color: "white",
+                    display: "flex",
+                    flexDirection: "column",
+                    justifyContent: "center",
+                    alignItems: "center",
                 }}
               >
                 <h3>New Domain</h3>
@@ -203,7 +208,7 @@ const DomainsList: React.FC<DomainsListProps> = ({
                     width: '100%', 
                     marginBottom: 12, 
                     padding: 8, 
-                    color: 'black',
+                    color: 'white',
                     border: formError && !domainName ? '1px solid red' : '1px solid #ccc'
                   }}
                 />
@@ -221,7 +226,7 @@ const DomainsList: React.FC<DomainsListProps> = ({
                     marginBottom: 12, 
                     padding: 8, 
                     minHeight: 60, 
-                    color: 'black',
+                    color: 'white',
                     border: formError && !description ? '1px solid red' : '1px solid #ccc' 
                   }}
                 />

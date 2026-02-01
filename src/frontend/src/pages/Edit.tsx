@@ -42,21 +42,23 @@ const EditValuesPage: React.FC = () => {
 }, [rows]);
 
   useEffect(() => {
-    (async () => {
-      try {
-        setPageLoading(true);
-        setLoadingText("Loading table…");
-        await loadData();
-      } finally {
-        setPageLoading(false);
-      }
-    })();
-  }, []);
+      (async () => {
+        try {
+          setPageLoading(true);
+          setLoadingText("Loading table…");
+          if (!DOMAIN_ID) return;
+          await loadData();
+        } finally {
+          setPageLoading(false);
+        }
+      })();
+    }, [DOMAIN_ID]);
+
 
 
   const fetchComparisonRaw = async () => {
 
-    const res = await fetch(apiUrl(`/comparison/${DOMAIN_ID}/`), {
+    const res = await fetch(apiUrl(`/library_metric_values/comparison/${DOMAIN_ID}/`), {
       credentials: "include",
     });
 
@@ -140,7 +142,7 @@ const EditValuesPage: React.FC = () => {
   };
 
   const saveRow = async (row: EditableRow) => {
-    const res = await fetch(apiUrl(`/libraries/${row.library_ID}/update-values/`), {
+    const res = await fetch(apiUrl(`/library_metric_values/libraries/${row.library_ID}/update-values/`), {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       credentials: "include",
@@ -172,7 +174,7 @@ const EditValuesPage: React.FC = () => {
       setPageLoading(true);
       setLoadingText("Updating repository metrics…");
 
-      const res = await fetch(apiUrl(`/libraries/${libraryId}/analyze/`), {
+      const res = await fetch(apiUrl(`/library_metric_values/libraries/${libraryId}/analyze/`), {
         method: "POST",
         credentials: "include",
       });
@@ -201,7 +203,7 @@ const EditValuesPage: React.FC = () => {
       setLoadingText("Updating all repositories…");
 
 
-      const res = await fetch(apiUrl(`/domains/${DOMAIN_ID}/analyze-all/`), {
+      const res = await fetch(apiUrl(`/library_metric_values/${DOMAIN_ID}/analyze-all/`), {
         method: "POST",
         credentials: "include",
       });
@@ -258,6 +260,7 @@ const EditValuesPage: React.FC = () => {
           position: "relative",
         }}
       >
+      <div className="stars"></div>
         {pageLoading && (
           <div className="dx-backdrop" aria-live="polite" aria-busy="true">
             <div className="dx-backdrop-card">

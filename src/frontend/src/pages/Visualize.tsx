@@ -29,20 +29,31 @@ const Visualize: React.FC = () => {
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    loadData();
-  }, []);
+  if (!DOMAIN_ID) return;
+      loadData();
+    }, [DOMAIN_ID]);
+
 
   const loadData = async () => {
     try {
 
-      const res = await fetch(apiUrl(`/comparison/${DOMAIN_ID}/`), {
+      const res = await fetch(apiUrl(`/library_metric_values/comparison/${DOMAIN_ID}/`), {
         credentials: "include"
       });
+      const contentType = res.headers.get("content-type") || "";
       const responseText = await res.text();
+
       if (!res.ok) {
-          throw new Error(`Server Error (${res.status}): See console for details.`);
+          console.error("Visualize load error:", res.status, responseText);
+          throw new Error(`Server Error (${res.status})`);
       }
+
+      if (!contentType.includes("application/json")) {
+          throw new Error(`Expected JSON, got ${contentType}. Body: ${responseText.slice(0, 120)}`);
+      }
+
       const data = JSON.parse(responseText);
+
 
       setMetricList(data.metrics);
       setLibraries(data.libraries);
