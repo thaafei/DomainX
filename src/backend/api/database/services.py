@@ -354,8 +354,9 @@ class RepoAnalyzer:
                 stdout=subprocess.PIPE,
                 stderr=subprocess.PIPE,
                 text=False,
-                timeout=60 * 30,
+                timeout=60 * 60 * 3,
                 env=env,
+                start_new_session=True,
             )
 
             stdout_text = p.stdout.decode("utf-8", errors="replace")
@@ -363,8 +364,12 @@ class RepoAnalyzer:
 
         except FileNotFoundError:
             raise Exception("git_stats is not installed or not on PATH.")
-        except subprocess.TimeoutExpired:
-            raise Exception("git_stats timed out.")
+        except subprocess.TimeoutExpired as e:
+            try:
+                os.killpg(e.pid, signal.SIGKILL)
+            except Exception:
+                pass
+            raise Exception("git_stats timed out (killed process group).")
         except subprocess.CalledProcessError as e:
             err = (e.stderr or b"").decode("utf-8", errors="replace")
             raise Exception(f"git_stats failed: {err[-1000:]}")
@@ -395,9 +400,7 @@ class RepoAnalyzer:
             repo_path = os.path.join(work_dir, "repo")
             shutil.rmtree(repo_path, ignore_errors=True)
 
-
-def _clone_repo_to_dir(self, root_dir: str) -> str:
-
+    def _clone_repo_to_dir(self, root_dir: str) -> str:
         repo_dir = os.path.join(root_dir, "repo")
 
         if os.path.exists(repo_dir):
@@ -420,4 +423,5 @@ def _clone_repo_to_dir(self, root_dir: str) -> str:
             raise Exception("Clone timed out.")
         except subprocess.CalledProcessError as e:
             raise Exception(f"Clone failed: {e.stderr[-500:]}")
+
 

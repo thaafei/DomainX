@@ -1,9 +1,10 @@
+import os
 from celery import shared_task
 from celery.utils.log import get_task_logger
-from django.utils import timezone
-from django.db import transaction
 from django.conf import settings
-import os
+from django.db import transaction
+from django.utils import timezone
+
 from .database.services import RepoAnalyzer
 from .database.libraries.models import Library
 from .database.metrics.models import Metric
@@ -26,7 +27,14 @@ def analyze_repo_task(self, library_id: str, repo_url: str):
     lib.analysis_started_at = timezone.now()
     lib.analysis_task_id = task_id
     lib.analysis_error = None
-    lib.save(update_fields=["analysis_status", "analysis_started_at", "analysis_task_id", "analysis_error"])
+    lib.save(
+        update_fields=[
+            "analysis_status",
+            "analysis_started_at",
+            "analysis_task_id",
+            "analysis_error",
+        ]
+    )
 
     start = timezone.now()
 
@@ -49,7 +57,11 @@ def analyze_repo_task(self, library_id: str, repo_url: str):
                     skipped_count += 1
                     logger.debug(
                         "Metric not found in DB; skipping",
-                        extra={"library_id": library_id, "task_id": task_id, "metric_name": metric_name},
+                        extra={
+                            "library_id": library_id,
+                            "task_id": task_id,
+                            "metric_name": metric_name,
+                        },
                     )
                     continue
 
@@ -59,7 +71,12 @@ def analyze_repo_task(self, library_id: str, repo_url: str):
                     skipped_count += 1
                     logger.debug(
                         "Metric value not an int; skipping",
-                        extra={"library_id": library_id, "task_id": task_id, "metric_name": metric_name, "value": value},
+                        extra={
+                            "library_id": library_id,
+                            "task_id": task_id,
+                            "metric_name": metric_name,
+                            "value": value,
+                        },
                     )
                     continue
 
@@ -75,7 +92,8 @@ def analyze_repo_task(self, library_id: str, repo_url: str):
 
         lib.analysis_status = Library.ANALYSIS_SUCCESS
         lib.analysis_finished_at = timezone.now()
-        lib.save(update_fields=["analysis_status", "analysis_finished_at"])
+        lib.analysis_error = None
+        lib.save(update_fields=["analysis_status", "analysis_finished_at", "analysis_error"])
 
         duration_ms = int((timezone.now() - start).total_seconds() * 1000)
 
@@ -94,9 +112,9 @@ def analyze_repo_task(self, library_id: str, repo_url: str):
 
         return {"ok": True, "metrics_updated": updated_count, "metrics_skipped": skipped_count}
 
-    except Exception as e:
+    except Exception:
         lib.analysis_status = Library.ANALYSIS_FAILED
-        lib.analysis_error = str(e)
+        lib.analysis_error = "Analysis failed. Please check server logs."
         lib.analysis_finished_at = timezone.now()
         lib.save(update_fields=["analysis_status", "analysis_error", "analysis_finished_at"])
 
@@ -107,6 +125,7 @@ def analyze_repo_task(self, library_id: str, repo_url: str):
         )
         raise
 
+
 @shared_task(bind=True, queue="gitstats")
 def analyze_repo_gitstats_task(self, library_id: str, repo_url: str):
     task_id = getattr(self.request, "id", None)
@@ -116,30 +135,46 @@ def analyze_repo_gitstats_task(self, library_id: str, repo_url: str):
     lib.gitstats_started_at = timezone.now()
     lib.gitstats_task_id = task_id
     lib.gitstats_error = None
-    lib.save(update_fields=["gitstats_status", "gitstats_started_at", "gitstats_task_id", "gitstats_error"])
+    lib.save(
+        update_fields=[
+            "gitstats_status",
+            "gitstats_started_at",
+            "gitstats_task_id",
+            "gitstats_error",
+        ]
+    )
 
     try:
         work_dir = os.path.join(settings.GITSTATS_WORK_DIR, library_id)
         serve_dir = os.path.join(settings.GITSTATS_SERVE_DIR, library_id)
 
         analyzer = RepoAnalyzer(github_url=repo_url)
-
-        results = analyzer.run_gitstats_only(
-            work_dir=work_dir,
-            serve_dir=serve_dir,
-        )
+        results = analyzer.run_gitstats_only(work_dir=work_dir, serve_dir=serve_dir)
 
         lib.gitstats_report_path = f"/gitstats/{library_id}/git_stats/index.html"
         lib.gitstats_status = Library.GITSTATS_SUCCESS
         lib.gitstats_finished_at = timezone.now()
-        lib.save(update_fields=["gitstats_status", "gitstats_finished_at", "gitstats_report_path"])
+        lib.gitstats_error = None
+        lib.save(
+            update_fields=[
+                "gitstats_status",
+                "gitstats_finished_at",
+                "gitstats_report_path",
+                "gitstats_error",
+            ]
+        )
 
         return {"ok": True, "result": results}
 
-    except Exception as e:
+    except Exception:
         lib.gitstats_status = Library.GITSTATS_FAILED
-        lib.gitstats_error = str(e)
+        lib.gitstats_error = "GitStats failed. Please check server logs."
         lib.gitstats_finished_at = timezone.now()
         lib.save(update_fields=["gitstats_status", "gitstats_error", "gitstats_finished_at"])
-        raise
 
+        logger.error(
+            "GitStats failed",
+            exc_info=True,
+            extra={"library_id": library_id, "repo_url": repo_url, "task_id": task_id},
+        )
+        raise

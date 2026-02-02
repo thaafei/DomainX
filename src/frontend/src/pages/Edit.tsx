@@ -1,6 +1,5 @@
 import React, { useEffect, useState, useRef, useLayoutEffect } from "react";
-import { useNavigate } from "react-router-dom";
-import { useParams } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 import { apiUrl } from "../config/api";
 
 interface Metric {
@@ -25,6 +24,29 @@ interface EditableRow {
   gitstats_error?: string | null;
   gitstats_report_url?: string | null;
 }
+
+const normalizeStatus = (
+  s?: AnalysisStatus
+): "pending" | "running" | "success" | "failed" | "unknown" => {
+  const v = String(s || "").toLowerCase().trim();
+  if (v === "pending") return "pending";
+  if (v === "running") return "running";
+  if (v === "success") return "success";
+  if (v === "failed") return "failed";
+  return "unknown";
+};
+
+const statusLabel = (s?: AnalysisStatus) => {
+  const v = normalizeStatus(s);
+  if (v === "unknown") return "—";
+  return v;
+};
+
+const statusColor = (s?: AnalysisStatus) => {
+  const v = normalizeStatus(s);
+  if (v === "failed") return "rgba(255, 143, 143, 0.95)";
+  return "rgba(255,255,255,0.65)";
+};
 
 const EditValuesPage: React.FC = () => {
   const { domainId } = useParams<{ domainId: string }>();
@@ -70,16 +92,19 @@ const EditValuesPage: React.FC = () => {
   }, [DOMAIN_ID]);
 
   const fetchComparisonRaw = async () => {
-    const res = await fetch(apiUrl(`/library_metric_values/comparison/${DOMAIN_ID}/`), {
-      credentials: "include",
-    });
+    const res = await fetch(
+      apiUrl(`/library_metric_values/comparison/${DOMAIN_ID}/`),
+      { credentials: "include" }
+    );
 
     const contentType = res.headers.get("content-type") || "";
     const text = await res.text();
 
     if (!res.ok) throw new Error(text);
     if (!contentType.includes("application/json")) {
-      throw new Error(`Expected JSON, got ${contentType}. Body: ${text.slice(0, 100)}`);
+      throw new Error(
+        `Expected JSON, got ${contentType}. Body: ${text.slice(0, 100)}`
+      );
     }
 
     return JSON.parse(text);
@@ -97,9 +122,10 @@ const EditValuesPage: React.FC = () => {
     setRows(editableRows);
   };
 
-
   const startEdit = (id: string) => {
-    setRows((prev) => prev.map((r) => (r.library_ID === id ? { ...r, isEditing: true } : r)));
+    setRows((prev) =>
+      prev.map((r) => (r.library_ID === id ? { ...r, isEditing: true } : r))
+    );
   };
 
   const cancelEdit = async () => {
@@ -117,13 +143,24 @@ const EditValuesPage: React.FC = () => {
   };
 
   const updateField = (id: string, field: string, value: any) => {
-    setRows((prev) => prev.map((r) => (r.library_ID === id ? { ...r, [field]: value } : r)));
+    setRows((prev) =>
+      prev.map((r) => (r.library_ID === id ? { ...r, [field]: value } : r))
+    );
   };
 
-  const updateMetricValue = (libId: string, metric: string, value: any, isEvidence: boolean = false) => {
+  const updateMetricValue = (
+    libId: string,
+    metric: string,
+    value: any,
+    isEvidence: boolean = false
+  ) => {
     const key = isEvidence ? `${metric}_evidence` : metric;
     setRows((prev) =>
-      prev.map((r) => (r.library_ID === libId ? { ...r, metrics: { ...r.metrics, [key]: value } } : r))
+      prev.map((r) =>
+        r.library_ID === libId
+          ? { ...r, metrics: { ...r.metrics, [key]: value } }
+          : r
+      )
     );
   };
 
@@ -133,17 +170,20 @@ const EditValuesPage: React.FC = () => {
       setInfoMsg("Saving…");
       setErrorMsg(null);
 
-      const res = await fetch(apiUrl(`/library_metric_values/libraries/${row.library_ID}/update-values/`), {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        credentials: "include",
-        body: JSON.stringify({
-          library_name: row.library_name,
-          url: row.url,
-          programming_language: row.programming_language,
-          metrics: row.metrics,
-        }),
-      });
+      const res = await fetch(
+        apiUrl(`/library_metric_values/libraries/${row.library_ID}/update-values/`),
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          credentials: "include",
+          body: JSON.stringify({
+            library_name: row.library_name,
+            url: row.url,
+            programming_language: row.programming_language,
+            metrics: row.metrics,
+          }),
+        }
+      );
 
       if (!res.ok) {
         const text = await res.text();
@@ -165,12 +205,17 @@ const EditValuesPage: React.FC = () => {
       setUpdatingLibId(libraryId);
       setErrorMsg(null);
 
-      setInfoMsg("Analysis started (API+SCC + GitStats). You can keep editing. Reload the page later to see results.");
+      setInfoMsg(
+        "Analysis started (API+SCC + GitStats). You can keep editing. Reload later to see results."
+      );
 
-      const res = await fetch(apiUrl(`/library_metric_values/libraries/${libraryId}/analyze/`), {
-        method: "POST",
-        credentials: "include",
-      });
+      const res = await fetch(
+        apiUrl(`/library_metric_values/libraries/${libraryId}/analyze/`),
+        {
+          method: "POST",
+          credentials: "include",
+        }
+      );
 
       if (!res.ok) {
         const text = await res.text();
@@ -196,19 +241,30 @@ const EditValuesPage: React.FC = () => {
       setUpdatingAll(true);
       setErrorMsg(null);
 
-      setInfoMsg("Analysis started for all libraries (API+SCC + GitStats). Keep editing. Reload later to see results.");
+      setInfoMsg(
+        "Analysis started for all libraries (API+SCC + GitStats). Keep editing. Reload later to see results."
+      );
 
-      const res = await fetch(apiUrl(`/library_metric_values/${DOMAIN_ID}/analyze-all/`), {
-        method: "POST",
-        credentials: "include",
-      });
+      const res = await fetch(
+        apiUrl(`/library_metric_values/${DOMAIN_ID}/analyze-all/`),
+        {
+          method: "POST",
+          credentials: "include",
+        }
+      );
 
       if (!res.ok) {
         const text = await res.text();
         throw new Error(text || "Analyze-all request failed.");
       }
 
-      setRows((prev) => prev.map((r) => ({ ...r, analysis_status: "running", gitstats_status: "running" })));
+      setRows((prev) =>
+        prev.map((r) => ({
+          ...r,
+          analysis_status: "running",
+          gitstats_status: "running",
+        }))
+      );
     } catch (e: any) {
       setErrorMsg(e?.message || "Failed to start analysis for all.");
     } finally {
@@ -217,10 +273,14 @@ const EditValuesPage: React.FC = () => {
   };
 
   const countStatus = (key: "analysis_status" | "gitstats_status") => {
-    const pending = rows.filter((r) => r[key] === "pending").length;
-    const running = rows.filter((r) => r[key] === "running").length;
-    const success = rows.filter((r) => r[key] === "success").length;
-    const failed = rows.filter((r) => r[key] === "failed").length;
+    const pending = rows.filter((r) => normalizeStatus(r[key]) === "pending")
+      .length;
+    const running = rows.filter((r) => normalizeStatus(r[key]) === "running")
+      .length;
+    const success = rows.filter((r) => normalizeStatus(r[key]) === "success")
+      .length;
+    const failed = rows.filter((r) => normalizeStatus(r[key]) === "failed")
+      .length;
     return { pending, running, success, failed };
   };
 
@@ -263,7 +323,9 @@ const EditValuesPage: React.FC = () => {
       >
         <div className="stars"></div>
 
-        <h1 style={{ color: "var(--accent)", marginBottom: 20 }}>Edit Metric Values</h1>
+        <h1 style={{ color: "var(--accent)", marginBottom: 20 }}>
+          Edit Metric Values
+        </h1>
 
         <div
           className="dx-card"
@@ -275,9 +337,14 @@ const EditValuesPage: React.FC = () => {
             flexDirection: "column",
           }}
         >
-
-          <div style={{ marginBottom: 8, display: "flex", gap: 10, alignItems: "center" }}>
-
+          <div
+            style={{
+              marginBottom: 8,
+              display: "flex",
+              gap: 10,
+              alignItems: "center",
+            }}
+          >
             <button
               className="dx-btn dx-btn-outline dx-btn-inline"
               onClick={runAnalysisForAll}
@@ -310,20 +377,30 @@ const EditValuesPage: React.FC = () => {
           )}
 
           <div style={{ marginBottom: 10, fontSize: 13, opacity: 0.85 }}>
-
             <div style={{ marginTop: 6, opacity: 0.8 }}>
-              Auto-reload is disabled for comfortable editing. When you want updated results, click <b>Reload</b> (or refresh the page).
+              Auto-reload is disabled for comfortable editing. When you want
+              updated results, click <b>Reload</b> (or refresh the page).
             </div>
           </div>
 
-          <div className="dx-table-wrap dx-table-scroll" style={{ flex: 1, minHeight: 0 }}>
+          <div
+            className="dx-table-wrap dx-table-scroll"
+            style={{ flex: 1, minHeight: 0 }}
+          >
             <table className="dx-table">
               <thead>
                 <tr>
-                  <th ref={firstColRef} className="dx-th-sticky dx-sticky-left" style={{ left: 0 }}>
+                  <th
+                    ref={firstColRef}
+                    className="dx-th-sticky dx-sticky-left"
+                    style={{ left: 0 }}
+                  >
                     Actions
                   </th>
-                  <th className="dx-th-sticky dx-sticky-left" style={{ left: offset }}>
+                  <th
+                    className="dx-th-sticky dx-sticky-left"
+                    style={{ left: offset }}
+                  >
                     Name
                   </th>
                   <th className="dx-th-sticky">URL</th>
@@ -339,6 +416,12 @@ const EditValuesPage: React.FC = () => {
               <tbody>
                 {rows.map((row) => {
                   const rowUpdating = updatingLibId === row.library_ID;
+
+                  const apiStatus = normalizeStatus(row.analysis_status);
+                  const gsStatus = normalizeStatus(row.gitstats_status);
+
+                  const apiDots = apiStatus === "running" ? "..." : "";
+                  const gsDots = gsStatus === "running" ? "..." : "";
 
                   return (
                     <tr key={row.library_ID}>
@@ -363,12 +446,20 @@ const EditValuesPage: React.FC = () => {
                             </button>
                           </div>
                         ) : (
-                          <div style={{ display: "flex", gap: 6, alignItems: "center" }}>
+                          <div
+                            style={{
+                              display: "flex",
+                              gap: 6,
+                              alignItems: "center",
+                            }}
+                          >
                             <button
                               className="dx-btn dx-btn-outline dx-btn-inline"
                               onClick={() => runAnalysisForLibrary(row.library_ID)}
                               disabled={pageLoading || rowUpdating}
-                              style={{ opacity: pageLoading || rowUpdating ? 0.7 : 1 }}
+                              style={{
+                                opacity: pageLoading || rowUpdating ? 0.7 : 1,
+                              }}
                             >
                               {rowUpdating ? "Updating..." : "Update"}
                             </button>
@@ -383,35 +474,30 @@ const EditValuesPage: React.FC = () => {
                             </button>
                           </div>
                         )}
-
-                        <div style={{ marginTop: 6, fontSize: 12, opacity: 0.85, lineHeight: 1.3 }}>
-                          <div>
-                              API+SCC: {row.analysis_status || "—"}
-                              {(row.analysis_status === "pending" || row.analysis_status === "running") && "..."}
-                            </div>
-                          <div>
-                            GitStats: {row.gitstats_status || "—"}
-                            {(row.analysis_status === "pending" || row.analysis_status === "running") && "..."}
-                            {row.gitstats_report_url && row.gitstats_status === "success" && (
-                              <>
-                                {" "}
-                                <a
-                                  href={row.gitstats_report_url}
-                                  target="_blank"
-                                  rel="noreferrer"
-                                  style={{ color: "var(--accent)" }}
-                                >
-                                  View report
-                                </a>
-                              </>
-                            )}
+                        <div style={{ marginTop: 6, fontSize: 12, lineHeight: 1.3 }}>
+                          <div style={{ color: statusColor(row.analysis_status) }}>
+                            API+SCC: {statusLabel(row.analysis_status)}
+                            {apiDots}
                           </div>
-                          {(row.analysis_error || row.gitstats_error) && (
-                            <div style={{ color: "#ff8f8f" }}>
-                              {row.analysis_error ? `API+SCC error: ${row.analysis_error}` : ""}
-                              {row.gitstats_error ? ` GitStats error: ${row.gitstats_error}` : ""}
-                            </div>
-                          )}
+
+                          <div style={{ color: statusColor(row.gitstats_status) }}>
+                            GitStats: {statusLabel(row.gitstats_status)}
+                            {gsDots}
+                            {row.gitstats_report_url &&
+                              gsStatus === "success" && (
+                                <>
+                                  {" "}
+                                  <a
+                                    href={row.gitstats_report_url}
+                                    target="_blank"
+                                    rel="noreferrer"
+                                    style={{ color: "var(--accent)" }}
+                                  >
+                                    View report
+                                  </a>
+                                </>
+                              )}
+                          </div>
                         </div>
                       </td>
 
@@ -420,7 +506,9 @@ const EditValuesPage: React.FC = () => {
                           <input
                             className="dx-input"
                             value={row.library_name}
-                            onChange={(e) => updateField(row.library_ID, "library_name", e.target.value)}
+                            onChange={(e) =>
+                              updateField(row.library_ID, "library_name", e.target.value)
+                            }
                             disabled={pageLoading}
                           />
                         ) : (
@@ -433,7 +521,9 @@ const EditValuesPage: React.FC = () => {
                           <input
                             className="dx-input"
                             value={row.url || ""}
-                            onChange={(e) => updateField(row.library_ID, "url", e.target.value)}
+                            onChange={(e) =>
+                              updateField(row.library_ID, "url", e.target.value)
+                            }
                             disabled={pageLoading}
                           />
                         ) : (
@@ -446,7 +536,13 @@ const EditValuesPage: React.FC = () => {
                           <input
                             className="dx-input"
                             value={row.programming_language || ""}
-                            onChange={(e) => updateField(row.library_ID, "programming_language", e.target.value)}
+                            onChange={(e) =>
+                              updateField(
+                                row.library_ID,
+                                "programming_language",
+                                e.target.value
+                              )
+                            }
                             disabled={pageLoading}
                           />
                         ) : (
@@ -460,7 +556,13 @@ const EditValuesPage: React.FC = () => {
                             <input
                               className="dx-input"
                               value={row.metrics[m.metric_name] ?? ""}
-                              onChange={(e) => updateMetricValue(row.library_ID, m.metric_name, e.target.value)}
+                              onChange={(e) =>
+                                updateMetricValue(
+                                  row.library_ID,
+                                  m.metric_name,
+                                  e.target.value
+                                )
+                              }
                               disabled={pageLoading}
                             />
                           ) : (
@@ -475,13 +577,15 @@ const EditValuesPage: React.FC = () => {
             </table>
           </div>
           <div style={{ marginBottom: 10, fontSize: 13, opacity: 0.85 }}>
-          <div>
-              API+SCC: running {apiScc.running}, pending {apiScc.pending}, success {apiScc.success}, failed {apiScc.failed}
+            <div>
+              API+SCC: running {apiScc.running}, pending {apiScc.pending}, success{" "}
+              {apiScc.success}, failed {apiScc.failed}
             </div>
             <div>
-              GitStats: running {gitstats.running}, pending {gitstats.pending}, success {gitstats.success}, failed {gitstats.failed}
+              GitStats: running {gitstats.running}, pending {gitstats.pending},
+              success {gitstats.success}, failed {gitstats.failed}
             </div>
-            </div>
+          </div>
         </div>
       </div>
     </div>
