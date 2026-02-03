@@ -2,6 +2,7 @@ import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useParams } from 'react-router-dom';
 import Plot from 'react-plotly.js';
+import Plotly, { Data, Layout } from "plotly.js-dist-min";
 import { apiUrl } from "../config/api";
 interface Metric {
   metric_ID: string;
@@ -13,6 +14,11 @@ interface LibraryRow {
   library_ID: string;
   library_name: string;
   metrics: { [metricName: string]: string | number | null };
+}
+
+interface ChartRow {
+  label: string;
+  value: number;
 }
 
 const Visualize: React.FC = () => {
@@ -32,6 +38,13 @@ const Visualize: React.FC = () => {
 
   const [chartData, setChartData] = useState<{ metric: string; rows: { label: string; value: number }[] }[] | null>(null);
   const [error, setError] = useState<string | null>(null);
+
+  const [barColor, setBarColor] = useState("#6366f1");
+  const [barLineColor, setBarLineColor] = useState("#818cf8");
+  const [plotBgColor, setPlotBgColor] = useState("rgba(255, 255, 255, 0.05)");
+  const [paperBgColor, setPaperBgColor] = useState("transparent");
+  const [showValues, setShowValues] = useState(true);
+  const [downloadFormat, setDownloadFormat] = useState<"png" | "svg">("png");
 
   useEffect(() => {
   if (!DOMAIN_ID) return;
@@ -110,6 +123,50 @@ const Visualize: React.FC = () => {
     setSelectedLibraries(allSelected ? [] : allIds);
   };
 
+  function buildChartLayout(metric: string): Partial<Layout> {
+    return {
+      title: {
+        text: metric,
+        font: { size: 18 },
+      },
+      xaxis: {
+        title: { text: "Category" },
+      },
+      yaxis: {
+        title: { text: metric },
+      },
+      margin: { t: 50, l: 50, r: 50, b: 50 },
+      autosize: true,
+    };
+  }
+
+  function buildChartData(rows: ChartRow[]): Data[] {
+    return [
+      {
+        x: rows.map(r => r.label),
+        y: rows.map(r => r.value),
+        type: "bar",
+        text: rows.map(r => r.value.toString()),
+        textposition: "auto",
+        hovertemplate: "%{x}: %{y}<extra></extra>",
+      },
+    ];
+  }
+
+  const handleDownloadAll = async () => {
+    if (!chartData || chartData.length === 0) return;
+    for (const chart of chartData) {
+      const data = buildChartData(chart.rows) as any;
+      const layout = buildChartLayout(chart.metric) as any;
+      await Plotly.downloadImage({data, layout}, {
+        width: 800,
+        height: 600,
+        format: "svg",
+        filename: `visualize_${chart.metric.replace(/\s+/g, "_").toLowerCase()}`
+      }, );
+    }
+  };
+
   const handleVisualize = () => {
     setError(null);
     setChartData(null);
@@ -170,7 +227,7 @@ const Visualize: React.FC = () => {
       const rows = selectedLibs.map(l => ({
         label: l.library_name,
         value: toNumber(l.metrics[metricName])
-      }));
+      })).sort((a, b) => b.value - a.value);
 
       return {
         metric: metricName,
@@ -404,13 +461,21 @@ const Visualize: React.FC = () => {
           </div>
         )}
 
-        <button
-          className="dx-btn dx-btn-primary"
-          style={{ marginTop: "auto" }}
-          onClick={handleVisualize}
-        >
-          Visualize →
-        </button>
+        <div style={{ marginTop: "auto", display: "flex", flexDirection: "column", gap: 10 }}>
+          <button
+            className="dx-btn dx-btn-primary"
+            onClick={handleVisualize}
+          >
+            Visualize →
+          </button>
+          <button
+            className="dx-btn dx-btn-outline"
+            onClick={handleDownloadAll}
+            disabled={!chartData || chartData.length === 0}
+          >
+            Download All
+          </button>
+        </div>
       </div>
 
       <div
@@ -423,7 +488,7 @@ const Visualize: React.FC = () => {
         <div className="stars"></div>
 
         <div className="dx-vis-right dx-card" style={{ height: "100%" }}>
-          <h2 className="dx-vis-title">Comparison</h2>
+          <h2 className="dx-vis-title" style={{padding: "0px 0px 10px 0px" }}>Comparison</h2>
 
           {!chartData && (
             <div className="dx-vis-placeholder">
@@ -439,44 +504,8 @@ const Visualize: React.FC = () => {
                   style={{ marginBottom: 28, display: "flex", justifyContent: "center" }}
                 >
                   <Plot
-                    data={[
-                      {
-                        x: chart.rows.map(d => d.label),
-                        y: chart.rows.map(d => d.value),
-                        type: "bar",
-                        marker: {
-                          color: "#6366f1",
-                          line: {
-                            color: "#818cf8",
-                            width: 1.5
-                          }
-                        },
-                        text: chart.rows.map(d => d.value.toString()),
-                        textposition: "auto",
-                        hovertemplate: "<b>%{x}</b><br>Value: %{y}<extra></extra>"
-                      }
-                    ]}
-                    layout={{
-                      title: {
-                        text: chart.metric,
-                        font: { color: "#fff", size: 18 }
-                      },
-                      paper_bgcolor: "transparent",
-                      plot_bgcolor: "rgba(255, 255, 255, 0.05)",
-                      font: { color: "#fff" },
-                      xaxis: {
-                        title: "Libraries",
-                        gridcolor: "rgba(255, 255, 255, 0.1)",
-                        color: "#fff"
-                      },
-                      yaxis: {
-                        title: "Metric Value",
-                        gridcolor: "rgba(255, 255, 255, 0.1)",
-                        color: "#fff"
-                      },
-                      margin: { l: 60, r: 40, t: 60, b: 80 },
-                      autosize: true
-                    }}
+                    data={buildChartData(chart.rows)}
+                    layout={buildChartLayout(chart.metric)}
                     config={{
                       responsive: true,
                       displayModeBar: true,
