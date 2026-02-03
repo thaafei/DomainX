@@ -23,10 +23,9 @@ const ComparisonToolPage: React.FC = () => {
   const [tableRows, setTableRows] = useState<LibraryMetricRow[]>([]);
 
   useEffect(() => {
-      if (!DOMAIN_ID) return;
-      loadPageData();
-    }, [DOMAIN_ID]);
-
+    if (!DOMAIN_ID) return;
+    loadPageData();
+  }, [DOMAIN_ID]);
 
   const getDomainSpecification = async () => {
     try {
@@ -59,9 +58,7 @@ const ComparisonToolPage: React.FC = () => {
       if (!res.ok) throw new Error(`HTTP ${res.status}: ${text.slice(0, 200)}`);
 
       if (!contentType.includes("application/json")) {
-        throw new Error(
-          `Expected JSON, got ${contentType}. Body starts with: ${text.slice(0, 80)}`
-        );
+        throw new Error(`Expected JSON, got ${contentType}. Body starts with: ${text.slice(0, 80)}`);
       }
 
       const data = JSON.parse(text);
@@ -122,26 +119,17 @@ const ComparisonToolPage: React.FC = () => {
             gap: 14,
           }}
         >
-          <button
-            className="dx-btn dx-btn-primary"
-            onClick={() => navigate(`/libraries/${DOMAIN_ID}`)}
-          >
+          <button className="dx-btn dx-btn-primary" onClick={() => navigate(`/libraries/${DOMAIN_ID}`)}>
             + Add Library
           </button>
 
-          <button
-            className="dx-btn dx-btn-outline"
-            onClick={() => navigate(`/edit/${DOMAIN_ID}`)}
-          >
+          <button className="dx-btn dx-btn-outline" onClick={() => navigate(`/edit/${DOMAIN_ID}`)}>
             ✎ Edit Metric Values
           </button>
 
           <div style={{ flexGrow: 1 }} />
 
-          <button
-            className="dx-btn dx-btn-primary"
-            onClick={() => navigate(`/visualize/${domainId}`)}
-          >
+          <button className="dx-btn dx-btn-primary" onClick={() => navigate(`/visualize/${domainId}`)}>
             Visualize →
           </button>
         </div>
@@ -160,7 +148,7 @@ const ComparisonToolPage: React.FC = () => {
             <table className="dx-table" style={{ tableLayout: "fixed", width: "100%" }}>
               <thead>
                 <tr>
-                  <th className="dx-th-sticky dx-sticky-left"  style={{ textAlign: "left", width: 200, left: 0  }}>
+                  <th className="dx-th-sticky dx-sticky-left" style={{ textAlign: "left", width: 200, left: 0 }}>
                     Library
                   </th>
 
@@ -184,51 +172,71 @@ const ComparisonToolPage: React.FC = () => {
 
               <tbody>
                 {tableRows.map((row) => (
-                  <tr
-                    key={row.library_ID}
-                    style={{ borderBottom: "1px solid rgba(255,255,255,0.08)" }}
-                  >
-                    <td className="dx-sticky-left"
+                  <tr key={row.library_ID} style={{ borderBottom: "1px solid rgba(255,255,255,0.08)" }}>
+                    <td
+                      className="dx-sticky-left"
                       style={{
                         padding: 10,
                         fontWeight: 600,
                         whiteSpace: "normal",
                         wordBreak: "break-word",
                         verticalAlign: "top",
-                        left: 0
+                        left: 0,
                       }}
                       title={row.library_name}
                     >
                       {row.library_name}
                     </td>
 
-                    {metricList.map((m) => (
-                      <td
-                        key={m.metric_ID}
-                        style={{
-                          padding: 10,
-                          whiteSpace: "normal",
-                          wordBreak: "break-word",
-                          verticalAlign: "top",
-                        }}
-                        title={
-                          row.metrics[m.metric_name] != null
-                            ? String(row.metrics[m.metric_name])
-                            : "—"
-                        }
-                      >
-                        {row.metrics[m.metric_name] ?? "—"}
-                      </td>
-                    ))}
+                    {metricList.map((m) => {
+                      const cellVal = row.metrics[m.metric_name];
+
+                      if (m.metric_name === "GitStats Report") {
+                        const url = cellVal ? String(cellVal) : null;
+                        return (
+                          <td
+                            key={m.metric_ID}
+                            style={{
+                              padding: 10,
+                              whiteSpace: "normal",
+                              wordBreak: "break-word",
+                              verticalAlign: "top",
+                            }}
+                            title={url || "—"}
+                          >
+                            {url ? (
+                              <a href={url} target="_blank" rel="noreferrer" style={{ color: "var(--accent)" }}>
+                                View report
+                              </a>
+                            ) : (
+                              "—"
+                            )}
+                          </td>
+                        );
+                      }
+
+                      return (
+                        <td
+                          key={m.metric_ID}
+                          style={{
+                            padding: 10,
+                            whiteSpace: "normal",
+                            wordBreak: "break-word",
+                            verticalAlign: "top",
+                          }}
+                          title={cellVal != null ? String(cellVal) : "—"}
+                        >
+                          {cellVal ?? "—"}
+                        </td>
+                      );
+                    })}
                   </tr>
                 ))}
               </tbody>
             </table>
 
             {tableRows.length === 0 && (
-              <div style={{ padding: 20, opacity: 0.6 }}>
-                No libraries found for this domain.
-              </div>
+              <div style={{ padding: 20, opacity: 0.6 }}>No libraries found for this domain.</div>
             )}
           </div>
         </div>
