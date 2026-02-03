@@ -345,7 +345,7 @@ class RepoAnalyzer:
         env["LC_ALL"] = "C"
         env["LANG"] = "C"
 
-        p = subprocess.run(
+        subprocess.run(
             cmd,
             cwd=repo_dir,
             check=True,
@@ -366,7 +366,28 @@ class RepoAnalyzer:
             shutil.rmtree(dest, ignore_errors=True)
         shutil.copytree(generated, dest)
 
+        for root, dirs, files in os.walk(dest):
+            for d in dirs:
+                try:
+                    os.chmod(os.path.join(root, d), 0o755)
+                except Exception:
+                    pass
+            for f in files:
+                try:
+                    os.chmod(os.path.join(root, f), 0o644)
+                except Exception:
+                    pass
+
+        index_path = os.path.join(dest, "index.html")
+        if not os.path.isfile(index_path):
+            found = []
+            for r, _, fs in os.walk(dest):
+                if "index.html" in fs:
+                    found.append(os.path.join(r, "index.html"))
+            raise Exception(f"git_stats index.html not found at expected location. Found: {found[:3]}")
+
         return {"GitStats Report": f"/gitstats/{library_id}/git_stats/index.html"}
+
 
 
 

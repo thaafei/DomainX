@@ -709,11 +709,11 @@ const EditValuesPage: React.FC = () => {
 
           <div style={{ marginBottom: 10, fontSize: 13, opacity: 0.85 }}>
             <div>
-              API+SCC: running {apiScc.running}, pending {apiScc.pending}, success {apiScc.success}, failed{" "}
+              API+SCC: running {apiScc.running}, success {apiScc.success}, failed{" "}
               {apiScc.failed}
             </div>
             <div>
-              GitStats: running {gitstats.running}, pending {gitstats.pending}, success {gitstats.success}, failed{" "}
+              GitStats: running {gitstats.running}, success {gitstats.success}, failed{" "}
               {gitstats.failed}
             </div>
           </div>
