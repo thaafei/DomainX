@@ -113,7 +113,8 @@ const ConfirmModal: React.FC<{
         <div
           style={{
             padding: "14px 16px",
-            background: "linear-gradient(90deg, rgba(255,255,255,0.08), rgba(255,255,255,0.02))",
+            background:
+              "linear-gradient(90deg, rgba(255,255,255,0.08), rgba(255,255,255,0.02))",
             borderBottom: "1px solid rgba(255,255,255,0.10)",
             display: "flex",
             alignItems: "center",
@@ -122,10 +123,23 @@ const ConfirmModal: React.FC<{
           }}
         >
           <div style={{ display: "flex", flexDirection: "column", gap: 4 }}>
-            <div style={{ fontSize: 12, letterSpacing: 0.6, opacity: 0.75, color: "rgba(220,230,255,0.85)" }}>
+            <div
+              style={{
+                fontSize: 12,
+                letterSpacing: 0.6,
+                opacity: 0.75,
+                color: "rgba(220,230,255,0.85)",
+              }}
+            >
               CONFIRMATION
             </div>
-            <div style={{ fontSize: 18, fontWeight: 750, color: "rgba(235,238,245,0.92)" }}>
+            <div
+              style={{
+                fontSize: 18,
+                fontWeight: 750,
+                color: "rgba(235,238,245,0.92)",
+              }}
+            >
               Are you sure you want to run analysis?
             </div>
           </div>
@@ -143,7 +157,15 @@ const ConfirmModal: React.FC<{
         </div>
 
         <div style={{ padding: 16 }}>
-          <div style={{ fontSize: 14, color: "rgba(210,216,228,0.86)", marginBottom: 10 }}>{title}</div>
+          <div
+            style={{
+              fontSize: 14,
+              color: "rgba(210,216,228,0.86)",
+              marginBottom: 10,
+            }}
+          >
+            {title}
+          </div>
 
           <div
             style={{
@@ -159,7 +181,14 @@ const ConfirmModal: React.FC<{
             {message}
           </div>
 
-          <div style={{ display: "flex", justifyContent: "flex-end", gap: 10, marginTop: 14 }}>
+          <div
+            style={{
+              display: "flex",
+              justifyContent: "flex-end",
+              gap: 10,
+              marginTop: 14,
+            }}
+          >
             <button
               className="dx-btn dx-btn-outline"
               onClick={onCancel}
@@ -245,16 +274,21 @@ const EditValuesPage: React.FC = () => {
   }, [DOMAIN_ID]);
 
   const fetchComparisonRaw = async () => {
-    const res = await fetch(apiUrl(`/library_metric_values/comparison/${DOMAIN_ID}/`), {
-      credentials: "include",
-    });
+    const res = await fetch(
+      apiUrl(`/library_metric_values/comparison/${DOMAIN_ID}/`),
+      {
+        credentials: "include",
+      }
+    );
 
     const contentType = res.headers.get("content-type") || "";
     const text = await res.text();
 
     if (!res.ok) throw new Error(text);
     if (!contentType.includes("application/json")) {
-      throw new Error(`Expected JSON, got ${contentType}. Body: ${text.slice(0, 100)}`);
+      throw new Error(
+        `Expected JSON, got ${contentType}. Body: ${text.slice(0, 100)}`
+      );
     }
 
     return JSON.parse(text);
@@ -273,7 +307,9 @@ const EditValuesPage: React.FC = () => {
   };
 
   const startEdit = (id: string) => {
-    setRows((prev) => prev.map((r) => (r.library_ID === id ? { ...r, isEditing: true } : r)));
+    setRows((prev) =>
+      prev.map((r) => (r.library_ID === id ? { ...r, isEditing: true } : r))
+    );
   };
 
   const cancelEdit = async () => {
@@ -290,14 +326,19 @@ const EditValuesPage: React.FC = () => {
     }
   };
 
-  const updateField = (id: string, field: string, value: any) => {
-    setRows((prev) => prev.map((r) => (r.library_ID === id ? { ...r, [field]: value } : r)));
-  };
-
-  const updateMetricValue = (libId: string, metric: string, value: any, isEvidence: boolean = false) => {
+  const updateMetricValue = (
+    libId: string,
+    metric: string,
+    value: any,
+    isEvidence: boolean = false
+  ) => {
     const key = isEvidence ? `${metric}_evidence` : metric;
     setRows((prev) =>
-      prev.map((r) => (r.library_ID === libId ? { ...r, metrics: { ...r.metrics, [key]: value } } : r))
+      prev.map((r) =>
+        r.library_ID === libId
+          ? { ...r, metrics: { ...r.metrics, [key]: value } }
+          : r
+      )
     );
   };
 
@@ -307,17 +348,17 @@ const EditValuesPage: React.FC = () => {
       setInfoMsg("Saving…");
       setErrorMsg(null);
 
-      const res = await fetch(apiUrl(`/library_metric_values/libraries/${row.library_ID}/update-values/`), {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        credentials: "include",
-        body: JSON.stringify({
-          library_name: row.library_name,
-          url: row.url,
-          programming_language: row.programming_language,
-          metrics: row.metrics,
-        }),
-      });
+      const res = await fetch(
+        apiUrl(`/library_metric_values/libraries/${row.library_ID}/update-values/`),
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          credentials: "include",
+          body: JSON.stringify({
+            metrics: row.metrics,
+          }),
+        }
+      );
 
       if (!res.ok) {
         const text = await res.text();
@@ -341,10 +382,13 @@ const EditValuesPage: React.FC = () => {
 
       setInfoMsg("Analysis started (API+SCC + GitStats). Reload later to see results.");
 
-      const res = await fetch(apiUrl(`/library_metric_values/libraries/${libraryId}/analyze/`), {
-        method: "POST",
-        credentials: "include",
-      });
+      const res = await fetch(
+        apiUrl(`/library_metric_values/libraries/${libraryId}/analyze/`),
+        {
+          method: "POST",
+          credentials: "include",
+        }
+      );
 
       if (!res.ok) {
         const text = await res.text();
@@ -353,7 +397,9 @@ const EditValuesPage: React.FC = () => {
 
       setRows((prev) =>
         prev.map((r) =>
-          r.library_ID === libraryId ? { ...r, analysis_status: "running", gitstats_status: "running" } : r
+          r.library_ID === libraryId
+            ? { ...r, analysis_status: "running", gitstats_status: "running" }
+            : r
         )
       );
     } catch (e: any) {
@@ -370,10 +416,13 @@ const EditValuesPage: React.FC = () => {
 
       setInfoMsg("Analysis started for all libraries (API+SCC + GitStats). Reload later to see results.");
 
-      const res = await fetch(apiUrl(`/library_metric_values/${DOMAIN_ID}/analyze-all/`), {
-        method: "POST",
-        credentials: "include",
-      });
+      const res = await fetch(
+        apiUrl(`/library_metric_values/${DOMAIN_ID}/analyze-all/`),
+        {
+          method: "POST",
+          credentials: "include",
+        }
+      );
 
       if (!res.ok) {
         const text = await res.text();
@@ -395,7 +444,11 @@ const EditValuesPage: React.FC = () => {
   };
 
   const openConfirmLibrary = (row: EditableRow) => {
-    setConfirm({ type: "library", library_ID: row.library_ID, library_name: row.library_name });
+    setConfirm({
+      type: "library",
+      library_ID: row.library_ID,
+      library_name: row.library_name,
+    });
   };
 
   const openConfirmAll = () => {
@@ -432,7 +485,11 @@ const EditValuesPage: React.FC = () => {
     <div className="dx-bg" style={{ display: "flex", height: "100vh" }}>
       <ConfirmModal
         open={!!confirm}
-        title={confirm?.type === "library" ? `Library: ${confirm.library_name}` : "GitHub metric values will be affected for all libraries in this domain."}
+        title={
+          confirm?.type === "library"
+            ? `Library: ${confirm.library_name}`
+            : "GitHub metric values will be affected for all libraries in this domain."
+        }
         message={
           confirm?.type === "library" ? (
             <div>
@@ -447,12 +504,11 @@ const EditValuesPage: React.FC = () => {
               >
                 <b>{confirm.library_name}</b>
               </div>
-             
             </div>
           ) : confirm?.type === "all" ? (
             <div>
-              This will run <b>GitHub API</b>, <b>SCC</b>, and <b>GitStats</b> for <b>all libraries</b> in this domain.
-             
+              This will run <b>GitHub API</b>, <b>SCC</b>, and <b>GitStats</b> for{" "}
+              <b>all libraries</b> in this domain.
             </div>
           ) : null
         }
@@ -499,7 +555,9 @@ const EditValuesPage: React.FC = () => {
       >
         <div className="stars"></div>
 
-        <h1 style={{ color: "var(--accent)", marginBottom: 20 }}>Edit Metric Values</h1>
+        <h1 style={{ color: "var(--accent)", marginBottom: 20 }}>
+          Edit Metric Values
+        </h1>
 
         <div
           className="dx-card"
@@ -629,42 +687,21 @@ const EditValuesPage: React.FC = () => {
                       </td>
 
                       <td className="dx-sticky-left" style={{ left: offset }}>
-                        {row.isEditing ? (
-                          <input
-                            className="dx-input"
-                            value={row.library_name}
-                            onChange={(e) => updateField(row.library_ID, "library_name", e.target.value)}
-                            disabled={pageLoading}
-                          />
-                        ) : (
-                          row.library_name
-                        )}
+                        <div style={{ opacity: row.isEditing ? 0.75 : 1 }}>
+                          {row.library_name}
+                        </div>
                       </td>
 
                       <td>
-                        {row.isEditing ? (
-                          <input
-                            className="dx-input"
-                            value={row.url || ""}
-                            onChange={(e) => updateField(row.library_ID, "url", e.target.value)}
-                            disabled={pageLoading}
-                          />
-                        ) : (
-                          row.url || "—"
-                        )}
+                        <div style={{ opacity: row.isEditing ? 0.75 : 1 }}>
+                          {row.url || "—"}
+                        </div>
                       </td>
 
                       <td>
-                        {row.isEditing ? (
-                          <input
-                            className="dx-input"
-                            value={row.programming_language || ""}
-                            onChange={(e) => updateField(row.library_ID, "programming_language", e.target.value)}
-                            disabled={pageLoading}
-                          />
-                        ) : (
-                          row.programming_language || "—"
-                        )}
+                        <div style={{ opacity: row.isEditing ? 0.75 : 1 }}>
+                          {row.programming_language || "—"}
+                        </div>
                       </td>
 
                       {metricList.map((m) => {
@@ -675,7 +712,12 @@ const EditValuesPage: React.FC = () => {
                           return (
                             <td key={m.metric_ID}>
                               {url ? (
-                                <a href={url} target="_blank" rel="noreferrer" style={{ color: "var(--accent)" }}>
+                                <a
+                                  href={url}
+                                  target="_blank"
+                                  rel="noreferrer"
+                                  style={{ color: "var(--accent)" }}
+                                >
                                   View report
                                 </a>
                               ) : (
@@ -691,7 +733,13 @@ const EditValuesPage: React.FC = () => {
                               <input
                                 className="dx-input"
                                 value={cellVal ?? ""}
-                                onChange={(e) => updateMetricValue(row.library_ID, m.metric_name, e.target.value)}
+                                onChange={(e) =>
+                                  updateMetricValue(
+                                    row.library_ID,
+                                    m.metric_name,
+                                    e.target.value
+                                  )
+                                }
                                 disabled={pageLoading}
                               />
                             ) : (
