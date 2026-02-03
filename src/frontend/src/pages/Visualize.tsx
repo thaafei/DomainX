@@ -23,11 +23,14 @@ const Visualize: React.FC = () => {
   const [categories, setCategories] = useState<string[]>([]);
   const [libraries, setLibraries] = useState<LibraryRow[]>([]);
 
+  const [activeTab, setActiveTab] = useState<"AHP" | "Metrics" | "Libraries">("Metrics");
+  const [selectedAhpOptions, setSelectedAhpOptions] = useState<string[]>([]);
+
   const [selectedCategories, setSelectedCategories] = useState<string[]>([]);
   const [selectedMetrics, setSelectedMetrics] = useState<string[]>([]);
   const [selectedLibraries, setSelectedLibraries] = useState<string[]>([]);
 
-  const [chartData, setChartData] = useState<{ label: string; value: number }[] | null>(null);
+  const [chartData, setChartData] = useState<{ metric: string; rows: { label: string; value: number }[] }[] | null>(null);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
@@ -94,6 +97,19 @@ const Visualize: React.FC = () => {
     );
   };
 
+  const toggleAhpOption = (name: string) => {
+    setSelectedAhpOptions(prev =>
+      prev.includes(name) ? prev.filter(x => x !== name) : [...prev, name]
+    );
+  };
+
+  const toggleSelectAllLibraries = () => {
+    if (libraries.length === 0) return;
+    const allIds = libraries.map(l => l.library_ID);
+    const allSelected = selectedLibraries.length === allIds.length;
+    setSelectedLibraries(allSelected ? [] : allIds);
+  };
+
   const handleVisualize = () => {
     setError(null);
     setChartData(null);
@@ -147,39 +163,48 @@ const Visualize: React.FC = () => {
       return num;
     };
 
-    const rows = libraries
-      .filter(l => selectedLibraries.includes(l.library_ID))
-      .map(l => {
-        let total = 0;
-        selectedMetricNames.forEach(name => {
-          total += toNumber(l.metrics[name]);
-        });
-        return {
-          label: l.library_name,
-          value: total,
-        };
-      });
+    const selectedMetricArray = Array.from(selectedMetricNames);
+    const selectedLibs = libraries.filter(l => selectedLibraries.includes(l.library_ID));
+
+    const charts = selectedMetricArray.map(metricName => {
+      const rows = selectedLibs.map(l => ({
+        label: l.library_name,
+        value: toNumber(l.metrics[metricName])
+      }));
+
+      return {
+        metric: metricName,
+        rows
+      };
+    });
 
     if (hasInvalid) {
       setError("Some selected metrics have invalid values.");
       return;
     }
 
-    setChartData(rows);
+    setChartData(charts);
   };
 
-  return (
-    <div className="dx-bg" style={{ display: "flex", height: "100vh" }}>
+  const ahpOptions = [
+    "Use AHP weighting",
+    "Normalize weights",
+    "Include consistency ratio",
+    "Auto-scale weights"
+  ];
 
+  return (
+    <div className="dx-bg" style={{ display: "flex", height: "100vh", overflow: "hidden" }}>
       <div
         className="dx-card"
         style={{
-          width: 280,
+          width: 300,
           padding: "22px 14px",
           display: "flex",
           flexDirection: "column",
-          gap: 18,
-          height: "100%",
+          gap: 14,
+          height: "100vh",
+          boxSizing: "border-box",
           borderRight: "1px solid rgba(255,255,255,0.08)"
         }}
       >
@@ -191,6 +216,19 @@ const Visualize: React.FC = () => {
           ← Back
         </button>
 
+        <div style={{ display: "flex", gap: 6 }}>
+          {(["AHP", "Metrics", "Libraries"] as const).map(tab => (
+            <button
+              key={tab}
+              className={activeTab === tab ? "dx-btn dx-btn-primary" : "dx-btn dx-btn-outline"}
+              style={{ flex: 1, padding: "8px 6px", fontSize: "0.9rem" }}
+              onClick={() => setActiveTab(tab)}
+            >
+              {tab}
+            </button>
+          ))}
+        </div>
+
         <div
           style={{
             display: "flex",
@@ -198,154 +236,194 @@ const Visualize: React.FC = () => {
             gap: 10,
             color: "white",
             flex: 1,
-            minHeight: 0
+            minHeight: 0,
+            overflow: "hidden"
           }}
         >
-          <label className="dx-vis-title" style={{ fontWeight: 600 }}>Select Metrics</label>
-          <div style={{ fontSize: "0.85rem", opacity: 0.8 }}>
-            Pick metrics or whole categories.
-          </div>
-
-          <div
-            style={{
-              flex: 1,
-              overflowY: "auto",
-              minHeight: 0,
-              paddingRight: 6
-            }}
-          >
-            {(categories.length
-              ? categories
-              : Array.from(
-                  new Set((metricList || []).map(m => m.category).filter(Boolean) as string[])
-                )
-            ).map(cat => (
-              <div key={cat} style={{ marginBottom: 10 }}>
-                <label style={{ display: "block", fontWeight: 600 }}>
-                  <input
-                    type="checkbox"
-                    checked={selectedCategories.includes(cat)}
-                    onChange={() => toggleCategory(cat)}
-                    style={{ marginRight: 6 }}
-                  />
-                  {cat}
-                </label>
-                <div style={{ paddingLeft: 18, marginTop: 6 }}>
-                  {metricList
-                    .filter(m => m.category === cat)
-                    .map(m => (
-                      <label key={m.metric_ID} style={{ display: "block", marginBottom: 6 }}>
-                        <input
-                          type="checkbox"
-                          checked={selectedMetrics.includes(m.metric_name)}
-                          onChange={() => toggleMetric(m.metric_name)}
-                          style={{ marginRight: 6 }}
-                        />
-                        {m.metric_name}
-                      </label>
-                    ))}
-                </div>
+          {activeTab === "AHP" && (
+            <>
+              <label className="dx-vis-title" style={{ fontWeight: 600 }}>
+                AHP Options
+              </label>
+              <div style={{ fontSize: "0.85rem", opacity: 0.8 }}>
+                Select AHP options for weighting.
               </div>
-            ))}
-
-            {metricList.filter(m => !m.category).length > 0 && (
-              <div style={{ marginBottom: 10 }}>
-                <label style={{ display: "block", fontWeight: 600, color: "white"}}>
-                  <input
-                    type="checkbox"
-                    checked={selectedCategories.includes("Uncategorized")}
-                    onChange={() => toggleCategory("Uncategorized")}
-                    style={{ marginRight: 6 }}
-                  />
-                  Uncategorized
-                </label>
-                <div style={{ paddingLeft: 18, marginTop: 6 }}>
-                  {metricList
-                    .filter(m => !m.category)
-                    .map(m => (
-                      <label key={m.metric_ID} style={{ display: "block", marginBottom: 6 }}>
-                        <input
-                          type="checkbox"
-                          checked={selectedMetrics.includes(m.metric_name)}
-                          onChange={() => toggleMetric(m.metric_name)}
-                          style={{ marginRight: 6, color: "white" }}
-                        />
-                        {m.metric_name}
-                      </label>
-                    ))}
-                </div>
+              <div
+                style={{
+                  flex: 1,
+                  overflowY: "auto",
+                  minHeight: 0,
+                  paddingRight: 6
+                }}
+              >
+                {ahpOptions.map(option => (
+                  <label key={option} style={{ display: "block", marginBottom: 8 }}>
+                    <input
+                      type="checkbox"
+                      checked={selectedAhpOptions.includes(option)}
+                      onChange={() => toggleAhpOption(option)}
+                      style={{ marginRight: 6 }}
+                    />
+                    {option}
+                  </label>
+                ))}
               </div>
-            )}
-          </div>
+            </>
+          )}
+
+          {activeTab === "Metrics" && (
+            <>
+              <label className="dx-vis-title" style={{ fontWeight: 600 }}>
+                Select Metrics
+              </label>
+              <div style={{ fontSize: "0.85rem", opacity: 0.8 }}>
+                Pick metrics or whole categories.
+              </div>
+
+              <div
+                style={{
+                  flex: 1,
+                  overflowY: "auto",
+                  minHeight: 0,
+                  paddingRight: 6
+                }}
+              >
+                {(categories.length
+                  ? categories
+                  : Array.from(
+                      new Set((metricList || []).map(m => m.category).filter(Boolean) as string[])
+                    )
+                ).map(cat => (
+                  <div key={cat} style={{ marginBottom: 10 }}>
+                    <label style={{ display: "block", fontWeight: 600 }}>
+                      <input
+                        type="checkbox"
+                        checked={selectedCategories.includes(cat)}
+                        onChange={() => toggleCategory(cat)}
+                        style={{ marginRight: 6 }}
+                      />
+                      {cat}
+                    </label>
+                    <div style={{ paddingLeft: 18, marginTop: 6 }}>
+                      {metricList
+                        .filter(m => m.category === cat)
+                        .map(m => (
+                          <label key={m.metric_ID} style={{ display: "block", marginBottom: 6 }}>
+                            <input
+                              type="checkbox"
+                              checked={selectedMetrics.includes(m.metric_name)}
+                              onChange={() => toggleMetric(m.metric_name)}
+                              style={{ marginRight: 6 }}
+                            />
+                            {m.metric_name}
+                          </label>
+                        ))}
+                    </div>
+                  </div>
+                ))}
+
+                {metricList.filter(m => !m.category).length > 0 && (
+                  <div style={{ marginBottom: 10 }}>
+                    <label style={{ display: "block", fontWeight: 600, color: "white" }}>
+                      <input
+                        type="checkbox"
+                        checked={selectedCategories.includes("Uncategorized")}
+                        onChange={() => toggleCategory("Uncategorized")}
+                        style={{ marginRight: 6 }}
+                      />
+                      Uncategorized
+                    </label>
+                    <div style={{ paddingLeft: 18, marginTop: 6 }}>
+                      {metricList
+                        .filter(m => !m.category)
+                        .map(m => (
+                          <label key={m.metric_ID} style={{ display: "block", marginBottom: 6 }}>
+                            <input
+                              type="checkbox"
+                              checked={selectedMetrics.includes(m.metric_name)}
+                              onChange={() => toggleMetric(m.metric_name)}
+                              style={{ marginRight: 6, color: "white" }}
+                            />
+                            {m.metric_name}
+                          </label>
+                        ))}
+                    </div>
+                  </div>
+                )}
+              </div>
+            </>
+          )}
+
+          {activeTab === "Libraries" && (
+            <>
+              <label className="dx-vis-title" style={{ fontWeight: 600 }}>
+                Select Libraries
+              </label>
+              <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
+                <button
+                  className="dx-btn dx-btn-outline"
+                  style={{ padding: "6px 10px", fontSize: "0.85rem" }}
+                  onClick={toggleSelectAllLibraries}
+                  disabled={libraries.length === 0}
+                >
+                  {selectedLibraries.length === libraries.length && libraries.length > 0
+                    ? "Clear All"
+                    : "Select All"}
+                </button>
+                <span style={{ fontSize: "0.85rem", opacity: 0.8 }}>
+                  {selectedLibraries.length} selected
+                </span>
+              </div>
+              <div
+                style={{
+                  flex: 1,
+                  overflowY: "auto",
+                  minHeight: 0,
+                  paddingRight: 6
+                }}
+              >
+                {libraries.map(lib => (
+                  <label key={lib.library_ID} style={{ display: "block", marginBottom: 6 }}>
+                    <input
+                      type="checkbox"
+                      checked={selectedLibraries.includes(lib.library_ID)}
+                      onChange={() => toggleLibrary(lib.library_ID)}
+                      style={{ marginRight: 6 }}
+                    />
+                    {lib.library_name}
+                  </label>
+                ))}
+              </div>
+            </>
+          )}
         </div>
+
+        {error && (
+          <div className="dx-error" style={{ marginTop: 6 }}>
+            {error}
+          </div>
+        )}
+
+        <button
+          className="dx-btn dx-btn-primary"
+          style={{ marginTop: "auto" }}
+          onClick={handleVisualize}
+        >
+          Visualize →
+        </button>
       </div>
 
       <div
         style={{
           flex: 1,
-          padding: "40px 60px",
-          display: "grid",
-          gridTemplateColumns: "420px 1fr",
-          gap: "60px",
           position: "relative",
           color: "white"
         }}
       >
         <div className="stars"></div>
 
-        <div
-          className="dx-card"
-          style={{
-            padding: 20,
-            display: "flex",
-            flexDirection: "column",
-            height: "100%"
-          }}
-        >
-          <h2 className="dx-vis-title">Visualize Metrics</h2>
-
-          <label style={{ marginTop: 20 }}>Select Libraries</label>
-          <div
-            style={{
-              flex: 1,
-              overflowY: "auto",
-              marginTop: 10,
-              paddingRight: 8
-            }}
-          >
-            {libraries.map(lib => (
-              <label
-                key={lib.library_ID}
-                style={{ display: "block", marginBottom: 6 }}
-              >
-                <input
-                  type="checkbox"
-                  checked={selectedLibraries.includes(lib.library_ID)}
-                  onChange={() => toggleLibrary(lib.library_ID)}
-                  style={{ marginRight: 6 }}
-                />
-                {lib.library_name}
-              </label>
-            ))}
-          </div>
-
-          {error && (
-            <div className="dx-error" style={{ marginTop: 10 }}>
-              {error}
-            </div>
-          )}
-
-          <button
-            className="dx-btn dx-btn-primary"
-            style={{ marginTop: 20 }}
-            onClick={handleVisualize}
-          >
-            Visualize →
-          </button>
-        </div>
-
-        <div className="dx-vis-right dx-card">
-          <h3 className="dx-vis-title">Comparison</h3>
+        <div className="dx-vis-right dx-card" style={{ height: "100%" }}>
+          <h2 className="dx-vis-title">Comparison</h2>
 
           {!chartData && (
             <div className="dx-vis-placeholder">
@@ -354,54 +432,61 @@ const Visualize: React.FC = () => {
           )}
 
           {chartData && (
-            <div style={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-              <Plot
-                data={[
-                  {
-                    x: chartData.map(d => d.label),
-                    y: chartData.map(d => d.value),
-                    type: 'bar',
-                    marker: {
-                      color: '#6366f1',
-                      line: {
-                        color: '#818cf8',
-                        width: 1.5
+            <div style={{ width: "100%", height: "100%", overflowY: "auto" }}>
+              {chartData.map(chart => (
+                <div
+                  key={chart.metric}
+                  style={{ marginBottom: 28, display: "flex", justifyContent: "center" }}
+                >
+                  <Plot
+                    data={[
+                      {
+                        x: chart.rows.map(d => d.label),
+                        y: chart.rows.map(d => d.value),
+                        type: "bar",
+                        marker: {
+                          color: "#6366f1",
+                          line: {
+                            color: "#818cf8",
+                            width: 1.5
+                          }
+                        },
+                        text: chart.rows.map(d => d.value.toString()),
+                        textposition: "auto",
+                        hovertemplate: "<b>%{x}</b><br>Value: %{y}<extra></extra>"
                       }
-                    },
-                    text: chartData.map(d => d.value.toString()),
-                    textposition: 'auto',
-                    hovertemplate: '<b>%{x}</b><br>Value: %{y}<extra></extra>'
-                  }
-                ]}
-                layout={{
-                  title: {
-                    text: 'Library Comparison',
-                    font: { color: '#fff', size: 18 }
-                  },
-                  paper_bgcolor: 'transparent',
-                  plot_bgcolor: 'rgba(255, 255, 255, 0.05)',
-                  font: { color: '#fff' },
-                  xaxis: {
-                    title: 'Libraries',
-                    gridcolor: 'rgba(255, 255, 255, 0.1)',
-                    color: '#fff'
-                  },
-                  yaxis: {
-                    title: 'Total Score',
-                    gridcolor: 'rgba(255, 255, 255, 0.1)',
-                    color: '#fff'
-                  },
-                  margin: { l: 60, r: 40, t: 60, b: 80 },
-                  autosize: true
-                }}
-                config={{
-                  responsive: true,
-                  displayModeBar: true,
-                  displaylogo: false,
-                  modeBarButtonsToRemove: ['pan2d', 'lasso2d', 'select2d']
-                }}
-                style={{ width: '100%', height: '500px' }}
-              />
+                    ]}
+                    layout={{
+                      title: {
+                        text: chart.metric,
+                        font: { color: "#fff", size: 18 }
+                      },
+                      paper_bgcolor: "transparent",
+                      plot_bgcolor: "rgba(255, 255, 255, 0.05)",
+                      font: { color: "#fff" },
+                      xaxis: {
+                        title: "Libraries",
+                        gridcolor: "rgba(255, 255, 255, 0.1)",
+                        color: "#fff"
+                      },
+                      yaxis: {
+                        title: "Metric Value",
+                        gridcolor: "rgba(255, 255, 255, 0.1)",
+                        color: "#fff"
+                      },
+                      margin: { l: 60, r: 40, t: 60, b: 80 },
+                      autosize: true
+                    }}
+                    config={{
+                      responsive: true,
+                      displayModeBar: true,
+                      displaylogo: false,
+                      modeBarButtonsToRemove: ["pan2d", "lasso2d", "select2d"]
+                    }}
+                    style={{ width: "100%", height: "420px" }}
+                  />
+                </div>
+              ))}
             </div>
           )}
         </div>
