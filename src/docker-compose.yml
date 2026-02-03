@@ -41,7 +41,7 @@ services:
     build: ./backend
     env_file:
       - .env
-    command: celery -A DomainX worker -l info -Q default --concurrency=4
+    command: celery -A DomainX worker -l info
     depends_on:
       backend:
         condition: service_started
