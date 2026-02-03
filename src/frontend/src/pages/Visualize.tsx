@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useParams } from 'react-router-dom';
+import Plot from 'react-plotly.js';
 import { apiUrl } from "../config/api";
 interface Metric {
   metric_ID: string;
@@ -166,10 +167,6 @@ const Visualize: React.FC = () => {
 
     setChartData(rows);
   };
-
-  const maxValue = chartData?.length
-    ? Math.max(...chartData.map(d => d.value))
-    : 1;
 
   return (
     <div className="dx-bg" style={{ display: "flex", height: "100vh" }}>
@@ -357,22 +354,54 @@ const Visualize: React.FC = () => {
           )}
 
           {chartData && (
-            <div className="dx-chart-area">
-              {chartData.map((d, i) => {
-                const heightPercent = d.value / maxValue;
-
-                return (
-                  <div key={i} className="dx-chart-bar-wrap">
-                    <div
-                      className="dx-chart-bar"
-                      style={{ height: `${heightPercent * 220}px` }}
-                    >
-                      <span className="dx-chart-label">{d.value}</span>
-                    </div>
-                    <div className="dx-chart-name">{d.label}</div>
-                  </div>
-                );
-              })}
+            <div style={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+              <Plot
+                data={[
+                  {
+                    x: chartData.map(d => d.label),
+                    y: chartData.map(d => d.value),
+                    type: 'bar',
+                    marker: {
+                      color: '#6366f1',
+                      line: {
+                        color: '#818cf8',
+                        width: 1.5
+                      }
+                    },
+                    text: chartData.map(d => d.value.toString()),
+                    textposition: 'auto',
+                    hovertemplate: '<b>%{x}</b><br>Value: %{y}<extra></extra>'
+                  }
+                ]}
+                layout={{
+                  title: {
+                    text: 'Library Comparison',
+                    font: { color: '#fff', size: 18 }
+                  },
+                  paper_bgcolor: 'transparent',
+                  plot_bgcolor: 'rgba(255, 255, 255, 0.05)',
+                  font: { color: '#fff' },
+                  xaxis: {
+                    title: 'Libraries',
+                    gridcolor: 'rgba(255, 255, 255, 0.1)',
+                    color: '#fff'
+                  },
+                  yaxis: {
+                    title: 'Total Score',
+                    gridcolor: 'rgba(255, 255, 255, 0.1)',
+                    color: '#fff'
+                  },
+                  margin: { l: 60, r: 40, t: 60, b: 80 },
+                  autosize: true
+                }}
+                config={{
+                  responsive: true,
+                  displayModeBar: true,
+                  displaylogo: false,
+                  modeBarButtonsToRemove: ['pan2d', 'lasso2d', 'select2d']
+                }}
+                style={{ width: '100%', height: '500px' }}
+              />
             </div>
           )}
         </div>
