@@ -3,6 +3,8 @@ import { useNavigate } from "react-router-dom";
 import { useParams } from 'react-router-dom';
 import Plot from 'react-plotly.js';
 import Plotly, { Data, Layout } from "plotly.js-dist-min";
+import JSZip from "jszip";
+import { saveAs } from "file-saver";
 import { apiUrl } from "../config/api";
 interface Metric {
   metric_ID: string;
@@ -39,12 +41,7 @@ const Visualize: React.FC = () => {
   const [chartData, setChartData] = useState<{ metric: string; rows: { label: string; value: number }[] }[] | null>(null);
   const [error, setError] = useState<string | null>(null);
 
-  const [barColor, setBarColor] = useState("#6366f1");
-  const [barLineColor, setBarLineColor] = useState("#818cf8");
-  const [plotBgColor, setPlotBgColor] = useState("rgba(255, 255, 255, 0.05)");
-  const [paperBgColor, setPaperBgColor] = useState("transparent");
-  const [showValues, setShowValues] = useState(true);
-  const [downloadFormat, setDownloadFormat] = useState<"png" | "svg">("png");
+  const downloadFormat = "svg";
 
   useEffect(() => {
   if (!DOMAIN_ID) return;
@@ -135,7 +132,7 @@ const Visualize: React.FC = () => {
       yaxis: {
         title: { text: metric },
       },
-      margin: { t: 50, l: 50, r: 50, b: 50 },
+      margin: { t: 60, l: 60, r: 60, b: 60 },
       autosize: true,
     };
   }
@@ -153,18 +150,48 @@ const Visualize: React.FC = () => {
     ];
   }
 
+  const dataUrlToBlob = (dataUrl: string): Blob => {
+    const [meta, content] = dataUrl.split(",");
+    const isBase64 = meta.includes("base64");
+    const mimeMatch = meta.match(/data:(.*?);/);
+    const mime = mimeMatch ? mimeMatch[1] : "application/octet-stream";
+
+    if (isBase64) {
+      const binary = atob(content);
+      const len = binary.length;
+      const bytes = new Uint8Array(len);
+      for (let i = 0; i < len; i += 1) {
+        bytes[i] = binary.charCodeAt(i);
+      }
+      return new Blob([bytes], { type: mime });
+    }
+
+    const decoded = decodeURIComponent(content);
+    return new Blob([new TextEncoder().encode(decoded)], { type: mime });
+  };
+
   const handleDownloadAll = async () => {
     if (!chartData || chartData.length === 0) return;
+
+    const zip = new JSZip();
+
     for (const chart of chartData) {
       const data = buildChartData(chart.rows) as any;
       const layout = buildChartLayout(chart.metric) as any;
-      await Plotly.downloadImage({data, layout}, {
+      const dataUrl = await Plotly.toImage({ data, layout }, {
         width: 800,
         height: 600,
-        format: "svg",
-        filename: `visualize_${chart.metric.replace(/\s+/g, "_").toLowerCase()}`
-      }, );
+        format: downloadFormat
+      });
+
+      const blob = dataUrlToBlob(dataUrl as string);
+      const safeName = chart.metric.replace(/\s+/g, "_").toLowerCase();
+      zip.file(`visualize_${safeName}.${downloadFormat}`, blob);
     }
+
+    const zipBlob = await zip.generateAsync({ type: "blob" });
+    const dateStamp = new Date().toISOString().slice(0, 10);
+    saveAs(zipBlob, `visualizations_${dateStamp}.zip`);
   };
 
   const handleVisualize = () => {
