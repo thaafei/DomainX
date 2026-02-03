@@ -163,6 +163,16 @@ def analyze_repo_gitstats_task(self, library_id: str, repo_url: str):
                 "gitstats_error",
             ]
         )
+        metric = Metric.objects.filter(metric_name="GitStats Report").first()
+        if metric:
+            LibraryMetricValue.objects.update_or_create(
+                library=lib,
+                metric=metric,
+                defaults={
+                    "value": lib.gitstats_report_path,  # ← TEXT URL
+                    "evidence": None,
+                },
+            )
 
         return {"ok": True, "result": results}
 

@@ -30,7 +30,7 @@ TARGET_METRICS = {
     "Code Lines (SCC)": "Number of code lines in text-based files (SCC).",
     "Comment Lines (SCC)": "Number of comment lines in text-based files (SCC).",
     "Blank Lines (SCC)": "Number of blank lines in text-based files (SCC).",
-    "GitStats Report Generated": "1 if git_stats report generation succeeded.",
+    "GitStats Report": "1 if git_stats report generation succeeded.",
 
 }
 
@@ -383,7 +383,8 @@ class RepoAnalyzer:
             shutil.rmtree(dest, ignore_errors=True)
         shutil.copytree(generated, dest)
 
-        return {"GitStats Report Generated": 1}
+        return {"GitStats Report": f"/gitstats/{library_id}/git_stats/index.html"}
+
 
     def run_gitstats_only(self, work_dir: str, serve_dir: str) -> dict:
         work_dir = os.path.abspath(work_dir)
