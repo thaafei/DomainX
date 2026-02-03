@@ -48,6 +48,148 @@ const statusColor = (s?: AnalysisStatus) => {
   return "rgba(255,255,255,0.65)";
 };
 
+type ConfirmState =
+  | null
+  | {
+      type: "library";
+      library_ID: string;
+      library_name: string;
+    }
+  | {
+      type: "all";
+    };
+
+const ConfirmModal: React.FC<{
+  open: boolean;
+  title: string;
+  message: React.ReactNode;
+  confirmText?: string;
+  cancelText?: string;
+  busy?: boolean;
+  onCancel: () => void;
+  onConfirm: () => void;
+}> = ({
+  open,
+  title,
+  message,
+  confirmText = "Run",
+  cancelText = "Cancel",
+  busy,
+  onCancel,
+  onConfirm,
+}) => {
+  if (!open) return null;
+
+  return (
+    <div
+      role="dialog"
+      aria-modal="true"
+      onMouseDown={(e) => {
+        if (e.target === e.currentTarget && !busy) onCancel();
+      }}
+      style={{
+        position: "fixed",
+        inset: 0,
+        background: "rgba(0,0,0,0.72)",
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
+        zIndex: 9999,
+        padding: 18,
+        backdropFilter: "blur(4px)",
+      }}
+    >
+      <div
+        onMouseDown={(e) => e.stopPropagation()}
+        style={{
+          width: "min(620px, 100%)",
+          borderRadius: 18,
+          overflow: "hidden",
+          border: "1px solid rgba(255,255,255,0.14)",
+          background: "rgba(18, 20, 28, 0.92)",
+          boxShadow: "0 18px 60px rgba(0,0,0,0.55)",
+        }}
+      >
+        <div
+          style={{
+            padding: "14px 16px",
+            background: "linear-gradient(90deg, rgba(255,255,255,0.08), rgba(255,255,255,0.02))",
+            borderBottom: "1px solid rgba(255,255,255,0.10)",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "space-between",
+            gap: 12,
+          }}
+        >
+          <div style={{ display: "flex", flexDirection: "column", gap: 4 }}>
+            <div style={{ fontSize: 12, letterSpacing: 0.6, opacity: 0.75, color: "rgba(220,230,255,0.85)" }}>
+              CONFIRMATION
+            </div>
+            <div style={{ fontSize: 18, fontWeight: 750, color: "rgba(235,238,245,0.92)" }}>
+              Are you sure you want to run analysis?
+            </div>
+          </div>
+
+          <div
+            style={{
+              width: 10,
+              height: 46,
+              borderRadius: 10,
+              background: "var(--accent)",
+              opacity: 0.9,
+              boxShadow: "0 0 18px rgba(255,255,255,0.08)",
+            }}
+          />
+        </div>
+
+        <div style={{ padding: 16 }}>
+          <div style={{ fontSize: 14, color: "rgba(210,216,228,0.86)", marginBottom: 10 }}>{title}</div>
+
+          <div
+            style={{
+              fontSize: 14,
+              lineHeight: 1.55,
+              color: "rgba(210,216,228,0.86)",
+              background: "rgba(255,255,255,0.04)",
+              border: "1px solid rgba(255,255,255,0.08)",
+              borderRadius: 14,
+              padding: "12px 12px",
+            }}
+          >
+            {message}
+          </div>
+
+          <div style={{ display: "flex", justifyContent: "flex-end", gap: 10, marginTop: 14 }}>
+            <button
+              className="dx-btn dx-btn-outline"
+              onClick={onCancel}
+              disabled={!!busy}
+              style={{
+                opacity: busy ? 0.7 : 1,
+                borderColor: "rgba(255,255,255,0.16)",
+              }}
+            >
+              {cancelText}
+            </button>
+
+            <button
+              className="dx-btn dx-btn-primary"
+              onClick={onConfirm}
+              disabled={!!busy}
+              style={{
+                opacity: busy ? 0.7 : 1,
+                filter: "saturate(1.05)",
+              }}
+            >
+              {busy ? "Starting..." : confirmText}
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+};
+
 const EditValuesPage: React.FC = () => {
   const { domainId } = useParams<{ domainId: string }>();
   const DOMAIN_ID = domainId;
@@ -64,6 +206,9 @@ const EditValuesPage: React.FC = () => {
   const [updatingAll, setUpdatingAll] = useState(false);
   const [updatingLibId, setUpdatingLibId] = useState<string | null>(null);
 
+  const [confirm, setConfirm] = useState<ConfirmState>(null);
+  const [confirmBusy, setConfirmBusy] = useState(false);
+
   const firstColRef = useRef<HTMLTableCellElement>(null);
   const [offset, setOffset] = useState(0);
 
@@ -73,6 +218,14 @@ const EditValuesPage: React.FC = () => {
       setOffset(width);
     }
   }, [rows]);
+
+  useEffect(() => {
+    const onKeyDown = (e: KeyboardEvent) => {
+      if (e.key === "Escape" && confirm && !confirmBusy) setConfirm(null);
+    };
+    window.addEventListener("keydown", onKeyDown);
+    return () => window.removeEventListener("keydown", onKeyDown);
+  }, [confirm, confirmBusy]);
 
   useEffect(() => {
     (async () => {
@@ -186,7 +339,7 @@ const EditValuesPage: React.FC = () => {
       setUpdatingLibId(libraryId);
       setErrorMsg(null);
 
-      setInfoMsg("Analysis started (API+SCC + GitStats). You can keep editing. Reload later to see results.");
+      setInfoMsg("Analysis started (API+SCC + GitStats). Reload later to see results.");
 
       const res = await fetch(apiUrl(`/library_metric_values/libraries/${libraryId}/analyze/`), {
         method: "POST",
@@ -199,7 +352,9 @@ const EditValuesPage: React.FC = () => {
       }
 
       setRows((prev) =>
-        prev.map((r) => (r.library_ID === libraryId ? { ...r, analysis_status: "running", gitstats_status: "running" } : r))
+        prev.map((r) =>
+          r.library_ID === libraryId ? { ...r, analysis_status: "running", gitstats_status: "running" } : r
+        )
       );
     } catch (e: any) {
       setErrorMsg(e?.message || "Failed to start analysis.");
@@ -213,7 +368,7 @@ const EditValuesPage: React.FC = () => {
       setUpdatingAll(true);
       setErrorMsg(null);
 
-      setInfoMsg("Analysis started for all libraries (API+SCC + GitStats). Keep editing. Reload later to see results.");
+      setInfoMsg("Analysis started for all libraries (API+SCC + GitStats). Reload later to see results.");
 
       const res = await fetch(apiUrl(`/library_metric_values/${DOMAIN_ID}/analyze-all/`), {
         method: "POST",
@@ -239,6 +394,29 @@ const EditValuesPage: React.FC = () => {
     }
   };
 
+  const openConfirmLibrary = (row: EditableRow) => {
+    setConfirm({ type: "library", library_ID: row.library_ID, library_name: row.library_name });
+  };
+
+  const openConfirmAll = () => {
+    setConfirm({ type: "all" });
+  };
+
+  const confirmRun = async () => {
+    if (!confirm) return;
+    try {
+      setConfirmBusy(true);
+      if (confirm.type === "library") {
+        await runAnalysisForLibrary(confirm.library_ID);
+      } else {
+        await runAnalysisForAll();
+      }
+      setConfirm(null);
+    } finally {
+      setConfirmBusy(false);
+    }
+  };
+
   const countStatus = (key: "analysis_status" | "gitstats_status") => {
     const pending = rows.filter((r) => normalizeStatus(r[key]) === "pending").length;
     const running = rows.filter((r) => normalizeStatus(r[key]) === "running").length;
@@ -250,14 +428,43 @@ const EditValuesPage: React.FC = () => {
   const apiScc = countStatus("analysis_status");
   const gitstats = countStatus("gitstats_status");
 
-  const getGitStatsLink = (row: EditableRow) => {
-    const url = row.gitstats_report_url || (row.metrics?.["GitStats Report"] as any);
-    if (!url) return null;
-    return String(url);
-  };
-
   return (
     <div className="dx-bg" style={{ display: "flex", height: "100vh" }}>
+      <ConfirmModal
+        open={!!confirm}
+        title={confirm?.type === "library" ? `Library: ${confirm.library_name}` : "GitHub metric values will be affected for all libraries in this domain."}
+        message={
+          confirm?.type === "library" ? (
+            <div>
+              This will run <b>GitHub API</b>, <b>SCC</b>, and <b>GitStats</b> for:
+              <div
+                style={{
+                  marginTop: 10,
+                  padding: "10px 12px",
+                  border: "1px solid rgba(255,255,255,0.12)",
+                  borderRadius: 10,
+                }}
+              >
+                <b>{confirm.library_name}</b>
+              </div>
+             
+            </div>
+          ) : confirm?.type === "all" ? (
+            <div>
+              This will run <b>GitHub API</b>, <b>SCC</b>, and <b>GitStats</b> for <b>all libraries</b> in this domain.
+             
+            </div>
+          ) : null
+        }
+        confirmText="Run"
+        cancelText="Cancel"
+        busy={confirmBusy}
+        onCancel={() => {
+          if (!confirmBusy) setConfirm(null);
+        }}
+        onConfirm={confirmRun}
+      />
+
       <div
         className="dx-card"
         style={{
@@ -307,7 +514,7 @@ const EditValuesPage: React.FC = () => {
           <div style={{ marginBottom: 8, display: "flex", gap: 10, alignItems: "center" }}>
             <button
               className="dx-btn dx-btn-outline dx-btn-inline"
-              onClick={runAnalysisForAll}
+              onClick={openConfirmAll}
               disabled={pageLoading || updatingAll}
               style={{ opacity: pageLoading || updatingAll ? 0.7 : 1 }}
             >
@@ -330,8 +537,7 @@ const EditValuesPage: React.FC = () => {
 
           <div style={{ marginBottom: 10, fontSize: 13, opacity: 0.85 }}>
             <div style={{ marginTop: 6, opacity: 0.8 }}>
-              Auto-reload is disabled for comfortable editing. When you want updated results, click <b>Reload</b> (or
-              refresh the page).
+              Auto-reload is disabled for comfortable editing. When you want updated results, click <b>Reload</b> (or refresh the page).
             </div>
           </div>
 
@@ -365,8 +571,6 @@ const EditValuesPage: React.FC = () => {
                   const apiDots = apiStatus === "running" ? "..." : "";
                   const gsDots = gsStatus === "running" ? "..." : "";
 
-                  const gsLink = getGitStatsLink(row);
-
                   return (
                     <tr key={row.library_ID}>
                       <td className="dx-sticky-left" style={{ left: 0 }}>
@@ -393,7 +597,7 @@ const EditValuesPage: React.FC = () => {
                           <div style={{ display: "flex", gap: 6, alignItems: "center" }}>
                             <button
                               className="dx-btn dx-btn-outline dx-btn-inline"
-                              onClick={() => runAnalysisForLibrary(row.library_ID)}
+                              onClick={() => openConfirmLibrary(row)}
                               disabled={pageLoading || rowUpdating}
                               style={{ opacity: pageLoading || rowUpdating ? 0.7 : 1 }}
                             >
@@ -420,14 +624,6 @@ const EditValuesPage: React.FC = () => {
                           <div style={{ color: statusColor(row.gitstats_status) }}>
                             GitStats: {statusLabel(row.gitstats_status)}
                             {gsDots}
-                            {gsLink && gsStatus === "success" && (
-                              <>
-                                {" "}
-                                <a href={gsLink} target="_blank" rel="noreferrer" style={{ color: "var(--accent)" }}>
-                                  View report
-                                </a>
-                              </>
-                            )}
                           </div>
                         </div>
                       </td>
