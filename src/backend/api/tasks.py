@@ -149,7 +149,7 @@ def analyze_repo_gitstats_task(self, library_id: str, repo_url: str):
         serve_dir = os.path.join(settings.GITSTATS_SERVE_DIR, library_id)
 
         analyzer = RepoAnalyzer(github_url=repo_url)
-        results = analyzer.run_gitstats_only(work_dir=work_dir, serve_dir=serve_dir)
+        results = analyzer.run_gitstats_only(work_dir=work_dir, serve_dir=serve_dir, library_id=library_id)
 
         lib.gitstats_report_path = f"/gitstats/{library_id}/git_stats/index.html"
         lib.gitstats_status = Library.GITSTATS_SUCCESS

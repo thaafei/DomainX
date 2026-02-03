@@ -337,42 +337,25 @@ class RepoAnalyzer:
             logger.exception("CRITICAL FAILURE in analysis for %s", self.github_url)
             raise
 
-    def _run_gitstats(self, repo_dir: str, out_dir: str) -> dict[str, int]:
+    def _run_gitstats(self, repo_dir: str, out_dir: str, library_id: str) -> dict:
         os.makedirs(out_dir, exist_ok=True)
-
         cmd = ["git_stats", "generate"]
 
         env = os.environ.copy()
         env["LC_ALL"] = "C"
         env["LANG"] = "C"
 
-        try:
-            p = subprocess.run(
-                cmd,
-                cwd=repo_dir,
-                check=True,
-                stdout=subprocess.PIPE,
-                stderr=subprocess.PIPE,
-                text=False,
-                timeout=60 * 60 * 3,
-                env=env,
-                start_new_session=True,
-            )
-
-            stdout_text = p.stdout.decode("utf-8", errors="replace")
-            stderr_text = p.stderr.decode("utf-8", errors="replace")
-
-        except FileNotFoundError:
-            raise Exception("git_stats is not installed or not on PATH.")
-        except subprocess.TimeoutExpired as e:
-            try:
-                os.killpg(e.pid, signal.SIGKILL)
-            except Exception:
-                pass
-            raise Exception("git_stats timed out (killed process group).")
-        except subprocess.CalledProcessError as e:
-            err = (e.stderr or b"").decode("utf-8", errors="replace")
-            raise Exception(f"git_stats failed: {err[-1000:]}")
+        p = subprocess.run(
+            cmd,
+            cwd=repo_dir,
+            check=True,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
+            text=False,
+            timeout=60 * 60 * 3,
+            env=env,
+            start_new_session=True,
+        )
 
         generated = os.path.join(repo_dir, "git_stats")
         if not os.path.isdir(generated):
@@ -386,7 +369,8 @@ class RepoAnalyzer:
         return {"GitStats Report": f"/gitstats/{library_id}/git_stats/index.html"}
 
 
-    def run_gitstats_only(self, work_dir: str, serve_dir: str) -> dict:
+
+    def run_gitstats_only(self, work_dir: str, serve_dir: str, library_id: str) -> dict:
         work_dir = os.path.abspath(work_dir)
         serve_dir = os.path.abspath(serve_dir)
 
@@ -395,7 +379,7 @@ class RepoAnalyzer:
 
         try:
             repo_dir = self._clone_repo_to_dir(work_dir)
-            gitstats_results = self._run_gitstats(repo_dir, out_dir=serve_dir)
+            gitstats_results = self._run_gitstats(repo_dir, out_dir=serve_dir,library_id=library_id)
             return {"repo_name": self.repo_name, "metric_data": gitstats_results}
         finally:
             repo_path = os.path.join(work_dir, "repo")
