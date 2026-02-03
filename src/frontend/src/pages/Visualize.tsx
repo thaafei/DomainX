@@ -89,10 +89,29 @@ const Visualize: React.FC = () => {
     }
   };
 
+  const getCategoryMetricNames = (name: string) => {
+    if (name === "Uncategorized") {
+      return metricList.filter(m => !m.category).map(m => m.metric_name);
+    }
+    return metricList.filter(m => m.category === name).map(m => m.metric_name);
+  };
+
   const toggleCategory = (name: string) => {
-    setSelectedCategories(prev =>
-      prev.includes(name) ? prev.filter(x => x !== name) : [...prev, name]
-    );
+    const categoryMetrics = getCategoryMetricNames(name);
+
+    setSelectedCategories(prev => {
+      const isSelected = prev.includes(name);
+
+      setSelectedMetrics(prevMetrics => {
+        if (isSelected) {
+          return prevMetrics.filter(metric => !categoryMetrics.includes(metric));
+        }
+        const merged = new Set([...prevMetrics, ...categoryMetrics]);
+        return Array.from(merged);
+      });
+
+      return isSelected ? prev.filter(x => x !== name) : [...prev, name];
+    });
   };
 
   const toggleMetric = (name: string) => {
@@ -118,6 +137,13 @@ const Visualize: React.FC = () => {
     const allIds = libraries.map(l => l.library_ID);
     const allSelected = selectedLibraries.length === allIds.length;
     setSelectedLibraries(allSelected ? [] : allIds);
+  };
+
+  const toggleSelectAllMetrics = () => {
+    if (metricList.length === 0) return;
+    const allNames = metricList.map(m => m.metric_name);
+    const allSelected = selectedMetrics.length === allNames.length;
+    setSelectedMetrics(allSelected ? [] : allNames);
   };
 
   function buildChartLayout(metric: string): Partial<Layout> {
@@ -360,6 +386,21 @@ const Visualize: React.FC = () => {
               <label className="dx-vis-title" style={{ fontWeight: 600 }}>
                 Select Metrics
               </label>
+              <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
+                <button
+                  className="dx-btn dx-btn-outline"
+                  style={{ padding: "6px 10px", fontSize: "0.85rem" }}
+                  onClick={toggleSelectAllMetrics}
+                  disabled={metricList.length === 0}
+                >
+                  {selectedMetrics.length === metricList.length && metricList.length > 0
+                    ? "Clear All"
+                    : "Select All"}
+                </button>
+                <span style={{ fontSize: "0.85rem", opacity: 0.8 }}>
+                  {selectedMetrics.length} selected
+                </span>
+              </div>
               <div style={{ fontSize: "0.85rem", opacity: 0.8 }}>
                 Pick metrics or whole categories.
               </div>
@@ -377,7 +418,9 @@ const Visualize: React.FC = () => {
                   : Array.from(
                       new Set((metricList || []).map(m => m.category).filter(Boolean) as string[])
                     )
-                ).map(cat => (
+                )
+                  .filter(cat => metricList.some(m => m.category === cat))
+                  .map(cat => (
                   <div key={cat} style={{ marginBottom: 10 }}>
                     <label style={{ display: "block", fontWeight: 600 }}>
                       <input
@@ -515,7 +558,7 @@ const Visualize: React.FC = () => {
         <div className="stars"></div>
 
         <div className="dx-vis-right dx-card" style={{ height: "100%" }}>
-          <h2 className="dx-vis-title" style={{padding: "0px 0px 10px 0px" }}>Comparison</h2>
+          <h2 className="dx-vis-title" style={{padding: "0px 0px 10px 0px" }}>Export Visualizations - Preview</h2>
 
           {!chartData && (
             <div className="dx-vis-placeholder">

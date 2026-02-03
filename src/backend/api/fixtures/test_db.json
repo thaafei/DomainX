@@ -309,6 +309,166 @@
   },
   {
     "model": "libraries.Library",
+    "pk": "550e8400-e29b-41d4-a716-446655660015",
+    "fields": {
+      "domain": "550e8400-e29b-41d4-a716-446655440001",
+      "library_name": "fastai",
+      "programming_language": "Python",
+      "created_at": "2024-01-05T11:35:00Z",
+      "url": "https://github.com/fastai/fastai",
+      "analysis_status": "success",
+      "analysis_task_id": null,
+      "analysis_error": null,
+      "analysis_started_at": "2024-01-05T11:35:00Z",
+      "analysis_finished_at": "2024-01-05T11:50:00Z"
+    }
+  },
+  {
+    "model": "libraries.Library",
+    "pk": "550e8400-e29b-41d4-a716-446655660016",
+    "fields": {
+      "domain": "550e8400-e29b-41d4-a716-446655440001",
+      "library_name": "Detectron2",
+      "programming_language": "Python",
+      "created_at": "2024-01-05T11:40:00Z",
+      "url": "https://github.com/facebookresearch/detectron2",
+      "analysis_status": "success",
+      "analysis_task_id": null,
+      "analysis_error": null,
+      "analysis_started_at": "2024-01-05T11:40:00Z",
+      "analysis_finished_at": "2024-01-05T11:55:00Z"
+    }
+  },
+  {
+    "model": "libraries.Library",
+    "pk": "550e8400-e29b-41d4-a716-446655660017",
+    "fields": {
+      "domain": "550e8400-e29b-41d4-a716-446655440001",
+      "library_name": "OpenCV",
+      "programming_language": "Python",
+      "created_at": "2024-01-05T11:45:00Z",
+      "url": "https://github.com/opencv/opencv",
+      "analysis_status": "success",
+      "analysis_task_id": null,
+      "analysis_error": null,
+      "analysis_started_at": "2024-01-05T11:45:00Z",
+      "analysis_finished_at": "2024-01-05T12:00:00Z"
+    }
+  },
+  {
+    "model": "libraries.Library",
+    "pk": "550e8400-e29b-41d4-a716-446655660018",
+    "fields": {
+      "domain": "550e8400-e29b-41d4-a716-446655440001",
+      "library_name": "Albumentations",
+      "programming_language": "Python",
+      "created_at": "2024-01-05T11:50:00Z",
+      "url": "https://github.com/albumentations-team/albumentations",
+      "analysis_status": "success",
+      "analysis_task_id": null,
+      "analysis_error": null,
+      "analysis_started_at": "2024-01-05T11:50:00Z",
+      "analysis_finished_at": "2024-01-05T12:05:00Z"
+    }
+  },
+  {
+    "model": "libraries.Library",
+    "pk": "550e8400-e29b-41d4-a716-446655660019",
+    "fields": {
+      "domain": "550e8400-e29b-41d4-a716-446655440001",
+      "library_name": "Stable-Baselines3",
+      "programming_language": "Python",
+      "created_at": "2024-01-05T11:55:00Z",
+      "url": "https://github.com/DLR-RM/stable-baselines3",
+      "analysis_status": "success",
+      "analysis_task_id": null,
+      "analysis_error": null,
+      "analysis_started_at": "2024-01-05T11:55:00Z",
+      "analysis_finished_at": "2024-01-05T12:10:00Z"
+    }
+  },
+  {
+    "model": "libraries.Library",
+    "pk": "550e8400-e29b-41d4-a716-446655660020",
+    "fields": {
+      "domain": "550e8400-e29b-41d4-a716-446655440001",
+      "library_name": "MLflow",
+      "programming_language": "Python",
+      "created_at": "2024-01-05T12:00:00Z",
+      "url": "https://github.com/mlflow/mlflow",
+      "analysis_status": "success",
+      "analysis_task_id": null,
+      "analysis_error": null,
+      "analysis_started_at": "2024-01-05T12:00:00Z",
+      "analysis_finished_at": "2024-01-05T12:15:00Z"
+    }
+  },
+  {
+    "model": "libraries.Library",
+    "pk": "550e8400-e29b-41d4-a716-446655660021",
+    "fields": {
+      "domain": "550e8400-e29b-41d4-a716-446655440001",
+      "library_name": "Ray",
+      "programming_language": "Python",
+      "created_at": "2024-01-05T12:05:00Z",
+      "url": "https://github.com/ray-project/ray",
+      "analysis_status": "success",
+      "analysis_task_id": null,
+      "analysis_error": null,
+      "analysis_started_at": "2024-01-05T12:05:00Z",
+      "analysis_finished_at": "2024-01-05T12:20:00Z"
+    }
+  },
+  {
+    "model": "libraries.Library",
+    "pk": "550e8400-e29b-41d4-a716-446655660022",
+    "fields": {
+      "domain": "550e8400-e29b-41d4-a716-446655440001",
+      "library_name": "Prophet",
+      "programming_language": "Python",
+      "created_at": "2024-01-05T12:10:00Z",
+      "url": "https://github.com/facebook/prophet",
+      "analysis_status": "success",
+      "analysis_task_id": null,
+      "analysis_error": null,
+      "analysis_started_at": "2024-01-05T12:10:00Z",
+      "analysis_finished_at": "2024-01-05T12:25:00Z"
+    }
+  },
+  {
+    "model": "libraries.Library",
+    "pk": "550e8400-e29b-41d4-a716-446655660023",
+    "fields": {
+      "domain": "550e8400-e29b-41d4-a716-446655440001",
+      "library_name": "spaCy",
+      "programming_language": "Python",
+      "created_at": "2024-01-05T12:15:00Z",
+      "url": "https://github.com/explosion/spaCy",
+      "analysis_status": "success",
+      "analysis_task_id": null,
+      "analysis_error": null,
+      "analysis_started_at": "2024-01-05T12:15:00Z",
+      "analysis_finished_at": "2024-01-05T12:30:00Z"
+    }
+  },
+  {
+    "model": "libraries.Library",
+    "pk": "550e8400-e29b-41d4-a716-446655660024",
+    "fields": {
+      "domain": "550e8400-e29b-41d4-a716-446655440001",
+      "library_name": "Gensim",
+      "programming_language": "Python",
+      "created_at": "2024-01-05T12:20:00Z",
+      "url": "https://github.com/piskvorky/gensim",
+      "analysis_status": "success",
+      "analysis_task_id": null,
+      "analysis_error": null,
+      "analysis_started_at": "2024-01-05T12:20:00Z",
+      "analysis_finished_at": "2024-01-05T12:35:00Z"
+    }
+  },
+  {
+    "model": "libraries.Library",
     "pk": "550e8400-e29b-41d4-a716-446655660004",
     "fields": {
       "domain": "550e8400-e29b-41d4-a716-446655440002",
@@ -1374,6 +1534,726 @@
       "library": "550e8400-e29b-41d4-a716-446655660014",
       "metric": "550e8400-e29b-41d4-a716-446655550006",
       "value": 86.5,
+      "evidence": "Documentation quality score",
+      "collected_by": "doc_analyzer",
+      "last_modified": "2024-01-10T10:00:00Z"
+    }
+  },
+  {
+    "model": "library_metric_values.LibraryMetricValue",
+    "pk": "550e8400-e29b-41d4-a716-446655770085",
+    "fields": {
+      "library": "550e8400-e29b-41d4-a716-446655660015",
+      "metric": "550e8400-e29b-41d4-a716-446655550001",
+      "value": 24000.0,
+      "evidence": "Stars from GitHub API",
+      "collected_by": "github_crawler",
+      "last_modified": "2024-01-10T10:00:00Z"
+    }
+  },
+  {
+    "model": "library_metric_values.LibraryMetricValue",
+    "pk": "550e8400-e29b-41d4-a716-446655770086",
+    "fields": {
+      "library": "550e8400-e29b-41d4-a716-446655660015",
+      "metric": "550e8400-e29b-41d4-a716-446655550002",
+      "value": 6200.0,
+      "evidence": "Forks from GitHub API",
+      "collected_by": "github_crawler",
+      "last_modified": "2024-01-10T10:00:00Z"
+    }
+  },
+  {
+    "model": "library_metric_values.LibraryMetricValue",
+    "pk": "550e8400-e29b-41d4-a716-446655770087",
+    "fields": {
+      "library": "550e8400-e29b-41d4-a716-446655660015",
+      "metric": "550e8400-e29b-41d4-a716-446655550003",
+      "value": 210.0,
+      "evidence": "Open issues count",
+      "collected_by": "github_crawler",
+      "last_modified": "2024-01-10T10:00:00Z"
+    }
+  },
+  {
+    "model": "library_metric_values.LibraryMetricValue",
+    "pk": "550e8400-e29b-41d4-a716-446655770088",
+    "fields": {
+      "library": "550e8400-e29b-41d4-a716-446655660015",
+      "metric": "550e8400-e29b-41d4-a716-446655550004",
+      "value": 84.1,
+      "evidence": "Code coverage from CI/CD",
+      "collected_by": "ci_analyzer",
+      "last_modified": "2024-01-10T10:00:00Z"
+    }
+  },
+  {
+    "model": "library_metric_values.LibraryMetricValue",
+    "pk": "550e8400-e29b-41d4-a716-446655770089",
+    "fields": {
+      "library": "550e8400-e29b-41d4-a716-446655660015",
+      "metric": "550e8400-e29b-41d4-a716-446655550005",
+      "value": 3.0,
+      "evidence": "Days since last commit",
+      "collected_by": "github_crawler",
+      "last_modified": "2024-01-10T10:00:00Z"
+    }
+  },
+  {
+    "model": "library_metric_values.LibraryMetricValue",
+    "pk": "550e8400-e29b-41d4-a716-446655770090",
+    "fields": {
+      "library": "550e8400-e29b-41d4-a716-446655660015",
+      "metric": "550e8400-e29b-41d4-a716-446655550006",
+      "value": 86.0,
+      "evidence": "Documentation quality score",
+      "collected_by": "doc_analyzer",
+      "last_modified": "2024-01-10T10:00:00Z"
+    }
+  },
+  {
+    "model": "library_metric_values.LibraryMetricValue",
+    "pk": "550e8400-e29b-41d4-a716-446655770091",
+    "fields": {
+      "library": "550e8400-e29b-41d4-a716-446655660016",
+      "metric": "550e8400-e29b-41d4-a716-446655550001",
+      "value": 28000.0,
+      "evidence": "Stars from GitHub API",
+      "collected_by": "github_crawler",
+      "last_modified": "2024-01-10T10:00:00Z"
+    }
+  },
+  {
+    "model": "library_metric_values.LibraryMetricValue",
+    "pk": "550e8400-e29b-41d4-a716-446655770092",
+    "fields": {
+      "library": "550e8400-e29b-41d4-a716-446655660016",
+      "metric": "550e8400-e29b-41d4-a716-446655550002",
+      "value": 8200.0,
+      "evidence": "Forks from GitHub API",
+      "collected_by": "github_crawler",
+      "last_modified": "2024-01-10T10:00:00Z"
+    }
+  },
+  {
+    "model": "library_metric_values.LibraryMetricValue",
+    "pk": "550e8400-e29b-41d4-a716-446655770093",
+    "fields": {
+      "library": "550e8400-e29b-41d4-a716-446655660016",
+      "metric": "550e8400-e29b-41d4-a716-446655550003",
+      "value": 320.0,
+      "evidence": "Open issues count",
+      "collected_by": "github_crawler",
+      "last_modified": "2024-01-10T10:00:00Z"
+    }
+  },
+  {
+    "model": "library_metric_values.LibraryMetricValue",
+    "pk": "550e8400-e29b-41d4-a716-446655770094",
+    "fields": {
+      "library": "550e8400-e29b-41d4-a716-446655660016",
+      "metric": "550e8400-e29b-41d4-a716-446655550004",
+      "value": 83.5,
+      "evidence": "Code coverage from CI/CD",
+      "collected_by": "ci_analyzer",
+      "last_modified": "2024-01-10T10:00:00Z"
+    }
+  },
+  {
+    "model": "library_metric_values.LibraryMetricValue",
+    "pk": "550e8400-e29b-41d4-a716-446655770095",
+    "fields": {
+      "library": "550e8400-e29b-41d4-a716-446655660016",
+      "metric": "550e8400-e29b-41d4-a716-446655550005",
+      "value": 4.0,
+      "evidence": "Days since last commit",
+      "collected_by": "github_crawler",
+      "last_modified": "2024-01-10T10:00:00Z"
+    }
+  },
+  {
+    "model": "library_metric_values.LibraryMetricValue",
+    "pk": "550e8400-e29b-41d4-a716-446655770096",
+    "fields": {
+      "library": "550e8400-e29b-41d4-a716-446655660016",
+      "metric": "550e8400-e29b-41d4-a716-446655550006",
+      "value": 82.5,
+      "evidence": "Documentation quality score",
+      "collected_by": "doc_analyzer",
+      "last_modified": "2024-01-10T10:00:00Z"
+    }
+  },
+  {
+    "model": "library_metric_values.LibraryMetricValue",
+    "pk": "550e8400-e29b-41d4-a716-446655770097",
+    "fields": {
+      "library": "550e8400-e29b-41d4-a716-446655660017",
+      "metric": "550e8400-e29b-41d4-a716-446655550001",
+      "value": 76000.0,
+      "evidence": "Stars from GitHub API",
+      "collected_by": "github_crawler",
+      "last_modified": "2024-01-10T10:00:00Z"
+    }
+  },
+  {
+    "model": "library_metric_values.LibraryMetricValue",
+    "pk": "550e8400-e29b-41d4-a716-446655770098",
+    "fields": {
+      "library": "550e8400-e29b-41d4-a716-446655660017",
+      "metric": "550e8400-e29b-41d4-a716-446655550002",
+      "value": 24000.0,
+      "evidence": "Forks from GitHub API",
+      "collected_by": "github_crawler",
+      "last_modified": "2024-01-10T10:00:00Z"
+    }
+  },
+  {
+    "model": "library_metric_values.LibraryMetricValue",
+    "pk": "550e8400-e29b-41d4-a716-446655770099",
+    "fields": {
+      "library": "550e8400-e29b-41d4-a716-446655660017",
+      "metric": "550e8400-e29b-41d4-a716-446655550003",
+      "value": 900.0,
+      "evidence": "Open issues count",
+      "collected_by": "github_crawler",
+      "last_modified": "2024-01-10T10:00:00Z"
+    }
+  },
+  {
+    "model": "library_metric_values.LibraryMetricValue",
+    "pk": "550e8400-e29b-41d4-a716-446655770100",
+    "fields": {
+      "library": "550e8400-e29b-41d4-a716-446655660017",
+      "metric": "550e8400-e29b-41d4-a716-446655550004",
+      "value": 78.2,
+      "evidence": "Code coverage from CI/CD",
+      "collected_by": "ci_analyzer",
+      "last_modified": "2024-01-10T10:00:00Z"
+    }
+  },
+  {
+    "model": "library_metric_values.LibraryMetricValue",
+    "pk": "550e8400-e29b-41d4-a716-446655770101",
+    "fields": {
+      "library": "550e8400-e29b-41d4-a716-446655660017",
+      "metric": "550e8400-e29b-41d4-a716-446655550005",
+      "value": 1.0,
+      "evidence": "Days since last commit",
+      "collected_by": "github_crawler",
+      "last_modified": "2024-01-10T10:00:00Z"
+    }
+  },
+  {
+    "model": "library_metric_values.LibraryMetricValue",
+    "pk": "550e8400-e29b-41d4-a716-446655770102",
+    "fields": {
+      "library": "550e8400-e29b-41d4-a716-446655660017",
+      "metric": "550e8400-e29b-41d4-a716-446655550006",
+      "value": 80.0,
+      "evidence": "Documentation quality score",
+      "collected_by": "doc_analyzer",
+      "last_modified": "2024-01-10T10:00:00Z"
+    }
+  },
+  {
+    "model": "library_metric_values.LibraryMetricValue",
+    "pk": "550e8400-e29b-41d4-a716-446655770103",
+    "fields": {
+      "library": "550e8400-e29b-41d4-a716-446655660018",
+      "metric": "550e8400-e29b-41d4-a716-446655550001",
+      "value": 13000.0,
+      "evidence": "Stars from GitHub API",
+      "collected_by": "github_crawler",
+      "last_modified": "2024-01-10T10:00:00Z"
+    }
+  },
+  {
+    "model": "library_metric_values.LibraryMetricValue",
+    "pk": "550e8400-e29b-41d4-a716-446655770104",
+    "fields": {
+      "library": "550e8400-e29b-41d4-a716-446655660018",
+      "metric": "550e8400-e29b-41d4-a716-446655550002",
+      "value": 1700.0,
+      "evidence": "Forks from GitHub API",
+      "collected_by": "github_crawler",
+      "last_modified": "2024-01-10T10:00:00Z"
+    }
+  },
+  {
+    "model": "library_metric_values.LibraryMetricValue",
+    "pk": "550e8400-e29b-41d4-a716-446655770105",
+    "fields": {
+      "library": "550e8400-e29b-41d4-a716-446655660018",
+      "metric": "550e8400-e29b-41d4-a716-446655550003",
+      "value": 120.0,
+      "evidence": "Open issues count",
+      "collected_by": "github_crawler",
+      "last_modified": "2024-01-10T10:00:00Z"
+    }
+  },
+  {
+    "model": "library_metric_values.LibraryMetricValue",
+    "pk": "550e8400-e29b-41d4-a716-446655770106",
+    "fields": {
+      "library": "550e8400-e29b-41d4-a716-446655660018",
+      "metric": "550e8400-e29b-41d4-a716-446655550004",
+      "value": 81.0,
+      "evidence": "Code coverage from CI/CD",
+      "collected_by": "ci_analyzer",
+      "last_modified": "2024-01-10T10:00:00Z"
+    }
+  },
+  {
+    "model": "library_metric_values.LibraryMetricValue",
+    "pk": "550e8400-e29b-41d4-a716-446655770107",
+    "fields": {
+      "library": "550e8400-e29b-41d4-a716-446655660018",
+      "metric": "550e8400-e29b-41d4-a716-446655550005",
+      "value": 5.0,
+      "evidence": "Days since last commit",
+      "collected_by": "github_crawler",
+      "last_modified": "2024-01-10T10:00:00Z"
+    }
+  },
+  {
+    "model": "library_metric_values.LibraryMetricValue",
+    "pk": "550e8400-e29b-41d4-a716-446655770108",
+    "fields": {
+      "library": "550e8400-e29b-41d4-a716-446655660018",
+      "metric": "550e8400-e29b-41d4-a716-446655550006",
+      "value": 84.0,
+      "evidence": "Documentation quality score",
+      "collected_by": "doc_analyzer",
+      "last_modified": "2024-01-10T10:00:00Z"
+    }
+  },
+  {
+    "model": "library_metric_values.LibraryMetricValue",
+    "pk": "550e8400-e29b-41d4-a716-446655770109",
+    "fields": {
+      "library": "550e8400-e29b-41d4-a716-446655660019",
+      "metric": "550e8400-e29b-41d4-a716-446655550001",
+      "value": 23000.0,
+      "evidence": "Stars from GitHub API",
+      "collected_by": "github_crawler",
+      "last_modified": "2024-01-10T10:00:00Z"
+    }
+  },
+  {
+    "model": "library_metric_values.LibraryMetricValue",
+    "pk": "550e8400-e29b-41d4-a716-446655770110",
+    "fields": {
+      "library": "550e8400-e29b-41d4-a716-446655660019",
+      "metric": "550e8400-e29b-41d4-a716-446655550002",
+      "value": 3200.0,
+      "evidence": "Forks from GitHub API",
+      "collected_by": "github_crawler",
+      "last_modified": "2024-01-10T10:00:00Z"
+    }
+  },
+  {
+    "model": "library_metric_values.LibraryMetricValue",
+    "pk": "550e8400-e29b-41d4-a716-446655770111",
+    "fields": {
+      "library": "550e8400-e29b-41d4-a716-446655660019",
+      "metric": "550e8400-e29b-41d4-a716-446655550003",
+      "value": 210.0,
+      "evidence": "Open issues count",
+      "collected_by": "github_crawler",
+      "last_modified": "2024-01-10T10:00:00Z"
+    }
+  },
+  {
+    "model": "library_metric_values.LibraryMetricValue",
+    "pk": "550e8400-e29b-41d4-a716-446655770112",
+    "fields": {
+      "library": "550e8400-e29b-41d4-a716-446655660019",
+      "metric": "550e8400-e29b-41d4-a716-446655550004",
+      "value": 82.7,
+      "evidence": "Code coverage from CI/CD",
+      "collected_by": "ci_analyzer",
+      "last_modified": "2024-01-10T10:00:00Z"
+    }
+  },
+  {
+    "model": "library_metric_values.LibraryMetricValue",
+    "pk": "550e8400-e29b-41d4-a716-446655770113",
+    "fields": {
+      "library": "550e8400-e29b-41d4-a716-446655660019",
+      "metric": "550e8400-e29b-41d4-a716-446655550005",
+      "value": 6.0,
+      "evidence": "Days since last commit",
+      "collected_by": "github_crawler",
+      "last_modified": "2024-01-10T10:00:00Z"
+    }
+  },
+  {
+    "model": "library_metric_values.LibraryMetricValue",
+    "pk": "550e8400-e29b-41d4-a716-446655770114",
+    "fields": {
+      "library": "550e8400-e29b-41d4-a716-446655660019",
+      "metric": "550e8400-e29b-41d4-a716-446655550006",
+      "value": 83.5,
+      "evidence": "Documentation quality score",
+      "collected_by": "doc_analyzer",
+      "last_modified": "2024-01-10T10:00:00Z"
+    }
+  },
+  {
+    "model": "library_metric_values.LibraryMetricValue",
+    "pk": "550e8400-e29b-41d4-a716-446655770115",
+    "fields": {
+      "library": "550e8400-e29b-41d4-a716-446655660020",
+      "metric": "550e8400-e29b-41d4-a716-446655550001",
+      "value": 16000.0,
+      "evidence": "Stars from GitHub API",
+      "collected_by": "github_crawler",
+      "last_modified": "2024-01-10T10:00:00Z"
+    }
+  },
+  {
+    "model": "library_metric_values.LibraryMetricValue",
+    "pk": "550e8400-e29b-41d4-a716-446655770116",
+    "fields": {
+      "library": "550e8400-e29b-41d4-a716-446655660020",
+      "metric": "550e8400-e29b-41d4-a716-446655550002",
+      "value": 3500.0,
+      "evidence": "Forks from GitHub API",
+      "collected_by": "github_crawler",
+      "last_modified": "2024-01-10T10:00:00Z"
+    }
+  },
+  {
+    "model": "library_metric_values.LibraryMetricValue",
+    "pk": "550e8400-e29b-41d4-a716-446655770117",
+    "fields": {
+      "library": "550e8400-e29b-41d4-a716-446655660020",
+      "metric": "550e8400-e29b-41d4-a716-446655550003",
+      "value": 280.0,
+      "evidence": "Open issues count",
+      "collected_by": "github_crawler",
+      "last_modified": "2024-01-10T10:00:00Z"
+    }
+  },
+  {
+    "model": "library_metric_values.LibraryMetricValue",
+    "pk": "550e8400-e29b-41d4-a716-446655770118",
+    "fields": {
+      "library": "550e8400-e29b-41d4-a716-446655660020",
+      "metric": "550e8400-e29b-41d4-a716-446655550004",
+      "value": 79.3,
+      "evidence": "Code coverage from CI/CD",
+      "collected_by": "ci_analyzer",
+      "last_modified": "2024-01-10T10:00:00Z"
+    }
+  },
+  {
+    "model": "library_metric_values.LibraryMetricValue",
+    "pk": "550e8400-e29b-41d4-a716-446655770119",
+    "fields": {
+      "library": "550e8400-e29b-41d4-a716-446655660020",
+      "metric": "550e8400-e29b-41d4-a716-446655550005",
+      "value": 2.0,
+      "evidence": "Days since last commit",
+      "collected_by": "github_crawler",
+      "last_modified": "2024-01-10T10:00:00Z"
+    }
+  },
+  {
+    "model": "library_metric_values.LibraryMetricValue",
+    "pk": "550e8400-e29b-41d4-a716-446655770120",
+    "fields": {
+      "library": "550e8400-e29b-41d4-a716-446655660020",
+      "metric": "550e8400-e29b-41d4-a716-446655550006",
+      "value": 81.0,
+      "evidence": "Documentation quality score",
+      "collected_by": "doc_analyzer",
+      "last_modified": "2024-01-10T10:00:00Z"
+    }
+  },
+  {
+    "model": "library_metric_values.LibraryMetricValue",
+    "pk": "550e8400-e29b-41d4-a716-446655770121",
+    "fields": {
+      "library": "550e8400-e29b-41d4-a716-446655660021",
+      "metric": "550e8400-e29b-41d4-a716-446655550001",
+      "value": 30000.0,
+      "evidence": "Stars from GitHub API",
+      "collected_by": "github_crawler",
+      "last_modified": "2024-01-10T10:00:00Z"
+    }
+  },
+  {
+    "model": "library_metric_values.LibraryMetricValue",
+    "pk": "550e8400-e29b-41d4-a716-446655770122",
+    "fields": {
+      "library": "550e8400-e29b-41d4-a716-446655660021",
+      "metric": "550e8400-e29b-41d4-a716-446655550002",
+      "value": 6500.0,
+      "evidence": "Forks from GitHub API",
+      "collected_by": "github_crawler",
+      "last_modified": "2024-01-10T10:00:00Z"
+    }
+  },
+  {
+    "model": "library_metric_values.LibraryMetricValue",
+    "pk": "550e8400-e29b-41d4-a716-446655770123",
+    "fields": {
+      "library": "550e8400-e29b-41d4-a716-446655660021",
+      "metric": "550e8400-e29b-41d4-a716-446655550003",
+      "value": 1400.0,
+      "evidence": "Open issues count",
+      "collected_by": "github_crawler",
+      "last_modified": "2024-01-10T10:00:00Z"
+    }
+  },
+  {
+    "model": "library_metric_values.LibraryMetricValue",
+    "pk": "550e8400-e29b-41d4-a716-446655770124",
+    "fields": {
+      "library": "550e8400-e29b-41d4-a716-446655660021",
+      "metric": "550e8400-e29b-41d4-a716-446655550004",
+      "value": 76.5,
+      "evidence": "Code coverage from CI/CD",
+      "collected_by": "ci_analyzer",
+      "last_modified": "2024-01-10T10:00:00Z"
+    }
+  },
+  {
+    "model": "library_metric_values.LibraryMetricValue",
+    "pk": "550e8400-e29b-41d4-a716-446655770125",
+    "fields": {
+      "library": "550e8400-e29b-41d4-a716-446655660021",
+      "metric": "550e8400-e29b-41d4-a716-446655550005",
+      "value": 2.0,
+      "evidence": "Days since last commit",
+      "collected_by": "github_crawler",
+      "last_modified": "2024-01-10T10:00:00Z"
+    }
+  },
+  {
+    "model": "library_metric_values.LibraryMetricValue",
+    "pk": "550e8400-e29b-41d4-a716-446655770126",
+    "fields": {
+      "library": "550e8400-e29b-41d4-a716-446655660021",
+      "metric": "550e8400-e29b-41d4-a716-446655550006",
+      "value": 78.0,
+      "evidence": "Documentation quality score",
+      "collected_by": "doc_analyzer",
+      "last_modified": "2024-01-10T10:00:00Z"
+    }
+  },
+  {
+    "model": "library_metric_values.LibraryMetricValue",
+    "pk": "550e8400-e29b-41d4-a716-446655770127",
+    "fields": {
+      "library": "550e8400-e29b-41d4-a716-446655660022",
+      "metric": "550e8400-e29b-41d4-a716-446655550001",
+      "value": 19000.0,
+      "evidence": "Stars from GitHub API",
+      "collected_by": "github_crawler",
+      "last_modified": "2024-01-10T10:00:00Z"
+    }
+  },
+  {
+    "model": "library_metric_values.LibraryMetricValue",
+    "pk": "550e8400-e29b-41d4-a716-446655770128",
+    "fields": {
+      "library": "550e8400-e29b-41d4-a716-446655660022",
+      "metric": "550e8400-e29b-41d4-a716-446655550002",
+      "value": 4200.0,
+      "evidence": "Forks from GitHub API",
+      "collected_by": "github_crawler",
+      "last_modified": "2024-01-10T10:00:00Z"
+    }
+  },
+  {
+    "model": "library_metric_values.LibraryMetricValue",
+    "pk": "550e8400-e29b-41d4-a716-446655770129",
+    "fields": {
+      "library": "550e8400-e29b-41d4-a716-446655660022",
+      "metric": "550e8400-e29b-41d4-a716-446655550003",
+      "value": 290.0,
+      "evidence": "Open issues count",
+      "collected_by": "github_crawler",
+      "last_modified": "2024-01-10T10:00:00Z"
+    }
+  },
+  {
+    "model": "library_metric_values.LibraryMetricValue",
+    "pk": "550e8400-e29b-41d4-a716-446655770130",
+    "fields": {
+      "library": "550e8400-e29b-41d4-a716-446655660022",
+      "metric": "550e8400-e29b-41d4-a716-446655550004",
+      "value": 80.2,
+      "evidence": "Code coverage from CI/CD",
+      "collected_by": "ci_analyzer",
+      "last_modified": "2024-01-10T10:00:00Z"
+    }
+  },
+  {
+    "model": "library_metric_values.LibraryMetricValue",
+    "pk": "550e8400-e29b-41d4-a716-446655770131",
+    "fields": {
+      "library": "550e8400-e29b-41d4-a716-446655660022",
+      "metric": "550e8400-e29b-41d4-a716-446655550005",
+      "value": 7.0,
+      "evidence": "Days since last commit",
+      "collected_by": "github_crawler",
+      "last_modified": "2024-01-10T10:00:00Z"
+    }
+  },
+  {
+    "model": "library_metric_values.LibraryMetricValue",
+    "pk": "550e8400-e29b-41d4-a716-446655770132",
+    "fields": {
+      "library": "550e8400-e29b-41d4-a716-446655660022",
+      "metric": "550e8400-e29b-41d4-a716-446655550006",
+      "value": 79.5,
+      "evidence": "Documentation quality score",
+      "collected_by": "doc_analyzer",
+      "last_modified": "2024-01-10T10:00:00Z"
+    }
+  },
+  {
+    "model": "library_metric_values.LibraryMetricValue",
+    "pk": "550e8400-e29b-41d4-a716-446655770133",
+    "fields": {
+      "library": "550e8400-e29b-41d4-a716-446655660023",
+      "metric": "550e8400-e29b-41d4-a716-446655550001",
+      "value": 28000.0,
+      "evidence": "Stars from GitHub API",
+      "collected_by": "github_crawler",
+      "last_modified": "2024-01-10T10:00:00Z"
+    }
+  },
+  {
+    "model": "library_metric_values.LibraryMetricValue",
+    "pk": "550e8400-e29b-41d4-a716-446655770134",
+    "fields": {
+      "library": "550e8400-e29b-41d4-a716-446655660023",
+      "metric": "550e8400-e29b-41d4-a716-446655550002",
+      "value": 4500.0,
+      "evidence": "Forks from GitHub API",
+      "collected_by": "github_crawler",
+      "last_modified": "2024-01-10T10:00:00Z"
+    }
+  },
+  {
+    "model": "library_metric_values.LibraryMetricValue",
+    "pk": "550e8400-e29b-41d4-a716-446655770135",
+    "fields": {
+      "library": "550e8400-e29b-41d4-a716-446655660023",
+      "metric": "550e8400-e29b-41d4-a716-446655550003",
+      "value": 420.0,
+      "evidence": "Open issues count",
+      "collected_by": "github_crawler",
+      "last_modified": "2024-01-10T10:00:00Z"
+    }
+  },
+  {
+    "model": "library_metric_values.LibraryMetricValue",
+    "pk": "550e8400-e29b-41d4-a716-446655770136",
+    "fields": {
+      "library": "550e8400-e29b-41d4-a716-446655660023",
+      "metric": "550e8400-e29b-41d4-a716-446655550004",
+      "value": 83.0,
+      "evidence": "Code coverage from CI/CD",
+      "collected_by": "ci_analyzer",
+      "last_modified": "2024-01-10T10:00:00Z"
+    }
+  },
+  {
+    "model": "library_metric_values.LibraryMetricValue",
+    "pk": "550e8400-e29b-41d4-a716-446655770137",
+    "fields": {
+      "library": "550e8400-e29b-41d4-a716-446655660023",
+      "metric": "550e8400-e29b-41d4-a716-446655550005",
+      "value": 3.0,
+      "evidence": "Days since last commit",
+      "collected_by": "github_crawler",
+      "last_modified": "2024-01-10T10:00:00Z"
+    }
+  },
+  {
+    "model": "library_metric_values.LibraryMetricValue",
+    "pk": "550e8400-e29b-41d4-a716-446655770138",
+    "fields": {
+      "library": "550e8400-e29b-41d4-a716-446655660023",
+      "metric": "550e8400-e29b-41d4-a716-446655550006",
+      "value": 88.0,
+      "evidence": "Documentation quality score",
+      "collected_by": "doc_analyzer",
+      "last_modified": "2024-01-10T10:00:00Z"
+    }
+  },
+  {
+    "model": "library_metric_values.LibraryMetricValue",
+    "pk": "550e8400-e29b-41d4-a716-446655770139",
+    "fields": {
+      "library": "550e8400-e29b-41d4-a716-446655660024",
+      "metric": "550e8400-e29b-41d4-a716-446655550001",
+      "value": 15000.0,
+      "evidence": "Stars from GitHub API",
+      "collected_by": "github_crawler",
+      "last_modified": "2024-01-10T10:00:00Z"
+    }
+  },
+  {
+    "model": "library_metric_values.LibraryMetricValue",
+    "pk": "550e8400-e29b-41d4-a716-446655770140",
+    "fields": {
+      "library": "550e8400-e29b-41d4-a716-446655660024",
+      "metric": "550e8400-e29b-41d4-a716-446655550002",
+      "value": 3800.0,
+      "evidence": "Forks from GitHub API",
+      "collected_by": "github_crawler",
+      "last_modified": "2024-01-10T10:00:00Z"
+    }
+  },
+  {
+    "model": "library_metric_values.LibraryMetricValue",
+    "pk": "550e8400-e29b-41d4-a716-446655770141",
+    "fields": {
+      "library": "550e8400-e29b-41d4-a716-446655660024",
+      "metric": "550e8400-e29b-41d4-a716-446655550003",
+      "value": 200.0,
+      "evidence": "Open issues count",
+      "collected_by": "github_crawler",
+      "last_modified": "2024-01-10T10:00:00Z"
+    }
+  },
+  {
+    "model": "library_metric_values.LibraryMetricValue",
+    "pk": "550e8400-e29b-41d4-a716-446655770142",
+    "fields": {
+      "library": "550e8400-e29b-41d4-a716-446655660024",
+      "metric": "550e8400-e29b-41d4-a716-446655550004",
+      "value": 82.0,
+      "evidence": "Code coverage from CI/CD",
+      "collected_by": "ci_analyzer",
+      "last_modified": "2024-01-10T10:00:00Z"
+    }
+  },
+  {
+    "model": "library_metric_values.LibraryMetricValue",
+    "pk": "550e8400-e29b-41d4-a716-446655770143",
+    "fields": {
+      "library": "550e8400-e29b-41d4-a716-446655660024",
+      "metric": "550e8400-e29b-41d4-a716-446655550005",
+      "value": 8.0,
+      "evidence": "Days since last commit",
+      "collected_by": "github_crawler",
+      "last_modified": "2024-01-10T10:00:00Z"
+    }
+  },
+  {
+    "model": "library_metric_values.LibraryMetricValue",
+    "pk": "550e8400-e29b-41d4-a716-446655770144",
+    "fields": {
+      "library": "550e8400-e29b-41d4-a716-446655660024",
+      "metric": "550e8400-e29b-41d4-a716-446655550006",
+      "value": 85.0,
       "evidence": "Documentation quality score",
       "collected_by": "doc_analyzer",
       "last_modified": "2024-01-10T10:00:00Z"
