@@ -352,7 +352,7 @@ class RepoAnalyzer:
             stdout=subprocess.PIPE,
             stderr=subprocess.PIPE,
             text=False,
-            timeout=60 * 60 * 6,
+            timeout=60 * 60 * 10,
             env=env,
             start_new_session=True,
         )
