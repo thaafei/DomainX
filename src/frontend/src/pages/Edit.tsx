@@ -1,6 +1,7 @@
 import React, { useEffect, useState, useRef, useLayoutEffect } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { apiUrl } from "../config/api";
+import SuccessNotification from "../components/SuccessNotification";
 
 interface Metric {
   metric_ID: string;
@@ -219,6 +220,36 @@ const ConfirmModal: React.FC<{
   );
 };
 
+const ErrorNotification: React.FC<{ show: boolean; message: string }> = ({
+  show,
+  message,
+}) => {
+  if (!show) return null;
+
+  return (
+    <div
+      style={{
+        position: "fixed",
+        top: 18,
+        left: "50%",
+        transform: "translateX(-50%)",
+        zIndex: 10001,
+        background: "rgba(255, 77, 79, 0.92)",
+        border: "1px solid rgba(255,255,255,0.18)",
+        color: "white",
+        padding: "12px 16px",
+        borderRadius: 12,
+        boxShadow: "0 12px 40px rgba(0,0,0,0.35)",
+        maxWidth: "min(720px, calc(100vw - 32px))",
+        fontWeight: 700,
+        letterSpacing: 0.2,
+      }}
+    >
+      {message}
+    </div>
+  );
+};
+
 const EditValuesPage: React.FC = () => {
   const { domainId } = useParams<{ domainId: string }>();
   const DOMAIN_ID = domainId;
@@ -238,8 +269,26 @@ const EditValuesPage: React.FC = () => {
   const [confirm, setConfirm] = useState<ConfirmState>(null);
   const [confirmBusy, setConfirmBusy] = useState(false);
 
+  const [success, setSuccess] = useState(false);
+  const [successMessage, setSuccessMessage] = useState("");
+  const [fail, setFail] = useState(false);
+  const [failMessage, setFailMessage] = useState("");
+
   const firstColRef = useRef<HTMLTableCellElement>(null);
   const [offset, setOffset] = useState(0);
+
+  const showSuccess = (msg: string) => {
+  setSuccessMessage(msg);
+  setSuccess(true);
+  setTimeout(() => setSuccess(false), 1700);
+};
+
+
+  const showFail = (msg: string) => {
+    setFailMessage(msg);
+    setFail(true);
+    setTimeout(() => setFail(false), 2800);
+  };
 
   useLayoutEffect(() => {
     if (firstColRef.current) {
@@ -266,7 +315,9 @@ const EditValuesPage: React.FC = () => {
         await loadData();
         setInfoMsg(null);
       } catch (e: any) {
-        setErrorMsg(e?.message || "Failed to load table.");
+        const msg = e?.message || "Failed to load table.";
+        setErrorMsg(msg);
+        showFail(msg);
       } finally {
         setPageLoading(false);
       }
@@ -320,7 +371,9 @@ const EditValuesPage: React.FC = () => {
       await loadData();
       setInfoMsg(null);
     } catch (e: any) {
-      setErrorMsg(e?.message || "Failed to refresh.");
+      const msg = e?.message || "Failed to refresh.";
+      setErrorMsg(msg);
+      showFail(msg);
     } finally {
       setPageLoading(false);
     }
@@ -349,7 +402,9 @@ const EditValuesPage: React.FC = () => {
       setErrorMsg(null);
 
       const res = await fetch(
-        apiUrl(`/library_metric_values/libraries/${row.library_ID}/update-values/`),
+        apiUrl(
+          `/library_metric_values/libraries/${row.library_ID}/update-values/`
+        ),
         {
           method: "POST",
           headers: { "Content-Type": "application/json" },
@@ -367,9 +422,12 @@ const EditValuesPage: React.FC = () => {
 
       await loadData();
       setInfoMsg("Saved.");
+      showSuccess("Metric values saved successfully!");
       setTimeout(() => setInfoMsg(null), 1500);
     } catch (e: any) {
-      setErrorMsg(e?.message || "Save failed.");
+      const msg = e?.message || "Save failed.";
+      setErrorMsg(msg);
+      showFail(msg);
     } finally {
       setPageLoading(false);
     }
@@ -380,7 +438,7 @@ const EditValuesPage: React.FC = () => {
       setUpdatingLibId(libraryId);
       setErrorMsg(null);
 
-      setInfoMsg("Analysis started (API+SCC + GitStats). Reload later to see results.");
+      setInfoMsg("Starting analysis (API+SCC + GitStats)…");
 
       const res = await fetch(
         apiUrl(`/library_metric_values/libraries/${libraryId}/analyze/`),
@@ -395,6 +453,9 @@ const EditValuesPage: React.FC = () => {
         throw new Error(text || "Analyze request failed.");
       }
 
+      showSuccess("Analysis started successfully! Reload later to see results.");
+      setInfoMsg("Analysis started. Reload later to see results.");
+
       setRows((prev) =>
         prev.map((r) =>
           r.library_ID === libraryId
@@ -403,7 +464,9 @@ const EditValuesPage: React.FC = () => {
         )
       );
     } catch (e: any) {
-      setErrorMsg(e?.message || "Failed to start analysis.");
+      const msg = e?.message || "Failed to start analysis.";
+      setErrorMsg(msg);
+      showFail(msg);
     } finally {
       setUpdatingLibId(null);
     }
@@ -414,7 +477,7 @@ const EditValuesPage: React.FC = () => {
       setUpdatingAll(true);
       setErrorMsg(null);
 
-      setInfoMsg("Analysis started for all libraries (API+SCC + GitStats). Reload later to see results.");
+      setInfoMsg("Starting analysis for all libraries (API+SCC + GitStats)…");
 
       const res = await fetch(
         apiUrl(`/library_metric_values/${DOMAIN_ID}/analyze-all/`),
@@ -429,6 +492,9 @@ const EditValuesPage: React.FC = () => {
         throw new Error(text || "Analyze-all request failed.");
       }
 
+      showSuccess("Analysis started for all libraries! Reload later to see results.");
+      setInfoMsg("Analysis started for all libraries. Reload later to see results.");
+
       setRows((prev) =>
         prev.map((r) => ({
           ...r,
@@ -437,7 +503,9 @@ const EditValuesPage: React.FC = () => {
         }))
       );
     } catch (e: any) {
-      setErrorMsg(e?.message || "Failed to start analysis for all.");
+      const msg = e?.message || "Failed to start analysis for all.";
+      setErrorMsg(msg);
+      showFail(msg);
     } finally {
       setUpdatingAll(false);
     }
@@ -520,6 +588,9 @@ const EditValuesPage: React.FC = () => {
         }}
         onConfirm={confirmRun}
       />
+
+      <SuccessNotification show={success} message={successMessage} />
+      <ErrorNotification show={fail} message={failMessage} />
 
       <div
         className="dx-card"
