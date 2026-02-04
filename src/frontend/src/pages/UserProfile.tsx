@@ -49,7 +49,6 @@ const UserProfilePage: React.FC = () => {
     role: "",
     domain_ids: [] as string[],
   });
-  const [userDomains, setUserDomains] = useState<Domain[]>([]);
   const [assignedDomains, setAssignedDomains] = useState<Domain[]>([]);
 
 const fetchAssignedDomains = async () => {
@@ -246,9 +245,10 @@ useEffect(() => {
   };
   const openEditDomains = () => {
     const u = user as unknown as User;
+    const currentIds = assignedDomains.map(d => String(d.domain_ID));
     setFormData(prev => ({
-        ...prev,
-        domain_ids: u.domains?.map(d => String(d.domain_ID)) || []
+      ...prev,
+      domain_ids: currentIds
     }));
     setIsModalOpen(true);
   };
