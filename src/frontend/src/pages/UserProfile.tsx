@@ -156,13 +156,12 @@ useEffect(() => {
                       passwordsMatch;
 
   const getInputBorder = (type: 'current' | 'new' | 'confirm') => {
-    if (type === 'confirm') {
-      if (!passwordData.confirm_password) return "1px solid var(--border-main)";
-      return passwordsMatch ? "1px solid #4facfe" : "1px solid #ff4d4f";
+    if (type === 'confirm' && passwordData.confirm_password && !passwordsMatch) {
+      return "1px solid #ff4d4f !important";
     }
-    const value = type === 'current' ? passwordData.current_password : passwordData.new_password;
-    return value ? "1px solid #4facfe" : "1px solid var(--border-main)";
-  };
+    return undefined;
+};
+
   useEffect(() => {
     if (user) {
       const u = user as User; 
@@ -451,7 +450,7 @@ useEffect(() => {
                   <input 
                     className="dx-input" 
                     type="password" 
-                    style={{ border: getInputBorder('confirm') }}
+                    style={{ border: getInputBorder('confirm'), transition: 'border-color 0.2s ease' }}
                     value={passwordData.confirm_password} 
                     onChange={(e) => setPasswordData({ ...passwordData, confirm_password: e.target.value })} 
                   />
