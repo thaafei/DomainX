@@ -172,7 +172,7 @@ const DomainsList: React.FC<DomainsListProps> = ({
           )}
           <button
             className="dx-btn dx-btn-primary"
-            onClick={openEditModal}
+            onClick={() => navigate("/user")}
             style={{display: "flex", alignItems: "center", gap: 8}}
           >
             <span style={{ fontSize: 15, marginRight: 8 }}>👤</span> Edit Profile
