@@ -6,6 +6,7 @@ import Plotly, { Data, Layout } from "plotly.js-dist-min";
 import JSZip from "jszip";
 import { saveAs } from "file-saver";
 import { apiUrl } from "../config/api";
+import VisualizeSidebar from "../components/VisualizeSidebar";
 interface Metric {
   metric_ID: string;
   metric_name: string;
@@ -46,7 +47,12 @@ const Visualize: React.FC = () => {
   const downloadFormat = "svg";
 
   const [categoryWeights, setCategoryWeights] = useState<Record<string, number>>({});
+  const [initialCategoryWeights, setInitialCategoryWeights] = useState<Record<string, number>>({});
   const [normalizeWeights, setNormalizeWeights] = useState(true);
+  const [ahpData, setAhpData] = useState<{
+    global_ranking: Record<string, number>;
+    category_details: Record<string, Record<string, number>>;
+  } | null>(null);
 
   useEffect(() => {
   if (!DOMAIN_ID) return;
@@ -72,21 +78,25 @@ const Visualize: React.FC = () => {
         return JSON.parse(responseText);
       };
 
-      const [comparisonRes, metricsRes, categoriesRes, weightsRes] = await Promise.all([
+      const [comparisonRes, metricsRes, categoriesRes, weightsRes, ahpRes] = await Promise.all([
         fetch(apiUrl(`/library_metric_values/comparison/${DOMAIN_ID}/`), {
           credentials: "include",
         }),
         fetch(apiUrl("/metrics/"), { credentials: "include" }),
         fetch(apiUrl("/metrics/categories/"), { credentials: "include" }),
-        fetch(apiUrl(`/domain/${DOMAIN_ID}/category-weights/`), { credentials: "include" })
+        fetch(apiUrl(`/domain/${DOMAIN_ID}/category-weights/`), { credentials: "include" }),
+        fetch(apiUrl(`/library_metric_values/ahp/${DOMAIN_ID}/`), { credentials: "include" })
       ]);
 
-      const [comparisonData, metricsData, categoriesData, weightsData] = await Promise.all([
+      const [comparisonData, metricsData, categoriesData, weightsData, ahpDataResponse] = await Promise.all([
         parseJson(comparisonRes),
         parseJson(metricsRes),
         parseJson(categoriesRes),
         parseJson(weightsRes),
+        parseJson(ahpRes),
       ]);
+
+      setAhpData(ahpDataResponse);
 
       setMetricList(Array.isArray(metricsData) ? metricsData : comparisonData.metrics || []);
       const librariesData = comparisonData.libraries || [];
@@ -124,6 +134,7 @@ const Visualize: React.FC = () => {
         Object.entries(defaults).map(([k, v]) => [k, v / total])
       );
       setCategoryWeights(normalized);
+      setInitialCategoryWeights(normalized);
     } catch (err) {
       console.error(err);
     }
@@ -190,6 +201,11 @@ const Visualize: React.FC = () => {
       const total = Object.values(prev).reduce((sum, v) => sum + v, 0) || 1;
       return Object.fromEntries(Object.entries(prev).map(([k, v]) => [k, v / total]));
     });
+  };
+
+  const resetCategoryWeights = () => {
+    setCategoryWeights(initialCategoryWeights);
+    setChartData(null);
   };
 
   const toggleSelectAllLibraries = () => {
@@ -351,23 +367,33 @@ const Visualize: React.FC = () => {
     let charts: { metric: string; rows: { label: string; value: number }[] }[] = [];
 
     if (graphMode === "AHP") {
-      // Overall AHP mode - use all available categories with their weights
+      if (!ahpData) {
+        setError("AHP data not loaded. Please refresh the page.");
+        return;
+      }
+
+      // Overall AHP mode - recalculate using adjusted category weights
       if (ahpMode === "Overall") {
-        const allCategories = Object.keys(metricsByCategory);
-        // Show overall AHP score combining all categories
-        const rows = selectedLibs.map(l => {
-          let totalScore = 0;
-          allCategories.forEach(cat => {
-            const weight = categoryWeights[cat] ?? 1;
-            const metricNames = metricsByCategory[cat] || [];
-            const categorySum = metricNames.reduce((acc, name) => acc + toNumber(l.metrics[name]), 0);
-            totalScore += categorySum * weight;
-          });
-          return {
-            label: l.library_name,
-            value: totalScore
-          };
-        }).sort((a, b) => b.value - a.value);
+        const rows = selectedLibs
+          .map(l => {
+            // Sum across all categories using their AHP scores and adjusted weights
+            let overallScore = 0;
+            Object.keys(ahpData.category_details).forEach(cat => {
+              const categoryScore = ahpData.category_details[cat][l.library_name] || 0;
+              const weight = categoryWeights[cat] ?? 0;
+              overallScore += categoryScore * weight;
+            });
+            
+            return {
+              label: l.library_name,
+              value: overallScore
+            };
+          })
+          .filter(row => selectedLibraries.some(id => {
+            const lib = libraries.find(lib => lib.library_ID === id);
+            return lib?.library_name === row.label;
+          }))
+          .sort((a, b) => b.value - a.value);
 
         charts = [{
           metric: "Overall AHP Score",
@@ -375,23 +401,28 @@ const Visualize: React.FC = () => {
         }];
       }
 
-      // Individual category AHP (run AHP on each selected category separately)
+      // Individual category AHP - use backend category_details
       if (ahpMode === "Individual" && selectedIndividualAhpCategories.length > 0) {
         const individualCharts = selectedIndividualAhpCategories.map(cat => {
-          const metricNames = metricsByCategory[cat] || [];
-          const rows = selectedLibs.map(l => {
-            const sum = metricNames.reduce((acc, name) => acc + toNumber(l.metrics[name]), 0);
-            return {
+          const categoryScores = ahpData.category_details[cat];
+          if (!categoryScores) return null;
+
+          const rows = selectedLibs
+            .map(l => ({
               label: l.library_name,
-              value: sum
-            };
-          }).sort((a, b) => b.value - a.value);
+              value: categoryScores[l.library_name] || 0
+            }))
+            .filter(row => selectedLibraries.some(id => {
+              const lib = libraries.find(lib => lib.library_ID === id);
+              return lib?.library_name === row.label;
+            }))
+            .sort((a, b) => b.value - a.value);
 
           return {
             metric: `${cat} (Individual AHP)`,
             rows
           };
-        }).filter(chart => chart.rows.length > 0);
+        }).filter(chart => chart !== null && chart.rows.length > 0) as { metric: string; rows: { label: string; value: number }[] }[];
 
         charts = [...charts, ...individualCharts];
       }
@@ -429,619 +460,46 @@ const Visualize: React.FC = () => {
 
   return (
     <div className="dx-bg" style={{ display: "flex", height: "100vh", overflow: "hidden" }}>
-      <div
-        className="dx-card"
-        style={{
-          width: 300,
-          padding: "22px 14px",
-          display: "flex",
-          flexDirection: "column",
-          gap: 14,
-          height: "100vh",
-          boxSizing: "border-box",
-          borderRight: "1px solid rgba(255,255,255,0.08)"
-        }}
-      >
-        <button
-          className="dx-btn dx-btn-outline"
-          style={{ 
-            width: "100%", 
-            fontSize: "0.85rem", 
-            textAlign: "center",
-            padding: "6px 12px",
-            opacity: 0.7,
-            transition: "opacity 0.2s ease"
-          }}
-          onMouseEnter={(e) => e.currentTarget.style.opacity = "1"}
-          onMouseLeave={(e) => e.currentTarget.style.opacity = "0.7"}
-          onClick={() => navigate(`/comparison-tool/${domainId}`)}
-        >
-          ← Back
-        </button>
-
-        {/* Primary Section: Graph Mode */}
-        <div style={{ marginTop: 6, marginBottom: 10 }}>
-          <h3 style={{ 
-            margin: 0,
-            marginBottom: 6,
-            fontSize: "0.85rem", 
-            fontWeight: 700,
-            color: "rgba(255,255,255,0.85)",
-            letterSpacing: "0.5px",
-            textTransform: "uppercase"
-          }}>
-            Graph Mode
-          </h3>
-          
-          {/* Graph Type Selection */}
-          <div style={{
-            display: "flex",
-            gap: 6,
-            padding: 3,
-            background: "rgba(15,20,35,0.6)",
-            borderRadius: "10px",
-            border: "1px solid rgba(100,120,200,0.2)",
-            marginBottom: 4
-          }}>
-            <button
-              style={{
-                flex: 1,
-                padding: "6px 10px",
-                fontSize: "0.8rem",
-                fontWeight: 600,
-                borderRadius: "8px",
-                border: graphMode === "AHP" ? "2px solid rgba(102,126,234,0.8)" : "2px solid transparent",
-                background: graphMode === "AHP" 
-                  ? "linear-gradient(135deg, rgba(102,126,234,0.25), rgba(118,75,162,0.25))"
-                  : "transparent",
-                color: graphMode === "AHP" ? "#fff" : "rgba(255,255,255,0.6)",
-                cursor: "pointer",
-                transition: "all 0.3s cubic-bezier(0.4, 0, 0.2, 1)",
-                boxShadow: graphMode === "AHP" ? "0 0 20px rgba(102,126,234,0.3), inset 0 1px 0 rgba(255,255,255,0.1)" : "none",
-                transform: graphMode === "AHP" ? "translateY(-1px)" : "none"
-              }}
-              onMouseEnter={(e) => {
-                if (graphMode !== "AHP") {
-                  e.currentTarget.style.background = "rgba(255,255,255,0.05)";
-                  e.currentTarget.style.color = "rgba(255,255,255,0.85)";
-                }
-              }}
-              onMouseLeave={(e) => {
-                if (graphMode !== "AHP") {
-                  e.currentTarget.style.background = "transparent";
-                  e.currentTarget.style.color = "rgba(255,255,255,0.6)";
-                }
-              }}
-              onClick={() => {
-                setGraphMode("AHP");
-                setActiveTab("AHP");
-                setChartData(null);
-                setError(null);
-              }}
-            >
-              AHP
-            </button>
-            <button
-              style={{
-                flex: 1,
-                padding: "6px 10px",
-                fontSize: "0.8rem",
-                fontWeight: 600,
-                borderRadius: "8px",
-                border: graphMode === "Metrics" ? "2px solid rgba(67,233,123,0.8)" : "2px solid transparent",
-                background: graphMode === "Metrics"
-                  ? "linear-gradient(135deg, rgba(67,233,123,0.25), rgba(56,178,172,0.25))"
-                  : "transparent",
-                color: graphMode === "Metrics" ? "#fff" : "rgba(255,255,255,0.6)",
-                cursor: "pointer",
-                transition: "all 0.3s cubic-bezier(0.4, 0, 0.2, 1)",
-                boxShadow: graphMode === "Metrics" ? "0 0 20px rgba(67,233,123,0.3), inset 0 1px 0 rgba(255,255,255,0.1)" : "none",
-                transform: graphMode === "Metrics" ? "translateY(-1px)" : "none"
-              }}
-              onMouseEnter={(e) => {
-                if (graphMode !== "Metrics") {
-                  e.currentTarget.style.background = "rgba(255,255,255,0.05)";
-                  e.currentTarget.style.color = "rgba(255,255,255,0.85)";
-                }
-              }}
-              onMouseLeave={(e) => {
-                if (graphMode !== "Metrics") {
-                  e.currentTarget.style.background = "transparent";
-                  e.currentTarget.style.color = "rgba(255,255,255,0.6)";
-                }
-              }}
-              onClick={() => {
-                setGraphMode("Metrics");
-                setActiveTab("Metrics");
-                setChartData(null);
-                setError(null);
-              }}
-            >
-              Metrics
-            </button>
-          </div>
-          
-          <p style={{
-            margin: 0,
-            fontSize: "0.7rem",
-            color: "rgba(255,255,255,0.5)",
-            lineHeight: 1.3,
-            paddingLeft: 2
-          }}>
-            Choose how results are visualized.
-          </p>
-        </div>
-
-        {/* View Scope Selection */}
-        <div style={{ marginBottom: 10 }}>
-          <h4 style={{
-            margin: 0,
-            marginBottom: 6,
-            fontSize: "0.75rem",
-            fontWeight: 600,
-            color: "rgba(255,255,255,0.75)",
-            textTransform: "uppercase",
-            letterSpacing: "0.5px"
-          }}>
-            {graphMode === "AHP" ? "View Scope" : "Data Selection"}
-          </h4>
-          
-          {graphMode === "AHP" ? (
-            <>
-              <div style={{
-                display: "flex",
-                gap: 6,
-                padding: 3,
-                background: "rgba(15,20,35,0.6)",
-                borderRadius: "10px",
-                border: "1px solid rgba(102,126,234,0.15)",
-                marginBottom: 4
-              }}>
-                <button
-                  style={{
-                    flex: 1,
-                    padding: "6px 8px",
-                    fontSize: "0.8rem",
-                    fontWeight: 600,
-                    borderRadius: "8px",
-                    border: ahpMode === "Overall" ? "2px solid rgba(102,126,234,0.6)" : "2px solid transparent",
-                    background: ahpMode === "Overall"
-                      ? "rgba(102,126,234,0.2)"
-                      : "transparent",
-                    color: ahpMode === "Overall" ? "#fff" : "rgba(255,255,255,0.55)",
-                    cursor: "pointer",
-                    transition: "all 0.25s ease",
-                    boxShadow: ahpMode === "Overall" ? "0 0 15px rgba(102,126,234,0.25)" : "none"
-                  }}
-                  onMouseEnter={(e) => {
-                    if (ahpMode !== "Overall") {
-                      e.currentTarget.style.background = "rgba(255,255,255,0.05)";
-                      e.currentTarget.style.color = "rgba(255,255,255,0.75)";
-                    }
-                  }}
-                  onMouseLeave={(e) => {
-                    if (ahpMode !== "Overall") {
-                      e.currentTarget.style.background = "transparent";
-                      e.currentTarget.style.color = "rgba(255,255,255,0.55)";
-                    }
-                  }}
-                  onClick={() => setAhpMode("Overall")}
-                >
-                  Overall
-                </button>
-                <button
-                  style={{
-                    flex: 1,
-                    padding: "6px 8px",
-                    fontSize: "0.8rem",
-                    fontWeight: 600,
-                    borderRadius: "8px",
-                    border: ahpMode === "Individual" ? "2px solid rgba(102,126,234,0.6)" : "2px solid transparent",
-                    background: ahpMode === "Individual"
-                      ? "rgba(102,126,234,0.2)"
-                      : "transparent",
-                    color: ahpMode === "Individual" ? "#fff" : "rgba(255,255,255,0.55)",
-                    cursor: "pointer",
-                    transition: "all 0.25s ease",
-                    boxShadow: ahpMode === "Individual" ? "0 0 15px rgba(102,126,234,0.25)" : "none"
-                  }}
-                  onMouseEnter={(e) => {
-                    if (ahpMode !== "Individual") {
-                      e.currentTarget.style.background = "rgba(255,255,255,0.05)";
-                      e.currentTarget.style.color = "rgba(255,255,255,0.75)";
-                    }
-                  }}
-                  onMouseLeave={(e) => {
-                    if (ahpMode !== "Individual") {
-                      e.currentTarget.style.background = "transparent";
-                      e.currentTarget.style.color = "rgba(255,255,255,0.55)";
-                    }
-                  }}
-                  onClick={() => setAhpMode("Individual")}
-                >
-                  Individual
-                </button>
-              </div>
-            </>
-          ) : (
-            <div style={{
-              display: "flex",
-              gap: 6,
-              padding: 3,
-              background: "rgba(15,20,35,0.6)",
-              borderRadius: "10px",
-              border: "1px solid rgba(67,233,123,0.15)"
-            }}>
-              <button
-                style={{
-                  flex: 1,
-                  padding: "6px 8px",
-                  fontSize: "0.8rem",
-                  fontWeight: 600,
-                  borderRadius: "8px",
-                  border: activeTab === "Metrics" ? "2px solid rgba(67,233,123,0.6)" : "2px solid transparent",
-                  background: activeTab === "Metrics"
-                    ? "rgba(67,233,123,0.2)"
-                    : "transparent",
-                  color: activeTab === "Metrics" ? "#fff" : "rgba(255,255,255,0.55)",
-                  cursor: "pointer",
-                  transition: "all 0.25s ease",
-                  boxShadow: activeTab === "Metrics" ? "0 0 15px rgba(67,233,123,0.25)" : "none"
-                }}
-                onMouseEnter={(e) => {
-                  if (activeTab !== "Metrics") {
-                    e.currentTarget.style.background = "rgba(255,255,255,0.05)";
-                    e.currentTarget.style.color = "rgba(255,255,255,0.75)";
-                  }
-                }}
-                onMouseLeave={(e) => {
-                  if (activeTab !== "Metrics") {
-                    e.currentTarget.style.background = "transparent";
-                    e.currentTarget.style.color = "rgba(255,255,255,0.55)";
-                  }
-                }}
-                onClick={() => setActiveTab("Metrics")}
-              >
-                Metrics
-              </button>
-              <button
-                style={{
-                  flex: 1,
-                  padding: "6px 8px",
-                  fontSize: "0.8rem",
-                  fontWeight: 600,
-                  borderRadius: "8px",
-                  border: activeTab === "Libraries" ? "2px solid rgba(67,233,123,0.6)" : "2px solid transparent",
-                  background: activeTab === "Libraries"
-                    ? "rgba(67,233,123,0.2)"
-                    : "transparent",
-                  color: activeTab === "Libraries" ? "#fff" : "rgba(255,255,255,0.55)",
-                  cursor: "pointer",
-                  transition: "all 0.25s ease",
-                  boxShadow: activeTab === "Libraries" ? "0 0 15px rgba(67,233,123,0.25)" : "none"
-                }}
-                onMouseEnter={(e) => {
-                  if (activeTab !== "Libraries") {
-                    e.currentTarget.style.background = "rgba(255,255,255,0.05)";
-                    e.currentTarget.style.color = "rgba(255,255,255,0.75)";
-                  }
-                }}
-                onMouseLeave={(e) => {
-                  if (activeTab !== "Libraries") {
-                    e.currentTarget.style.background = "transparent";
-                    e.currentTarget.style.color = "rgba(255,255,255,0.55)";
-                  }
-                }}
-                onClick={() => setActiveTab("Libraries")}
-              >
-                Libraries
-              </button>
-            </div>
-          )}
-        </div>
-
-        <div
-          style={{
-            display: "flex",
-            flexDirection: "column",
-            gap: 12,
-            color: "white",
-            flex: 1,
-            minHeight: 0,
-            overflow: "hidden",
-            transition: "all 0.3s ease"
-          }}
-        >
-          {graphMode === "AHP" && activeTab !== "Libraries" && (
-            <>
-              {ahpMode === "Overall" && (
-                <>
-                  <div style={{ display: "flex", alignItems: "center" }}>
-                    <label className="dx-vis-title" style={{ fontWeight: 600 }}>
-                      Overall AHP Settings
-                    </label>
-                  </div>
-                  <div style={{ fontSize: "0.8rem", opacity: 0.7, lineHeight: 1.5 }}>
-                    Adjust category weights to combine into an overall AHP score.
-                  </div>
-                  
-                  <div style={{ display: "flex", flexDirection: "column"}}>
-                    <label style={{ display: "flex", alignItems: "center", gap: 6 }}>
-                      <input
-                        type="checkbox"
-                        checked={normalizeWeights}
-                        onChange={() => {
-                          setNormalizeWeights(prev => !prev);
-                          if (!normalizeWeights) {
-                            normalizeCategoryWeights();
-                          }
-                        }}
-                      />
-                      Normalize weights
-                    </label>
-                  </div>
-
-                  <div
-                    style={{
-                      flex: 1,
-                      overflowY: "auto",
-                      minHeight: 0,
-                      paddingRight: 6,
-                      marginTop: 12
-                    }}
-                  >
-                    {categoryListForAhp.length === 0 && (
-                      <div style={{ opacity: 0.8 }}>No categories available.</div>
-                    )}
-                    {categoryListForAhp.map(cat => (
-                      <div key={cat} style={{ marginBottom: 10 }}>
-                        <label style={{ display: "block", fontWeight: 600, marginBottom: 4 }}>
-                          {cat}
-                        </label>
-                        <div style={{ display: "flex", gap: 10, alignItems: "center" }}>
-                          <input
-                            type="range"
-                            min={0}
-                            max={1}
-                            step={0.01}
-                            value={categoryWeights[cat] ?? 0}
-                            onChange={e => updateCategoryWeight(cat, Number(e.target.value))}
-                            style={{ flex: 1 }}
-                          />
-                          <input
-                            type="number"
-                            min={0}
-                            step={0.01}
-                            value={Number((categoryWeights[cat] ?? 0).toFixed(2))}
-                            onChange={e => updateCategoryWeight(cat, Number(e.target.value))}
-                            style={{ width: 60, fontSize: "0.85rem" }}
-                          />
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                </>
-              )}
-
-              {ahpMode === "Individual" && (
-                <>
-                  <div style={{ display: "flex", alignItems: "center" }}>
-                    <label className="dx-vis-title" style={{ fontWeight: 600 }}>
-                      Individual Category AHP
-                    </label>
-                  </div>
-                  <div style={{ fontSize: "0.8rem", opacity: 0.7 }}>
-                    Run AHP separately on each selected category.
-                  </div>
-                  <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
-                    <button
-                      className="dx-btn dx-btn-outline"
-                      style={{ padding: "6px 10px", fontSize: "0.8rem" }}
-                      onClick={toggleSelectAllIndividualAhpCategories}
-                      disabled={categoryListForAhp.length === 0}
-                    >
-                      {selectedIndividualAhpCategories.length === categoryListForAhp.length && categoryListForAhp.length > 0
-                        ? "Clear All"
-                        : "Select All"}
-                    </button>
-                    <span style={{ fontSize: "0.75rem", opacity: 0.7 }}>
-                      {selectedIndividualAhpCategories.length} selected
-                    </span>
-                  </div>
-                  <div
-                    style={{
-                      flex: 1,
-                      overflowY: "auto",
-                      minHeight: 0,
-                      paddingRight: 6,
-                      marginTop: 12
-                    }}
-                  >
-                    {categoryListForAhp.length === 0 && (
-                      <div style={{ opacity: 0.8 }}>No categories available.</div>
-                    )}
-                    {categoryListForAhp.map(cat => (
-                      <label key={cat} style={{ display: "flex", alignItems: "center", gap: 6, marginBottom: 8 }}>
-                        <input
-                          type="checkbox"
-                          checked={selectedIndividualAhpCategories.includes(cat)}
-                          onChange={() => toggleIndividualAhpCategory(cat)}
-                        />
-                        {cat}
-                      </label>
-                    ))}
-                  </div>
-                </>
-              )}
-            </>
-          )}
-
-          {activeTab === "Metrics" && (
-            <>
-              <label className="dx-vis-title" style={{ fontWeight: 600 }}>
-                Select Metrics
-              </label>
-              <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
-                <button
-                  className="dx-btn dx-btn-outline"
-                  style={{ padding: "6px 10px", fontSize: "0.85rem" }}
-                  onClick={toggleSelectAllMetrics}
-                  disabled={metricList.length === 0}
-                >
-                  {selectedMetrics.length === metricList.length && metricList.length > 0
-                    ? "Clear All"
-                    : "Select All"}
-                </button>
-                <span style={{ fontSize: "0.85rem", opacity: 0.8 }}>
-                  {selectedMetrics.length} selected
-                </span>
-              </div>
-              <div style={{ fontSize: "0.85rem", opacity: 0.8 }}>
-                Pick metrics or whole categories.
-              </div>
-
-              <div
-                style={{
-                  flex: 1,
-                  overflowY: "auto",
-                  minHeight: 0,
-                  paddingRight: 6
-                }}
-              >
-                {(categories.length
-                  ? categories
-                  : Array.from(
-                      new Set((metricList || []).map(m => m.category).filter(Boolean) as string[])
-                    )
-                )
-                  .filter(cat => metricList.some(m => m.category === cat))
-                  .map(cat => (
-                  <div key={cat} style={{ marginBottom: 10 }}>
-                    <label style={{ display: "block", fontWeight: 600 }}>
-                      <input
-                        type="checkbox"
-                        checked={isCategoryFullySelected(cat)}
-                        onChange={() => toggleCategory(cat)}
-                        style={{ marginRight: 6 }}
-                      />
-                      {cat}
-                    </label>
-                    <div style={{ paddingLeft: 18, marginTop: 6 }}>
-                      {metricList
-                        .filter(m => m.category === cat)
-                        .map(m => (
-                          <label key={m.metric_ID} style={{ display: "block", marginBottom: 6 }}>
-                            <input
-                              type="checkbox"
-                              checked={selectedMetrics.includes(m.metric_name)}
-                              onChange={() => toggleMetric(m.metric_name)}
-                              style={{ marginRight: 6 }}
-                            />
-                            {m.metric_name}
-                          </label>
-                        ))}
-                    </div>
-                  </div>
-                ))}
-
-                {metricList.filter(m => !m.category).length > 0 && (
-                  <div style={{ marginBottom: 10 }}>
-                    <label style={{ display: "block", fontWeight: 600, color: "white" }}>
-                      <input
-                        type="checkbox"
-                        checked={isCategoryFullySelected("Uncategorized")}
-                        onChange={() => toggleCategory("Uncategorized")}
-                        style={{ marginRight: 6 }}
-                      />
-                      Uncategorized
-                    </label>
-                    <div style={{ paddingLeft: 18, marginTop: 6 }}>
-                      {metricList
-                        .filter(m => !m.category)
-                        .map(m => (
-                          <label key={m.metric_ID} style={{ display: "block", marginBottom: 6 }}>
-                            <input
-                              type="checkbox"
-                              checked={selectedMetrics.includes(m.metric_name)}
-                              onChange={() => toggleMetric(m.metric_name)}
-                              style={{ marginRight: 6, color: "white" }}
-                            />
-                            {m.metric_name}
-                          </label>
-                        ))}
-                    </div>
-                  </div>
-                )}
-              </div>
-            </>
-          )}
-
-          {activeTab === "Libraries" && (
-            <>
-              <label className="dx-vis-title" style={{ fontWeight: 600 }}>
-                Select Libraries
-              </label>
-              <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
-                <button
-                  className="dx-btn dx-btn-outline"
-                  style={{ padding: "6px 10px", fontSize: "0.85rem" }}
-                  onClick={toggleSelectAllLibraries}
-                  disabled={libraries.length === 0}
-                >
-                  {selectedLibraries.length === libraries.length && libraries.length > 0
-                    ? "Clear All"
-                    : "Select All"}
-                </button>
-                <span style={{ fontSize: "0.85rem", opacity: 0.8 }}>
-                  {selectedLibraries.length} selected
-                </span>
-              </div>
-              <div
-                style={{
-                  flex: 1,
-                  overflowY: "auto",
-                  minHeight: 0,
-                  paddingRight: 6
-                }}
-              >
-                {libraries.map(lib => (
-                  <label key={lib.library_ID} style={{ display: "block", marginBottom: 6 }}>
-                    <input
-                      type="checkbox"
-                      checked={selectedLibraries.includes(lib.library_ID)}
-                      onChange={() => toggleLibrary(lib.library_ID)}
-                      style={{ marginRight: 6 }}
-                    />
-                    {lib.library_name}
-                  </label>
-                ))}
-              </div>
-            </>
-          )}
-        </div>
-
-        {error && (
-          <div className="dx-error" style={{ marginTop: 6 }}>
-            {error}
-          </div>
-        )}
-
-        <div style={{ marginTop: "auto", display: "flex", flexDirection: "column", gap: 10 }}>
-          <button
-            className="dx-btn dx-btn-primary"
-            onClick={handleVisualize}
-          >
-            Visualize →
-          </button>
-          <button
-            className="dx-btn dx-btn-outline"
-            onClick={handleDownloadAll}
-            disabled={!chartData || chartData.length === 0}
-          >
-            Download All
-          </button>
-        </div>
-      </div>
+      <VisualizeSidebar
+        domainId={domainId}
+        graphMode={graphMode}
+        setGraphMode={setGraphMode}
+        ahpMode={ahpMode}
+        setAhpMode={setAhpMode}
+        activeTab={activeTab}
+        setActiveTab={setActiveTab}
+        metricList={metricList}
+        categories={categories}
+        libraries={libraries}
+        selectedMetrics={selectedMetrics}
+        setSelectedMetrics={setSelectedMetrics}
+        selectedLibraries={selectedLibraries}
+        setSelectedLibraries={setSelectedLibraries}
+        selectedIndividualAhpCategories={selectedIndividualAhpCategories}
+        setSelectedIndividualAhpCategories={setSelectedIndividualAhpCategories}
+        categoryWeights={categoryWeights}
+        updateCategoryWeight={updateCategoryWeight}
+        normalizeWeights={normalizeWeights}
+        setNormalizeWeights={setNormalizeWeights}
+        normalizeCategoryWeights={normalizeCategoryWeights}
+        resetCategoryWeights={resetCategoryWeights}
+        categoryListForAhp={categoryListForAhp}
+        error={error}
+        setError={setError}
+        setChartData={setChartData}
+        handleVisualize={handleVisualize}
+        handleDownloadAll={handleDownloadAll}
+        chartData={chartData}
+        getCategoryMetricNames={getCategoryMetricNames}
+        isCategoryFullySelected={isCategoryFullySelected}
+        toggleCategory={toggleCategory}
+        toggleMetric={toggleMetric}
+        toggleLibrary={toggleLibrary}
+        toggleIndividualAhpCategory={toggleIndividualAhpCategory}
+        toggleSelectAllMetrics={toggleSelectAllMetrics}
+        toggleSelectAllLibraries={toggleSelectAllLibraries}
+        toggleSelectAllIndividualAhpCategories={toggleSelectAllIndividualAhpCategories}
+      />
 
       <div
         style={{
