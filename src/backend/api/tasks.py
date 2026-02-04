@@ -1,14 +1,16 @@
 import os
+
 from celery import shared_task
+from celery.exceptions import SoftTimeLimitExceeded
 from celery.utils.log import get_task_logger
 from django.conf import settings
 from django.db import transaction
 from django.utils import timezone
 
-from .database.services import RepoAnalyzer
 from .database.libraries.models import Library
-from .database.metrics.models import Metric
 from .database.library_metric_values.models import LibraryMetricValue
+from .database.metrics.models import Metric
+from .database.services import RepoAnalyzer
 
 logger = get_task_logger("api.tasks.analyze_repo")
 
@@ -126,7 +128,12 @@ def analyze_repo_task(self, library_id: str, repo_url: str):
         raise
 
 
-@shared_task(bind=True, queue="gitstats")
+@shared_task(
+    bind=True,
+    queue="gitstats",
+    soft_time_limit=14400,
+    time_limit=15300,
+)
 def analyze_repo_gitstats_task(self, library_id: str, repo_url: str):
     task_id = getattr(self.request, "id", None)
 
@@ -148,6 +155,34 @@ def analyze_repo_gitstats_task(self, library_id: str, repo_url: str):
         work_dir = os.path.join(settings.GITSTATS_WORK_DIR, library_id)
         serve_dir = os.path.join(settings.GITSTATS_SERVE_DIR, library_id)
 
+        index_path = os.path.join(serve_dir, "git_stats", "index.html")
+        if os.path.exists(index_path):
+            lib.gitstats_report_path = f"/gitstats/{library_id}/git_stats/index.html"
+            lib.gitstats_status = Library.GITSTATS_SUCCESS
+            lib.gitstats_finished_at = timezone.now()
+            lib.gitstats_error = None
+            lib.save(
+                update_fields=[
+                    "gitstats_status",
+                    "gitstats_finished_at",
+                    "gitstats_report_path",
+                    "gitstats_error",
+                ]
+            )
+
+            metric = Metric.objects.filter(metric_name="GitStats Report").first()
+            if metric:
+                LibraryMetricValue.objects.update_or_create(
+                    library=lib,
+                    metric=metric,
+                    defaults={
+                        "value": lib.gitstats_report_path,
+                        "evidence": None,
+                    },
+                )
+
+            return {"ok": True, "result": {"skipped": True}}
+
         analyzer = RepoAnalyzer(github_url=repo_url)
         results = analyzer.run_gitstats_only(work_dir=work_dir, serve_dir=serve_dir, library_id=library_id)
 
@@ -163,18 +198,31 @@ def analyze_repo_gitstats_task(self, library_id: str, repo_url: str):
                 "gitstats_error",
             ]
         )
+
         metric = Metric.objects.filter(metric_name="GitStats Report").first()
         if metric:
             LibraryMetricValue.objects.update_or_create(
                 library=lib,
                 metric=metric,
                 defaults={
-                    "value": lib.gitstats_report_path,  # ← TEXT URL
+                    "value": lib.gitstats_report_path,
                     "evidence": None,
                 },
             )
 
         return {"ok": True, "result": results}
+
+    except SoftTimeLimitExceeded:
+        lib.gitstats_status = Library.GITSTATS_FAILED
+        lib.gitstats_error = "GitStats timed out. Please try again later."
+        lib.gitstats_finished_at = timezone.now()
+        lib.save(update_fields=["gitstats_status", "gitstats_error", "gitstats_finished_at"])
+
+        logger.error(
+            "GitStats timed out",
+            extra={"library_id": library_id, "repo_url": repo_url, "task_id": task_id},
+        )
+        raise
 
     except Exception:
         lib.gitstats_status = Library.GITSTATS_FAILED

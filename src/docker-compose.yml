@@ -16,7 +16,6 @@ services:
     networks:
       - domainx-net
 
-
   backend:
     build: ./backend
     env_file:
@@ -36,12 +35,11 @@ services:
     extra_hosts:
       - "host.docker.internal:host-gateway"
 
-
   celery:
     build: ./backend
     env_file:
       - .env
-    command: celery -A DomainX worker -l info
+    command: celery -A DomainX worker -l info -Q celery
     depends_on:
       backend:
         condition: service_started
@@ -56,7 +54,6 @@ services:
       - "host.docker.internal:host-gateway"
     volumes:
       - gitstats_data:/data/gitstats
-
 
   celery_beat:
     build: ./backend
@@ -78,7 +75,7 @@ services:
     build: ./backend
     env_file:
       - .env
-    command: celery -A DomainX worker -l info -Q gitstats --concurrency=2
+    command: celery -A DomainX worker -l info -Q gitstats --concurrency=1
     depends_on:
       backend:
         condition: service_started
@@ -93,8 +90,6 @@ services:
       - "host.docker.internal:host-gateway"
     volumes:
       - gitstats_data:/data/gitstats
-
-
 
   web:
     build: ./frontend
