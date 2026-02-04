@@ -32,7 +32,6 @@ const Visualize: React.FC = () => {
   const [libraries, setLibraries] = useState<LibraryRow[]>([]);
 
   const [activeTab, setActiveTab] = useState<"AHP" | "Metrics" | "Libraries">("Metrics");
-  const [selectedAhpOptions, setSelectedAhpOptions] = useState<string[]>([]);
 
   const [selectedCategories, setSelectedCategories] = useState<string[]>([]);
   const [selectedMetrics, setSelectedMetrics] = useState<string[]>([]);
@@ -42,6 +41,10 @@ const Visualize: React.FC = () => {
   const [error, setError] = useState<string | null>(null);
 
   const downloadFormat = "svg";
+
+  const [categoryWeights, setCategoryWeights] = useState<Record<string, number>>({});
+  const [normalizeWeights, setNormalizeWeights] = useState(true);
+  const [rankByCategoryOnly, setRankByCategoryOnly] = useState(false);
 
   useEffect(() => {
   if (!DOMAIN_ID) return;
@@ -67,23 +70,55 @@ const Visualize: React.FC = () => {
         return JSON.parse(responseText);
       };
 
-      const [comparisonRes, metricsRes, categoriesRes] = await Promise.all([
+      const [comparisonRes, metricsRes, categoriesRes, weightsRes] = await Promise.all([
         fetch(apiUrl(`/library_metric_values/comparison/${DOMAIN_ID}/`), {
           credentials: "include",
         }),
         fetch(apiUrl("/metrics/"), { credentials: "include" }),
         fetch(apiUrl("/metrics/categories/"), { credentials: "include" }),
+        fetch(apiUrl(`/domain/${DOMAIN_ID}/category-weights/`), { credentials: "include" })
       ]);
 
-      const [comparisonData, metricsData, categoriesData] = await Promise.all([
+      const [comparisonData, metricsData, categoriesData, weightsData] = await Promise.all([
         parseJson(comparisonRes),
         parseJson(metricsRes),
         parseJson(categoriesRes),
+        parseJson(weightsRes),
       ]);
 
       setMetricList(Array.isArray(metricsData) ? metricsData : comparisonData.metrics || []);
       setLibraries(comparisonData.libraries || []);
       setCategories(Array.isArray(categoriesData?.Categories) ? categoriesData.Categories : []);
+
+      const derivedCategories = Array.from(
+        new Set((Array.isArray(metricsData) ? metricsData : comparisonData.metrics || [])
+          .map((m: Metric) => m.category)
+          .filter(Boolean) as string[])
+      );
+      const availableCategories = (Array.isArray(categoriesData?.Categories)
+        ? categoriesData.Categories
+        : derivedCategories
+      ).filter((cat: string) => (Array.isArray(metricsData) ? metricsData : comparisonData.metrics || [])
+        .some((m: Metric) => m.category === cat));
+
+      const hasUncategorized = (Array.isArray(metricsData) ? metricsData : comparisonData.metrics || [])
+        .some((m: Metric) => !m.category);
+      const categoryList = hasUncategorized
+        ? [...availableCategories, "Uncategorized"]
+        : availableCategories;
+
+      const incoming = typeof weightsData === "object" && weightsData ? weightsData : {};
+      const defaults: Record<string, number> = {};
+      categoryList.forEach((cat: string) => {
+        defaults[cat] = typeof (incoming as Record<string, number>)[cat] === "number"
+          ? (incoming as Record<string, number>)[cat]
+          : 1;
+      });
+      const total = Object.values(defaults).reduce((sum, val) => sum + val, 0) || 1;
+      const normalized = Object.fromEntries(
+        Object.entries(defaults).map(([k, v]) => [k, v / total])
+      );
+      setCategoryWeights(normalized);
     } catch (err) {
       console.error(err);
     }
@@ -126,10 +161,20 @@ const Visualize: React.FC = () => {
     );
   };
 
-  const toggleAhpOption = (name: string) => {
-    setSelectedAhpOptions(prev =>
-      prev.includes(name) ? prev.filter(x => x !== name) : [...prev, name]
-    );
+  const updateCategoryWeight = (category: string, value: number) => {
+    setCategoryWeights(prev => {
+      const next = { ...prev, [category]: value };
+      if (!normalizeWeights) return next;
+      const total = Object.values(next).reduce((sum, v) => sum + v, 0) || 1;
+      return Object.fromEntries(Object.entries(next).map(([k, v]) => [k, v / total]));
+    });
+  };
+
+  const normalizeCategoryWeights = () => {
+    setCategoryWeights(prev => {
+      const total = Object.values(prev).reduce((sum, v) => sum + v, 0) || 1;
+      return Object.fromEntries(Object.entries(prev).map(([k, v]) => [k, v / total]));
+    });
   };
 
   const toggleSelectAllLibraries = () => {
@@ -257,7 +302,7 @@ const Visualize: React.FC = () => {
       (metricsByCategory[cat] || []).forEach(name => selectedMetricNames.add(name));
     });
 
-    if (selectedMetricNames.size === 0) {
+    if (!rankByCategoryOnly && selectedMetricNames.size === 0) {
       setError("Selected categories have no metrics.");
       return;
     }
@@ -274,19 +319,48 @@ const Visualize: React.FC = () => {
     };
 
     const selectedMetricArray = Array.from(selectedMetricNames);
+    const metricCategoryMap = new Map(metricList.map(m => [m.metric_name, m.category]));
     const selectedLibs = libraries.filter(l => selectedLibraries.includes(l.library_ID));
 
-    const charts = selectedMetricArray.map(metricName => {
-      const rows = selectedLibs.map(l => ({
-        label: l.library_name,
-        value: toNumber(l.metrics[metricName])
-      })).sort((a, b) => b.value - a.value);
+    let charts: { metric: string; rows: { label: string; value: number }[] }[] = [];
 
-      return {
-        metric: metricName,
-        rows
-      };
-    });
+    if (rankByCategoryOnly) {
+      const categoryTargets = selectedCategories.length
+        ? selectedCategories
+        : Object.keys(metricsByCategory);
+
+      charts = categoryTargets.map(cat => {
+        const weight = categoryWeights[cat] ?? 1;
+        const metricNames = metricsByCategory[cat] || [];
+        const rows = selectedLibs.map(l => {
+          const sum = metricNames.reduce((acc, name) => acc + toNumber(l.metrics[name]), 0);
+          return {
+            label: l.library_name,
+            value: sum * weight
+          };
+        }).sort((a, b) => b.value - a.value);
+
+        return {
+          metric: `${cat} (weighted)`
+          ,
+          rows
+        };
+      }).filter(chart => chart.rows.length > 0);
+    } else {
+      charts = selectedMetricArray.map(metricName => {
+        const category = metricCategoryMap.get(metricName) || "Uncategorized";
+        const weight = categoryWeights[category] ?? 1;
+        const rows = selectedLibs.map(l => ({
+          label: l.library_name,
+          value: toNumber(l.metrics[metricName]) * weight
+        })).sort((a, b) => b.value - a.value);
+
+        return {
+          metric: metricName,
+          rows
+        };
+      });
+    }
 
     if (hasInvalid) {
       setError("Some selected metrics have invalid values.");
@@ -296,12 +370,14 @@ const Visualize: React.FC = () => {
     setChartData(charts);
   };
 
-  const ahpOptions = [
-    "Use AHP weighting",
-    "Normalize weights",
-    "Include consistency ratio",
-    "Auto-scale weights"
-  ];
+  const displayCategories = (categories.length
+    ? categories
+    : Array.from(new Set(metricList.map(m => m.category).filter(Boolean) as string[]))
+  ).filter(cat => metricList.some(m => m.category === cat));
+  const hasUncategorized = metricList.some(m => !m.category);
+  const categoryListForAhp = hasUncategorized
+    ? [...displayCategories, "Uncategorized"]
+    : displayCategories;
 
   return (
     <div className="dx-bg" style={{ display: "flex", height: "100vh", overflow: "hidden" }}>
@@ -353,10 +429,35 @@ const Visualize: React.FC = () => {
           {activeTab === "AHP" && (
             <>
               <label className="dx-vis-title" style={{ fontWeight: 600 }}>
-                AHP Options
+                Category Weights (AHP)
               </label>
               <div style={{ fontSize: "0.85rem", opacity: 0.8 }}>
-                Select AHP options for weighting.
+                Adjust weights per category (normalized by default).
+              </div>
+              <div style={{ marginTop: 8, display: "flex", gap: 10, alignItems: "center" }}>
+                  <label style={{ display: "flex", alignItems: "center", gap: 6 }}>
+                    <input
+                      type="checkbox"
+                      checked={normalizeWeights}
+                      onChange={() => {
+                        setNormalizeWeights(prev => !prev);
+                        if (!normalizeWeights) {
+                          normalizeCategoryWeights();
+                        }
+                      }}
+                    />
+                    Normalize weights
+                  </label>
+                </div>
+              <div style={{ marginTop: 6 }}>
+                <label style={{ display: "flex", alignItems: "center", gap: 6 }}>
+                  <input
+                    type="checkbox"
+                    checked={rankByCategoryOnly}
+                    onChange={() => setRankByCategoryOnly(prev => !prev)}
+                  />
+                  Rank libraries by category score only
+                </label>
               </div>
               <div
                 style={{
@@ -366,16 +467,34 @@ const Visualize: React.FC = () => {
                   paddingRight: 6
                 }}
               >
-                {ahpOptions.map(option => (
-                  <label key={option} style={{ display: "block", marginBottom: 8 }}>
-                    <input
-                      type="checkbox"
-                      checked={selectedAhpOptions.includes(option)}
-                      onChange={() => toggleAhpOption(option)}
-                      style={{ marginRight: 6 }}
-                    />
-                    {option}
-                  </label>
+                {categoryListForAhp.length === 0 && (
+                  <div style={{ opacity: 0.8 }}>No categories available.</div>
+                )}
+                {categoryListForAhp.map(cat => (
+                  <div key={cat} style={{ marginBottom: 12 }}>
+                    <label style={{ display: "block", fontWeight: 600 }}>
+                      {cat}
+                    </label>
+                    <div style={{ display: "flex", gap: 10, alignItems: "center" }}>
+                      <input
+                        type="range"
+                        min={0}
+                        max={1}
+                        step={0.01}
+                        value={categoryWeights[cat] ?? 0}
+                        onChange={e => updateCategoryWeight(cat, Number(e.target.value))}
+                        style={{ flex: 1 }}
+                      />
+                      <input
+                        type="number"
+                        min={0}
+                        step={0.01}
+                        value={Number((categoryWeights[cat] ?? 0).toFixed(2))}
+                        onChange={e => updateCategoryWeight(cat, Number(e.target.value))}
+                        style={{ width: 70 }}
+                      />
+                    </div>
+                  </div>
                 ))}
               </div>
             </>
