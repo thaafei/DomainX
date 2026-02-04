@@ -1,6 +1,7 @@
 import React, { useEffect, useMemo, useRef, useLayoutEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { apiUrl } from "../config/api";
+import SuccessNotification from "../components/SuccessNotification";
 
 interface Metric {
   metric_ID: string;
@@ -43,6 +44,15 @@ const MetricsPage: React.FC = () => {
 
   const firstColRef = useRef<HTMLTableCellElement>(null);
   const [offset, setOffset] = useState(0);
+
+  const [success, setSuccess] = useState(false);
+  const [successMessage, setSuccessMessage] = useState("");
+
+  const showSuccess = (msg: string) => {
+    setSuccessMessage(msg);
+    setSuccess(true);
+    setTimeout(() => setSuccess(false), 1500);
+  };
 
   useLayoutEffect(() => {
     if (firstColRef.current) {
@@ -192,6 +202,7 @@ const MetricsPage: React.FC = () => {
         return Array.from(map.values());
       });
 
+      showSuccess("Metric created successfully!");
       return true;
     } catch (err) {
       console.error(err);
@@ -246,6 +257,7 @@ const MetricsPage: React.FC = () => {
         return Array.from(map.values());
       });
 
+      showSuccess("Metric updated successfully!");
       return true;
     } catch (err) {
       console.error(err);
@@ -262,6 +274,7 @@ const MetricsPage: React.FC = () => {
 
       if (res.ok) {
         setMetrics((prev) => prev.filter((m) => m.metric_ID !== id));
+        showSuccess("Metric deleted successfully!");
       }
     } catch (err) {
       console.error(err);
@@ -313,6 +326,8 @@ const MetricsPage: React.FC = () => {
 
   return (
     <div className="dx-bg" style={{ display: "flex", height: "100vh" }}>
+      <SuccessNotification show={success} message={successMessage} />
+
       <div
         className="dx-card"
         style={{
@@ -539,7 +554,8 @@ const MetricsPage: React.FC = () => {
                   ✕
                 </button>
               </div>
-            <div
+
+              <div
                 style={{
                   display: "grid",
                   gridTemplateColumns: "repeat(2, minmax(0, 1fr))",
@@ -570,11 +586,21 @@ const MetricsPage: React.FC = () => {
                       else onEditTypeChange(val);
                     }}
                   >
-                    <option value="float" className="dx-input-select"> Float </option>
-                    <option value="int" className="dx-input-select"> Integer </option>
-                    <option value="bool" className="dx-input-select"> Boolean </option>
-                    <option value="range" className="dx-input-select"> Range </option>
-                    <option value="text" className="dx-input-select"> Text </option>
+                    <option value="float" className="dx-input-select">
+                      Float
+                    </option>
+                    <option value="int" className="dx-input-select">
+                      Integer
+                    </option>
+                    <option value="bool" className="dx-input-select">
+                      Boolean
+                    </option>
+                    <option value="range" className="dx-input-select">
+                      Range
+                    </option>
+                    <option value="text" className="dx-input-select">
+                      Text
+                    </option>
                   </select>
                 </div>
 
@@ -588,7 +614,9 @@ const MetricsPage: React.FC = () => {
                     }
                     style={{ borderColor: "var(--accent)" }}
                   >
-                    <option  className="dx-input-select" value="">-- Select Category --</option>
+                    <option className="dx-input-select" value="">
+                      -- Select Category --
+                    </option>
                     {categories.map((catName) => (
                       <option className="dx-input-select" key={catName} value={catName}>
                         {catName}
@@ -669,7 +697,9 @@ const MetricsPage: React.FC = () => {
                           overflowWrap: "anywhere",
                         }}
                       >
-                        <div style={{ fontSize: "0.85rem", marginBottom: 6, opacity: 0.9 }}>Rule Preview</div>
+                        <div style={{ fontSize: "0.85rem", marginBottom: 6, opacity: 0.9 }}>
+                          Rule Preview
+                        </div>
                         <code style={{ display: "block", whiteSpace: "pre-wrap", color: "inherit" }}>
                           {JSON.stringify(modalPreview, null, 2)}
                         </code>
@@ -677,14 +707,13 @@ const MetricsPage: React.FC = () => {
                     )}
                   </div>
                 )}
+
                 <div style={{ gridColumn: "1 / -1", display: "flex", flexDirection: "column", gap: 6 }}>
                   <label style={{ opacity: 0.85 }}>Description (optional)</label>
                   <textarea
                     className="dx-input"
                     value={modalMode === "create" ? newDesc : editDesc}
-                    onChange={(e) =>
-                      modalMode === "create" ? setNewDesc(e.target.value) : setEditDesc(e.target.value)
-                    }
+                    onChange={(e) => (modalMode === "create" ? setNewDesc(e.target.value) : setEditDesc(e.target.value))}
                     placeholder="Description…"
                     rows={4}
                     style={{
