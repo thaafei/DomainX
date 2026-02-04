@@ -131,8 +131,8 @@ def analyze_repo_task(self, library_id: str, repo_url: str):
 @shared_task(
     bind=True,
     queue="gitstats",
-    soft_time_limit=14400,
-    time_limit=15300,
+    soft_time_limit=28800,
+    time_limit=30600,
 )
 def analyze_repo_gitstats_task(self, library_id: str, repo_url: str):
     task_id = getattr(self.request, "id", None)

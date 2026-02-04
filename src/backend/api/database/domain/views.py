@@ -59,14 +59,10 @@ def category_weights(request, domain_id):
         return Response(domain.category_weights or {}, status=status.HTTP_200_OK)
 
     values = request.data.get("values", {})
-    if not isinstance(values, dict):
-        return Response({"error": "`values` must be an object/dict"}, status=status.HTTP_400_BAD_REQUEST)
-
-    current = domain.category_weights or {}
+    current = dict(domain.category_weights or {})
     for key, value in values.items():
         current[key] = value
-
     domain.category_weights = current
-    domain.save(update_fields=["category_weights"])
+    domain.save()
 
     return Response({"success": True}, status=status.HTTP_200_OK)
