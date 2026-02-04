@@ -15,6 +15,8 @@ import pymysql
 import os
 from pathlib import Path
 from dotenv import load_dotenv
+from kombu import Queue
+
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 load_dotenv(BASE_DIR / ".env", override=False)
@@ -56,6 +58,16 @@ ALLOWED_HOSTS = [h.strip() for h in os.getenv("DJANGO_ALLOWED_HOSTS", "127.0.0.1
 
 
 
+CELERY_TASK_QUEUES = (
+    Queue("celery"),
+    Queue("gitstats"),
+)
+
+CELERY_TASK_ROUTES = {
+    "api.tasks.analyze_repo_gitstats_task": {"queue": "gitstats"},
+}
+GITSTATS_WORK_DIR = os.getenv("GITSTATS_WORK_DIR", str(BASE_DIR / "tmp" / "gitstats_work"))
+GITSTATS_SERVE_DIR = os.getenv("GITSTATS_SERVE_DIR", str(BASE_DIR / "data" / "gitstats"))
 
 # Application definition
 pymysql.install_as_MySQLdb()

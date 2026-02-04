@@ -12,11 +12,13 @@ import Edit from "./pages/Edit";
 import EditDomain from "./pages/EditDomain";
 import Libraries from "./pages/Libraries";
 import Admin from "./pages/Admin";
+import EditCategoryWeights from "./pages/EditCategoryWeights"
 import "./styles/base.css";
 import "./styles/theme.css";
 import "./styles/auth.css";
 import "./styles/components.css";
 import "./styles/visualize.css";
+import UserProfilePage from './pages/UserProfile';
 
 const App: React.FC = () => {
   return (
@@ -35,9 +37,11 @@ const App: React.FC = () => {
         <Route path="/libraries/:domainId" element={<Libraries />} />
         <Route path="/libraries" element={<Navigate to="/" replace />} />
         <Route path="/visualize/:domainId" element={<Visualize />} />
+        <Route path="/edit-weights/:domainId" element={<EditCategoryWeights />} />
         <Route path="/libraries" element={<Navigate to="/" replace />} />
         <Route path="/main" element={<Main />} />
         <Route path="/admin" element={<Admin />} />
+        <Route path="/user" element={<UserProfilePage />} />
       </Routes>
     </Router>
   );

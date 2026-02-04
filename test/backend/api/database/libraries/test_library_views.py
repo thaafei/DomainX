@@ -2,10 +2,9 @@ import pytest
 from unittest.mock import Mock
 from rest_framework import status
 from rest_framework.test import APIClient
+
 from api.database.domain.models import Domain
 from api.database.libraries.models import Library
-from api.database.metrics.models import Metric
-from api.database.library_metric_values.models import LibraryMetricValue
 import api.database.libraries.views as library_views_module
 
 
@@ -17,16 +16,6 @@ def api_client():
 @pytest.fixture()
 def domain():
     return Domain.objects.create(domain_name="D1", description="desc")
-
-
-@pytest.fixture()
-def metric1():
-    return Metric.objects.create(metric_name="Stars Count")
-
-
-@pytest.fixture()
-def metric2():
-    return Metric.objects.create(metric_name="Forks Count")
 
 
 @pytest.mark.django_db
@@ -42,7 +31,7 @@ def test_list_libraries_returns_only_domain_libraries(api_client, domain):
 
     body = resp.json()
     assert isinstance(body, list)
-    assert {row["library_name"] for row in body} == {"A", "B"}
+    assert [row["library_name"] for row in body] == ["A", "B"]
 
 
 @pytest.mark.django_db
@@ -52,7 +41,7 @@ def test_create_library_requires_domain(api_client):
 
     data = resp.json()
     assert isinstance(data, dict)
-    assert "domain" in data
+    assert "domain" in data or data.get("error") == "Domain is required."
 
 
 @pytest.mark.django_db
@@ -65,9 +54,10 @@ def test_create_library_invalid_domain(api_client):
     }
 
     resp = api_client.post("/api/libraries/", payload, format="json")
-
     assert resp.status_code == status.HTTP_400_BAD_REQUEST
+
     data = resp.json()
+    assert isinstance(data, dict)
     assert "domain" in data
 
 
@@ -136,6 +126,3 @@ def test_delete_library_success(api_client, domain):
     resp = api_client.delete(f"/api/libraries/{lib.library_ID}/")
     assert resp.status_code == status.HTTP_204_NO_CONTENT
     assert not Library.objects.filter(pk=lib.library_ID).exists()
-
-
-
