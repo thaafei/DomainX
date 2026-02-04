@@ -12,6 +12,15 @@ const EditCategoryWeights: React.FC = () => {
   const [saveStatus, setSaveStatus] = useState<string | null>(null);
 
   useEffect(() => {
+    if (saveStatus) {
+      const timer = setTimeout(() => {
+        setSaveStatus(null);
+      }, 3000);
+      return () => clearTimeout(timer);
+    }
+  }, [saveStatus]);
+
+  useEffect(() => {
     const fetchData = async () => {
       if (!domainId) return;
       try {
@@ -59,14 +68,13 @@ const EditCategoryWeights: React.FC = () => {
       const response = await fetch(apiUrl(`/domain/${domainId}/category-weights/`), {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        // Wrap the data in a "values" key here:
         body: JSON.stringify({ values: localWeights }), 
         credentials: "include",
       });
 
       if (response.ok) {
         setSaveStatus("Weights updated successfully!");
-        setTimeout(() => navigate("/main"), 1500);
+        setTimeout(() => navigate("/main"), 1000); 
       } else {
         setSaveStatus("Error saving weights.");
       }
@@ -74,7 +82,7 @@ const EditCategoryWeights: React.FC = () => {
       console.error(err);
       setSaveStatus("Failed to reach server.");
     }
-};
+  };
   const handleNormalize = () => {
     const equalValue = 1 / categories.length;
     setLocalWeights(categories.reduce((acc: any, cat) => ({ ...acc, [cat]: equalValue }), {}));
@@ -92,7 +100,26 @@ const EditCategoryWeights: React.FC = () => {
             onClick={() => navigate("/main")}
           >
             ← Back
-          </button>
+      </button>
+      {saveStatus && (
+        <div style={{
+          position: "fixed",
+          top: "20px",
+          left: "50%",
+          transform: "translateX(-50%)",
+          backgroundColor: saveStatus.includes("Error") || saveStatus.includes("Failed") ? "#ff4d4f" : "#52c41a",
+          color: "white",
+          padding: "12px 24px",
+          borderRadius: "8px",
+          boxShadow: "0 4px 12px rgba(0,0,0,0.3)",
+          zIndex: 1000,
+          fontWeight: "bold",
+          animation: "fadeInOut 0.3s ease"
+        }}>
+          {saveStatus === "Weights updated successfully!" ? "✓ " : "⚠ "}
+          {saveStatus}
+        </div>
+      )}
       {/* Top Navigation Bar */}
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", maxWidth: "1300px", margin: "0 auto 30px" }}>
         <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
@@ -102,16 +129,16 @@ const EditCategoryWeights: React.FC = () => {
         </div>
         
         <div style={{ display: "flex", gap: "12px" }}>
-          <button className="dx-btn" style={{ background: "#2a2d3e", border: "1px solid #444" }} onClick={() => setLocalWeights(initialWeights)}>Reset Equal</button>
-          <button className="dx-btn" style={{ background: "#2a2d3e", border: "1px solid #444" }} onClick={handleNormalize}>Normalize</button>
+          <button className="dx-btn dx-btn-outline" onClick={() => setLocalWeights(initialWeights)}>Reset Equal</button>
+          <button className="dx-btn dx-btn-outline" onClick={handleNormalize}>Normalize</button>
           <button 
-            className="dx-btn dx-btn-primary" 
+            className="dx-btn dx-btn-outline"
             onClick={handleSave}
             disabled={!isTotalValid}
             style={{ 
               opacity: isTotalValid ? 1 : 0.5, 
               cursor: isTotalValid ? "pointer" : "not-allowed",
-              backgroundColor: isTotalValid ? "#4a9eff" : "#2a2d3e",
+              backgroundColor: isTotalValid ? "" : "#2a2d3e",
               transition: "all 0.3s ease"
             }}
           >
@@ -122,7 +149,7 @@ const EditCategoryWeights: React.FC = () => {
 
       <div style={{ display: "flex", gap: "50px", maxWidth: "1300px", margin: "0 auto" }}>
         
-        {/* Left Section: Weights (Lock removed) */}
+        {/* Left Section: Weights */}
         <div style={{ flex: 1.2 }}>
           <h4 style={{ color: "#888", marginBottom: "20px", textTransform: "uppercase", fontSize: "0.8rem", letterSpacing: "1px" }}>Weights</h4>
           {categories.map(cat => (
