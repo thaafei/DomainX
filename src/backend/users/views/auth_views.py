@@ -101,67 +101,51 @@ class UserUpdateView(APIView):
     permission_classes = [IsAuthenticated]
     
     def patch(self, request, user_id):
-        # Restrict access to superadmin only
-        if request.user.role != 'superadmin':
+        from ..models import CustomUser
+        
+        # 1. Permission Logic: Only the user themselves OR a superadmin
+        if str(request.user.id) != str(user_id) and request.user.role != 'superadmin':
             return Response(
-                {"error": "You do not have permission to access this resource."},
+                {"error": "You do not have permission to update this profile."},
                 status=status.HTTP_403_FORBIDDEN
             )
-        
-        from ..models import CustomUser
-        from api.database.domain.models import Domain
         
         try:
             user_to_update = CustomUser.objects.get(id=user_id)
         except CustomUser.DoesNotExist:
-            return Response(
-                {"error": "User not found."},
-                status=status.HTTP_404_NOT_FOUND
-            )
+            return Response({"error": "User not found."}, status=404)
         
-        # Update basic fields
-        first_name = request.data.get('first_name')
-        last_name = request.data.get('last_name')
-        user_name = request.data.get('user_name')
-        email = request.data.get('email')
-        role = request.data.get('role')
-        if first_name is not None:
-            user_to_update.first_name = first_name
-        if last_name is not None:
-            user_to_update.last_name = last_name
-        if user_name is not None:
-            user_to_update.username = user_name
-        if email is not None:
-            if CustomUser.objects.filter(email=email).exclude(id=user_id).exists():
-                return Response(
-                    {"error": "This email is already in use by another account."},
-                    status=status.HTTP_400_BAD_REQUEST
-                )
-            user_to_update.email = email
-        if role is not None and role in ['user', 'admin', 'superadmin']:
-            user_to_update.role = role
+        # 2. Basic Info (Everyone can update their own)
+        fields = ['first_name', 'last_name', 'username', 'email']
+        for field in fields:
+            val = request.data.get(field if field != 'username' else 'user_name')
+            if val is not None:
+                # Email uniqueness check
+                if field == 'email' and CustomUser.objects.filter(email=val).exclude(id=user_id).exists():
+                    return Response({"error": "Email already in use."}, status=400)
+                setattr(user_to_update, field, val)
         
-        user_to_update.save()
-        
-        # Update domains if role is admin or superadmin
-        if role in ['admin', 'superadmin']:
-            domain_ids = request.data.get('domain_ids', [])
+        # 3. Restricted Info (ONLY Superadmin can change Role or Domains)
+        if request.user.role == 'superadmin':
+            role = request.data.get('role')
+            if role in ['user', 'admin', 'superadmin']:
+                user_to_update.role = role
+            
+        # Domain logic (only for admins/superadmins)
+        if user_to_update.role in ['admin', 'superadmin']:
+            domain_ids = request.data.get('domain_ids')
             if domain_ids is not None:
-                # Clear existing domains and set new ones
                 user_to_update.created_domains.clear()
-                for domain_id in domain_ids:
+                for d_id in domain_ids:
                     try:
-                        domain = Domain.objects.get(domain_ID=domain_id)
+                        domain = Domain.objects.get(domain_ID=d_id)
                         user_to_update.created_domains.add(domain)
-                    except Domain.DoesNotExist:
-                        pass
+                    except Domain.DoesNotExist: pass
         else:
-            # If role is 'user', clear all domains
             user_to_update.created_domains.clear()
-        
-        # Return updated user with domains
-        user_to_update = CustomUser.objects.prefetch_related('created_domains').get(id=user_id)
-        return Response(UserWithDomainsSerializer(user_to_update).data)
+
+        user_to_update.save()
+        return Response({"message": "Profile updated successfully"}, status=200)
     
 class ChangePasswordView(APIView):
     permission_classes = [IsAuthenticated]
