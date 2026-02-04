@@ -103,46 +103,49 @@ class UserUpdateView(APIView):
     def patch(self, request, user_id):
         from ..models import CustomUser
         
-        # 1. Permission Logic: Only the user themselves OR a superadmin
-        if str(request.user.id) != str(user_id) and request.user.role != 'superadmin':
-            return Response(
-                {"error": "You do not have permission to update this profile."},
-                status=status.HTTP_403_FORBIDDEN
-            )
+        is_self = str(request.user.id) == str(user_id)
+        is_admin = request.user.role == 'admin'
+        is_super = request.user.role == 'superadmin'
+
+        # Only self, admin, or superadmin can even enter
+        if not is_self and not (is_admin or is_super):
+            return Response({"error": "Forbidden"}, status=403)
         
         try:
             user_to_update = CustomUser.objects.get(id=user_id)
         except CustomUser.DoesNotExist:
             return Response({"error": "User not found."}, status=404)
         
-        # 2. Basic Info (Everyone can update their own)
-        fields = ['first_name', 'last_name', 'username', 'email']
-        for field in fields:
-            val = request.data.get(field if field != 'username' else 'user_name')
-            if val is not None:
-                # Email uniqueness check
-                if field == 'email' and CustomUser.objects.filter(email=val).exclude(id=user_id).exists():
-                    return Response({"error": "Email already in use."}, status=400)
-                setattr(user_to_update, field, val)
+        # Basic Info (Only Self or Superadmin)
+        if is_self or is_super:
+            fields = ['first_name', 'last_name', 'username', 'email']
+            for field in fields:
+                val = request.data.get(field if field != 'username' else 'user_name')
+                if val is not None:
+                    setattr(user_to_update, field, val)
         
-        # 3. Restricted Info (ONLY Superadmin can change Role or Domains)
-        if request.user.role == 'superadmin':
+        # Role Management (Only Superadmin)
+        if is_super:
             role = request.data.get('role')
             if role in ['user', 'admin', 'superadmin']:
                 user_to_update.role = role
             
-        # Domain logic (only for admins/superadmins)
-        if user_to_update.role in ['admin', 'superadmin']:
-            domain_ids = request.data.get('domain_ids')
-            if domain_ids is not None:
-                user_to_update.created_domains.clear()
-                for d_id in domain_ids:
-                    try:
-                        domain = Domain.objects.get(domain_ID=d_id)
-                        user_to_update.created_domains.add(domain)
-                    except Domain.DoesNotExist: pass
-        else:
+        # Domain Management (Admin or Superadmin)
+        domain_ids = request.data.get('domain_ids')
+        if domain_ids is not None and (is_admin or is_super):
+            if is_admin:
+                # Admin can only assign domains they themselves are in
+                my_domains = set(request.user.created_domains.values_list('domain_ID', flat=True))
+                valid_ids = [d_id for d_id in domain_ids if d_id in my_domains]
+            else:
+                valid_ids = domain_ids
+
             user_to_update.created_domains.clear()
+            for d_id in valid_ids:
+                try:
+                    domain = Domain.objects.get(domain_ID=d_id)
+                    user_to_update.created_domains.add(domain)
+                except Domain.DoesNotExist: continue
 
         user_to_update.save()
         return Response({"message": "Profile updated successfully"}, status=200)
@@ -151,41 +154,41 @@ class ChangePasswordView(APIView):
     permission_classes = [IsAuthenticated]
 
     def post(self, request, user_id):
-        # Security: Ensure users can only change their OWN password
-        # (Unless they are a superadmin, depending on your policy)
-        if request.user.id != user_id and request.user.role != 'superadmin':
+        from ..models import CustomUser
+        
+        # 1. Strict Ownership Check
+        # Convert user_id to int to ensure the comparison works correctly
+        is_owner = request.user.id == int(user_id)
+        is_superadmin = request.user.role == 'superadmin'
+
+        if not is_owner and not is_superadmin:
             return Response(
                 {"error": "You do not have permission to change this password."},
                 status=status.HTTP_403_FORBIDDEN
             )
 
+        try:
+            # Fetch the actual user being targeted
+            target_user = CustomUser.objects.get(id=user_id)
+        except CustomUser.DoesNotExist:
+            return Response({"error": "User not found."}, status=404)
+
         old_password = request.data.get("old_password")
         new_password = request.data.get("new_password")
 
-        if not old_password or not new_password:
-            return Response(
-                {"error": "Both current and new passwords are required."},
-                status=status.HTTP_400_BAD_REQUEST
-            )
+        # 2. Validation
+        if is_owner:
+            if not old_password:
+                return Response({"error": "Current password is required."}, status=400)
+            if not target_user.check_password(old_password):
+                return Response({"error": "Current password is incorrect."}, status=400)
 
-        user = request.user
-        # If a superadmin is changing someone else's password, we skip the old password check
-        if user.id == user_id:
-            if not user.check_password(old_password):
-                return Response(
-                    {"error": "Current password is incorrect."},
-                    status=status.HTTP_400_BAD_REQUEST
-                )
+        if not new_password or len(new_password) < 8:
+            return Response({"error": "New password must be at least 8 characters long."}, status=400)
 
-        # Basic length validation
-        if len(new_password) < 8:
-            return Response(
-                {"error": "New password must be at least 8 characters long."},
-                status=status.HTTP_400_BAD_REQUEST
-            )
-
-        user.set_password(new_password)
-        user.save()
+        # 3. Save to the TARGET user, not request.user
+        target_user.set_password(new_password)
+        target_user.save()
 
         return Response({"message": "Password updated successfully."}, status=status.HTTP_200_OK)
 
