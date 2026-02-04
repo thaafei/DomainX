@@ -7,6 +7,13 @@ from rest_framework_simplejwt.tokens import RefreshToken
 from ..serializers import UserProfileSerializer, SignupSerializer, UserWithDomainsSerializer
 from django.conf import settings
 from rest_framework.permissions import AllowAny
+from ..models import CustomUser
+from api.database.domain.models import Domain
+from ..serializers import (
+    UserProfileSerializer, 
+    SignupSerializer, 
+    UserWithDomainsSerializer
+)
 
 class SignupView(APIView):
     permission_classes = [AllowAny]

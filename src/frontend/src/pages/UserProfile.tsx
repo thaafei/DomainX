@@ -50,32 +50,60 @@ const UserProfilePage: React.FC = () => {
     domain_ids: [] as string[],
   });
   const [userDomains, setUserDomains] = useState<Domain[]>([]);
+  const [assignedDomains, setAssignedDomains] = useState<Domain[]>([]);
 
-  const fetchAssignedDomains = async () => {
-    if (!user?.id) return;
+const fetchAssignedDomains = async () => {
+  if (!user?.id) return;
+  try {
+    const response = await fetch(apiUrl(`/users/${user.id}/domains/`), {
+      method: "GET",
+      credentials: "include",
+    });
     
-    try {
-      const response = await fetch(apiUrl(`/users/${user.id}/domains/`), {
-        method: "GET",
-        credentials: "include",
-      });
+    if (response.ok) {
+      const data = await response.json();
+      // Ensure the data is assigned to the state used in your JSX
+      setAssignedDomains(data); 
       
+      // Update form data and FORCE IDs to be strings to match checkbox logic
+      setFormData(prev => ({
+        ...prev,
+        domain_ids: data.map((d: any) => String(d.domain_ID))
+      }));
+    }
+  } catch (err) {
+    console.error("Failed to fetch assigned domains:", err);
+  }
+};
+
+useEffect(() => {
+  if (user?.id) fetchAssignedDomains();
+}, [user?.id]);
+  const fetchUserDomains = async () => {
+    if (!user?.id) return;
+    try {
+      const response = await fetch(apiUrl(`/users/${user.id}/domains/`), { 
+        credentials: "include" 
+      });
       if (response.ok) {
-        const data = await response.json(); // This is the list from get_domains
-        setUserDomains(data); // Store the full objects for display
+        const data = await response.json();
+        setAssignedDomains(data); // These are the tags you see in the table
         
-        // Update formData so the checkboxes in the modal are checked
+        // Also update the form state so checkboxes are checked
         setFormData(prev => ({
           ...prev,
           domain_ids: data.map((d: any) => String(d.domain_ID))
         }));
       }
     } catch (err) {
-      console.error("Failed to fetch assigned domains:", err);
+      console.error("Failed to load domains", err);
     }
   };
 
-  // Call it on mount
+  useEffect(() => {
+    fetchUserDomains();
+  }, [user?.id]);
+
   useEffect(() => {
     if (user?.id) {
       fetchAssignedDomains();
@@ -169,6 +197,7 @@ const UserProfilePage: React.FC = () => {
       setSuccessMsg("Profile updated successfully!");
       setShowSuccess(true);
       setIsModalOpen(false);
+      fetchAssignedDomains();
       setTimeout(() => {
         setShowSuccess(false);
       }, 1000);
@@ -365,28 +394,27 @@ const UserProfilePage: React.FC = () => {
                   </div>
                   
                   <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px', minHeight: '40px', padding: '12px', background: 'rgba(0,0,0,0.2)', borderRadius: '8px', border: '1px solid rgba(255,255,255,0.05)' }}>
-                    {userDomains.length > 0 ? (
-                      allDomains
-                        .filter(d => formData.domain_ids.includes(String(d.domain_ID)))
-                        .map((domain) => (
-                          <span 
-                            key={domain.domain_ID} 
-                            style={{ 
-                              background: 'rgba(79, 172, 254, 0.1)', 
-                              border: '1px solid rgba(79, 172, 254, 0.2)', 
-                              padding: '4px 12px', 
-                              borderRadius: '15px', 
-                              fontSize: '0.8rem', 
-                              color: '#4facfe' 
-                            }}
-                          >
-                            🌐 {domain.domain_name}
-                          </span>
-                        ))
+                    {assignedDomains.length > 0 ? (
+                      assignedDomains.map((domain) => (
+                        <span 
+                          key={domain.domain_ID} 
+                          style={{ 
+                            maxHeight: "200px",
+                            overflow: "auto",
+                            border: "1px solid rgba(255,255,255,0.1)",
+                            borderRadius: "8px",
+                            padding: "12px",
+                            background: 'rgba(123, 97, 255, 0.2)',
+                            fontSize: '0.8rem', 
+                            color: '#b39df5' 
+                          }}
+                        >
+                          {domain.domain_name}
+                        </span>
+                      ))
                     ) : (
                       <span style={{ color: 'var(--text-dim)', fontSize: '0.85rem' }}>No domains assigned</span>
-                    )
-                  }
+                    )}
                   </div>
                 </div>
 
