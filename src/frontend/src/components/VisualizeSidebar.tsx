@@ -5,6 +5,7 @@ interface Metric {
   metric_ID: string;
   metric_name: string;
   category?: string | null;
+  value_type?: string;
 }
 
 interface LibraryRow {
