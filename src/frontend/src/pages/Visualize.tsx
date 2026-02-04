@@ -47,6 +47,10 @@ const Visualize: React.FC = () => {
 
   const [categoryWeights, setCategoryWeights] = useState<Record<string, number>>({});
   const [normalizeWeights, setNormalizeWeights] = useState(true);
+  const [ahpData, setAhpData] = useState<{
+    global_ranking: Record<string, number>;
+    category_details: Record<string, Record<string, number>>;
+  } | null>(null);
 
   useEffect(() => {
   if (!DOMAIN_ID) return;
@@ -72,21 +76,25 @@ const Visualize: React.FC = () => {
         return JSON.parse(responseText);
       };
 
-      const [comparisonRes, metricsRes, categoriesRes, weightsRes] = await Promise.all([
+      const [comparisonRes, metricsRes, categoriesRes, weightsRes, ahpRes] = await Promise.all([
         fetch(apiUrl(`/library_metric_values/comparison/${DOMAIN_ID}/`), {
           credentials: "include",
         }),
         fetch(apiUrl("/metrics/"), { credentials: "include" }),
         fetch(apiUrl("/metrics/categories/"), { credentials: "include" }),
-        fetch(apiUrl(`/domain/${DOMAIN_ID}/category-weights/`), { credentials: "include" })
+        fetch(apiUrl(`/domain/${DOMAIN_ID}/category-weights/`), { credentials: "include" }),
+        fetch(apiUrl(`/library_metric_values/ahp/${DOMAIN_ID}/`), { credentials: "include" })
       ]);
 
-      const [comparisonData, metricsData, categoriesData, weightsData] = await Promise.all([
+      const [comparisonData, metricsData, categoriesData, weightsData, ahpDataResponse] = await Promise.all([
         parseJson(comparisonRes),
         parseJson(metricsRes),
         parseJson(categoriesRes),
         parseJson(weightsRes),
+        parseJson(ahpRes),
       ]);
+
+      setAhpData(ahpDataResponse);
 
       setMetricList(Array.isArray(metricsData) ? metricsData : comparisonData.metrics || []);
       const librariesData = comparisonData.libraries || [];
@@ -190,6 +198,33 @@ const Visualize: React.FC = () => {
       const total = Object.values(prev).reduce((sum, v) => sum + v, 0) || 1;
       return Object.fromEntries(Object.entries(prev).map(([k, v]) => [k, v / total]));
     });
+  };
+
+  const saveWeights = async () => {
+    if (!DOMAIN_ID) return;
+    
+    try {
+      const res = await fetch(apiUrl(`/domain/${DOMAIN_ID}/category-weights/`), {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        credentials: "include",
+        body: JSON.stringify({ values: categoryWeights }),
+      });
+
+      if (res.ok) {
+        // Reload AHP data with new weights
+        const ahpRes = await fetch(apiUrl(`/library_metric_values/ahp/${DOMAIN_ID}/`), { credentials: "include" });
+        const ahpDataResponse = await ahpRes.json();
+        setAhpData(ahpDataResponse);
+        setChartData(null);
+        setError("Weights saved! Click Visualize to see updated results.");
+      } else {
+        setError("Failed to save weights.");
+      }
+    } catch (err) {
+      console.error(err);
+      setError("Error saving weights.");
+    }
   };
 
   const toggleSelectAllLibraries = () => {
@@ -351,23 +386,33 @@ const Visualize: React.FC = () => {
     let charts: { metric: string; rows: { label: string; value: number }[] }[] = [];
 
     if (graphMode === "AHP") {
-      // Overall AHP mode - use all available categories with their weights
+      if (!ahpData) {
+        setError("AHP data not loaded. Please refresh the page.");
+        return;
+      }
+
+      // Overall AHP mode - recalculate using adjusted category weights
       if (ahpMode === "Overall") {
-        const allCategories = Object.keys(metricsByCategory);
-        // Show overall AHP score combining all categories
-        const rows = selectedLibs.map(l => {
-          let totalScore = 0;
-          allCategories.forEach(cat => {
-            const weight = categoryWeights[cat] ?? 1;
-            const metricNames = metricsByCategory[cat] || [];
-            const categorySum = metricNames.reduce((acc, name) => acc + toNumber(l.metrics[name]), 0);
-            totalScore += categorySum * weight;
-          });
-          return {
-            label: l.library_name,
-            value: totalScore
-          };
-        }).sort((a, b) => b.value - a.value);
+        const rows = selectedLibs
+          .map(l => {
+            // Sum across all categories using their AHP scores and adjusted weights
+            let overallScore = 0;
+            Object.keys(ahpData.category_details).forEach(cat => {
+              const categoryScore = ahpData.category_details[cat][l.library_name] || 0;
+              const weight = categoryWeights[cat] ?? 0;
+              overallScore += categoryScore * weight;
+            });
+            
+            return {
+              label: l.library_name,
+              value: overallScore
+            };
+          })
+          .filter(row => selectedLibraries.some(id => {
+            const lib = libraries.find(lib => lib.library_ID === id);
+            return lib?.library_name === row.label;
+          }))
+          .sort((a, b) => b.value - a.value);
 
         charts = [{
           metric: "Overall AHP Score",
@@ -375,23 +420,28 @@ const Visualize: React.FC = () => {
         }];
       }
 
-      // Individual category AHP (run AHP on each selected category separately)
+      // Individual category AHP - use backend category_details
       if (ahpMode === "Individual" && selectedIndividualAhpCategories.length > 0) {
         const individualCharts = selectedIndividualAhpCategories.map(cat => {
-          const metricNames = metricsByCategory[cat] || [];
-          const rows = selectedLibs.map(l => {
-            const sum = metricNames.reduce((acc, name) => acc + toNumber(l.metrics[name]), 0);
-            return {
+          const categoryScores = ahpData.category_details[cat];
+          if (!categoryScores) return null;
+
+          const rows = selectedLibs
+            .map(l => ({
               label: l.library_name,
-              value: sum
-            };
-          }).sort((a, b) => b.value - a.value);
+              value: categoryScores[l.library_name] || 0
+            }))
+            .filter(row => selectedLibraries.some(id => {
+              const lib = libraries.find(lib => lib.library_ID === id);
+              return lib?.library_name === row.label;
+            }))
+            .sort((a, b) => b.value - a.value);
 
           return {
             metric: `${cat} (Individual AHP)`,
             rows
           };
-        }).filter(chart => chart.rows.length > 0);
+        }).filter(chart => chart !== null && chart.rows.length > 0) as { metric: string; rows: { label: string; value: number }[] }[];
 
         charts = [...charts, ...individualCharts];
       }
@@ -765,7 +815,7 @@ const Visualize: React.FC = () => {
                     Adjust category weights to combine into an overall AHP score.
                   </div>
                   
-                  <div style={{ display: "flex", flexDirection: "column"}}>
+                  <div style={{ display: "flex", flexDirection: "column", gap: 8}}>
                     <label style={{ display: "flex", alignItems: "center", gap: 6 }}>
                       <input
                         type="checkbox"
@@ -779,6 +829,13 @@ const Visualize: React.FC = () => {
                       />
                       Normalize weights
                     </label>
+                    <button
+                      className="dx-btn dx-btn-outline"
+                      style={{ padding: "6px 10px", fontSize: "0.8rem" }}
+                      onClick={saveWeights}
+                    >
+                      Save Weights to Domain
+                    </button>
                   </div>
 
                   <div

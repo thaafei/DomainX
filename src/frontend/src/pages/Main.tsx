@@ -25,7 +25,7 @@ const getPastelColor = (index: number) => {
 const Main: React.FC = () => {
   const navigate = useNavigate();
   const [leftSidebarOpen, setLeftSidebarOpen] = useState(true);
-  const [moreInfoSidebarOpen, setMoreInfoSidebarOpen] = useState(false);
+  const [moreInfoSidebarOpen, setMoreInfoSidebarOpen] = useState(true);
 
   const [domains, setDomains] = useState<any[]>([]);
   const [selectedDomain, setSelectedDomain] = useState<any>(null);
