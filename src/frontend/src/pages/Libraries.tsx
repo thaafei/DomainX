@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { apiUrl } from "../config/api";
+import SuccessNotification from "../components/SuccessNotification";
 
 interface Library {
   library_ID: string;
@@ -8,6 +9,36 @@ interface Library {
   url: string | null;
   programming_language: string;
 }
+
+const ErrorNotification: React.FC<{ show: boolean; message: string }> = ({
+  show,
+  message,
+}) => {
+  if (!show) return null;
+
+  return (
+    <div
+      style={{
+        position: "fixed",
+        top: 18,
+        left: "50%",
+        transform: "translateX(-50%)",
+        zIndex: 10001,
+        background: "rgba(255, 77, 79, 0.92)",
+        border: "1px solid rgba(255,255,255,0.18)",
+        color: "white",
+        padding: "12px 16px",
+        borderRadius: 12,
+        boxShadow: "0 12px 40px rgba(0,0,0,0.35)",
+        maxWidth: "min(720px, calc(100vw - 32px))",
+        fontWeight: 700,
+        letterSpacing: 0.2,
+      }}
+    >
+      {message}
+    </div>
+  );
+};
 
 const AddLibraryPage: React.FC = () => {
   const { domainId } = useParams<{ domainId: string }>();
@@ -23,11 +54,29 @@ const AddLibraryPage: React.FC = () => {
   const [url, setUrl] = useState("");
   const [language, setLanguage] = useState("");
 
-  useEffect(() => {
-  if (!DOMAIN_ID) return;
-      loadLibraries();
-    }, [DOMAIN_ID]);
+  const [editingId, setEditingId] = useState<string | null>(null);
 
+  const [success, setSuccess] = useState(false);
+  const [successMessage, setSuccessMessage] = useState("");
+  const [fail, setFail] = useState(false);
+  const [failMessage, setFailMessage] = useState("");
+
+  const showSuccess = (msg: string) => {
+    setSuccessMessage(msg);
+    setSuccess(true);
+    setTimeout(() => setSuccess(false), 1500);
+  };
+
+  const showFail = (msg: string) => {
+    setFailMessage(msg);
+    setFail(true);
+    setTimeout(() => setFail(false), 2200);
+  };
+
+  useEffect(() => {
+    if (!DOMAIN_ID) return;
+    loadLibraries();
+  }, [DOMAIN_ID]);
 
   const closeModal = () => {
     setModalOpen(false);
@@ -35,6 +84,7 @@ const AddLibraryPage: React.FC = () => {
     setName("");
     setUrl("");
     setLanguage("");
+    setEditingId(null);
   };
 
   const openCreateModal = () => {
@@ -42,6 +92,16 @@ const AddLibraryPage: React.FC = () => {
     setName("");
     setUrl("");
     setLanguage("");
+    setEditingId(null);
+    setModalOpen(true);
+  };
+
+  const openEditModal = (lib: Library) => {
+    setFormError("");
+    setName(lib.library_name || "");
+    setUrl(lib.url || "");
+    setLanguage(lib.programming_language || "");
+    setEditingId(lib.library_ID);
     setModalOpen(true);
   };
 
@@ -61,25 +121,35 @@ const AddLibraryPage: React.FC = () => {
     } catch (err) {
       console.error(err);
       setPageError("Failed to load libraries.");
+      showFail("Failed to load libraries.");
     }
   };
 
-  const addLibrary = async () => {
+  const validateForm = () => {
     if (!name.trim()) {
       setFormError("Library name is required.");
-      return;
+      return false;
     }
     if (!url.trim()) {
       setFormError("Github URL is required.");
-      return;
+      return false;
     }
-    if (url.trim()) {
-        const githubRepoRegex = /^(https?:\/\/)?(www\.)?github\.com\/[A-Za-z0-9_.-]+\/[A-Za-z0-9_.-]+\/?$/;
-        if (!githubRepoRegex.test(url.trim())) {
-          setFormError("URL must be a valid GitHub repository (e.g., https://github.com/user/repo).");
-          return;
-        }
+
+    const githubRepoRegex =
+      /^(https?:\/\/)?(www\.)?github\.com\/[A-Za-z0-9_.-]+\/[A-Za-z0-9_.-]+\/?$/;
+
+    if (!githubRepoRegex.test(url.trim())) {
+      setFormError(
+        "URL must be a valid GitHub repository (e.g., https://github.com/user/repo)."
+      );
+      return false;
     }
+
+    return true;
+  };
+
+  const addLibrary = async () => {
+    if (!validateForm()) return;
 
     const payload = {
       library_name: name.trim(),
@@ -105,8 +175,8 @@ const AddLibraryPage: React.FC = () => {
       } catch {}
 
       if (!res.ok) {
-        console.error("HTTP", res.status, "body:", text);
-        setFormError(data?.detail || data?.error || "Create failed.");
+        const msg = data?.detail || data?.error || "Create failed.";
+        setFormError(msg);
         return;
       }
 
@@ -117,10 +187,62 @@ const AddLibraryPage: React.FC = () => {
         await loadLibraries();
       }
 
+      showSuccess("Library created successfully!");
       closeModal();
     } catch (err) {
       console.error(err);
-      setFormError("Something went wrong. Please try again.");
+      const msg = "Something went wrong. Please try again.";
+      setFormError(msg);
+    }
+  };
+
+  const updateLibrary = async () => {
+    if (!editingId) return;
+    if (!validateForm()) return;
+
+    const payload = {
+      library_name: name.trim(),
+      url: url.trim() || null,
+      programming_language: language.trim(),
+      domain: DOMAIN_ID,
+    };
+
+    try {
+      setFormError("");
+
+      const res = await fetch(apiUrl(`/libraries/${editingId}/`), {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        credentials: "include",
+        body: JSON.stringify(payload),
+      });
+
+      const text = await res.text();
+      let data: any = null;
+      try {
+        data = text ? JSON.parse(text) : null;
+      } catch {}
+
+      if (!res.ok) {
+        const msg = data?.detail || data?.error || "Update failed.";
+        setFormError(msg);
+        return;
+      }
+
+      const updated = data?.library;
+      if (updated?.library_ID) {
+        setLibraries((prev) =>
+          prev.map((l) => (l.library_ID === updated.library_ID ? updated : l))
+        );
+      } else {
+        await loadLibraries();
+      }
+
+      showSuccess("Library updated successfully!");
+      closeModal();
+    } catch (err) {
+      console.error(err);
+      setFormError("Failed to update library.");
     }
   };
 
@@ -133,14 +255,27 @@ const AddLibraryPage: React.FC = () => {
 
       if (res.ok) {
         setLibraries((prev) => prev.filter((l) => l.library_ID !== id));
+        showSuccess("Library deleted successfully!");
+      } else {
+        const text = await res.text();
+        showFail(text || "Failed to delete library.");
       }
     } catch (err) {
       console.error(err);
+      showFail("Failed to delete library.");
     }
+  };
+
+  const handleSave = () => {
+    if (editingId) updateLibrary();
+    else addLibrary();
   };
 
   return (
     <div className="dx-bg" style={{ display: "flex", height: "100vh" }}>
+      <SuccessNotification show={success} message={successMessage} />
+      <ErrorNotification show={fail} message={failMessage} />
+
       <div
         className="dx-card"
         style={{
@@ -176,11 +311,16 @@ const AddLibraryPage: React.FC = () => {
       >
         <div className="stars"></div>
 
-        <div style={{ display: "flex", alignItems: "center", gap: 14, marginBottom: 18 }}>
+        <div
+          style={{
+            display: "flex",
+            alignItems: "center",
+            gap: 14,
+            marginBottom: 18,
+          }}
+        >
           <h1 style={{ color: "var(--accent)", margin: 0 }}>Libraries</h1>
-
           <div style={{ flexGrow: 1 }} />
-
         </div>
 
         {pageError && (
@@ -209,19 +349,38 @@ const AddLibraryPage: React.FC = () => {
             flexDirection: "column",
           }}
         >
-        <div style={{ display: "flex", justifyContent: "flex-start", marginBottom: 6 }}>
-          <button className="dx-btn dx-btn-primary" onClick={openCreateModal}>
-            + Add New Library
-          </button>
+          <div
+            style={{
+              display: "flex",
+              justifyContent: "flex-start",
+              marginBottom: 6,
+            }}
+          >
+            <button className="dx-btn dx-btn-primary" onClick={openCreateModal}>
+              + Add New Library
+            </button>
           </div>
-          <div className="dx-table-wrap dx-table-scroll" style={{ flex: 1, minHeight: 0 }}>
-            <table className="dx-table" style={{ tableLayout: "fixed", width: "100%" }}>
+
+          <div
+            className="dx-table-wrap dx-table-scroll"
+            style={{ flex: 1, minHeight: 0 }}
+          >
+            <table
+              className="dx-table"
+              style={{ tableLayout: "fixed", width: "100%" }}
+            >
               <thead>
                 <tr>
-                  <th className="dx-th-sticky" style={{ textAlign: "left", width: 280 }}>
+                  <th
+                    className="dx-th-sticky"
+                    style={{ textAlign: "left", width: 280 }}
+                  >
                     Name
                   </th>
-                  <th className="dx-th-sticky" style={{ textAlign: "left", width: 180 }}>
+                  <th
+                    className="dx-th-sticky"
+                    style={{ textAlign: "left", width: 180 }}
+                  >
                     Language
                   </th>
                   <th
@@ -234,7 +393,7 @@ const AddLibraryPage: React.FC = () => {
                   >
                     URL
                   </th>
-                  <th className="dx-th-sticky" style={{ width: 160 }} />
+                  <th className="dx-th-sticky" style={{ width: 220 }} />
                 </tr>
               </thead>
 
@@ -281,10 +440,25 @@ const AddLibraryPage: React.FC = () => {
                     </td>
 
                     <td style={{ padding: 10, verticalAlign: "top" }}>
-                      <div style={{ display: "flex", justifyContent: "flex-end" }}>
+                      <div
+                        style={{
+                          display: "flex",
+                          justifyContent: "flex-end",
+                          gap: 8,
+                        }}
+                      >
                         <button
                           className="dx-btn dx-btn-outline"
-                          style={{ borderColor: "var(--danger)", color: "var(--danger)" }}
+                          onClick={() => openEditModal(lib)}
+                        >
+                          Edit
+                        </button>
+                        <button
+                          className="dx-btn dx-btn-outline"
+                          style={{
+                            borderColor: "var(--danger)",
+                            color: "var(--danger)",
+                          }}
                           onClick={() => deleteLibrary(lib.library_ID)}
                         >
                           Delete
@@ -338,16 +512,23 @@ const AddLibraryPage: React.FC = () => {
                 gap: 14,
               }}
             >
-
               <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
-                <h2 style={{ margin: 0, color: "var(--accent)", fontSize: "1.25rem" }}>
-                  Add New Library
+                <h2
+                  style={{ margin: 0, color: "var(--accent)", fontSize: "1.25rem" }}
+                >
+                  {editingId ? "Edit Library" : "Add New Library"}
                 </h2>
                 <div style={{ flexGrow: 1 }} />
                 <button
                   className="dx-btn dx-btn-outline"
                   onClick={closeModal}
-                  style={{ width: 38, height: 38, padding: 0, borderRadius: 10, lineHeight: 1 }}
+                  style={{
+                    width: 38,
+                    height: 38,
+                    padding: 0,
+                    borderRadius: 10,
+                    lineHeight: 1,
+                  }}
                   aria-label="Close"
                   title="Close"
                 >
@@ -378,7 +559,9 @@ const AddLibraryPage: React.FC = () => {
                 }}
               >
                 <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
-                  <label style={{ fontSize: "0.9rem", color: "var(--text-dim)" }}>Library Name</label>
+                  <label style={{ fontSize: "0.9rem", color: "var(--text-dim)" }}>
+                    Library Name
+                  </label>
                   <input
                     className="dx-input"
                     value={name}
@@ -415,7 +598,14 @@ const AddLibraryPage: React.FC = () => {
                   />
                 </div>
 
-                <div style={{ gridColumn: "1 / -1", display: "flex", flexDirection: "column", gap: 6 }}>
+                <div
+                  style={{
+                    gridColumn: "1 / -1",
+                    display: "flex",
+                    flexDirection: "column",
+                    gap: 6,
+                  }}
+                >
                   <label style={{ fontSize: "0.9rem", color: "var(--text-dim)" }}>
                     Repository URL
                   </label>
@@ -436,12 +626,19 @@ const AddLibraryPage: React.FC = () => {
                 </div>
               </div>
 
-              <div style={{ display: "flex", gap: 10, justifyContent: "flex-end", marginTop: 6 }}>
+              <div
+                style={{
+                  display: "flex",
+                  gap: 10,
+                  justifyContent: "flex-end",
+                  marginTop: 6,
+                }}
+              >
                 <button className="dx-btn dx-btn-outline" onClick={closeModal}>
                   Cancel
                 </button>
-                <button className="dx-btn dx-btn-primary" onClick={addLibrary}>
-                  Save
+                <button className="dx-btn dx-btn-primary" onClick={handleSave}>
+                  {editingId ? "Save Changes" : "Save"}
                 </button>
               </div>
             </div>

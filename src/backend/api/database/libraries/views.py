@@ -6,7 +6,7 @@ from django.shortcuts import get_object_or_404
 
 from ..domain.models import Domain
 from .models import Library
-from .serializers import LibrarySerializer
+from .serializers import LibrarySerializer, LibraryUpdateSerializer
 from ...utils.analysis import enqueue_library_analysis
 
 
@@ -24,19 +24,20 @@ class LibraryListCreateView(generics.ListCreateAPIView):
 
         new_library = serializer.save()
 
-        # mark pending
         new_library.analysis_status = Library.ANALYSIS_PENDING
         new_library.analysis_task_id = None
         new_library.analysis_error = None
         new_library.analysis_started_at = None
         new_library.analysis_finished_at = None
-        new_library.save(update_fields=[
-            "analysis_status",
-            "analysis_task_id",
-            "analysis_error",
-            "analysis_started_at",
-            "analysis_finished_at",
-        ])
+        new_library.save(
+            update_fields=[
+                "analysis_status",
+                "analysis_task_id",
+                "analysis_error",
+                "analysis_started_at",
+                "analysis_finished_at",
+            ]
+        )
 
         task_id = None
         try:
@@ -57,6 +58,7 @@ class LibraryListCreateView(generics.ListCreateAPIView):
             status=status.HTTP_201_CREATED,
         )
 
+
 class LibraryByDomainListView(ListAPIView):
     serializer_class = LibrarySerializer
 
@@ -66,8 +68,42 @@ class LibraryByDomainListView(ListAPIView):
         return Library.objects.filter(domain_id=domain_id).order_by("library_name")
 
 
-class LibraryDestroyView(APIView):
-    def delete(self, request, library_id):
-        library = get_object_or_404(Library, pk=library_id)
-        library.delete()
+from rest_framework import generics, status
+from rest_framework.response import Response
+from django.shortcuts import get_object_or_404
+
+from .models import Library
+from .serializers import LibrarySerializer, LibraryUpdateSerializer
+
+
+class LibraryUpdateView(generics.GenericAPIView):
+    queryset = Library.objects.all()
+    lookup_url_kwarg = "library_id"
+
+    def get_object(self):
+      return get_object_or_404(Library, pk=self.kwargs["library_id"])
+
+    def put(self, request, *args, **kwargs):
+        lib = self.get_object()
+        serializer = LibraryUpdateSerializer(lib, data=request.data, partial=False)
+        serializer.is_valid(raise_exception=True)
+        updated = serializer.save()
+        return Response(
+            {"library": LibrarySerializer(updated).data, "message": "Library updated successfully."},
+            status=status.HTTP_200_OK,
+        )
+
+    def patch(self, request, *args, **kwargs):
+        lib = self.get_object()
+        serializer = LibraryUpdateSerializer(lib, data=request.data, partial=True)
+        serializer.is_valid(raise_exception=True)
+        updated = serializer.save()
+        return Response(
+            {"library": LibrarySerializer(updated).data, "message": "Library updated successfully."},
+            status=status.HTTP_200_OK,
+        )
+
+    def delete(self, request, *args, **kwargs):
+        lib = self.get_object()
+        lib.delete()
         return Response(status=status.HTTP_204_NO_CONTENT)
