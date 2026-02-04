@@ -18,6 +18,7 @@ import "./styles/theme.css";
 import "./styles/auth.css";
 import "./styles/components.css";
 import "./styles/visualize.css";
+import UserProfilePage from './pages/UserProfile';
 
 const App: React.FC = () => {
   return (
@@ -40,6 +41,7 @@ const App: React.FC = () => {
         <Route path="/libraries" element={<Navigate to="/" replace />} />
         <Route path="/main" element={<Main />} />
         <Route path="/admin" element={<Admin />} />
+        <Route path="/user" element={<UserProfilePage />} />
       </Routes>
     </Router>
   );
