@@ -1,6 +1,7 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuthStore } from "../store/useAuthStore";
+import CustomIsometricBar from '../components/CustomIsometricBar';
 import {
   BarChart,
   Bar,
@@ -9,11 +10,17 @@ import {
   CartesianGrid,
   Tooltip,
   ResponsiveContainer,
+  LabelList,
   Cell,
 } from "recharts";
 import { apiUrl } from "../config/api";
 import DomainsList from "../components/DomainsList";
 import DomainInfo from "../components/DomainInfo";
+// 1. Helper for dynamic pastels
+const getPastelColor = (index: number) => {
+  const hue = (index * 137.5) % 360; 
+  return `hsl(${hue}, 60%, 70%)`;
+};
 
 const Main: React.FC = () => {
   const navigate = useNavigate();
@@ -40,6 +47,77 @@ const Main: React.FC = () => {
   const [localWeights, setLocalWeights] = useState<Record<string, number>>({});
   const [categories, setCategories] = useState<string[] | null>(null);
 
+  const [activeTab, setActiveTab] = useState<"graph" | "table">("graph");
+  const [tableData, setTableData] = useState<any[]>([]);
+  const [sortConfig, setSortConfig] = useState<{ key: string; direction: "asc" | "desc" } | null>(null);
+
+  const getAHPRanking = async (domainId: string) => {
+    try {
+      const response = await fetch(apiUrl(`/library_metric_values/ahp/${domainId}/`), {
+        method: "GET",
+        headers: { "Content-Type": "application/json" },
+        credentials: "include",
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        setGlobalRanking(data.global_ranking || {});
+        
+        // Transform category_details for the table
+        // data.category_details looks like: { "Popularity": { "React": 0.2, "Vue": 0.1 }, ... }
+        const libraries = Object.keys(data.global_ranking);
+        const rows = libraries.map(lib => ({
+          name: lib,
+          overall: data.global_ranking[lib],
+          ...Object.keys(data.category_details).reduce((acc: any, cat) => {
+            acc[cat] = data.category_details[cat][lib] || 0;
+            return acc;
+          }, {})
+        }));
+        
+        setTableData(rows);
+        setGraph(true);
+      } else {
+        setGraph(false);
+      }
+    } catch (err) {
+      console.error("AHP fetch failed:", err);
+      setGraph(false);
+    }
+  };
+  const requestSort = (key: string) => {
+    let direction: "asc" | "desc" = "desc";
+    if (sortConfig && sortConfig.key === key && sortConfig.direction === "desc") {
+      direction = "asc";
+    }
+    setSortConfig({ key, direction });
+  };
+
+  const sortedTableData = [...tableData].sort((a, b) => {
+    if (!sortConfig) return 0;
+    const aVal = a[sortConfig.key];
+    const bVal = b[sortConfig.key];
+    return sortConfig.direction === "asc" ? aVal - bVal : bVal - aVal;
+  });
+  const activeCategories = useMemo(() => {
+    if (!categories || !tableData.length) return [];
+
+    // Filter categories: keep only those where at least one row has a valid number
+    return categories.filter((cat: string) => 
+      tableData.some(row => {
+        const val = row[cat];
+        return typeof val === 'number' && !isNaN(val) && val !== 0;
+      })
+    );
+  }, [categories, tableData]);
+
+  const chartData = Object.entries(globalRanking)
+    .map(([name, score], index) => ({
+      name,
+      score: parseFloat(((score as number) * 100).toFixed(2)),
+      color: getPastelColor(index),
+    }))
+    .sort((a, b) => b.score - a.score).slice(0, 10);;
   const fetchCurrentUser = async () => {
     try {
       const response = await fetch(apiUrl("/me/"), {
@@ -71,26 +149,26 @@ const Main: React.FC = () => {
     }
   };
 
-  const getAHPRanking = async (domainId: string) => {
-    try {
-      const response = await fetch(apiUrl(`/library_metric_values/ahp/${domainId}/`), {
-        method: "GET",
-        headers: { "Content-Type": "application/json" },
-        credentials: "include",
-      });
+  // const getAHPRanking = async (domainId: string) => {
+  //   try {
+  //     const response = await fetch(apiUrl(`/library_metric_values/ahp/${domainId}/`), {
+  //       method: "GET",
+  //       headers: { "Content-Type": "application/json" },
+  //       credentials: "include",
+  //     });
 
-      if (response.ok) {
-        const data = await response.json();
-        setGlobalRanking(data.global_ranking || {});
-        setGraph(true);
-      } else {
-        setGraph(false);
-      }
-    } catch (err) {
-      console.error("AHP fetch failed:", err);
-      setGraph(false);
-    }
-  };
+  //     if (response.ok) {
+  //       const data = await response.json();
+  //       setGlobalRanking(data.global_ranking || {});
+  //       setGraph(true);
+  //     } else {
+  //       setGraph(false);
+  //     }
+  //   } catch (err) {
+  //     console.error("AHP fetch failed:", err);
+  //     setGraph(false);
+  //   }
+  // };
 
   const fetchWeights = async (domainId: string) => {
     try {
@@ -202,13 +280,6 @@ const Main: React.FC = () => {
     }
   };
 
-  const chartData = Object.entries(globalRanking)
-    .map(([name, score]) => ({
-      name,
-      score: parseFloat(((score as number) * 100).toFixed(2)),
-    }))
-    .sort((a, b) => b.score - a.score);
-
   if (loading) return <div>Loading...</div>;
 
   const handleLogout = async () => {
@@ -292,84 +363,143 @@ const Main: React.FC = () => {
         handleLogout={handleLogout}
       />
 
-      <div style={{ flex: 1, display: "flex", flexDirection: "column", gap: "20px", overflowY: "auto" }}>
-        {graph && (
-          <div className="dx-card" style={{ padding: "20px", marginTop: "20px", width: "1000px" }}>
-            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "20px" }}>
-              <h3 style={{ color: "var(--accent)", margin: 0, textAlign: "center" }}>Global AHP Ranking</h3>
-            </div>
+      <div style={{ flex: 1, display: "flex", flexDirection: "column", alignItems: "center", gap: "20px", overflowY: "auto" }}>
+        {/* Tab Toggle */}
+        <div style={{ 
+          display: "inline-flex", 
+          background: "#161b22", 
+          padding: "4px", 
+          borderRadius: "10px", 
+          border: "1px solid #30363d",
+          marginBottom: "30px",
+          boxShadow: "0 4px 10px rgba(0,0,0,0.3)"
+        }}>
+          {["graph", "table"].map((tab) => (
+            <button
+              key={tab}
+              onClick={() => setActiveTab(tab as "graph" | "table")}
+              style={{
+                padding: "10px 24px",
+                border: "none",
+                borderRadius: "8px",
+                cursor: "pointer",
+                fontSize: "0.9rem",
+                fontWeight: "600",
+                textTransform: "uppercase",
+                letterSpacing: "0.5px",
+                transition: "all 0.2s cubic-bezier(0.4, 0, 0.2, 1)",
+                background: activeTab === tab ? "#4facfe" : "transparent",
+                color: activeTab === tab ? "#fff" : "#8b949e",
+                minWidth: "120px"
+              }}
+              onMouseEnter={(e) => {
+                if (activeTab !== tab) e.currentTarget.style.color = "#fff";
+              }}
+              onMouseLeave={(e) => {
+                if (activeTab !== tab) e.currentTarget.style.color = "#8b949e";
+              }}
+            >
+              {tab} View
+            </button>
+          ))}
+        </div>
 
-            <div style={{ width: "100%", height: 400 }}>
+        {graph && activeTab === "graph" && (
+          <div className="dx-card" style={{ padding: "30px", width: "95%", maxWidth: "1000px", background: "transparent", border: "none" }}>
+            <h3 style={{ color: "white", marginBottom: "40px", textAlign: "left", fontSize: "1.5rem", fontWeight: "300" }}>
+              Global AHP Ranking
+            </h3>
+
+            <div style={{ width: "100%", height: 450 }}>
               <ResponsiveContainer width="100%" height="100%">
-                <BarChart data={chartData} margin={{ top: 20, right: 30, left: 0, bottom: 60 }}>
-                  <CartesianGrid strokeDasharray="3 3" stroke="#333" vertical={false} />
-                  <XAxis
-                    dataKey="name"
-                    stroke="#ccc"
-                    angle={-45}
-                    textAnchor="end"
-                    interval={0}
-                    tick={{ fill: "#ccc", fontSize: 11 }}
+                <BarChart data={chartData} margin={{ top: 60, right: 30, left: 20, bottom: 60 }}>
+                  <XAxis 
+                    dataKey="name" 
+                    axisLine={false} 
+                    tickLine={false} 
+                    tick={{ fill: "#666", fontSize: 12 }} 
                   />
-                  <YAxis stroke="#ccc" tick={{ fill: "#ccc" }} unit="%" domain={[0, "auto"]} />
-                  <Tooltip
-                    cursor={{ fill: "rgba(255,255,255,0.05)" }}
-                    contentStyle={{ backgroundColor: "#222", border: "1px solid var(--accent)", borderRadius: "4px" }}
-                    itemStyle={{ color: "var(--accent)" }}
-                    formatter={(value) => {
-                      const numericValue = Number(value) || 0;
-                      return [`${numericValue.toFixed(2)}%`, "Priority Score"];
-                    }}
-                  />
-                  <Bar dataKey="score">
-                    {chartData.map((_, index) => (
-                      <Cell
-                        key={`cell-${index}`}
-                        fill={index === 0 ? "var(--accent)" : "rgba(var(--accent-rgb), 0.4)"}
-                        style={{ transition: "fill 0.3s ease" }}
-                      />
+                  <YAxis hide domain={[0, 110]} />
+                  
+                  <Bar 
+                    dataKey="score" 
+                    shape={<CustomIsometricBar />}
+                    background={{ fill: 'transparent' }} // This allows the shape to receive height info
+                  >
+                    {chartData.map((entry, index) => (
+                      <Cell key={`cell-${index}`} fill={entry.color} />
                     ))}
+                    
+                    <LabelList 
+                      dataKey="score" 
+                      position="top" 
+                      offset={25} 
+                      fill="#fff"
+                      style={{ fontWeight: 'bold' }}
+                      formatter={(val: any) => `${val}%`} 
+                    />
                   </Bar>
                 </BarChart>
               </ResponsiveContainer>
+              
+              {/* Ranking Sub-labels (No.1, No.2, etc.) */}
+              <div style={{ display: "flex", justifyContent: "space-around", marginTop: "-50px", paddingLeft: "40px", paddingRight: "30px" }}>
+                {chartData.map((_, i) => (
+                  <span key={i} style={{ color: "#4facfe", fontSize: "10px", fontWeight: "bold" }}>No.{i+1}</span>
+                ))}
+              </div>
             </div>
           </div>
         )}
-
-        <div className="dx-card" style={{ padding: "20px", marginTop: "20px", color: "white" }}>
-          <h3 style={{ color: "var(--accent)", marginBottom: "15px" }}>Category Weights</h3>
-          <table style={{ width: "100%", borderCollapse: "collapse" }}>
-            <thead>
-              <tr style={{ textAlign: "left", borderBottom: "1px solid #333" }}>
-                <th style={{ padding: "10px" }}>Category</th>
-                <th style={{ padding: "10px" }}>Weight</th>
-              </tr>
-            </thead>
-            <tbody>
-              {categories?.map((cat: string) => (
-                <tr key={cat} style={{ borderBottom: "1px solid #222" }}>
-                  <td style={{ padding: "10px" }}>{cat}</td>
-                  <td style={{ padding: "10px" }}>
-                    <input
-                      type="number"
-                      className="dx-input"
-                      style={{ width: "80px" }}
-                      step="0.1"
-                      value={localWeights[cat] ?? 1.0}
-                      onChange={(e) => handleWeightChange(cat, e.target.value)}
-                    />
-                  </td>
+        {graph && activeTab === "table" && (
+          <div className="dx-card" style={{ width: "95%", maxWidth: "1200px", background: "#161b22", padding: "20px", borderRadius: "12px", border: "1px solid #30363d", overflowX: "auto", display: "block" }}>
+            <table style={{ width: "100%", borderCollapse: "collapse", color: "#c9d1d9", textAlign: "left", minWidth: "800px" }}>
+              <thead>
+                <tr style={{ borderBottom: "1px solid #30363d" }}>
+                  <th style={{ padding: "12px" }}>Library</th>
+                  <th 
+                    onClick={() => requestSort("overall")} 
+                    style={{ padding: "12px", cursor: "pointer", color: sortConfig?.key === "overall" ? "#4facfe" : "inherit" }}
+                  >
+                    Overall {sortConfig?.key === "overall" ? (sortConfig.direction === "asc" ? "↑" : "↓") : ""}
+                  </th>
+                  {activeCategories.map((cat: string) => (
+                    <th 
+                      key={cat}
+                      onClick={() => requestSort(cat)}
+                      style={{ 
+                        padding: "12px", 
+                        cursor: "pointer", 
+                        color: sortConfig?.key === cat ? "#4facfe" : "inherit" 
+                      }}
+                    >
+                      {cat} {sortConfig?.key === cat ? (sortConfig.direction === "asc" ? "↑" : "↓") : ""}
+                    </th>
+                  ))}
                 </tr>
-              ))}
-            </tbody>
-          </table>
+              </thead>
+              <tbody>
+                {sortedTableData.map((row, idx) => (
+                  <tr key={idx} style={{ borderBottom: "1px solid #21262d", background: idx % 2 === 0 ? "transparent" : "#0d1117" }}>
+                    <td style={{ padding: "12px", fontWeight: "bold" }}>{row.name}</td>
+                    <td style={{ padding: "12px", color: "#4facfe", fontWeight: "bold" }}>{(row.overall * 100).toFixed(2)}%</td>
+                    {activeCategories.map((cat: string) => {
+                      const score = row[cat];
+                      const isValid = typeof score === 'number' && !isNaN(score);
 
-          <button className="dx-btn dx-btn-primary" style={{ marginTop: "15px" }} onClick={saveWeights}>
-            Update Weights
-          </button>
-        </div>
+                      return (
+                        <td key={cat} style={{ padding: "12px", textAlign: "center" }}>
+                          {isValid ? `${(score * 100).toFixed(2)}%` : "—"}
+                        </td>
+                      );
+                    })}
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )}
       </div>
-
       <DomainInfo selectedDomain={selectedDomain} sidebarOpen={moreInfoSidebarOpen} setSidebarOpen={setMoreInfoSidebarOpen} />
     </div>
   );
