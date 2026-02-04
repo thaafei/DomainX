@@ -49,7 +49,6 @@ const UserProfilePage: React.FC = () => {
     role: "",
     domain_ids: [] as string[],
   });
-  const [userDomains, setUserDomains] = useState<Domain[]>([]);
   const [assignedDomains, setAssignedDomains] = useState<Domain[]>([]);
 
 const fetchAssignedDomains = async () => {
@@ -156,11 +155,11 @@ useEffect(() => {
                       passwordsMatch;
 
   const getInputBorder = (type: 'current' | 'new' | 'confirm') => {
-    if (type === 'confirm' && passwordData.confirm_password && !passwordsMatch) {
-      return "1px solid #ff4d4f !important";
-    }
+    if (passwordData.confirm_password.length > 0 && passwordData.new_password !== passwordData.confirm_password) {
+    return "2px solid #ff4d4f"; // Increased thickness to make it obvious
+  }
     return undefined;
-};
+  };
 
   useEffect(() => {
     if (user) {
@@ -246,15 +245,16 @@ useEffect(() => {
   };
   const openEditDomains = () => {
     const u = user as unknown as User;
+    const currentIds = assignedDomains.map(d => String(d.domain_ID));
     setFormData(prev => ({
-        ...prev,
-        domain_ids: u.domains?.map(d => String(d.domain_ID)) || []
+      ...prev,
+      domain_ids: currentIds
     }));
     setIsModalOpen(true);
   };
 
   const allFieldsFilled = passwordData.current_password && passwordData.new_password && passwordData.confirm_password;
-  const isPasswordFormValid = allFieldsFilled && passwordsMatch;
+  const isPasswordFormValid = allFieldsFilled && (passwordData.new_password === passwordData.confirm_password);
   if (!user) return null;
   const handleLogout = async () => {
       try {

@@ -94,6 +94,13 @@ const EditCategoryWeights: React.FC = () => {
 
   return (
     <div className="dx-bg" style={{ minHeight: "100vh", padding: "30px", color: "#e0e0e0" }}>
+      <button
+            className="dx-btn dx-btn-outline"
+            style={{ width: "fit-content", fontSize: "1rem", marginBottom: 20 }}
+            onClick={() => navigate("/main")}
+          >
+            ← Back
+      </button>
       {saveStatus && (
         <div style={{
           position: "fixed",

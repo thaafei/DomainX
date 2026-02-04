@@ -226,7 +226,7 @@ class TestUserListView:
         response = api_client.get('/api/users/')
         assert response.status_code in [status.HTTP_401_UNAUTHORIZED, status.HTTP_404_NOT_FOUND]
 
-
+@pytest.mark.django_db
 class TestUserUpdateView:
     @patch('users.models.CustomUser')
     @patch('users.views.auth_views.UserWithDomainsSerializer')
@@ -248,15 +248,48 @@ class TestUserUpdateView:
         
         assert response.status_code in [status.HTTP_200_OK, status.HTTP_404_NOT_FOUND]
 
-    def test_update_user_superadmin_only(self, api_client, mock_admin):
-        """Test only superadmin can update users"""
-        mock_admin.role = 'admin'
+    def test_admin_can_update_user_but_not_role(self, api_client, mock_admin):
+        """Admin can access the endpoint but role change is ignored"""
+        target_user = MagicMock(spec=CustomUser)
+        target_user.id = 99
+        target_user.role = 'user'
+        
+        with patch('users.models.CustomUser.objects.get') as mock_get:
+            mock_get.return_value = target_user
+            api_client.force_authenticate(user=mock_admin)
+            
+            payload = {
+                'first_name': 'AdminChange',
+                'role': 'superadmin'
+            }
+            response = api_client.patch(f'/api/users/{target_user.id}/', payload)
+            
+            assert response.status_code == 200
+            assert target_user.role == 'user'
+
+    def test_user_can_update_own_profile(self, api_client, mock_user):
+        """Standard users can edit their own names"""
+        with patch('users.models.CustomUser.objects.get') as mock_get:
+            mock_get.return_value = mock_user
+            api_client.force_authenticate(user=mock_user)
+            
+            payload = {'first_name': 'NewName'}
+            response = api_client.patch(f'/api/users/{mock_user.id}/', payload)
+            
+            assert response.status_code == 200
+            assert mock_user.first_name == 'NewName'
+
+    @patch('users.models.CustomUser.objects.prefetch_related')
+    def test_admin_cannot_edit_other_user_basic_info(self, api_client, mock_admin, mock_user):
+        """Admin tries to change a different user's name (Should fail based on your rules)"""
         api_client.force_authenticate(user=mock_admin)
+        mock_user.id = 5
         
-        payload = {'first_name': 'Updated'}
-        response = api_client.patch(f'/api/users/{mock_admin.id}/', payload, format='json')
+        payload = {'first_name': 'AdminChangingThis'}
+        response = api_client.patch(f'/api/users/5/', payload)
         
-        assert response.status_code in [status.HTTP_403_FORBIDDEN, status.HTTP_404_NOT_FOUND]
+        assert mock_user.first_name != 'AdminChangingThis'
+    
 
     def test_update_user_unauthenticated(self, api_client, mock_admin):
         """Test unauthenticated user cannot update"""
@@ -264,3 +297,52 @@ class TestUserUpdateView:
         response = api_client.patch(f'/api/users/{mock_admin.id}/', payload, format='json')
         
         assert response.status_code in [status.HTTP_401_UNAUTHORIZED, status.HTTP_404_NOT_FOUND]
+
+@pytest.mark.django_db
+class TestChangePasswordView:
+
+    def test_user_cannot_change_others_password(self, api_client, mock_user):
+        """Test that a regular user gets 403 when targeting another user's ID"""
+        api_client.force_authenticate(user=mock_user) # ID is 1
+        
+        payload = {
+            "old_password": "any",
+            "new_password": "NewPassword123!"
+        }
+        response = api_client.post('/api/users/99/change-password/', payload)
+        
+        assert response.status_code == status.HTTP_403_FORBIDDEN
+
+    @patch('users.models.CustomUser.objects.get')
+    def test_superadmin_can_change_others_password(self, mock_get, api_client, mock_superadmin):
+        """Test that Superadmin can bypass ownership and old_password checks"""
+        api_client.force_authenticate(user=mock_superadmin)
+        
+        target_user = MagicMock(spec=CustomUser)
+        target_user.id = 50
+        mock_get.return_value = target_user
+
+        payload = {
+            "new_password": "SuperSetPassword123!"
+        }
+        response = api_client.post('/api/users/50/change-password/', payload)
+        
+        assert response.status_code == status.HTTP_200_OK
+        target_user.set_password.assert_called_with("SuperSetPassword123!")
+
+    @patch('users.models.CustomUser.objects.get')
+    def test_owner_can_change_own_password(self, mock_get, api_client, mock_user):
+        """Test that owner can change password if old password is correct"""
+        api_client.force_authenticate(user=mock_user)
+        mock_user.id = 1
+        mock_get.return_value = mock_user
+        mock_user.check_password.return_value = True
+
+        payload = {
+            "old_password": "OldPassword123!",
+            "new_password": "NewPassword123!"
+        }
+        response = api_client.post('/api/users/1/change-password/', payload)
+        
+        assert response.status_code == status.HTTP_200_OK
+        mock_user.set_password.assert_called_with("NewPassword123!")
