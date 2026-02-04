@@ -444,25 +444,74 @@ const Visualize: React.FC = () => {
       >
         <button
           className="dx-btn dx-btn-outline"
-          style={{ width: "100%", fontSize: "1rem", textAlign: "center" }}
+          style={{ 
+            width: "100%", 
+            fontSize: "0.85rem", 
+            textAlign: "center",
+            padding: "6px 12px",
+            opacity: 0.7,
+            transition: "opacity 0.2s ease"
+          }}
+          onMouseEnter={(e) => e.currentTarget.style.opacity = "1"}
+          onMouseLeave={(e) => e.currentTarget.style.opacity = "0.7"}
           onClick={() => navigate(`/comparison-tool/${domainId}`)}
         >
           ← Back
         </button>
 
-        <div style={{ 
-          padding: "12px", 
-          background: "rgba(255,255,255,0.05)", 
-          borderRadius: "8px",
-          border: "1px solid rgba(255,255,255,0.1)"
-        }}>
-          <label style={{ display: "block", fontWeight: 600, marginBottom: 8, fontSize: "0.9rem", color: "white"}}>
+        {/* Primary Section: Graph Mode */}
+        <div style={{ marginTop: 6, marginBottom: 10 }}>
+          <h3 style={{ 
+            margin: 0,
+            marginBottom: 6,
+            fontSize: "0.85rem", 
+            fontWeight: 700,
+            color: "rgba(255,255,255,0.85)",
+            letterSpacing: "0.5px",
+            textTransform: "uppercase"
+          }}>
             Graph Mode
-          </label>
-          <div style={{ display: "flex", gap: 6 }}>
+          </h3>
+          
+          {/* Graph Type Selection */}
+          <div style={{
+            display: "flex",
+            gap: 6,
+            padding: 3,
+            background: "rgba(15,20,35,0.6)",
+            borderRadius: "10px",
+            border: "1px solid rgba(100,120,200,0.2)",
+            marginBottom: 4
+          }}>
             <button
-              className={graphMode === "AHP" ? "dx-btn dx-btn-primary" : "dx-btn dx-btn-outline"}
-              style={{ flex: 1, padding: "8px 6px", fontSize: "0.9rem" }}
+              style={{
+                flex: 1,
+                padding: "6px 10px",
+                fontSize: "0.8rem",
+                fontWeight: 600,
+                borderRadius: "8px",
+                border: graphMode === "AHP" ? "2px solid rgba(102,126,234,0.8)" : "2px solid transparent",
+                background: graphMode === "AHP" 
+                  ? "linear-gradient(135deg, rgba(102,126,234,0.25), rgba(118,75,162,0.25))"
+                  : "transparent",
+                color: graphMode === "AHP" ? "#fff" : "rgba(255,255,255,0.6)",
+                cursor: "pointer",
+                transition: "all 0.3s cubic-bezier(0.4, 0, 0.2, 1)",
+                boxShadow: graphMode === "AHP" ? "0 0 20px rgba(102,126,234,0.3), inset 0 1px 0 rgba(255,255,255,0.1)" : "none",
+                transform: graphMode === "AHP" ? "translateY(-1px)" : "none"
+              }}
+              onMouseEnter={(e) => {
+                if (graphMode !== "AHP") {
+                  e.currentTarget.style.background = "rgba(255,255,255,0.05)";
+                  e.currentTarget.style.color = "rgba(255,255,255,0.85)";
+                }
+              }}
+              onMouseLeave={(e) => {
+                if (graphMode !== "AHP") {
+                  e.currentTarget.style.background = "transparent";
+                  e.currentTarget.style.color = "rgba(255,255,255,0.6)";
+                }
+              }}
               onClick={() => {
                 setGraphMode("AHP");
                 setActiveTab("AHP");
@@ -473,8 +522,34 @@ const Visualize: React.FC = () => {
               AHP
             </button>
             <button
-              className={graphMode === "Metrics" ? "dx-btn dx-btn-primary" : "dx-btn dx-btn-outline"}
-              style={{ flex: 1, padding: "8px 6px", fontSize: "0.9rem" }}
+              style={{
+                flex: 1,
+                padding: "6px 10px",
+                fontSize: "0.8rem",
+                fontWeight: 600,
+                borderRadius: "8px",
+                border: graphMode === "Metrics" ? "2px solid rgba(67,233,123,0.8)" : "2px solid transparent",
+                background: graphMode === "Metrics"
+                  ? "linear-gradient(135deg, rgba(67,233,123,0.25), rgba(56,178,172,0.25))"
+                  : "transparent",
+                color: graphMode === "Metrics" ? "#fff" : "rgba(255,255,255,0.6)",
+                cursor: "pointer",
+                transition: "all 0.3s cubic-bezier(0.4, 0, 0.2, 1)",
+                boxShadow: graphMode === "Metrics" ? "0 0 20px rgba(67,233,123,0.3), inset 0 1px 0 rgba(255,255,255,0.1)" : "none",
+                transform: graphMode === "Metrics" ? "translateY(-1px)" : "none"
+              }}
+              onMouseEnter={(e) => {
+                if (graphMode !== "Metrics") {
+                  e.currentTarget.style.background = "rgba(255,255,255,0.05)";
+                  e.currentTarget.style.color = "rgba(255,255,255,0.85)";
+                }
+              }}
+              onMouseLeave={(e) => {
+                if (graphMode !== "Metrics") {
+                  e.currentTarget.style.background = "transparent";
+                  e.currentTarget.style.color = "rgba(255,255,255,0.6)";
+                }
+              }}
               onClick={() => {
                 setGraphMode("Metrics");
                 setActiveTab("Metrics");
@@ -485,40 +560,178 @@ const Visualize: React.FC = () => {
               Metrics
             </button>
           </div>
+          
+          <p style={{
+            margin: 0,
+            fontSize: "0.7rem",
+            color: "rgba(255,255,255,0.5)",
+            lineHeight: 1.3,
+            paddingLeft: 2
+          }}>
+            Choose how results are visualized.
+          </p>
         </div>
 
-        <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
+        {/* View Scope Selection */}
+        <div style={{ marginBottom: 10 }}>
+          <h4 style={{
+            margin: 0,
+            marginBottom: 6,
+            fontSize: "0.75rem",
+            fontWeight: 600,
+            color: "rgba(255,255,255,0.75)",
+            textTransform: "uppercase",
+            letterSpacing: "0.5px"
+          }}>
+            {graphMode === "AHP" ? "View Scope" : "Data Selection"}
+          </h4>
+          
           {graphMode === "AHP" ? (
             <>
-              <div style={{ display: "flex", gap: 6 }}>
+              <div style={{
+                display: "flex",
+                gap: 6,
+                padding: 3,
+                background: "rgba(15,20,35,0.6)",
+                borderRadius: "10px",
+                border: "1px solid rgba(102,126,234,0.15)",
+                marginBottom: 4
+              }}>
                 <button
-                  className={ahpMode === "Overall" ? "dx-btn dx-btn-primary" : "dx-btn dx-btn-outline"}
-                  style={{ flex: 1, padding: "8px 6px", fontSize: "0.9rem" }}
+                  style={{
+                    flex: 1,
+                    padding: "6px 8px",
+                    fontSize: "0.8rem",
+                    fontWeight: 600,
+                    borderRadius: "8px",
+                    border: ahpMode === "Overall" ? "2px solid rgba(102,126,234,0.6)" : "2px solid transparent",
+                    background: ahpMode === "Overall"
+                      ? "rgba(102,126,234,0.2)"
+                      : "transparent",
+                    color: ahpMode === "Overall" ? "#fff" : "rgba(255,255,255,0.55)",
+                    cursor: "pointer",
+                    transition: "all 0.25s ease",
+                    boxShadow: ahpMode === "Overall" ? "0 0 15px rgba(102,126,234,0.25)" : "none"
+                  }}
+                  onMouseEnter={(e) => {
+                    if (ahpMode !== "Overall") {
+                      e.currentTarget.style.background = "rgba(255,255,255,0.05)";
+                      e.currentTarget.style.color = "rgba(255,255,255,0.75)";
+                    }
+                  }}
+                  onMouseLeave={(e) => {
+                    if (ahpMode !== "Overall") {
+                      e.currentTarget.style.background = "transparent";
+                      e.currentTarget.style.color = "rgba(255,255,255,0.55)";
+                    }
+                  }}
                   onClick={() => setAhpMode("Overall")}
                 >
-                  Overall AHP
+                  Overall
                 </button>
                 <button
-                  className={ahpMode === "Individual" ? "dx-btn dx-btn-primary" : "dx-btn dx-btn-outline"}
-                  style={{ flex: 1, padding: "8px 6px", fontSize: "0.9rem" }}
+                  style={{
+                    flex: 1,
+                    padding: "6px 8px",
+                    fontSize: "0.8rem",
+                    fontWeight: 600,
+                    borderRadius: "8px",
+                    border: ahpMode === "Individual" ? "2px solid rgba(102,126,234,0.6)" : "2px solid transparent",
+                    background: ahpMode === "Individual"
+                      ? "rgba(102,126,234,0.2)"
+                      : "transparent",
+                    color: ahpMode === "Individual" ? "#fff" : "rgba(255,255,255,0.55)",
+                    cursor: "pointer",
+                    transition: "all 0.25s ease",
+                    boxShadow: ahpMode === "Individual" ? "0 0 15px rgba(102,126,234,0.25)" : "none"
+                  }}
+                  onMouseEnter={(e) => {
+                    if (ahpMode !== "Individual") {
+                      e.currentTarget.style.background = "rgba(255,255,255,0.05)";
+                      e.currentTarget.style.color = "rgba(255,255,255,0.75)";
+                    }
+                  }}
+                  onMouseLeave={(e) => {
+                    if (ahpMode !== "Individual") {
+                      e.currentTarget.style.background = "transparent";
+                      e.currentTarget.style.color = "rgba(255,255,255,0.55)";
+                    }
+                  }}
                   onClick={() => setAhpMode("Individual")}
                 >
-                  Individual AHP
+                  Individual
                 </button>
               </div>
             </>
           ) : (
-            <div style={{ display: "flex", gap: 6 }}>
+            <div style={{
+              display: "flex",
+              gap: 6,
+              padding: 3,
+              background: "rgba(15,20,35,0.6)",
+              borderRadius: "10px",
+              border: "1px solid rgba(67,233,123,0.15)"
+            }}>
               <button
-                className={activeTab === "Metrics" ? "dx-btn dx-btn-primary" : "dx-btn dx-btn-outline"}
-                style={{ flex: 1, padding: "8px 6px", fontSize: "0.9rem" }}
+                style={{
+                  flex: 1,
+                  padding: "6px 8px",
+                  fontSize: "0.8rem",
+                  fontWeight: 600,
+                  borderRadius: "8px",
+                  border: activeTab === "Metrics" ? "2px solid rgba(67,233,123,0.6)" : "2px solid transparent",
+                  background: activeTab === "Metrics"
+                    ? "rgba(67,233,123,0.2)"
+                    : "transparent",
+                  color: activeTab === "Metrics" ? "#fff" : "rgba(255,255,255,0.55)",
+                  cursor: "pointer",
+                  transition: "all 0.25s ease",
+                  boxShadow: activeTab === "Metrics" ? "0 0 15px rgba(67,233,123,0.25)" : "none"
+                }}
+                onMouseEnter={(e) => {
+                  if (activeTab !== "Metrics") {
+                    e.currentTarget.style.background = "rgba(255,255,255,0.05)";
+                    e.currentTarget.style.color = "rgba(255,255,255,0.75)";
+                  }
+                }}
+                onMouseLeave={(e) => {
+                  if (activeTab !== "Metrics") {
+                    e.currentTarget.style.background = "transparent";
+                    e.currentTarget.style.color = "rgba(255,255,255,0.55)";
+                  }
+                }}
                 onClick={() => setActiveTab("Metrics")}
               >
                 Metrics
               </button>
               <button
-                className={activeTab === "Libraries" ? "dx-btn dx-btn-primary" : "dx-btn dx-btn-outline"}
-                style={{ flex: 1, padding: "8px 6px", fontSize: "0.9rem" }}
+                style={{
+                  flex: 1,
+                  padding: "6px 8px",
+                  fontSize: "0.8rem",
+                  fontWeight: 600,
+                  borderRadius: "8px",
+                  border: activeTab === "Libraries" ? "2px solid rgba(67,233,123,0.6)" : "2px solid transparent",
+                  background: activeTab === "Libraries"
+                    ? "rgba(67,233,123,0.2)"
+                    : "transparent",
+                  color: activeTab === "Libraries" ? "#fff" : "rgba(255,255,255,0.55)",
+                  cursor: "pointer",
+                  transition: "all 0.25s ease",
+                  boxShadow: activeTab === "Libraries" ? "0 0 15px rgba(67,233,123,0.25)" : "none"
+                }}
+                onMouseEnter={(e) => {
+                  if (activeTab !== "Libraries") {
+                    e.currentTarget.style.background = "rgba(255,255,255,0.05)";
+                    e.currentTarget.style.color = "rgba(255,255,255,0.75)";
+                  }
+                }}
+                onMouseLeave={(e) => {
+                  if (activeTab !== "Libraries") {
+                    e.currentTarget.style.background = "transparent";
+                    e.currentTarget.style.color = "rgba(255,255,255,0.55)";
+                  }
+                }}
                 onClick={() => setActiveTab("Libraries")}
               >
                 Libraries
@@ -531,25 +744,28 @@ const Visualize: React.FC = () => {
           style={{
             display: "flex",
             flexDirection: "column",
-            gap: 10,
+            gap: 12,
             color: "white",
             flex: 1,
             minHeight: 0,
-            overflow: "hidden"
+            overflow: "hidden",
+            transition: "all 0.3s ease"
           }}
         >
           {graphMode === "AHP" && activeTab !== "Libraries" && (
             <>
               {ahpMode === "Overall" && (
                 <>
-                  <label className="dx-vis-title" style={{ fontWeight: 600 }}>
-                    Overall AHP Settings
-                  </label>
-                  <div style={{ fontSize: "0.85rem", opacity: 0.8 }}>
-                    Select categories to combine into an overall AHP score.
+                  <div style={{ display: "flex", alignItems: "center" }}>
+                    <label className="dx-vis-title" style={{ fontWeight: 600 }}>
+                      Overall AHP Settings
+                    </label>
+                  </div>
+                  <div style={{ fontSize: "0.8rem", opacity: 0.7, lineHeight: 1.5 }}>
+                    Adjust category weights to combine into an overall AHP score.
                   </div>
                   
-                  <div style={{ marginTop: 10, display: "flex", flexDirection: "column", gap: 8 }}>
+                  <div style={{ display: "flex", flexDirection: "column"}}>
                     <label style={{ display: "flex", alignItems: "center", gap: 6 }}>
                       <input
                         type="checkbox"
@@ -609,13 +825,18 @@ const Visualize: React.FC = () => {
 
               {ahpMode === "Individual" && (
                 <>
-                  <label className="dx-vis-title" style={{ fontWeight: 600 }}>
-                    Individual Category AHP
-                  </label>
+                  <div style={{ display: "flex", alignItems: "center" }}>
+                    <label className="dx-vis-title" style={{ fontWeight: 600 }}>
+                      Individual Category AHP
+                    </label>
+                  </div>
+                  <div style={{ fontSize: "0.8rem", opacity: 0.7 }}>
+                    Run AHP separately on each selected category.
+                  </div>
                   <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
                     <button
                       className="dx-btn dx-btn-outline"
-                      style={{ padding: "6px 10px", fontSize: "0.85rem" }}
+                      style={{ padding: "6px 10px", fontSize: "0.8rem" }}
                       onClick={toggleSelectAllIndividualAhpCategories}
                       disabled={categoryListForAhp.length === 0}
                     >
@@ -623,14 +844,10 @@ const Visualize: React.FC = () => {
                         ? "Clear All"
                         : "Select All"}
                     </button>
-                    <span style={{ fontSize: "0.85rem", opacity: 0.8 }}>
+                    <span style={{ fontSize: "0.75rem", opacity: 0.7 }}>
                       {selectedIndividualAhpCategories.length} selected
                     </span>
                   </div>
-                  <div style={{ fontSize: "0.85rem", opacity: 0.8, marginTop: 4 }}>
-                    Run AHP separately on each selected category.
-                  </div>
-                  
                   <div
                     style={{
                       flex: 1,
