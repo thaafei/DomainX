@@ -23,6 +23,15 @@ interface DomainsListProps {
   setFormError: (error: string) => void;
   handleCreateDomain: () => void;
   handleLogout: () => void;
+  currentUser: any;
+  editFormData: any;
+  setEditFormData: (data: any) => void;
+  isEditModalOpen: boolean;
+  setIsEditModalOpen: (open: boolean) => void;
+  handleUpdateUser: () => void;
+  updateLoading: boolean;
+  updateError: string | null;
+  showSuccess: boolean;
 }
 
 const DomainsList: React.FC<DomainsListProps> = ({
@@ -45,11 +54,30 @@ const DomainsList: React.FC<DomainsListProps> = ({
   setFormError,
   handleCreateDomain,
   handleLogout,
+  currentUser,
+  editFormData,
+  setEditFormData,
+  isEditModalOpen,
+  setIsEditModalOpen,
+  handleUpdateUser,
+  updateLoading,
+  updateError,
+  showSuccess
 }) => {
   const navigate = useNavigate();
   const { user } = useAuthStore();
   const isSuperAdmin = user?.role === "superadmin";
-
+  const closeEditModal = () => setIsEditModalOpen(false);
+  const openEditModal = () => {
+    if (currentUser) {
+      setEditFormData({
+        first_name: currentUser.first_name || "",
+        last_name: currentUser.last_name || "",
+        user_name: currentUser.username || "",
+      });
+      setIsEditModalOpen(true);
+    }
+  };
   useEffect(() => {
     if (showDomainModal && user && adminUsers.length > 0) {
       const currentUserInList = adminUsers.find(u => u.id === user.id);
@@ -143,12 +171,118 @@ const DomainsList: React.FC<DomainsListProps> = ({
             </>
           )}
           <button
+            className="dx-btn dx-btn-primary"
+            onClick={openEditModal}
+            style={{display: "flex", alignItems: "center", gap: 8}}
+          >
+            <span style={{ fontSize: 15, marginRight: 8 }}>👤</span> Edit Profile
+          </button>
+          <button
             className="dx-btn dx-btn-outline"
             onClick={() => handleLogout()}
             style={{ display: "flex", alignItems: "center", gap: 8}}
           >
             Logout
           </button>
+          {isEditModalOpen && currentUser && (
+            <div
+              style={{
+                position: "fixed",
+                top: 0,
+                left: 0,
+                right: 0,
+                bottom: 0,
+                backgroundColor: "rgba(0, 0, 0, 0.85)",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                zIndex: 2000,
+              }}
+              onClick={() => setIsEditModalOpen(false)}
+            >
+              <div
+                className="dx-card"
+                style={{
+                  width: "min(400px, 90vw)",
+                  padding: "30px", // Pushes content away from the border edges
+                  background: "#161b22",
+                  border: "1px solid #30363d",
+                  borderRadius: "16px",
+                  display: "flex",
+                  flexDirection: "column",
+                  gap: "24px", // Better vertical breathing room
+                  boxShadow: "0 20px 50px rgba(0,0,0,0.5)",
+                }}
+                onClick={(e) => e.stopPropagation()}
+              >
+                <h3 style={{ color: "#4facfe", margin: 0, fontSize: "1.5rem", fontWeight: "300" }}>
+                  Edit Profile
+                </h3>
+
+                <div style={{ display: "flex", flexDirection: "column", gap: "16px" }}>
+                  <div>
+                    <label style={{ display: "block", color: "#8b949e", marginBottom: "8px", fontSize: "0.85rem" }}>First Name</label>
+                    <input
+                      className="dx-input"
+                      style={{ width: "100%", boxSizing: "border-box" }}
+                      value={editFormData.first_name}
+                      onChange={(e) => setEditFormData({ ...editFormData, first_name: e.target.value })}
+                    />
+                  </div>
+                  <div>
+                    <label style={{ display: "block", color: "#8b949e", marginBottom: "8px", fontSize: "0.85rem" }}>Last Name</label>
+                    <input
+                      className="dx-input"
+                      style={{ width: "100%", boxSizing: "border-box" }}
+                      value={editFormData.last_name}
+                      onChange={(e) => setEditFormData({ ...editFormData, last_name: e.target.value })}
+                    />
+                  </div>
+                  <div>
+                    <label style={{ display: "block", color: "#8b949e", marginBottom: "8px", fontSize: "0.85rem" }}>Username</label>
+                    <input
+                      className="dx-input"
+                      style={{ width: "100%", boxSizing: "border-box" }}
+                      value={editFormData.user_name}
+                      onChange={(e) => setEditFormData({ ...editFormData, user_name: e.target.value })}
+                    />
+                  </div>
+                </div>
+
+                <div style={{ marginTop: "8px" }}>
+                  {/* Feedback Area: No more browser alerts! */}
+                  <div style={{ height: "24px", marginBottom: "12px", textAlign: "center" }}>
+                    {updateError && (
+                      <span style={{ color: "#ff7b72", fontSize: "0.9rem" }}>{updateError}</span>
+                    )}
+                    {showSuccess && (
+                      <span style={{ color: "#7ee787", fontSize: "0.9rem", fontWeight: "600" }}>
+                        ✓ Profile updated successfully!
+                      </span>
+                    )}
+                  </div>
+
+                  <div style={{ display: "flex", gap: "12px" }}>
+                    <button
+                      className="dx-btn dx-btn-primary"
+                      onClick={handleUpdateUser}
+                      disabled={updateLoading || showSuccess}
+                      style={{ flex: 1, padding: "12px", cursor: "pointer" }}
+                    >
+                      {updateLoading ? "Saving..." : "Save Changes"}
+                    </button>
+                    <button
+                      className="dx-btn dx-btn-outline"
+                      onClick={() => setIsEditModalOpen(false)}
+                      style={{ flex: 1, padding: "12px", cursor: "pointer" }}
+                    >
+                      Cancel
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
           {showDomainModal && (
             <div
               style={{

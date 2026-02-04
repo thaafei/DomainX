@@ -51,6 +51,53 @@ const Main: React.FC = () => {
   const [tableData, setTableData] = useState<any[]>([]);
   const [sortConfig, setSortConfig] = useState<{ key: string; direction: "asc" | "desc" } | null>(null);
 
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+  const [updateLoading, setUpdateLoading] = useState(false);
+  const [updateError, setUpdateError] = useState(null as string | null);
+  const { user } = useAuthStore();
+  const [editFormData, setEditFormData] = useState({
+    first_name: "",
+    last_name: "",
+    user_name: "",
+  });
+
+  const [showSuccess, setShowSuccess] = useState(false);
+
+  const handleUpdateUser = async () => {
+    if (!user) return;
+    try {
+      setUpdateLoading(true);
+      setUpdateError(null);
+      const response = await fetch(apiUrl(`/users/${user.id}/`), {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        credentials: "include",
+        body: JSON.stringify({
+          first_name: editFormData.first_name,
+          last_name: editFormData.last_name,
+          user_name: editFormData.user_name,
+        }),
+      });
+
+      if (response.ok) {
+        await fetchCurrentUser();
+        setShowSuccess(true);
+        // Automatically hide the message and close modal after 2 seconds
+        setTimeout(() => {
+          setShowSuccess(false);
+          setIsEditModalOpen(false);
+        }, 2000);
+      } else {
+        const errorData = await response.json();
+        setUpdateError(errorData.error || "Update failed");
+      }
+    } catch (err) {
+      setUpdateError("Network error");
+    } finally {
+      setUpdateLoading(false);
+    }
+  };
+
   const getAHPRanking = async (domainId: string) => {
     try {
       const response = await fetch(apiUrl(`/library_metric_values/ahp/${domainId}/`), {
@@ -361,6 +408,15 @@ const Main: React.FC = () => {
         setFormError={setFormError}
         handleCreateDomain={handleCreateDomain}
         handleLogout={handleLogout}
+        currentUser={user}
+        editFormData={editFormData}
+        setEditFormData={setEditFormData}
+        isEditModalOpen={isEditModalOpen}
+        setIsEditModalOpen={setIsEditModalOpen}
+        handleUpdateUser={handleUpdateUser}
+        updateLoading={updateLoading}
+        updateError={updateError}
+        showSuccess={showSuccess}
       />
 
       <div style={{ flex: 1, display: "flex", flexDirection: "column", alignItems: "center", gap: "20px", overflowY: "auto" }}>

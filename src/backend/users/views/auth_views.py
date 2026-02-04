@@ -115,12 +115,15 @@ class UserUpdateView(APIView):
         # Update basic fields
         first_name = request.data.get('first_name')
         last_name = request.data.get('last_name')
+        user_name = request.data.get('user_name')
         role = request.data.get('role')
         
         if first_name is not None:
             user_to_update.first_name = first_name
         if last_name is not None:
             user_to_update.last_name = last_name
+        if user_name is not None:
+            user_to_update.username = user_name
         if role is not None and role in ['user', 'admin', 'superadmin']:
             user_to_update.role = role
         
