@@ -155,11 +155,11 @@ useEffect(() => {
                       passwordsMatch;
 
   const getInputBorder = (type: 'current' | 'new' | 'confirm') => {
-    if (type === 'confirm' && passwordData.confirm_password && !passwordsMatch) {
-      return "1px solid #ff4d4f !important";
-    }
+    if (passwordData.confirm_password.length > 0 && passwordData.new_password !== passwordData.confirm_password) {
+    return "2px solid #ff4d4f"; // Increased thickness to make it obvious
+  }
     return undefined;
-};
+  };
 
   useEffect(() => {
     if (user) {
@@ -254,7 +254,7 @@ useEffect(() => {
   };
 
   const allFieldsFilled = passwordData.current_password && passwordData.new_password && passwordData.confirm_password;
-  const isPasswordFormValid = allFieldsFilled && passwordsMatch;
+  const isPasswordFormValid = allFieldsFilled && (passwordData.new_password === passwordData.confirm_password);
   if (!user) return null;
   const handleLogout = async () => {
       try {
