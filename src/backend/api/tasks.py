@@ -1,11 +1,16 @@
+import os
+
 from celery import shared_task
+from celery.exceptions import SoftTimeLimitExceeded
 from celery.utils.log import get_task_logger
+from django.conf import settings
+from django.db import transaction
 from django.utils import timezone
 
-from .database.services import RepoAnalyzer
 from .database.libraries.models import Library
-from .database.metrics.models import Metric
 from .database.library_metric_values.models import LibraryMetricValue
+from .database.metrics.models import Metric
+from .database.services import RepoAnalyzer
 
 logger = get_task_logger("api.tasks.analyze_repo")
 
@@ -24,51 +29,73 @@ def analyze_repo_task(self, library_id: str, repo_url: str):
     lib.analysis_started_at = timezone.now()
     lib.analysis_task_id = task_id
     lib.analysis_error = None
-    lib.save(update_fields=["analysis_status", "analysis_started_at", "analysis_task_id", "analysis_error"])
+    lib.save(
+        update_fields=[
+            "analysis_status",
+            "analysis_started_at",
+            "analysis_task_id",
+            "analysis_error",
+        ]
+    )
 
     start = timezone.now()
 
     try:
         analyzer = RepoAnalyzer(github_url=repo_url)
         results = analyzer.run_analysis_and_get_data()
-        metrics_data = results.get("metric_data", {})
-
-        logger.debug(
-            "Analyzer returned metrics",
-            extra={"library_id": library_id, "task_id": task_id, "metric_keys": list(metrics_data.keys())},
-        )
+        metrics_data = results.get("metric_data", {}) or {}
 
         metric_names = list(metrics_data.keys())
         metrics = Metric.objects.filter(metric_name__in=metric_names)
         metrics_by_name = {m.metric_name: m for m in metrics}
 
-        rows = []
-        for metric_name, value in metrics_data.items():
-            metric_obj = metrics_by_name.get(metric_name)
-            if not metric_obj:
-                logger.debug(
-                    "Metric not found in DB; skipping",
-                    extra={"library_id": library_id, "task_id": task_id, "metric_name": metric_name},
-                )
-                continue
+        updated_count = 0
+        skipped_count = 0
 
-            rows.append(
-                LibraryMetricValue(
+        with transaction.atomic():
+            for metric_name, value in metrics_data.items():
+                metric_obj = metrics_by_name.get(metric_name)
+                if not metric_obj:
+                    skipped_count += 1
+                    logger.debug(
+                        "Metric not found in DB; skipping",
+                        extra={
+                            "library_id": library_id,
+                            "task_id": task_id,
+                            "metric_name": metric_name,
+                        },
+                    )
+                    continue
+
+                try:
+                    int_value = int(value)
+                except (TypeError, ValueError):
+                    skipped_count += 1
+                    logger.debug(
+                        "Metric value not an int; skipping",
+                        extra={
+                            "library_id": library_id,
+                            "task_id": task_id,
+                            "metric_name": metric_name,
+                            "value": value,
+                        },
+                    )
+                    continue
+
+                LibraryMetricValue.objects.update_or_create(
                     library=lib,
                     metric=metric_obj,
-                    value=int(value),
-                    evidence=f"Auto-calculated via GitHub API on {timezone.now().isoformat()}",
+                    defaults={
+                        "value": int_value,
+                        "evidence": f"Auto-calculated via GitHub API/SCC on {timezone.now().isoformat()}",
+                    },
                 )
-            )
-
-        # clear + write (avoids stale values)
-        LibraryMetricValue.objects.filter(library=lib).delete()
-        if rows:
-            LibraryMetricValue.objects.bulk_create(rows)
+                updated_count += 1
 
         lib.analysis_status = Library.ANALYSIS_SUCCESS
         lib.analysis_finished_at = timezone.now()
-        lib.save(update_fields=["analysis_status", "analysis_finished_at"])
+        lib.analysis_error = None
+        lib.save(update_fields=["analysis_status", "analysis_finished_at", "analysis_error"])
 
         duration_ms = int((timezone.now() - start).total_seconds() * 1000)
 
@@ -78,22 +105,133 @@ def analyze_repo_task(self, library_id: str, repo_url: str):
                 "library_id": library_id,
                 "repo_url": repo_url,
                 "task_id": task_id,
-                "metrics_count": len(rows),
+                "updated_count": updated_count,
+                "skipped_count": skipped_count,
                 "duration_ms": duration_ms,
                 "status": "success",
             },
         )
 
-        return {"ok": True, "metrics": len(rows)}
+        return {"ok": True, "metrics_updated": updated_count, "metrics_skipped": skipped_count}
 
-    except Exception as e:
+    except Exception:
         lib.analysis_status = Library.ANALYSIS_FAILED
-        lib.analysis_error = str(e)
+        lib.analysis_error = "Analysis failed. Please check server logs."
         lib.analysis_finished_at = timezone.now()
         lib.save(update_fields=["analysis_status", "analysis_error", "analysis_finished_at"])
 
         logger.error(
             "Repo analysis failed",
+            exc_info=True,
+            extra={"library_id": library_id, "repo_url": repo_url, "task_id": task_id},
+        )
+        raise
+
+
+@shared_task(
+    bind=True,
+    queue="gitstats",
+    soft_time_limit=14400,
+    time_limit=15300,
+)
+def analyze_repo_gitstats_task(self, library_id: str, repo_url: str):
+    task_id = getattr(self.request, "id", None)
+
+    lib = Library.objects.get(library_ID=library_id)
+    lib.gitstats_status = Library.GITSTATS_RUNNING
+    lib.gitstats_started_at = timezone.now()
+    lib.gitstats_task_id = task_id
+    lib.gitstats_error = None
+    lib.save(
+        update_fields=[
+            "gitstats_status",
+            "gitstats_started_at",
+            "gitstats_task_id",
+            "gitstats_error",
+        ]
+    )
+
+    try:
+        work_dir = os.path.join(settings.GITSTATS_WORK_DIR, library_id)
+        serve_dir = os.path.join(settings.GITSTATS_SERVE_DIR, library_id)
+
+        index_path = os.path.join(serve_dir, "git_stats", "index.html")
+        if os.path.exists(index_path):
+            lib.gitstats_report_path = f"/gitstats/{library_id}/git_stats/index.html"
+            lib.gitstats_status = Library.GITSTATS_SUCCESS
+            lib.gitstats_finished_at = timezone.now()
+            lib.gitstats_error = None
+            lib.save(
+                update_fields=[
+                    "gitstats_status",
+                    "gitstats_finished_at",
+                    "gitstats_report_path",
+                    "gitstats_error",
+                ]
+            )
+
+            metric = Metric.objects.filter(metric_name="GitStats Report").first()
+            if metric:
+                LibraryMetricValue.objects.update_or_create(
+                    library=lib,
+                    metric=metric,
+                    defaults={
+                        "value": lib.gitstats_report_path,
+                        "evidence": None,
+                    },
+                )
+
+            return {"ok": True, "result": {"skipped": True}}
+
+        analyzer = RepoAnalyzer(github_url=repo_url)
+        results = analyzer.run_gitstats_only(work_dir=work_dir, serve_dir=serve_dir, library_id=library_id)
+
+        lib.gitstats_report_path = f"/gitstats/{library_id}/git_stats/index.html"
+        lib.gitstats_status = Library.GITSTATS_SUCCESS
+        lib.gitstats_finished_at = timezone.now()
+        lib.gitstats_error = None
+        lib.save(
+            update_fields=[
+                "gitstats_status",
+                "gitstats_finished_at",
+                "gitstats_report_path",
+                "gitstats_error",
+            ]
+        )
+
+        metric = Metric.objects.filter(metric_name="GitStats Report").first()
+        if metric:
+            LibraryMetricValue.objects.update_or_create(
+                library=lib,
+                metric=metric,
+                defaults={
+                    "value": lib.gitstats_report_path,
+                    "evidence": None,
+                },
+            )
+
+        return {"ok": True, "result": results}
+
+    except SoftTimeLimitExceeded:
+        lib.gitstats_status = Library.GITSTATS_FAILED
+        lib.gitstats_error = "GitStats timed out. Please try again later."
+        lib.gitstats_finished_at = timezone.now()
+        lib.save(update_fields=["gitstats_status", "gitstats_error", "gitstats_finished_at"])
+
+        logger.error(
+            "GitStats timed out",
+            extra={"library_id": library_id, "repo_url": repo_url, "task_id": task_id},
+        )
+        raise
+
+    except Exception:
+        lib.gitstats_status = Library.GITSTATS_FAILED
+        lib.gitstats_error = "GitStats failed. Please check server logs."
+        lib.gitstats_finished_at = timezone.now()
+        lib.save(update_fields=["gitstats_status", "gitstats_error", "gitstats_finished_at"])
+
+        logger.error(
+            "GitStats failed",
             exc_info=True,
             extra={"library_id": library_id, "repo_url": repo_url, "task_id": task_id},
         )
