@@ -31,11 +31,14 @@ const Visualize: React.FC = () => {
   const [categories, setCategories] = useState<string[]>([]);
   const [libraries, setLibraries] = useState<LibraryRow[]>([]);
 
+  const [graphMode, setGraphMode] = useState<"AHP" | "Metrics">("Metrics");
+  const [ahpMode, setAhpMode] = useState<"Overall" | "Individual">("Overall");
   const [activeTab, setActiveTab] = useState<"AHP" | "Metrics" | "Libraries">("Metrics");
 
   const [selectedCategories, setSelectedCategories] = useState<string[]>([]);
   const [selectedMetrics, setSelectedMetrics] = useState<string[]>([]);
   const [selectedLibraries, setSelectedLibraries] = useState<string[]>([]);
+  const [selectedIndividualAhpCategories, setSelectedIndividualAhpCategories] = useState<string[]>([]);
 
   const [chartData, setChartData] = useState<{ metric: string; rows: { label: string; value: number }[] }[] | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -44,7 +47,6 @@ const Visualize: React.FC = () => {
 
   const [categoryWeights, setCategoryWeights] = useState<Record<string, number>>({});
   const [normalizeWeights, setNormalizeWeights] = useState(true);
-  const [rankByCategoryOnly, setRankByCategoryOnly] = useState(false);
 
   useEffect(() => {
   if (!DOMAIN_ID) return;
@@ -87,7 +89,10 @@ const Visualize: React.FC = () => {
       ]);
 
       setMetricList(Array.isArray(metricsData) ? metricsData : comparisonData.metrics || []);
-      setLibraries(comparisonData.libraries || []);
+      const librariesData = comparisonData.libraries || [];
+      setLibraries(librariesData);
+      // Auto-select all libraries by default
+      setSelectedLibraries(librariesData.map((lib: LibraryRow) => lib.library_ID));
       setCategories(Array.isArray(categoriesData?.Categories) ? categoriesData.Categories : []);
 
       const derivedCategories = Array.from(
@@ -131,21 +136,25 @@ const Visualize: React.FC = () => {
     return metricList.filter(m => m.category === name).map(m => m.metric_name);
   };
 
+  const isCategoryFullySelected = (name: string) => {
+    const categoryMetrics = getCategoryMetricNames(name);
+    if (categoryMetrics.length === 0) return false;
+    return categoryMetrics.every(metric => selectedMetrics.includes(metric));
+  };
+
   const toggleCategory = (name: string) => {
     const categoryMetrics = getCategoryMetricNames(name);
+    const isFullySelected = isCategoryFullySelected(name);
 
-    setSelectedCategories(prev => {
-      const isSelected = prev.includes(name);
-
-      setSelectedMetrics(prevMetrics => {
-        if (isSelected) {
-          return prevMetrics.filter(metric => !categoryMetrics.includes(metric));
-        }
-        const merged = new Set([...prevMetrics, ...categoryMetrics]);
+    setSelectedMetrics(prev => {
+      if (isFullySelected) {
+        // Remove all metrics from this category
+        return prev.filter(metric => !categoryMetrics.includes(metric));
+      } else {
+        // Add all metrics from this category
+        const merged = new Set([...prev, ...categoryMetrics]);
         return Array.from(merged);
-      });
-
-      return isSelected ? prev.filter(x => x !== name) : [...prev, name];
+      }
     });
   };
 
@@ -158,6 +167,12 @@ const Visualize: React.FC = () => {
   const toggleLibrary = (id: string) => {
     setSelectedLibraries(prev =>
       prev.includes(id) ? prev.filter(x => x !== id) : [...prev, id]
+    );
+  };
+
+  const toggleIndividualAhpCategory = (category: string) => {
+    setSelectedIndividualAhpCategories(prev =>
+      prev.includes(category) ? prev.filter(x => x !== category) : [...prev, category]
     );
   };
 
@@ -189,6 +204,11 @@ const Visualize: React.FC = () => {
     const allNames = metricList.map(m => m.metric_name);
     const allSelected = selectedMetrics.length === allNames.length;
     setSelectedMetrics(allSelected ? [] : allNames);
+  };
+
+  const toggleSelectAllIndividualAhpCategories = () => {
+    const allSelected = selectedIndividualAhpCategories.length === categoryListForAhp.length;
+    setSelectedIndividualAhpCategories(allSelected ? [] : [...categoryListForAhp]);
   };
 
   function buildChartLayout(metric: string): Partial<Layout> {
@@ -269,9 +289,16 @@ const Visualize: React.FC = () => {
     setError(null);
     setChartData(null);
 
-    if (selectedCategories.length === 0 && selectedMetrics.length === 0) {
-      setError("Please select at least one category or metric.");
-      return;
+    if (graphMode === "Metrics") {
+      if (selectedCategories.length === 0 && selectedMetrics.length === 0) {
+        setError("Please select at least one category or metric.");
+        return;
+      }
+    } else if (graphMode === "AHP" && ahpMode === "Individual") {
+      if (selectedIndividualAhpCategories.length === 0) {
+        setError("Please select at least one category for Individual AHP analysis.");
+        return;
+      }
     }
 
     if (selectedLibraries.length < 2) {
@@ -302,7 +329,7 @@ const Visualize: React.FC = () => {
       (metricsByCategory[cat] || []).forEach(name => selectedMetricNames.add(name));
     });
 
-    if (!rankByCategoryOnly && selectedMetricNames.size === 0) {
+    if (graphMode === "Metrics" && selectedMetricNames.size === 0) {
       setError("Selected categories have no metrics.");
       return;
     }
@@ -319,40 +346,61 @@ const Visualize: React.FC = () => {
     };
 
     const selectedMetricArray = Array.from(selectedMetricNames);
-    const metricCategoryMap = new Map(metricList.map(m => [m.metric_name, m.category]));
     const selectedLibs = libraries.filter(l => selectedLibraries.includes(l.library_ID));
 
     let charts: { metric: string; rows: { label: string; value: number }[] }[] = [];
 
-    if (rankByCategoryOnly) {
-      const categoryTargets = selectedCategories.length
-        ? selectedCategories
-        : Object.keys(metricsByCategory);
-
-      charts = categoryTargets.map(cat => {
-        const weight = categoryWeights[cat] ?? 1;
-        const metricNames = metricsByCategory[cat] || [];
+    if (graphMode === "AHP") {
+      // Overall AHP mode - use all available categories with their weights
+      if (ahpMode === "Overall") {
+        const allCategories = Object.keys(metricsByCategory);
+        // Show overall AHP score combining all categories
         const rows = selectedLibs.map(l => {
-          const sum = metricNames.reduce((acc, name) => acc + toNumber(l.metrics[name]), 0);
+          let totalScore = 0;
+          allCategories.forEach(cat => {
+            const weight = categoryWeights[cat] ?? 1;
+            const metricNames = metricsByCategory[cat] || [];
+            const categorySum = metricNames.reduce((acc, name) => acc + toNumber(l.metrics[name]), 0);
+            totalScore += categorySum * weight;
+          });
           return {
             label: l.library_name,
-            value: sum * weight
+            value: totalScore
           };
         }).sort((a, b) => b.value - a.value);
 
-        return {
-          metric: `${cat} (weighted)`
-          ,
+        charts = [{
+          metric: "Overall AHP Score",
           rows
-        };
-      }).filter(chart => chart.rows.length > 0);
+        }];
+      }
+
+      // Individual category AHP (run AHP on each selected category separately)
+      if (ahpMode === "Individual" && selectedIndividualAhpCategories.length > 0) {
+        const individualCharts = selectedIndividualAhpCategories.map(cat => {
+          const metricNames = metricsByCategory[cat] || [];
+          const rows = selectedLibs.map(l => {
+            const sum = metricNames.reduce((acc, name) => acc + toNumber(l.metrics[name]), 0);
+            return {
+              label: l.library_name,
+              value: sum
+            };
+          }).sort((a, b) => b.value - a.value);
+
+          return {
+            metric: `${cat} (Individual AHP)`,
+            rows
+          };
+        }).filter(chart => chart.rows.length > 0);
+
+        charts = [...charts, ...individualCharts];
+      }
     } else {
+      // Metrics mode - show raw metric values
       charts = selectedMetricArray.map(metricName => {
-        const category = metricCategoryMap.get(metricName) || "Uncategorized";
-        const weight = categoryWeights[category] ?? 1;
         const rows = selectedLibs.map(l => ({
           label: l.library_name,
-          value: toNumber(l.metrics[metricName]) * weight
+          value: toNumber(l.metrics[metricName])
         })).sort((a, b) => b.value - a.value);
 
         return {
@@ -402,17 +450,81 @@ const Visualize: React.FC = () => {
           ← Back
         </button>
 
-        <div style={{ display: "flex", gap: 6 }}>
-          {(["AHP", "Metrics", "Libraries"] as const).map(tab => (
+        <div style={{ 
+          padding: "12px", 
+          background: "rgba(255,255,255,0.05)", 
+          borderRadius: "8px",
+          border: "1px solid rgba(255,255,255,0.1)"
+        }}>
+          <label style={{ display: "block", fontWeight: 600, marginBottom: 8, fontSize: "0.9rem", color: "white"}}>
+            Graph Mode
+          </label>
+          <div style={{ display: "flex", gap: 6 }}>
             <button
-              key={tab}
-              className={activeTab === tab ? "dx-btn dx-btn-primary" : "dx-btn dx-btn-outline"}
+              className={graphMode === "AHP" ? "dx-btn dx-btn-primary" : "dx-btn dx-btn-outline"}
               style={{ flex: 1, padding: "8px 6px", fontSize: "0.9rem" }}
-              onClick={() => setActiveTab(tab)}
+              onClick={() => {
+                setGraphMode("AHP");
+                setActiveTab("AHP");
+                setChartData(null);
+                setError(null);
+              }}
             >
-              {tab}
+              AHP
             </button>
-          ))}
+            <button
+              className={graphMode === "Metrics" ? "dx-btn dx-btn-primary" : "dx-btn dx-btn-outline"}
+              style={{ flex: 1, padding: "8px 6px", fontSize: "0.9rem" }}
+              onClick={() => {
+                setGraphMode("Metrics");
+                setActiveTab("Metrics");
+                setChartData(null);
+                setError(null);
+              }}
+            >
+              Metrics
+            </button>
+          </div>
+        </div>
+
+        <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
+          {graphMode === "AHP" ? (
+            <>
+              <div style={{ display: "flex", gap: 6 }}>
+                <button
+                  className={ahpMode === "Overall" ? "dx-btn dx-btn-primary" : "dx-btn dx-btn-outline"}
+                  style={{ flex: 1, padding: "8px 6px", fontSize: "0.9rem" }}
+                  onClick={() => setAhpMode("Overall")}
+                >
+                  Overall AHP
+                </button>
+                <button
+                  className={ahpMode === "Individual" ? "dx-btn dx-btn-primary" : "dx-btn dx-btn-outline"}
+                  style={{ flex: 1, padding: "8px 6px", fontSize: "0.9rem" }}
+                  onClick={() => setAhpMode("Individual")}
+                >
+                  Individual AHP
+                </button>
+              </div>
+            </>
+          ) : (
+            <div style={{ display: "flex", gap: 6 }}>
+              <button
+                className={activeTab === "Metrics" ? "dx-btn dx-btn-primary" : "dx-btn dx-btn-outline"}
+                style={{ flex: 1, padding: "8px 6px", fontSize: "0.9rem" }}
+                onClick={() => setActiveTab("Metrics")}
+              >
+                Metrics
+              </button>
+              <button
+                className={activeTab === "Libraries" ? "dx-btn dx-btn-primary" : "dx-btn dx-btn-outline"}
+                style={{ flex: 1, padding: "8px 6px", fontSize: "0.9rem" }}
+                onClick={() => setActiveTab("Libraries")}
+              >
+                Libraries
+              </button>
+            </div>
+          )}
         </div>
 
         <div
@@ -426,77 +538,124 @@ const Visualize: React.FC = () => {
             overflow: "hidden"
           }}
         >
-          {activeTab === "AHP" && (
+          {graphMode === "AHP" && activeTab !== "Libraries" && (
             <>
-              <label className="dx-vis-title" style={{ fontWeight: 600 }}>
-                Category Weights (AHP)
-              </label>
-              <div style={{ fontSize: "0.85rem", opacity: 0.8 }}>
-                Adjust weights per category (normalized by default).
-              </div>
-              <div style={{ marginTop: 8, display: "flex", gap: 10, alignItems: "center" }}>
-                  <label style={{ display: "flex", alignItems: "center", gap: 6 }}>
-                    <input
-                      type="checkbox"
-                      checked={normalizeWeights}
-                      onChange={() => {
-                        setNormalizeWeights(prev => !prev);
-                        if (!normalizeWeights) {
-                          normalizeCategoryWeights();
-                        }
-                      }}
-                    />
-                    Normalize weights
+              {ahpMode === "Overall" && (
+                <>
+                  <label className="dx-vis-title" style={{ fontWeight: 600 }}>
+                    Overall AHP Settings
                   </label>
-                </div>
-              <div style={{ marginTop: 6 }}>
-                <label style={{ display: "flex", alignItems: "center", gap: 6 }}>
-                  <input
-                    type="checkbox"
-                    checked={rankByCategoryOnly}
-                    onChange={() => setRankByCategoryOnly(prev => !prev)}
-                  />
-                  Rank libraries by category score only
-                </label>
-              </div>
-              <div
-                style={{
-                  flex: 1,
-                  overflowY: "auto",
-                  minHeight: 0,
-                  paddingRight: 6
-                }}
-              >
-                {categoryListForAhp.length === 0 && (
-                  <div style={{ opacity: 0.8 }}>No categories available.</div>
-                )}
-                {categoryListForAhp.map(cat => (
-                  <div key={cat} style={{ marginBottom: 12 }}>
-                    <label style={{ display: "block", fontWeight: 600 }}>
-                      {cat}
-                    </label>
-                    <div style={{ display: "flex", gap: 10, alignItems: "center" }}>
-                      <input
-                        type="range"
-                        min={0}
-                        max={1}
-                        step={0.01}
-                        value={categoryWeights[cat] ?? 0}
-                        onChange={e => updateCategoryWeight(cat, Number(e.target.value))}
-                        style={{ flex: 1 }}
-                      />
-                      <input
-                        type="number"
-                        min={0}
-                        step={0.01}
-                        value={Number((categoryWeights[cat] ?? 0).toFixed(2))}
-                        onChange={e => updateCategoryWeight(cat, Number(e.target.value))}
-                        style={{ width: 70 }}
-                      />
-                    </div>
+                  <div style={{ fontSize: "0.85rem", opacity: 0.8 }}>
+                    Select categories to combine into an overall AHP score.
                   </div>
-                ))}
-              </div>
+                  
+                  <div style={{ marginTop: 10, display: "flex", flexDirection: "column", gap: 8 }}>
+                    <label style={{ display: "flex", alignItems: "center", gap: 6 }}>
+                      <input
+                        type="checkbox"
+                        checked={normalizeWeights}
+                        onChange={() => {
+                          setNormalizeWeights(prev => !prev);
+                          if (!normalizeWeights) {
+                            normalizeCategoryWeights();
+                          }
+                        }}
+                      />
+                      Normalize weights
+                    </label>
+                  </div>
+
+                  <div
+                    style={{
+                      flex: 1,
+                      overflowY: "auto",
+                      minHeight: 0,
+                      paddingRight: 6,
+                      marginTop: 12
+                    }}
+                  >
+                    {categoryListForAhp.length === 0 && (
+                      <div style={{ opacity: 0.8 }}>No categories available.</div>
+                    )}
+                    {categoryListForAhp.map(cat => (
+                      <div key={cat} style={{ marginBottom: 10 }}>
+                        <label style={{ display: "block", fontWeight: 600, marginBottom: 4 }}>
+                          {cat}
+                        </label>
+                        <div style={{ display: "flex", gap: 10, alignItems: "center" }}>
+                          <input
+                            type="range"
+                            min={0}
+                            max={1}
+                            step={0.01}
+                            value={categoryWeights[cat] ?? 0}
+                            onChange={e => updateCategoryWeight(cat, Number(e.target.value))}
+                            style={{ flex: 1 }}
+                          />
+                          <input
+                            type="number"
+                            min={0}
+                            step={0.01}
+                            value={Number((categoryWeights[cat] ?? 0).toFixed(2))}
+                            onChange={e => updateCategoryWeight(cat, Number(e.target.value))}
+                            style={{ width: 60, fontSize: "0.85rem" }}
+                          />
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </>
+              )}
+
+              {ahpMode === "Individual" && (
+                <>
+                  <label className="dx-vis-title" style={{ fontWeight: 600 }}>
+                    Individual Category AHP
+                  </label>
+                  <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
+                    <button
+                      className="dx-btn dx-btn-outline"
+                      style={{ padding: "6px 10px", fontSize: "0.85rem" }}
+                      onClick={toggleSelectAllIndividualAhpCategories}
+                      disabled={categoryListForAhp.length === 0}
+                    >
+                      {selectedIndividualAhpCategories.length === categoryListForAhp.length && categoryListForAhp.length > 0
+                        ? "Clear All"
+                        : "Select All"}
+                    </button>
+                    <span style={{ fontSize: "0.85rem", opacity: 0.8 }}>
+                      {selectedIndividualAhpCategories.length} selected
+                    </span>
+                  </div>
+                  <div style={{ fontSize: "0.85rem", opacity: 0.8, marginTop: 4 }}>
+                    Run AHP separately on each selected category.
+                  </div>
+                  
+                  <div
+                    style={{
+                      flex: 1,
+                      overflowY: "auto",
+                      minHeight: 0,
+                      paddingRight: 6,
+                      marginTop: 12
+                    }}
+                  >
+                    {categoryListForAhp.length === 0 && (
+                      <div style={{ opacity: 0.8 }}>No categories available.</div>
+                    )}
+                    {categoryListForAhp.map(cat => (
+                      <label key={cat} style={{ display: "flex", alignItems: "center", gap: 6, marginBottom: 8 }}>
+                        <input
+                          type="checkbox"
+                          checked={selectedIndividualAhpCategories.includes(cat)}
+                          onChange={() => toggleIndividualAhpCategory(cat)}
+                        />
+                        {cat}
+                      </label>
+                    ))}
+                  </div>
+                </>
+              )}
             </>
           )}
 
@@ -544,7 +703,7 @@ const Visualize: React.FC = () => {
                     <label style={{ display: "block", fontWeight: 600 }}>
                       <input
                         type="checkbox"
-                        checked={selectedCategories.includes(cat)}
+                        checked={isCategoryFullySelected(cat)}
                         onChange={() => toggleCategory(cat)}
                         style={{ marginRight: 6 }}
                       />
@@ -573,7 +732,7 @@ const Visualize: React.FC = () => {
                     <label style={{ display: "block", fontWeight: 600, color: "white" }}>
                       <input
                         type="checkbox"
-                        checked={selectedCategories.includes("Uncategorized")}
+                        checked={isCategoryFullySelected("Uncategorized")}
                         onChange={() => toggleCategory("Uncategorized")}
                         style={{ marginRight: 6 }}
                       />
