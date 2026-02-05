@@ -34,24 +34,25 @@ def test_create_domain_success(api_client, user_factory):
         "description": "A description",
         "creator_ids": [creator.id],
     }
-
-    response = api_client.post("/api/domain/create/", payload, format="json")
+    response = api_client.post("/api/domain/", payload, format="json")
 
     assert response.status_code == status.HTTP_201_CREATED
     created = Domain.objects.get(domain_name="Test Domain")
     assert created.description == "A description"
     assert created.creators.filter(id=creator.id).exists()
-    # category_weights are auto-assigned from categories.json
+
     assert isinstance(created.category_weights, dict)
-    assert len(created.category_weights) >= 0
+    assert created.category_weights is not None
 
 
 @pytest.mark.django_db
 def test_create_domain_missing_fields(api_client):
-    response = api_client.post("/api/domain/create/", {}, format="json")
+    response = api_client.post("/api/domain/", {}, format="json")
 
     assert response.status_code == status.HTTP_400_BAD_REQUEST
-    assert "error" in response.json()
+    data = response.json()
+    assert isinstance(data, dict)
+    assert ("domain_name" in data) or ("description" in data)
 
 
 @pytest.mark.django_db

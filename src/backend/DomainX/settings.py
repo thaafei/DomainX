@@ -15,6 +15,8 @@ import pymysql
 import os
 from pathlib import Path
 from dotenv import load_dotenv
+from kombu import Queue
+
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 load_dotenv(BASE_DIR / ".env", override=False)
@@ -56,6 +58,16 @@ ALLOWED_HOSTS = [h.strip() for h in os.getenv("DJANGO_ALLOWED_HOSTS", "127.0.0.1
 
 
 
+CELERY_TASK_QUEUES = (
+    Queue("celery"),
+    Queue("gitstats"),
+)
+
+CELERY_TASK_ROUTES = {
+    "api.tasks.analyze_repo_gitstats_task": {"queue": "gitstats"},
+}
+GITSTATS_WORK_DIR = os.getenv("GITSTATS_WORK_DIR", str(BASE_DIR / "tmp" / "gitstats_work"))
+GITSTATS_SERVE_DIR = os.getenv("GITSTATS_SERVE_DIR", str(BASE_DIR / "data" / "gitstats"))
 
 # Application definition
 pymysql.install_as_MySQLdb()
@@ -161,7 +173,11 @@ CELERY_TASK_SERIALIZER = "json"
 CELERY_RESULT_SERIALIZER = "json"
 CELERY_TIMEZONE = "UTC"
 CELERY_TASK_TRACK_STARTED = True
-CELERY_TASK_TIME_LIMIT = 60 * 15
+CELERY_TASK_TIME_LIMIT = 60 * 60 * 24
+CELERY_TASK_ACKS_LATE = True
+CELERY_WORKER_PREFETCH_MULTIPLIER = 1
+CELERY_BROKER_TRANSPORT_OPTIONS = {"visibility_timeout": 60 * 60 * 24}
+
 
 
 

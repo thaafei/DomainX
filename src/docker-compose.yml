@@ -16,7 +16,6 @@ services:
     networks:
       - domainx-net
 
-
   backend:
     build: ./backend
     env_file:
@@ -27,6 +26,7 @@ services:
         condition: service_started
     volumes:
       - staticfiles:/app/staticfiles
+      - gitstats_data:/data/gitstats
     restart: always
     networks:
       - domainx-net
@@ -35,12 +35,11 @@ services:
     extra_hosts:
       - "host.docker.internal:host-gateway"
 
-
   celery:
     build: ./backend
     env_file:
       - .env
-    command: celery -A DomainX worker -l info
+    command: celery -A DomainX worker -l info -Q celery
     depends_on:
       backend:
         condition: service_started
@@ -53,7 +52,8 @@ services:
       - github_app_pem
     extra_hosts:
       - "host.docker.internal:host-gateway"
-
+    volumes:
+      - gitstats_data:/data/gitstats
 
   celery_beat:
     build: ./backend
@@ -71,15 +71,39 @@ services:
     extra_hosts:
       - "host.docker.internal:host-gateway"
 
+  celery_gitstats:
+    build: ./backend
+    env_file:
+      - .env
+    command: celery -A DomainX worker -l info -Q gitstats --concurrency=1
+    depends_on:
+      backend:
+        condition: service_started
+      redis:
+        condition: service_started
+    restart: always
+    networks:
+      - domainx-net
+    secrets:
+      - github_app_pem
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    volumes:
+      - gitstats_data:/data/gitstats
 
   web:
     build: ./frontend
     depends_on:
       - backend
     ports:
-      - "8080:80"
+      - "80:80"
+      - "443:443"
     volumes:
       - ./infra/nginx/conf.d:/etc/nginx/conf.d:ro
+      - ./infra/nginx/certs:/etc/letsencrypt:ro
+      - ./infra/nginx/www:/var/www/certbot:ro
+      - ./infra/nginx/selfsigned:/etc/nginx/selfsigned:ro
+      - gitstats_data:/data/gitstats:ro
     restart: always
     networks:
       - domainx-net
@@ -87,6 +111,7 @@ services:
 volumes:
   redis_data:
   staticfiles:
+  gitstats_data:
 
 networks:
   domainx-net:

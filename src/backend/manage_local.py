@@ -9,7 +9,7 @@ DEFAULT_PORT = os.getenv("DJANGO_RUN_PORT", "8000")
 
 
 def run(cmd: list[str], env=None):
-    print("\n➡️", " ".join(cmd))
+    print("\n➡", " ".join(cmd))
     subprocess.check_call(cmd, cwd=str(BASE_DIR), env=env or os.environ.copy())
 
 
@@ -54,7 +54,13 @@ Usage:
     if cmd == "worker":
         if not os.getenv("CELERY_BROKER_URL"):
             print("CELERY_BROKER_URL is not set. Check backend/.env")
-        run(["celery", "-A", "DomainX", "worker", "-l", "info", "-P", "solo"])
+        run(["celery", "-A", "DomainX", "worker", "-l", "info", "-P", "solo", "-Q", "celery"])
+        return
+
+    if cmd == "worker_gitstats":
+        if not os.getenv("CELERY_BROKER_URL"):
+            print("CELERY_BROKER_URL is not set. Check backend/.env")
+        run(["celery", "-A", "DomainX", "worker", "-l", "info", "-P", "solo", "-Q", "gitstats"])
         return
 
     if cmd == "loaddata":
