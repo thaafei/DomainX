@@ -1,9 +1,13 @@
 :root {
   --bg: #0d121c;
-  --accent: #7dd3fc;
+  --accent: rgb(125, 211, 252);
   --text-main: #e0f2fe;
   --text-dim: #94a3b8;
   --accent-glow: rgba(22,199,254,0.15);
+  --accent-glow-bright: rgba(125, 212, 252, 0.995);
+  --warning: #ff4d4f;
+  --warning-hover: #f05e5c;
+  --gray: #ffffff14;
 }
 
 html, body, #root {

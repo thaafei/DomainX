@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuthStore } from "../store/useAuthStore";
-
+import { apiUrl } from "../config/api";
 const Login: React.FC = () => {
   const [loginValue, setLoginValue] = useState("");
   const [password, setPassword] = useState("");
@@ -15,7 +15,7 @@ const Login: React.FC = () => {
     setLoading(true);
     setError(null);
     try {
-      const response = await fetch("http://127.0.0.1:8000/login/", {
+      const response = await fetch(apiUrl("/login/"), {
         method: "POST",
         headers: {"Content-Type": "application/json"},
         credentials: "include",

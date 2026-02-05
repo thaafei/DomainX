@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
+import { apiUrl } from "../config/api";
 
 interface Metric {
   metric_ID: string;
@@ -12,46 +13,57 @@ interface LibraryMetricRow {
   metrics: { [metricName: string]: string | number | null };
 }
 
-const DOMAIN_ID = "ecba1df1ede211f0987c0050568e534c";
-
 const ComparisonToolPage: React.FC = () => {
+  const { domainId } = useParams<{ domainId: string }>();
   const navigate = useNavigate();
+  const DOMAIN_ID = domainId;
 
-  const [domainName] = useState("Domain X");
+  const [domainName, setDomainName] = useState("");
   const [metricList, setMetricList] = useState<Metric[]>([]);
   const [tableRows, setTableRows] = useState<LibraryMetricRow[]>([]);
 
   useEffect(() => {
+    if (!DOMAIN_ID) return;
     loadPageData();
-  }, []);
+  }, [DOMAIN_ID]);
+
+  const getDomainSpecification = async () => {
+    try {
+      const response = await fetch(apiUrl(`/domain/${DOMAIN_ID}/`), {
+        credentials: "include",
+      });
+
+      if (!response.ok) throw new Error("Failed to fetch domain specifications");
+
+      const data = await response.json();
+      setDomainName(data.domain_name || "");
+      return data;
+    } catch (error) {
+      console.error("Error:", error);
+      return null;
+    }
+  };
 
   const loadPageData = async () => {
     try {
-        const formatUUID = (rawId: string) => {
-            if (rawId && rawId.length === 32 && !rawId.includes('-')) {
-              return rawId.substring(0, 8) + '-' +
-                     rawId.substring(8, 12) + '-' +
-                     rawId.substring(12, 16) + '-' +
-                     rawId.substring(16, 20) + '-' +
-                     rawId.substring(20, 32);
-            }
-            return rawId;
-          };
+      await getDomainSpecification();
 
-      const formattedDomainId = formatUUID(DOMAIN_ID);
+      const res = await fetch(apiUrl(`/library_metric_values/comparison/${DOMAIN_ID}/`), {
+        credentials: "include",
+      });
 
-      const res = await fetch(
-          `http://127.0.0.1:8000/api/comparison/${formattedDomainId}/`,
-          { credentials: "include" }
-      );
-      const responseText = await res.text();
-      if (!res.ok) {
-          throw new Error(`Server Error (${res.status}): See console for details.`);
+      const contentType = res.headers.get("content-type") || "";
+      const text = await res.text();
+
+      if (!res.ok) throw new Error(`HTTP ${res.status}: ${text.slice(0, 200)}`);
+
+      if (!contentType.includes("application/json")) {
+        throw new Error(`Expected JSON, got ${contentType}. Body starts with: ${text.slice(0, 80)}`);
       }
-      const data = JSON.parse(responseText);
-      //const data = await res.json();
-      setMetricList(data.metrics);
-      setTableRows(data.libraries);
+
+      const data = JSON.parse(text);
+      setMetricList(Array.isArray(data.metrics) ? data.metrics : []);
+      setTableRows(Array.isArray(data.libraries) ? data.libraries : []);
     } catch (err) {
       console.error("Error loading comparison data:", err);
     }
@@ -59,11 +71,10 @@ const ComparisonToolPage: React.FC = () => {
 
   return (
     <div className="dx-bg" style={{ display: "flex", height: "100vh" }}>
-
       <div
         className="dx-card"
         style={{
-          width: 160,
+          width: 120,
           padding: "22px 14px",
           display: "flex",
           flexDirection: "column",
@@ -73,6 +84,7 @@ const ComparisonToolPage: React.FC = () => {
       >
         <button
           className="dx-btn dx-btn-outline"
+          style={{ width: "100%", fontSize: "1rem", textAlign: "center" }}
           onClick={() => navigate("/main")}
         >
           ← Back
@@ -85,8 +97,15 @@ const ComparisonToolPage: React.FC = () => {
           padding: "40px 60px",
           position: "relative",
           color: "white",
+          overflow: "hidden",
+          display: "flex",
+          flexDirection: "column",
+          minWidth: 0,
+          minHeight: 0,
         }}
       >
+        <div className="stars"></div>
+
         <h1 style={{ color: "var(--accent)", marginBottom: 20 }}>
           {domainName} – Comparison Tool
         </h1>
@@ -97,71 +116,129 @@ const ComparisonToolPage: React.FC = () => {
             alignItems: "center",
             width: "100%",
             marginBottom: 20,
+            gap: 14,
           }}
         >
+          <button className="dx-btn dx-btn-primary" onClick={() => navigate(`/libraries/${DOMAIN_ID}`)}>
+            + Add Library
+          </button>
 
-          <div style={{ display: "flex", gap: 14 }}>
-            <button
-              className="dx-btn dx-btn-primary"
-              onClick={() => navigate("/libraries")}
-            >
-              + Add Library
-            </button>
-
-            <button
-              className="dx-btn dx-btn-outline"
-              onClick={() => navigate("/edit")}
-            >
-              ✎ Edit Metric Values
-            </button>
-          </div>
+          <button className="dx-btn dx-btn-outline" onClick={() => navigate(`/edit/${DOMAIN_ID}`)}>
+            ✎ Edit Metric Values
+          </button>
 
           <div style={{ flexGrow: 1 }} />
 
-          <button
-            className="dx-btn dx-btn-primary"
-            onClick={() => navigate("/visualize")}
-          >
+          <button className="dx-btn dx-btn-primary" onClick={() => navigate(`/visualize/${domainId}`)}>
             Visualize →
           </button>
         </div>
 
-        <div className="dx-card" style={{ padding: 20 }}>
-          <table style={{ width: "100%", borderCollapse: "collapse" }}>
-            <thead>
-              <tr>
-                <th style={{ padding: 8, textAlign: "left" }}>Library</th>
-                {metricList.map((m) => (
-                  <th key={m.metric_ID} style={{ padding: 8, textAlign: "left" }}>
-                    {m.metric_name}
+        <div
+          className="dx-card"
+          style={{
+            padding: 20,
+            flex: 1,
+            minHeight: 0,
+            display: "flex",
+            flexDirection: "column",
+          }}
+        >
+          <div className="dx-table-wrap dx-table-scroll" style={{ flex: 1, minHeight: 0 }}>
+            <table className="dx-table" style={{ tableLayout: "fixed", width: "100%" }}>
+              <thead>
+                <tr>
+                  <th className="dx-th-sticky dx-sticky-left" style={{ textAlign: "left", width: 200, left: 0 }}>
+                    Library
                   </th>
-                ))}
-              </tr>
-            </thead>
-
-            <tbody>
-              {tableRows.map((row) => (
-                <tr
-                  key={row.library_ID}
-                  style={{ borderBottom: "1px solid rgba(255,255,255,0.1)" }}
-                >
-                  <td style={{ padding: 8 }}>{row.library_name}</td>
 
                   {metricList.map((m) => (
-                    <td key={m.metric_ID} style={{ padding: 8 }}>
-                      {row.metrics[m.metric_name] ?? "—"}
-                    </td>
+                    <th
+                      key={m.metric_ID}
+                      className="dx-th-sticky"
+                      style={{
+                        textAlign: "left",
+                        width: 160,
+                        whiteSpace: "normal",
+                        wordBreak: "break-word",
+                      }}
+                      title={m.metric_name}
+                    >
+                      {m.metric_name}
+                    </th>
                   ))}
                 </tr>
-              ))}
-            </tbody>
-          </table>
+              </thead>
 
-          {tableRows.length === 0 && (
-            <div style={{ padding: 20, opacity: 0.6 }}>
-              No libraries found for this domain.
-            </div>
-          )}
+              <tbody>
+                {tableRows.map((row) => (
+                  <tr key={row.library_ID} style={{ borderBottom: "1px solid rgba(255,255,255,0.08)" }}>
+                    <td
+                      className="dx-sticky-left"
+                      style={{
+                        padding: 10,
+                        fontWeight: 600,
+                        whiteSpace: "normal",
+                        wordBreak: "break-word",
+                        verticalAlign: "top",
+                        left: 0,
+                      }}
+                      title={row.library_name}
+                    >
+                      {row.library_name}
+                    </td>
+
+                    {metricList.map((m) => {
+                      const cellVal = row.metrics[m.metric_name];
+
+                      if (m.metric_name === "GitStats Report") {
+                        const url = cellVal ? String(cellVal) : null;
+                        return (
+                          <td
+                            key={m.metric_ID}
+                            style={{
+                              padding: 10,
+                              whiteSpace: "normal",
+                              wordBreak: "break-word",
+                              verticalAlign: "top",
+                            }}
+                            title={url || "—"}
+                          >
+                            {url ? (
+                              <a href={url} target="_blank" rel="noreferrer" style={{ color: "var(--accent)" }}>
+                                View report
+                              </a>
+                            ) : (
+                              "—"
+                            )}
+                          </td>
+                        );
+                      }
+
+                      return (
+                        <td
+                          key={m.metric_ID}
+                          style={{
+                            padding: 10,
+                            whiteSpace: "normal",
+                            wordBreak: "break-word",
+                            verticalAlign: "top",
+                          }}
+                          title={cellVal != null ? String(cellVal) : "—"}
+                        >
+                          {cellVal ?? "—"}
+                        </td>
+                      );
+                    })}
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+
+            {tableRows.length === 0 && (
+              <div style={{ padding: 20, opacity: 0.6 }}>No libraries found for this domain.</div>
+            )}
+          </div>
         </div>
       </div>
     </div>

@@ -32,7 +32,32 @@ Ensure you have these installed:
 * **Python 3.8+**
 * **Node.js 16+** (npm comes with it)
 
-### 2. Backend Setup (Django API)
+
+### 2. Generate a Classic GitHub Token
+Visit:
+<https://github.com/settings/tokens>
+
+Click Generate new token → Generate new token(Classic)
+Required scope:
+- repo
+
+Generate token and copy that before you go back to the code.
+
+
+---
+### 3. Add GitHub Token to `.env`
+Create file:
+`src/.env`
+
+Add:
+
+```
+GITHUB_TOKEN=ghp_xxxxxxxxxxxxxxxxxxxxx
+```
+
+---
+
+### 4. Backend Setup (Django API)
 
 1.  Go to the backend folder:
     ```bash
@@ -50,15 +75,30 @@ Ensure you have these installed:
     ```bash
     pip install -r requirements.txt
     ```
-#### Before continuing, please scroll to the POC SETUP section (at the end of this README) and complete your local setup. The README is currently up-to-date for the POC. Once you finish that setup, return here and continue with the instructions below.
-4.  Run migrations and start the server:
-    ```bash
-    python manage.py migrate
-    python manage.py runserver
-    ```
+4. Open **4 terminals**, make sure the **venv is activated in each**, and run these commands (from `DomainX/src/backend`):
+
+   **Terminal 1 — Redis**
+   ```bash
+   redis-server
+   ```
+   **Terminal 2 — Django API (dev)**
+   ```bash
+   python manage_local.py dev
+   ```
+   **Terminal 3 — Celery worker (default queue)**
+   ```bash
+   python manage_local.py worker
+   ```
+   **Terminal 4 — Celery worker (gitstats queue)**
+   ```bash
+   python manage_local.py worker_gitstats
+   ```
+
+
     The API should now be running at: `http://localhost:8000/`
 
 ---
+
 
 ## 3. Frontend Setup (React)
 
@@ -81,6 +121,109 @@ Ensure you have these installed:
     The frontend application should open in your browser automatically at: `http://localhost:3000/`
 
 
+## Finally Create Required Metrics  
+ To be able to see information coming from github repositories you need to create metrics with specified names.
+
+Start backend + frontend normally, then:
+
+1. Navigate to **Edit Metrics** page
+2. Create metrics with the following names:
+
+- Stars Count 
+- Forks Count
+- Watchers Count
+- Open Issues Count
+- Commit Count
+- Branch Count
+- Open PRs Count
+- Text Files (SCC)
+- Total Lines (SCC)
+- Code Lines (SCC)
+- Comment Lines (SCC)
+- Blank Lines (SCC)
+- GitStats Report
+
+
+## Deployment (Server)
+This repo is deployed with Docker Compose.
+
+### Notes
+- The `.env` file is **shared with developers** (already provided). Put it beside `docker-compose.yml`.
+- Run all commands from the folder that contains `docker-compose.yml`.
+
+---
+
+### 1) Simple deployment 
+Use this when you just pulled changes and **no new dependencies** were added.
+
+```bash
+git pull
+docker compose up -d --force-recreate
+```
+verify
+```
+docker compose ps
+
+docker compose logs --tail=200 backend
+```
+### 2) Deployment with database changes 
+Use this when backend code includes **model changes / migrations**.
+``` 
+git pull
+
+docker compose up -d --force-recreate backend
+
+docker compose exec backend python manage.py migrate
+```
+### 3) Only Backend Changed
+#### - no dependencies
+```
+git pull
+
+docker compose up -d --no-deps --force-recreate backend
+```
+#### - with dependencies
+```
+git pull
+
+docker compose build backend celery celery_gitstats
+docker compose up -d --no-deps --force-recreate backend celery celery_gitstats
+```
+### 4) Only Frontend Changed
+```
+git pull
+
+docker compose build web
+
+docker compose up -d --no-deps --force-recreate web
+```
+### 5) Backend + Frontend Changed (Without Disturbing Celery+Redis tasks already running) 
+```
+git pull
+
+docker compose build backend web
+
+docker compose up -d --no-deps --force-recreate backend web
+```
+### 6) Full Refresh
+```
+git pull
+docker compose down
+docker compose build
+docker compose up -d
+docker compose exec backend python manage.py migrate
+docker compose exec backend python manage.py collectstatic --noinput
+```
+
+### 7) Restart Celery/Redis
+#### Restart workers (celery)
+```
+docker compose up -d --force-recreate celery celery_gitstats
+```
+#### Restart redis
+```
+docker compose up -d --force-recreate redis
+```
 ## Testing Fixtures
 To populate local database with mock data, a test_db fixture is provided. To apply the fixture, do the following steps:
 1. Activate the virtual environment under src/backend (see above for instructions)
@@ -94,87 +237,3 @@ python manage_local.py loaddata test_db
 ```
 
 If there are any errors, delete the db.sqlite3 file and rerun migrations and loaddata
-
-
-## ⚠️ Proof-of-Concept (POC) Local Setup  
-*This section is only for the current prototype.  
-Domain IDs and metric names will be replaced once the app is fully implemented.*
-### 1. Create a temporary Domain (Local-only)
-
-Open the Django shell:
-
-```bash
-cd DomainX/src/backend
-python manage.py shell
-```
-Run Following Code inside shell:
-```bash
-from api.models import Domain
-d = Domain.objects.create(
-    Domain_Name="POC Domain",
-    Description="Temporary domain for POC testing"
-)
-print(d.Domain_ID)
-```
-Copy the printed Domain ID.
-You will use it in the frontend.
----
-### 2. Update DOMAIN_ID in Frontend Files
-
-In each file below, replace the placeholder:
-```
-const DOMAIN_ID = "dd8....";
-```
-
-Files:
-
-`frontend/src/pages/Libraries.tsx`
-`frontend/src/pages/ComparisonTool.tsx`
-`frontend/src/pages/Edit.tsx`
-`frontend/src/pages/Visualize.tsx`
-
-
-Replace `"dd8...."` with your real local Domain ID.
-
-⚠️ This is temporary (only for POC).
-
----
-### 3. Generate a Classic GitHub Token
-Visit:
-<https://github.com/settings/tokens>
-
-Click Generate new token → Generate new token(Classic)
-Required scope:
-- repo
-
-Generate token and copy that before you go back to the code.
-
-
----
-### 4. Add GitHub Token to `.env`
-Create file:
-`src/backend/.env`
-
-Add:
-
-```
-GITHUB_TOKEN=ghp_xxxxxxxxxxxxxxxxxxxxx
-```
-
----
-## Finally Create Required Metrics  
-You can go back to setup instructions and continue with that. To be able to see information coming from github repositories you need to create metrics with specified names at POC stage!!
-
-Start backend + frontend normally, then:
-
-1. Navigate to **Edit Metrics** page
-2. Create metrics with the following names:
-
-- Stars Count  
-- Forks Count  
-- Watchers Count  
-- Open Issues Count  
-- Commit Count  
-- Branch Count  
-
-⚠️ These specific names are needed for the GitHub api POC.

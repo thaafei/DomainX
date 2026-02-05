@@ -15,9 +15,13 @@ import pymysql
 import os
 from pathlib import Path
 from dotenv import load_dotenv
+from kombu import Queue
+
 
 BASE_DIR = Path(__file__).resolve().parent.parent
-load_dotenv(BASE_DIR / ".env")
+load_dotenv(BASE_DIR / ".env", override=False)
+STATIC_ROOT = BASE_DIR / "staticfiles"
+CSRF_TRUSTED_ORIGINS = [o.strip() for o in os.getenv("DJANGO_CSRF_TRUSTED_ORIGINS","").split(",") if o.strip()]
 
 
 # Quick-start development settings - unsuitable for production
@@ -54,6 +58,16 @@ ALLOWED_HOSTS = [h.strip() for h in os.getenv("DJANGO_ALLOWED_HOSTS", "127.0.0.1
 
 
 
+CELERY_TASK_QUEUES = (
+    Queue("celery"),
+    Queue("gitstats"),
+)
+
+CELERY_TASK_ROUTES = {
+    "api.tasks.analyze_repo_gitstats_task": {"queue": "gitstats"},
+}
+GITSTATS_WORK_DIR = os.getenv("GITSTATS_WORK_DIR", str(BASE_DIR / "tmp" / "gitstats_work"))
+GITSTATS_SERVE_DIR = os.getenv("GITSTATS_SERVE_DIR", str(BASE_DIR / "data" / "gitstats"))
 
 # Application definition
 pymysql.install_as_MySQLdb()
@@ -74,7 +88,9 @@ INSTALLED_APPS = [
     'api.database.library_metric_values.apps.LibraryMetricValuesConfig',
     'api.database.domain.apps.DomainConfig',
     'django_celery_results',
-    'django_extensions'
+    'django_extensions',
+    'api.database.edit_history.apps.EditHistoryConfig',
+    'api.database.backup_logs.apps.BackupLogsConfig',
 ]
 AUTH_USER_MODEL = 'users.CustomUser'
 REST_FRAMEWORK = {
@@ -122,26 +138,34 @@ WSGI_APPLICATION = 'DomainX.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/5.2/ref/settings/#databases
 
-# DATABASES = {
-#     "default": {
-#         "ENGINE": "django.db.backends.mysql",
-#         "NAME": os.getenv("DB_NAME"),
-#         "USER": os.getenv("DB_USER"),
-#         "PASSWORD": os.getenv("DB_PASSWORD"),
-#         "HOST": os.getenv("DB_HOST", "127.0.0.1"),
-#         "PORT": os.getenv("DB_PORT", "3308"),
-#         "OPTIONS": {
-#             "charset": "utf8mb4",
-#         },
-#     }
-# }
-DATABASES = {
+
+if IS_LOCAL:
+    # Use SQLite for local development
+    DATABASES = {
         "default": {
             "ENGINE": "django.db.backends.sqlite3",
             "NAME": BASE_DIR / "db.sqlite3",
         }
     }
+else:
+    # Use MySQL for non-local environments
+    DATABASES = {
+        "default": {
+            "ENGINE": "django.db.backends.mysql",
+            "NAME": os.getenv("DB_NAME"),
+            "USER": os.getenv("DB_USER"),
+            "PASSWORD": os.getenv("DB_PASSWORD"),
+            "HOST": os.getenv("DB_HOST", "127.0.0.1"),
+            "PORT": os.getenv("DB_PORT", "3308"),
+            "OPTIONS": {
+                "charset": "utf8mb4",
+            },
+        }
+    }
+
 CELERY_BROKER_URL = os.getenv("CELERY_BROKER_URL")
+if not CELERY_BROKER_URL:
+    raise RuntimeError("CELERY_BROKER_URL is not set")
 
 CELERY_RESULT_BACKEND = "django-db"
 CELERY_ACCEPT_CONTENT = ["json"]
@@ -149,7 +173,11 @@ CELERY_TASK_SERIALIZER = "json"
 CELERY_RESULT_SERIALIZER = "json"
 CELERY_TIMEZONE = "UTC"
 CELERY_TASK_TRACK_STARTED = True
-CELERY_TASK_TIME_LIMIT = 60 * 15
+CELERY_TASK_TIME_LIMIT = 60 * 60 * 24
+CELERY_TASK_ACKS_LATE = True
+CELERY_WORKER_PREFETCH_MULTIPLIER = 1
+CELERY_BROKER_TRANSPORT_OPTIONS = {"visibility_timeout": 60 * 60 * 24}
+
 
 
 
@@ -223,10 +251,11 @@ USE_TZ = True
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/5.2/howto/static-files/
 CORS_ALLOW_ALL_ORIGINS = False
-CORS_ALLOWED_ORIGINS = [
-    "http://localhost:3000",
-    "http://127.0.0.1:3000",
-]
+if IS_LOCAL:
+    CORS_ALLOWED_ORIGINS = ["http://localhost:3000", "http://127.0.0.1:3000"]
+else:
+    CORS_ALLOWED_ORIGINS = []
+
 CORS_ALLOW_CREDENTIALS = True
 
 STATIC_URL = 'static/'
