@@ -15,6 +15,8 @@ import pymysql
 import os
 from pathlib import Path
 from dotenv import load_dotenv
+from kombu import Queue
+from datetime import timedelta
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 load_dotenv(BASE_DIR / ".env", override=False)
@@ -40,7 +42,7 @@ def env_bool(name: str, default: bool = False) -> bool:
 DEBUG = env_bool("DJANGO_DEBUG", default=False)
 IS_LOCAL = env_bool("DJANGO_LOCAL", default=True)
 
-if not DEBUG and not IS_LOCAL:
+if not IS_LOCAL:
     SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
     SESSION_COOKIE_SECURE = True
     CSRF_COOKIE_SECURE = True
@@ -51,11 +53,22 @@ else:
     CSRF_COOKIE_SECURE = False
 
 ALLOWED_HOSTS = [h.strip() for h in os.getenv("DJANGO_ALLOWED_HOSTS", "127.0.0.1,localhost").split(",") if h.strip()]
+SESSION_COOKIE_AGE = 60 * 60 * 24 * 14
+SESSION_SAVE_EVERY_REQUEST = True
 
 
 
 
+CELERY_TASK_QUEUES = (
+    Queue("celery"),
+    Queue("gitstats"),
+)
 
+CELERY_TASK_ROUTES = {
+    "api.tasks.analyze_repo_gitstats_task": {"queue": "gitstats"},
+}
+GITSTATS_WORK_DIR = os.getenv("GITSTATS_WORK_DIR", str(BASE_DIR / "tmp" / "gitstats_work"))
+GITSTATS_SERVE_DIR = os.getenv("GITSTATS_SERVE_DIR", str(BASE_DIR / "data" / "gitstats"))
 
 # Application definition
 pymysql.install_as_MySQLdb()
@@ -161,7 +174,11 @@ CELERY_TASK_SERIALIZER = "json"
 CELERY_RESULT_SERIALIZER = "json"
 CELERY_TIMEZONE = "UTC"
 CELERY_TASK_TRACK_STARTED = True
-CELERY_TASK_TIME_LIMIT = 60 * 15
+CELERY_TASK_TIME_LIMIT = 60 * 60 * 24
+CELERY_TASK_ACKS_LATE = True
+CELERY_WORKER_PREFETCH_MULTIPLIER = 1
+CELERY_BROKER_TRANSPORT_OPTIONS = {"visibility_timeout": 60 * 60 * 24}
+
 
 
 
@@ -241,6 +258,13 @@ else:
     CORS_ALLOWED_ORIGINS = []
 
 CORS_ALLOW_CREDENTIALS = True
+SIMPLE_JWT = {
+    "ACCESS_TOKEN_LIFETIME": timedelta(hours=2),
+    "REFRESH_TOKEN_LIFETIME": timedelta(days=14),
+    "ROTATE_REFRESH_TOKENS": True,
+    "BLACKLIST_AFTER_ROTATION": False,
+}
+
 
 STATIC_URL = 'static/'
 

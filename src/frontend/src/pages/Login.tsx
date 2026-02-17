@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuthStore } from "../store/useAuthStore";
 import { apiUrl } from "../config/api";
@@ -9,6 +9,9 @@ const Login: React.FC = () => {
   const [error, setError] = useState<string | null>(null);
   const navigate = useNavigate();
   const { setUser } = useAuthStore();
+  useEffect(() => {
+  document.title = "DomainX – Login";
+}, []);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
