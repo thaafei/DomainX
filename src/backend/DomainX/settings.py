@@ -16,7 +16,7 @@ import os
 from pathlib import Path
 from dotenv import load_dotenv
 from kombu import Queue
-
+from datetime import timedelta
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 load_dotenv(BASE_DIR / ".env", override=False)
@@ -42,7 +42,7 @@ def env_bool(name: str, default: bool = False) -> bool:
 DEBUG = env_bool("DJANGO_DEBUG", default=False)
 IS_LOCAL = env_bool("DJANGO_LOCAL", default=True)
 
-if not DEBUG and not IS_LOCAL:
+if not IS_LOCAL:
     SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
     SESSION_COOKIE_SECURE = True
     CSRF_COOKIE_SECURE = True
@@ -53,7 +53,8 @@ else:
     CSRF_COOKIE_SECURE = False
 
 ALLOWED_HOSTS = [h.strip() for h in os.getenv("DJANGO_ALLOWED_HOSTS", "127.0.0.1,localhost").split(",") if h.strip()]
-
+SESSION_COOKIE_AGE = 60 * 60 * 24 * 14
+SESSION_SAVE_EVERY_REQUEST = True
 
 
 
@@ -257,6 +258,13 @@ else:
     CORS_ALLOWED_ORIGINS = []
 
 CORS_ALLOW_CREDENTIALS = True
+SIMPLE_JWT = {
+    "ACCESS_TOKEN_LIFETIME": timedelta(hours=2),
+    "REFRESH_TOKEN_LIFETIME": timedelta(days=14),
+    "ROTATE_REFRESH_TOKENS": True,
+    "BLACKLIST_AFTER_ROTATION": False,
+}
+
 
 STATIC_URL = 'static/'
 

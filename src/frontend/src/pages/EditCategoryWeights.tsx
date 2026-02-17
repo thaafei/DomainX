@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useMemo } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { apiUrl } from "../config/api";
+import { ArrowLeft } from "lucide-react";
 
 const EditCategoryWeights: React.FC = () => {
   const { domainId } = useParams<{ domainId: string }>();
@@ -12,6 +13,7 @@ const EditCategoryWeights: React.FC = () => {
   const [saveStatus, setSaveStatus] = useState<string | null>(null);
 
   useEffect(() => {
+      document.title = "DomainX – Weights";
     if (saveStatus) {
       const timer = setTimeout(() => {
         setSaveStatus(null);
@@ -99,7 +101,7 @@ const EditCategoryWeights: React.FC = () => {
             style={{ width: "fit-content", fontSize: "1rem", marginBottom: 20 }}
             onClick={() => navigate("/main")}
           >
-            ← Back
+            <ArrowLeft size={18} /> Back
       </button>
       {saveStatus && (
         <div style={{

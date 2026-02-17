@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { apiUrl } from "../config/api";
 import { useAuthStore } from "../store/useAuthStore";
 import SuccessNotification from "../components/SuccessNotification";
-
+import { ArrowLeft } from "lucide-react";
 interface Domain {
   domain_ID: string;
   domain_name: string;
@@ -56,6 +56,7 @@ const AdminPage: React.FC = () => {
       navigate("/main");
       return;
     }
+    document.title = "DomainX – Admin";
 
     fetchUsers();
     fetchAllDomains();
@@ -203,7 +204,7 @@ const AdminPage: React.FC = () => {
             style={{ width: "fit-content", fontSize: "1rem", marginBottom: 20 }}
             onClick={() => navigate("/main")}
           >
-            ← Back
+            <ArrowLeft size={18} /> Back
           </button>
           
           <h1 style={{ color: "var(--accent)", marginBottom: 14 }}>Manage Users</h1>

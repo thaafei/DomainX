@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { apiUrl } from "../config/api";
-
+import { BarChart3, Plus, Pencil, Download, ArrowLeft } from "lucide-react";
 interface Metric {
   metric_ID: string;
   metric_name: string;
@@ -24,6 +24,7 @@ const ComparisonToolPage: React.FC = () => {
 
   useEffect(() => {
     if (!DOMAIN_ID) return;
+    document.title = "DomainX – Comparison";
     loadPageData();
   }, [DOMAIN_ID]);
 
@@ -68,6 +69,63 @@ const ComparisonToolPage: React.FC = () => {
       console.error("Error loading comparison data:", err);
     }
   };
+  const exportCSV = () => {
+      const SITE_BASE = window.location.origin; // e.g., https://domainx.ca
+
+      const esc = (v: any) => {
+        const s = v == null ? "" : String(v);
+        const needsQuotes = /[",\n]/.test(s);
+        const safe = s.replace(/"/g, '""');
+        return needsQuotes ? `"${safe}"` : safe;
+      };
+
+      const headers = [
+        "Library",
+        ...metricList.map((m) => (m.metric_name === "GitStats Report" ? "GitStats Report URL" : m.metric_name)),
+      ];
+
+      const rows = tableRows.map((row) => {
+        const cells = [
+          row.library_name,
+          ...metricList.map((m) => {
+            const v = row.metrics[m.metric_name];
+
+            if (m.metric_name === "GitStats Report") {
+              const url = v ? String(v) : "";
+
+              if (!url) return "";
+
+              if (url.startsWith("http://") || url.startsWith("https://")) return url;
+
+              if (url.startsWith("/")) return `${SITE_BASE}${url}`;
+
+              return url;
+            }
+
+            return v ?? "";
+          }),
+        ];
+
+        return cells.map(esc).join(",");
+      });
+
+      const csv = [headers.map(esc).join(","), ...rows].join("\n");
+
+      const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
+      const url = URL.createObjectURL(blob);
+
+      const safeDomain = (domainName || "comparison").replace(/[^\w\-]+/g, "_");
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = `${safeDomain}_comparison.csv`;
+
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      URL.revokeObjectURL(url);
+    };
+
+
 
   return (
     <div className="dx-bg" style={{ display: "flex", height: "100vh" }}>
@@ -87,7 +145,7 @@ const ComparisonToolPage: React.FC = () => {
           style={{ width: "100%", fontSize: "1rem", textAlign: "center" }}
           onClick={() => navigate("/main")}
         >
-          ← Back
+          <ArrowLeft size={18} /> Back
         </button>
       </div>
 
@@ -110,29 +168,6 @@ const ComparisonToolPage: React.FC = () => {
           {domainName} – Comparison Tool
         </h1>
 
-        <div
-          style={{
-            display: "flex",
-            alignItems: "center",
-            width: "100%",
-            marginBottom: 20,
-            gap: 14,
-          }}
-        >
-          <button className="dx-btn dx-btn-primary" onClick={() => navigate(`/libraries/${DOMAIN_ID}`)}>
-            + Add Library
-          </button>
-
-          <button className="dx-btn dx-btn-outline" onClick={() => navigate(`/edit/${DOMAIN_ID}`)}>
-            ✎ Edit Metric Values
-          </button>
-
-          <div style={{ flexGrow: 1 }} />
-
-          <button className="dx-btn dx-btn-primary" onClick={() => navigate(`/visualize/${domainId}`)}>
-            Visualize →
-          </button>
-        </div>
 
         <div
           className="dx-card"
@@ -144,6 +179,47 @@ const ComparisonToolPage: React.FC = () => {
             flexDirection: "column",
           }}
         >
+                <div style={{ marginBottom: 8, display: "flex", gap: 10, alignItems: "center" }}>
+         <button
+          className="dx-btn dx-btn-primary"
+          onClick={() => navigate(`/libraries/${DOMAIN_ID}`)}
+          style={{ display: "flex", alignItems: "center", gap: 6 }}
+        >
+          <Plus size={18} />
+          Add Library
+        </button>
+
+        <button
+          className="dx-btn dx-btn-outline"
+          onClick={() => navigate(`/edit/${DOMAIN_ID}`)}
+          style={{ display: "flex", alignItems: "center", gap: 6 }}
+        >
+          <Pencil size={18} />
+          Edit Metric Values
+        </button>
+        <div style={{ flexGrow: 1 }} />
+            <button
+              className="dx-btn dx-btn-outline"
+              onClick={exportCSV}
+              style={{ display: "flex", alignItems: "center", gap: 6 }}
+              disabled={tableRows.length === 0 || metricList.length === 0}
+              title="Download table as CSV"
+            >
+              <Download size={18} />
+              Export CSV
+            </button>
+            <button
+              className="dx-btn dx-btn-primary"
+              onClick={() => navigate(`/visualize/${domainId}`)}
+              style={{ display: "flex", alignItems: "center", gap: 6 }}
+            >
+              <BarChart3 size={18} />
+              Visualize
+            </button>
+        </div>
+
+
+
           <div className="dx-table-wrap dx-table-scroll" style={{ flex: 1, minHeight: 0 }}>
             <table className="dx-table" style={{ tableLayout: "fixed", width: "100%" }}>
               <thead>

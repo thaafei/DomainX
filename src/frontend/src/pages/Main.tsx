@@ -262,6 +262,7 @@ const Main: React.FC = () => {
   };
 
   useEffect(() => {
+      document.title = "DomainX - Home";
     const fetchRules = async () => {
       try {
         const response = await fetch(apiUrl("/metrics/categories/"), {

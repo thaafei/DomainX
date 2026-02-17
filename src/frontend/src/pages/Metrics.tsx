@@ -2,6 +2,7 @@ import React, { useEffect, useMemo, useRef, useLayoutEffect, useState } from "re
 import { useNavigate } from "react-router-dom";
 import { apiUrl } from "../config/api";
 import SuccessNotification from "../components/SuccessNotification";
+import { ArrowLeft } from "lucide-react";
 
 interface Metric {
   metric_ID: string;
@@ -62,6 +63,7 @@ const MetricsPage: React.FC = () => {
   }, [metrics]);
 
   useEffect(() => {
+      document.title = "DomainX – Metrics";
     const fetchRules = async () => {
       try {
         const response = await fetch(apiUrl("/metrics/rules/"));
@@ -344,7 +346,7 @@ const MetricsPage: React.FC = () => {
           style={{ width: "100%", fontSize: "1rem", textAlign: "center" }}
           onClick={() => navigate("/main")}
         >
-          ← Back
+          <ArrowLeft size={18} /> Back
         </button>
       </div>
 
