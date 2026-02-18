@@ -12,6 +12,7 @@ interface Metric {
   category?: string | null;
   description?: string | null;
   weight?: number;
+  scoring_dict?: Record<string, number> | null;
 }
 
 type ModalMode = "create" | "edit" | null;
@@ -159,22 +160,17 @@ const MetricsPage: React.FC = () => {
   const addMetric = async (): Promise<boolean> => {
     if (!newName.trim()) return false;
 
+    const scoringDict = modalPreview;
+
     const payload: any = {
       metric_name: newName.trim(),
       value_type: newType,
       category: newCategory.trim() || null,
       description: newDesc.trim() || null,
+      option_category: selectedOptionCategory || null,
+      rule: selectedTemplate || null,
+      scoring_dict: scoringDict || null,
     };
-
-    if (isRuleType(newType)) {
-      if (!selectedOptionCategory) return false;
-      if (!selectedTemplate) return false;
-      payload.option_category = selectedOptionCategory;
-      payload.rule = selectedTemplate;
-    } else {
-      payload.option_category = null;
-      payload.rule = null;
-    }
 
     try {
       const res = await fetch(apiUrl("/metrics/"), {
@@ -226,9 +222,13 @@ const MetricsPage: React.FC = () => {
       if (!editTemplate) return false;
       payload.option_category = editOptionCategory;
       payload.rule = editTemplate;
+      const scoringDict = modalPreview;
+      payload.scoring_dict= scoringDict;
+
     } else {
       payload.option_category = null;
       payload.rule = null;
+      payload.scoring_dict= null;
     }
 
     try {

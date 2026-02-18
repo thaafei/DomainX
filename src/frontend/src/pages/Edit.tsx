@@ -6,6 +6,8 @@ import SuccessNotification from "../components/SuccessNotification";
 interface Metric {
   metric_ID: string;
   metric_name: string;
+  value_type: string;
+  scoring_dict?: Record<string, number> | null;
 }
 
 type AnalysisStatus = "pending" | "running" | "success" | "failed" | string;
@@ -777,7 +779,6 @@ const EditValuesPage: React.FC = () => {
 
                       {metricList.map((m) => {
                         const cellVal = row.metrics[m.metric_name];
-
                         if (!row.isEditing && m.metric_name === "GitStats Report") {
                           const url = cellVal ? String(cellVal) : null;
                           return (
@@ -801,18 +802,32 @@ const EditValuesPage: React.FC = () => {
                         return (
                           <td key={m.metric_ID}>
                             {row.isEditing ? (
-                              <input
-                                className="dx-input"
-                                value={cellVal ?? ""}
-                                onChange={(e) =>
-                                  updateMetricValue(
-                                    row.library_ID,
-                                    m.metric_name,
-                                    e.target.value
-                                  )
-                                }
-                                disabled={pageLoading}
-                              />
+                              m.scoring_dict && Object.keys(m.scoring_dict).length > 0 ? (
+                                <select
+                                  className="dx-input"
+                                  value={cellVal ?? ""}
+                                  onChange={(e) =>
+                                    updateMetricValue(row.library_ID, m.metric_name, e.target.value)
+                                  }
+                                  disabled={pageLoading}
+                                >
+                                  <option value="" className="dx-input-select">-- Select --</option>
+                                  {Object.keys(m.scoring_dict).map((key) => (
+                                    <option key={key} value={key} className="dx-input-select">
+                                      {key}
+                                    </option>
+                                  ))}
+                                </select>
+                              ) : (
+                                <input
+                                  className="dx-input"
+                                  value={cellVal ?? ""}
+                                  onChange={(e) =>
+                                    updateMetricValue(row.library_ID, m.metric_name, e.target.value)
+                                  }
+                                  disabled={pageLoading}
+                                />
+                              )
                             ) : (
                               cellVal ?? "—"
                             )}

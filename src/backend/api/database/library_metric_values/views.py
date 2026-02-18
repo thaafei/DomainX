@@ -126,7 +126,7 @@ def domain_comparison(request, domain_id):
 
     return Response(
         {
-            "metrics": [{"metric_ID": str(m.metric_ID), "metric_name": m.metric_name} for m in metrics],
+            "metrics": [{"metric_ID": str(m.metric_ID), "metric_name": m.metric_name, "scoring_dict": m.scoring_dict} for m in metrics],
             "libraries": table,
         },
         status=status.HTTP_200_OK,
