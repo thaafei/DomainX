@@ -2,25 +2,24 @@ import React, { useState, useEffect, useMemo } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { apiUrl } from "../config/api";
 
-// Define interfaces for Type Safety
+// Define the shape of our Metric based on your Django Serializer
 interface Metric {
   metric_ID: string;
   metric_name: string;
-  category?: string | null;
+  category: string | null;
+  weight: number;
 }
 
 const EditCategoryWeights: React.FC = () => {
   const { domainId } = useParams<{ domainId: string }>();
   const navigate = useNavigate();
   
-  // State Management
   const [categories, setCategories] = useState<string[]>([]);
   const [metricList, setMetricList] = useState<Metric[]>([]);
   const [matrix, setMatrix] = useState<Record<string, Record<string, number>>>({});
   const [loading, setLoading] = useState(true);
   const [saveStatus, setSaveStatus] = useState<string | null>(null);
 
-  // Saaty's Random Index (RI) constants for Consistency Ratio calculation
   const RI: Record<number, number> = { 
     1: 0, 2: 0, 3: 0.58, 4: 0.9, 5: 1.12, 6: 1.24, 7: 1.32, 8: 1.41, 9: 1.45, 10: 1.49 
   };
@@ -29,51 +28,41 @@ const EditCategoryWeights: React.FC = () => {
     const fetchData = async () => {
       if (!domainId) return;
       try {
-        // 1. Fetch the master list of categories
-        const catRes = await fetch(apiUrl("/metrics/categories/"), { credentials: "include" });
-        const catData = await catRes.json();
-        const allGlobalCategories: string[] = catData?.Categories || [];
+        const [catRes, metricsRes, savedRes] = await Promise.all([
+          fetch(apiUrl("/metrics/categories/"), { credentials: "include" }),
+          fetch(apiUrl("/metrics/"), { credentials: "include" }),
+          fetch(apiUrl(`/domain/${domainId}/category-weights/`), { credentials: "include" })
+        ]);
 
-        // 2. Fetch the full list of metrics
-        const metricsRes = await fetch(apiUrl("/metrics/"), { credentials: "include" });
+        const catData = await catRes.json();
         const metricsData: Metric[] = await metricsRes.json();
+        const savedData = await savedRes.json(); 
+
+        // Identify categories currently in use by metrics
+        const usedCategories = new Set(metricsData.map(m => m.category?.trim()).filter(Boolean));
+        const filteredCategories = (catData?.Categories || []).filter((c: string) => usedCategories.has(c.trim()));
+        
+        if (metricsData.some(m => !m.category || m.category.trim() === "")) {
+          filteredCategories.push("Uncategorized");
+        }
+
+        setCategories(filteredCategories);
         setMetricList(metricsData);
 
-        // 3. Extract unique categories that are actually used by the metrics
-        const usedCategoryNames = new Set(
-          metricsData
-            .map((m) => m.category?.toString().trim())
-            .filter(Boolean)
-        );
-
-        // 4. Filter the master category list to only those present in the metrics
-        const filteredCategories = allGlobalCategories.filter((cat) =>
-          usedCategoryNames.has(cat.trim())
-        );
-
-        // 5. Check if there are any metrics that are null/Uncategorized
-        const hasUncategorized = metricsData.some(
-          (m) => !m.category || m.category.toString().trim() === ""
-        );
-
-        const finalCategoryList = hasUncategorized
-          ? [...filteredCategories, "Uncategorized"]
-          : filteredCategories;
-
-        setCategories(finalCategoryList);
-
-        // 6. Initialize the AHP Matrix with the filtered categories
+        // BUILD MATRIX WITH DEFAULT FALLBACKS
         const initialMatrix: Record<string, Record<string, number>> = {};
-        finalCategoryList.forEach((row) => {
-          initialMatrix[row] = {};
-          finalCategoryList.forEach((col) => {
-            initialMatrix[row][col] = 1;
+        filteredCategories.forEach((r: string) => {
+          initialMatrix[r] = {};
+          filteredCategories.forEach((c: string) => {
+            // Check if the pair exists in saved data; if not, default to 1
+            const savedValue = savedData?.ahp_matrix?.[r]?.[c];
+            initialMatrix[r][c] = (savedValue !== undefined) ? savedValue : 1;
           });
         });
+        
         setMatrix(initialMatrix);
-
       } catch (err) {
-        console.error("Error synchronizing categories and metrics:", err);
+        console.error("Initialization error:", err);
       } finally {
         setLoading(false);
       }
@@ -81,37 +70,21 @@ const EditCategoryWeights: React.FC = () => {
     fetchData();
   }, [domainId]);
 
-  // Utility to reset all comparisons to 1 (Equal)
-  const resetToEqual = () => {
-    const resetMatrix: Record<string, Record<string, number>> = {};
-    categories.forEach((row) => {
-      resetMatrix[row] = {};
-      categories.forEach((col) => {
-        resetMatrix[row][col] = 1;
-      });
-    });
-    setMatrix(resetMatrix);
-  };
-
-  // Real-time AHP Calculation (Priority Vector + Consistency Ratio)
+  // AHP Math: Calculate weights and consistency ratio
   const ahpResults = useMemo(() => {
     if (categories.length === 0) return { weights: [], cr: 0 };
-
     const n = categories.length;
     
-    // Step 1: Calculate Column Sums
     const colSums: Record<string, number> = {};
     categories.forEach(col => {
       colSums[col] = categories.reduce((sum, row) => sum + (matrix[row][col] || 1), 0);
     });
 
-    // Step 2: Normalize and Average Rows (Priority Vector)
     const weights = categories.map(row => {
       const weight = categories.reduce((sum, col) => sum + (matrix[row][col] / colSums[col]), 0) / n;
       return { name: row, weight };
     });
 
-    // Step 3: Consistency Check (Principal Eigenvalue λmax calculation)
     let lambdaMax = 0;
     categories.forEach((row, i) => {
       let rowWeightedSum = 0;
@@ -125,13 +98,9 @@ const EditCategoryWeights: React.FC = () => {
     const ci = (lambdaMax - n) / (Math.max(1, n - 1));
     const cr = n > 2 ? ci / RI[n] : 0;
 
-    return { 
-      weights: weights.sort((a, b) => b.weight - a.weight), 
-      cr 
-    };
+    return { weights: weights.sort((a, b) => b.weight - a.weight), cr };
   }, [matrix, categories]);
 
-  // Handle Dropdown Change: Updates both the selected cell and its reciprocal
   const handleUpdate = (row: string, col: string, val: number) => {
     setMatrix(prev => ({
       ...prev,
@@ -140,23 +109,41 @@ const EditCategoryWeights: React.FC = () => {
     }));
   };
 
-  // Save the Final Calculated Weights to the Backend
   const handleSave = async () => {
-    const payload = ahpResults.weights.reduce((acc, curr) => ({ ...acc, [curr.name]: curr.weight }), {});
+    // Dictionary for domain.category_weights
+    const weightsDict = ahpResults.weights.reduce(
+      (acc, curr) => ({ ...acc, [curr.name]: curr.weight }), 
+      {}
+    );
+
     try {
+      setSaveStatus("Saving...");
       const res = await fetch(apiUrl(`/domain/${domainId}/category-weights/`), {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ values: payload }),
+        body: JSON.stringify({ 
+          values: weightsDict, // Goes to category_weights
+          matrix: matrix       // Goes to ahp_matrix
+        }),
         credentials: "include",
       });
+
       if (res.ok) {
-        setSaveStatus("Success!");
-        setTimeout(() => navigate("`/comparison-tool/${domainId}`"), 1000);
+        setSaveStatus("Saved!");
+        setTimeout(() => navigate(`/comparison-tool/${domainId}`), 1000);
       }
     } catch (err) { 
-      setSaveStatus("Error saving."); 
+      setSaveStatus("Error.");
     }
+  };
+
+  const resetToEqual = () => {
+    const init: Record<string, Record<string, number>> = {};
+    categories.forEach((r: string) => {
+      init[r] = {};
+      categories.forEach((c: string) => { init[r][c] = 1; });
+    });
+    setMatrix(init);
   };
 
   if (loading) return (
