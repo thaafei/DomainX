@@ -1,9 +1,11 @@
 import { test, expect } from '@playwright/test';
 
 test('User can register', async ({ page }) => {
-  page.on('request', request => {
-    console.log('Request URL:', request.url());
-  });
+  // See all the requested URLs for mocking backend 
+  // page.on('request', request => {
+  //   console.log('Request URL:', request.url());
+  // });
+
   await page.route('http://localhost:3000/api/signup/', async route => {
     await route.fulfill({
       status: 201,

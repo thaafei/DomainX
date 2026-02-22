@@ -57,12 +57,11 @@ jobs:
         node-version: lts/*
     - name: Install dependencies and Run Playwright Tests
       run: |
-        cd src/frontend 
+        cd src/frontend/
         npm install
-        cd ../../
-        cd test/frontend
+        cd ../../test/frontend/
         npm install
-        npx playwright install --with-deps
+        npx playwright install
     - name: Run Playwright Tests
       run: | 
         cd test/frontend
