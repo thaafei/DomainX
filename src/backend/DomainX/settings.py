@@ -41,6 +41,7 @@ def env_bool(name: str, default: bool = False) -> bool:
 
 DEBUG = env_bool("DJANGO_DEBUG", default=False)
 IS_LOCAL = env_bool("DJANGO_LOCAL", default=True)
+IS_TEST = env_bool("DJANGO_TEST", default=False)
 
 if not DEBUG and not IS_LOCAL:
     SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
@@ -147,6 +148,13 @@ if IS_LOCAL:
             "NAME": BASE_DIR / "db.sqlite3",
         }
     }
+elif IS_TEST:
+    DATABASES = {
+        "default": {
+            "ENGINE": "django.db.backends.sqlite3",
+            "NAME": BASE_DIR / "test_db.sqlite3",
+        }
+    }
 else:
     # Use MySQL for non-local environments
     DATABASES = {
@@ -251,7 +259,7 @@ USE_TZ = True
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/5.2/howto/static-files/
 CORS_ALLOW_ALL_ORIGINS = False
-if IS_LOCAL:
+if IS_LOCAL or IS_TEST:
     CORS_ALLOWED_ORIGINS = ["http://localhost:3000", "http://127.0.0.1:3000"]
 else:
     CORS_ALLOWED_ORIGINS = []

@@ -52,7 +52,6 @@
   },
   "proxy": "http://localhost:8000",
   "devDependencies": {
-    "@playwright/test": "^1.58.2",
     "@types/file-saver": "^2.0.7",
     "@types/plotly.js-dist-min": "^2.3.4",
     "@types/react-plotly.js": "^2.6.4",
