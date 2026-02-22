@@ -55,11 +55,17 @@ jobs:
     - uses: actions/setup-node@v4
       with:
         node-version: lts/*
-    - name: Install Dependencies and Run Playwright Tests
+    - name: Install dependencies and Run Playwright Tests
       run: |
+        cd src/frontend 
+        npm install
+        cd ../../
         cd test/frontend
-        npm ci
+        npm install
         npx playwright install --with-deps
+    - name: Run Playwright Tests
+      run: | 
+        cd test/frontend
         npx playwright test
     - uses: actions/upload-artifact@v4
       if: ${{ !cancelled() }}
