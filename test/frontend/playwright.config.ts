@@ -27,7 +27,7 @@ export default defineConfig({
       cwd: '../../src/frontend',
       url: 'http://localhost:3000',
       reuseExistingServer: true,
-      timeout: 10000,
+      timeout: 120000,
     },
   ],
 
