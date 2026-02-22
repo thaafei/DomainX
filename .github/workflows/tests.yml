@@ -61,7 +61,7 @@ jobs:
         npm install
         cd ../../test/frontend/
         npm install
-        npx playwright install
+        npx playwright install --with-deps
     - name: Run Playwright Tests
       run: | 
         cd test/frontend
