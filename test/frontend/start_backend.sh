@@ -5,7 +5,7 @@ cd ../../
 
 # create venv if it doesn't exist
 if [ ! -d ".venv" ]; then
-  python -m venv .venv
+  python3 -m venv .venv
 fi
 
 # activate venv
@@ -17,7 +17,7 @@ cd src/backend
 pip install -r requirements.txt
 
 # run migrations
-python manage.py migrate
+python3 manage.py migrate
 
 # start server
-python manage.py runserver 8000
+python3 manage.py runserver 0.0.0.0:8000
