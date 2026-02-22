@@ -1,16 +1,9 @@
 import { defineConfig, devices } from '@playwright/test';
-
-/**
- * Read environment variables from file.
- * https://github.com/motdotla/dotenv
- */
 import dotenv from 'dotenv';
 import path from 'path';
-dotenv.config({ path: path.resolve("../../src/backend", '.env') });
 
-/**
- * See https://playwright.dev/docs/test-configuration.
- */
+// dotenv.config({ path: path.resolve("../../src/backend", '.env') });
+
 export default defineConfig({
   testDir: './',
   fullyParallel: true,
@@ -21,35 +14,21 @@ export default defineConfig({
   use: {
     trace: 'on-first-retry',
   },
+
   projects: [
-    {
-      name: 'chromium',
-      use: { ...devices['Desktop Chrome'] },
-    },
-
-    {
-      name: 'firefox',
-      use: { ...devices['Desktop Firefox'] },
-    },
-
-    {
-      name: 'webkit',
-      use: { ...devices['Desktop Safari'] },
-    }
+    { name: 'chromium', use: { ...devices['Desktop Chrome'] } },
+    { name: 'firefox', use: { ...devices['Desktop Firefox'] } },
+    { name: 'webkit', use: { ...devices['Desktop Safari'] } },
   ],
+
   webServer: [
     {
-    command: 'cd ../../src/frontend && npm start',
-    url: 'http://localhost:3000/',
-    reuseExistingServer: true,
-    timeout: 5000
-  },
-  // {
-  //     command: './start_backend.sh',
-  //     url: 'http://localhost:8000',
-  //     timeout: 5000,
-  //     reuseExistingServer: true
-  //   },
-],
-  //globalSetup: require.resolve('./global-setup')
+      command: 'npm start',
+      cwd: '../../src/frontend',
+      url: 'http://localhost:3000',
+      reuseExistingServer: true,
+      timeout: 10000,
+    },
+  ],
+
 });
