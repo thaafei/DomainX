@@ -2,6 +2,7 @@ import React, { useEffect, useState, useRef, useLayoutEffect } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { apiUrl } from "../config/api";
 import SuccessNotification from "../components/SuccessNotification";
+import {ArrowLeft } from "lucide-react";
 
 interface Metric {
   metric_ID: string;
@@ -298,12 +299,15 @@ const EditValuesPage: React.FC = () => {
   }, [rows]);
 
   useEffect(() => {
+      document.title = "DomainX – Edit";
     const onKeyDown = (e: KeyboardEvent) => {
       if (e.key === "Escape" && confirm && !confirmBusy) setConfirm(null);
     };
     window.addEventListener("keydown", onKeyDown);
     return () => window.removeEventListener("keydown", onKeyDown);
   }, [confirm, confirmBusy]);
+
+
 
   useEffect(() => {
     (async () => {
@@ -608,7 +612,7 @@ const EditValuesPage: React.FC = () => {
           style={{ width: "100%", fontSize: "1rem", textAlign: "center" }}
           onClick={() => navigate(`/comparison-tool/${domainId}`)}
         >
-          ← Back
+          <ArrowLeft size={18} /> Back
         </button>
       </div>
 

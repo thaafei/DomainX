@@ -1,8 +1,12 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 
 
 const Home: React.FC = () => {
+    useEffect(() => {
+      document.title = "DomainX";
+    }, []);
+
     const navigate = useNavigate();
     const goToLogin = () => navigate('/login');
   return (

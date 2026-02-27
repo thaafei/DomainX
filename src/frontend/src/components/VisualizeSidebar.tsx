@@ -1,5 +1,6 @@
 import React from "react";
 import { useNavigate } from "react-router-dom";
+import { ArrowLeft, BarChart3 } from "lucide-react";
 
 interface Metric {
   metric_ID: string;
@@ -121,7 +122,7 @@ const VisualizeSidebar: React.FC<VisualizeSidebarProps> = ({
         onMouseLeave={(e) => e.currentTarget.style.opacity = "0.7"}
         onClick={() => navigate(`/comparison-tool/${domainId}`)}
       >
-        ← Back
+        <ArrowLeft size={18} /> Back
       </button>
 
       {/* Primary Section: Graph Mode */}
@@ -703,7 +704,8 @@ const VisualizeSidebar: React.FC<VisualizeSidebarProps> = ({
           className="dx-btn dx-btn-primary"
           onClick={handleVisualize}
         >
-          Visualize →
+          <BarChart3 size={18} />
+              Visualize
         </button>
         <button
           className="dx-btn dx-btn-outline"

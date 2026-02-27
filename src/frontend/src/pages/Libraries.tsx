@@ -2,6 +2,7 @@ import React, { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { apiUrl } from "../config/api";
 import SuccessNotification from "../components/SuccessNotification";
+import {ArrowLeft} from "lucide-react";
 
 interface Library {
   library_ID: string;
@@ -75,6 +76,7 @@ const AddLibraryPage: React.FC = () => {
 
   useEffect(() => {
     if (!DOMAIN_ID) return;
+    document.title = "DomainX – Libraries";
     loadLibraries();
   }, [DOMAIN_ID]);
 
@@ -292,7 +294,8 @@ const AddLibraryPage: React.FC = () => {
           style={{ width: "100%", fontSize: "1rem", textAlign: "center" }}
           onClick={() => navigate(`/comparison-tool/${domainId}`)}
         >
-          ← Back
+          <ArrowLeft size={18} />
+          Back
         </button>
       </div>
 

@@ -53,6 +53,7 @@ const Visualize: React.FC = () => {
   }, [metricList]);
 
   useEffect(() => {
+      document.title = "DomainX – Visualize";
     const visualizableMetricNames = new Set(visualizableMetrics.map(m => m.metric_name));
     setSelectedMetrics(prev => prev.filter(name => visualizableMetricNames.has(name)));
   }, [visualizableMetrics]);
