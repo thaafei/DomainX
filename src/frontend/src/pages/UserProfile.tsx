@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { apiUrl } from "../config/api";
 import { useAuthStore } from "../store/useAuthStore";
 import SuccessNotification from "../components/SuccessNotification";
+import { ArrowLeft } from "lucide-react";
 
 interface Domain {
   domain_ID: string;
@@ -76,6 +77,7 @@ const fetchAssignedDomains = async () => {
 };
 
 useEffect(() => {
+    document.title = "DomainX – Profile";
   if (user?.id) fetchAssignedDomains();
 }, [user?.id]);
   const fetchUserDomains = async () => {
@@ -328,7 +330,17 @@ useEffect(() => {
 
         <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
           <button className="dx-btn dx-btn-outline" onClick={() => navigate("/main")} style={{ justifyContent: sidebarOpen ? "flex-start" : "center" }}>
-            <span>{sidebarOpen ? "← Dashboard" : "🏠"}</span>
+
+            <span style={{ display: "flex", alignItems: "center", gap: 6 }}>
+              {sidebarOpen ? (
+                <>
+                  <ArrowLeft size={16} />
+                  Dashboard
+                </>
+              ) : (
+                "🏠"
+              )}
+            </span>
           </button>
           <button className="dx-btn dx-btn-outline" onClick={handleLogout} style={{ justifyContent: sidebarOpen ? "flex-start" : "center", color: "#ff7b72" }}>
             <span>{sidebarOpen ? "Logout" : "🚪"}</span>

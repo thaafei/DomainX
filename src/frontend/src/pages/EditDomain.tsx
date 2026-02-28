@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { apiUrl } from "../config/api";
 import SuccessNotification from "../components/SuccessNotification";
+import { ArrowLeft } from "lucide-react";
 
 const EditDomain: React.FC = () => {
   const { domain_id } = useParams<{ domain_id: string }>();
@@ -53,6 +54,7 @@ const EditDomain: React.FC = () => {
             });
           }
         }
+        document.title = "DomainX – EditDomain";
       } catch (err: any) {
         setError(err.message);
       } finally {
@@ -177,7 +179,7 @@ const EditDomain: React.FC = () => {
           style={{ width: "100%", fontSize: "1rem", textAlign: "center" }}
           onClick={() => navigate("/main")}
         >
-          ← Back
+          <ArrowLeft size={18} /> Back
         </button>
       </div>
 
