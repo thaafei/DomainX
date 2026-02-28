@@ -36,6 +36,21 @@ You can also run a single test in vscode by:
 4. Select test as the directory containing all the tests
 
 ### Frontend
-TODO
+1.  Navigate to the test/frontend folder
 
+2.  Install the required package.json for playwright:
+    ```bash
+    npm ci
+    ```
+
+3.  Run tests
+    ```bash
+    npx playwright test
+    ```
+    This should run all the tests under the test/frontend folder
+---
+
+You can also run tests manually in terminal as headed:
+1. Navigate to the test/frontend and install requirements
+2. npx playwright test --project=chromium --headed
 

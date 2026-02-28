@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import { useParams } from 'react-router-dom';
 import Plot from 'react-plotly.js';
@@ -11,6 +11,7 @@ interface Metric {
   metric_ID: string;
   metric_name: string;
   category?: string | null;
+  value_type?: string;
 }
 
 interface LibraryRow {
@@ -45,6 +46,17 @@ const Visualize: React.FC = () => {
   const [error, setError] = useState<string | null>(null);
 
   const downloadFormat = "svg";
+
+  // Filter out non-visualizable metrics (bool and text types)
+  const visualizableMetrics = useMemo(() => {
+    return metricList.filter(m => m.value_type !== "bool" && m.value_type !== "text");
+  }, [metricList]);
+
+  useEffect(() => {
+      document.title = "DomainX – Visualize";
+    const visualizableMetricNames = new Set(visualizableMetrics.map(m => m.metric_name));
+    setSelectedMetrics(prev => prev.filter(name => visualizableMetricNames.has(name)));
+  }, [visualizableMetrics]);
 
   const [categoryWeights, setCategoryWeights] = useState<Record<string, number>>({});
   const [initialCategoryWeights, setInitialCategoryWeights] = useState<Record<string, number>>({});
@@ -142,9 +154,9 @@ const Visualize: React.FC = () => {
 
   const getCategoryMetricNames = (name: string) => {
     if (name === "Uncategorized") {
-      return metricList.filter(m => !m.category).map(m => m.metric_name);
+      return visualizableMetrics.filter(m => !m.category).map(m => m.metric_name);
     }
-    return metricList.filter(m => m.category === name).map(m => m.metric_name);
+    return visualizableMetrics.filter(m => m.category === name).map(m => m.metric_name);
   };
 
   const isCategoryFullySelected = (name: string) => {
@@ -216,8 +228,8 @@ const Visualize: React.FC = () => {
   };
 
   const toggleSelectAllMetrics = () => {
-    if (metricList.length === 0) return;
-    const allNames = metricList.map(m => m.metric_name);
+    if (visualizableMetrics.length === 0) return;
+    const allNames = visualizableMetrics.map(m => m.metric_name);
     const allSelected = selectedMetrics.length === allNames.length;
     setSelectedMetrics(allSelected ? [] : allNames);
   };
@@ -468,7 +480,7 @@ const Visualize: React.FC = () => {
         setAhpMode={setAhpMode}
         activeTab={activeTab}
         setActiveTab={setActiveTab}
-        metricList={metricList}
+        metricList={visualizableMetrics}
         categories={categories}
         libraries={libraries}
         selectedMetrics={selectedMetrics}
