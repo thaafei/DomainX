@@ -130,7 +130,7 @@ const EditCategoryWeights: React.FC = () => {
 
       if (res.ok) {
         setSaveStatus("Saved!");
-        setTimeout(() => navigate(`/comparison-tool/${domainId}`), 1000);
+        setTimeout(() => navigate(`/main`), 1000);
       }
     } catch (err) { 
       setSaveStatus("Error.");
