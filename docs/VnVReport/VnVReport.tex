@@ -73,13 +73,89 @@ This document ...
 \subsection{Performance}
 
 \subsection{etc.}
-	
-\section{Comparison to Existing Implementation}	
-
-This section will not be appropriate for every project.
 
 \section{Unit Testing}
-
+The following unit tests concern behaviour-hiding modules that are implemented by the tool. Modules implemented by external libraries are assumed to be tested themselves and therefore don't need to be unit tested. 
+\subsection{Data Edit Module}
+\subsection{User Authentication Module}
+\subsection{User Role Access Module}
+\subsection{User Page Module}
+\subsection{Automated Metrics Module}
+\subsection{Domains Page Module}
+  \begin{enumerate}
+    \item \texttt{test\_create\_domain\_success} \label{test-create-domain-success}
+      \\Initial State: Create user and fixture of API client
+      \\Input: Create payload containing domain name, description, and \texttt{creator\_ids} with the creator and call POST
+      \\Expected Output: Response returns status 201 for created, and querying for the domain object contains the same as in the payload
+      \\Actual Output: Matches expected
+      \\Result: Pass
+    \item \texttt{test\_create\_domain\_missing\_domain\_name} \label{test-create-domain-missing-domain-name}
+      \\Initial State: Create fixture of API client
+      \\Input: Create payload with only description and call POST
+      \\Expected Output: Response returns 400 bad request and informs of missing field
+      \\Actual Output: Matches expected, data returns dictionary with \texttt{domain\_name} and value of "This field is required"
+      \\Result: Pass
+    \item \texttt{test\_create\_domain\_missing\_description} \label{test-create-domain-missing-description}
+      \\Initial State: Create fixture of API client
+      \\Input: Create payload with only domain name and call POST
+      \\Response returns 400 bad request and informs of missing field
+      \\Actual Output: Matches expected, data returns dictionary with "description" and value of "Description field is required"
+      \\Result: Pass
+    \item \texttt{test\_list\_domains} \label{test-list-domains}
+      \\Initial State: Create fixture of API client and create two domain objects
+      \\Input: Calling GET for domain
+      \\Expected Output: Response 200 OK with list of domains matching the created domains
+      \\Actual Output: Matches expected
+      \\Result: Pass
+    \item \texttt{test\_update\_domain\_sets\_creators} \label{test-update-domain-sets-creators}
+      \\Initial State: Create domain object with only \texttt{domain\_name} and description and fixture of API client
+      \\Input: Create two users and add them to a payload with updated domain name and description. Then call POST with the domain ID
+      \\Expected Output: Response 200, domain should contain the new information and be linked to the two users
+      \\Actual Output: Matches expected
+      \\Result: Pass
+    \item \texttt{test\_delete\_domain} \label{test-delete-domain}
+      \\Initial State: Create fixture of API client and create a domain object
+      \\Input: Call DELETE with the domain ID
+      \\Expected Output: Querying for the domain ID returns None
+      \\Actual Output: Matches Expected
+      \\Result: Pass
+  \end{enumerate}
+\subsection{Comparison Module}
+\subsection{Configuration Module}
+\subsection{Ranking Algorithm Module}
+\subsection{Database Persistence Module}
+  \begin{enumerate}
+    \item \texttt{test\_domain\_str\_returns\_name} \label{test-domain-str-returns-name}
+      \\Initial State: N/A
+      \\Input: Directly creating a new domain object with \texttt{domain\_name} "Alpha" and description "desc"
+      \\Expected Output: Calling newly created object returns the domain name "Alpha"
+      \\Actual Output: Returned "Alpha"
+      \\Result: Pass
+    \item \texttt{test\_get\_domain\_ID\_returns\_string\_uuid} \label{test-get-domain-ID-returns-string-uuid}
+      \\Initial State: N/A
+      \\Input: Directly creating a new domain object with \texttt{domain\_name} "Beta" and description "desc"
+      \\Expected Output: Calling \texttt{get\_domain\_ID()} on new domain returns the UUID
+      \\Actual Output: Method matches \texttt{domain\_id} parameter and is instance of string
+      \\Result: Pass
+    \item \texttt{test\_defaults\_and\_blank\_fields}\label{test-defaults-and-blank-fields}
+      \\Initial State: N/A
+      \\Input: Directly creating a new domain object with \texttt{domain\_name} "Gamma"
+      \\Expected Output: Initializes domain object with default fields \texttt{{published: False, paper\_name: None, paper\_url: "", category\_weights: {}}}
+      \\Actual Output: Output matches expected
+      \\Result: Pass
+    \item \texttt{test\_unique\_domain\_name\_constraint} \label{test-unique-domain-name-constraint}
+      \\Initial State: Domain object with \texttt{domain\_name} "Delta" and description "one"
+      \\Input: Directly creating a new domain object with \texttt{domain\_name} "Delta" and description "two"
+      \\Expected Output: Throws integrity error due to duplicate domain names
+      \\Actual Output: Matches expected
+      \\Result: Pass
+    \item \texttt{test\_creators\_many\_to\_many\_assignment} \label{test-creators-many-to-many-assignment}
+      \\Initial State: Create two users with admin role
+      \\Input: Create two domain objects with separate names, add both creators to each domain.
+      \\Expected Output: Filtering in each domain's creators by the id of the creator, both creators should exist
+      \\Actual Output: Matches expected
+      \\Result: Pass
+  \end{enumerate}
 \section{Changes Due to Testing}
 
 \wss{This section should highlight how feedback from the users and from 

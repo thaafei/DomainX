@@ -46,14 +46,22 @@ def test_create_domain_success(api_client, user_factory):
 
 
 @pytest.mark.django_db
-def test_create_domain_missing_fields(api_client):
-    response = api_client.post("/api/domain/", {}, format="json")
+def test_create_domain_missing_domain_name(api_client):
+    response = api_client.post("/api/domain/", {"description": "desc"}, format="json")
 
     assert response.status_code == status.HTTP_400_BAD_REQUEST
     data = response.json()
     assert isinstance(data, dict)
-    assert ("domain_name" in data) or ("description" in data)
+    assert data["domain_name"] == ["This field is required."]
 
+@pytest.mark.django_db
+def test_create_domain_missing_description(api_client):
+    response = api_client.post("/api/domain/", {"domain_name": "Domain"}, format="json")
+
+    assert response.status_code == status.HTTP_400_BAD_REQUEST
+    data = response.json()
+    assert isinstance(data, dict)
+    assert data["description"] == ["Description is required."]
 
 @pytest.mark.django_db
 def test_list_domains(api_client):
