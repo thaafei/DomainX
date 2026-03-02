@@ -87,33 +87,38 @@ const DomainInfo: React.FC<DomainInfoProps> = ({ selectedDomain, sidebarOpen, se
               </div>
             )}
             {canEditDomain && (
-              <button
-                className="dx-btn dx-btn-primary"
-                onClick={() => navigate(`/edit-domain/${selectedDomain.domain_ID}`)}
-                style={{ display: "flex", alignItems: "center", gap: 8, marginTop: 8 }}
-              >
-                <span style={{ fontSize: 15 }}>✏️</span> Edit Domain
-              </button>
-            )}
-            
+              <>
+                <button
+                  className="dx-btn dx-btn-primary"
+                  onClick={() => navigate(`/edit-domain/${selectedDomain.domain_ID}`)}
+                  style={{ display: "flex", alignItems: "center", gap: 8}}
+                >
+                  <span style={{ fontSize: 15 }}>✏️</span> Edit Domain
+                </button>
+                <button
+                  className="dx-btn dx-btn-primary"
+                  disabled={!selectedDomain}
+                  onClick={() => navigate(`/edit-weights/${selectedDomain.domain_ID}`)}
+                  style={{ display: "flex", alignItems: "center", gap: 8}}
+                >
+                  <span style={{ fontSize: 15, marginRight: 8 }}>📊</span> Edit Category Weights
+                </button>
+                <button
+                    className="dx-btn dx-btn-primary"
+                    onClick={() => navigate("/metrics")}
+                    style={{  display: "flex", alignItems: "center", gap: 8}}
+                  >
+                    Edit Metrics
+                </button>
+              </>
+             )}
             <button
-                className="dx-btn dx-btn-outline"
+                className="dx-btn dx-btn-primary"
                 disabled={!selectedDomain}
                 onClick={() => navigate(`/comparison-tool/${selectedDomain.domain_ID}`)}
                 style={{ display: "flex", alignItems: "center", gap: 8 }}
               >
                 <span style={{ fontSize: 15 }}>⚖️</span> Comparison Tool
-            </button>
-            <button
-                className="dx-btn dx-btn-outline"
-                onClick={() => navigate("/metrics")}
-                style={{
-                  display: "flex",
-                  alignItems: "center",
-                  marginTop: 8,
-                }}
-              >
-                Edit Metrics
             </button>
           </>
         )}

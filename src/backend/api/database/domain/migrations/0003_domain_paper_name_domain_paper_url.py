@@ -13,11 +13,12 @@ class Migration(migrations.Migration):
         migrations.AddField(
             model_name="domain",
             name="paper_name",
-            field=models.CharField(blank=True),
+            field=models.CharField(max_length=255, blank=True),
         ),
         migrations.AddField(
             model_name="domain",
             name="paper_url",
-            field=models.URLField(blank=True),
+            field=models.URLField(max_length=500, blank=True),
         ),
     ]
+

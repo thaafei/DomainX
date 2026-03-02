@@ -9,7 +9,7 @@ class Domain(models.Model):
     category_weights = models.JSONField(default=dict, blank=True)
     creators = models.ManyToManyField(settings.AUTH_USER_MODEL, related_name='created_domains', blank=True)
     published = models.BooleanField(default=False)
-    paper_name = models.CharField(blank=True)
+    paper_name = models.CharField(max_length=255, blank=True, null=True)
     paper_url = models.URLField(max_length=200, blank=True)
 
     def __str__(self):
