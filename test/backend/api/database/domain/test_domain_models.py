@@ -41,15 +41,32 @@ def test_unique_domain_name_constraint():
 @pytest.mark.django_db
 def test_creators_many_to_many_assignment():
     User = get_user_model()
-    creator = User.objects.create_user(
+    creator1 = User.objects.create_user(
         username="creator1",
         email="creator1@example.com",
         password="pass1234",
         role="admin",
     )
-    domain = Domain.objects.create(domain_name="Epsilon", description="desc")
+    creator2 = User.objects.create_user(
+        username="creator2",
+        email="creator2@example.com",
+        password="pass5678",
+        role="admin",
+    )
 
-    domain.creators.add(creator)
-    domain.save()
+    domain1 = Domain.objects.create(domain_name="Epsilon", description="desc")
+    domain2 = Domain.objects.create(domain_name="Lambda", description="desc")
 
-    assert domain.creators.filter(id=creator.id).exists()
+    domain1.creators.add(creator1)
+    domain1.creators.add(creator2)
+    domain1.save()
+
+    domain2.creators.add(creator1)
+    domain2.creators.add(creator2)
+    domain2.save()
+
+    assert domain1.creators.filter(id=creator1.id).exists()
+    assert domain1.creators.filter(id=creator2.id).exists()
+    assert domain2.creators.filter(id=creator1.id).exists()
+    assert domain2.creators.filter(id=creator2.id).exists()
+

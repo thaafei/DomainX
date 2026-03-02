@@ -367,7 +367,7 @@ const Main: React.FC = () => {
         credentials: "include",
         body: JSON.stringify({
           domain_name: domainName,
-          description,
+          description: description,
           creator_ids: selectedCreatorIds,
         }),
       });
