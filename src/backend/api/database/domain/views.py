@@ -56,13 +56,27 @@ def category_weights(request, domain_id):
         return Response({"error": "Domain not found"}, status=status.HTTP_404_NOT_FOUND)
 
     if request.method == "GET":
-        return Response(domain.category_weights or {}, status=status.HTTP_200_OK)
+        # Returns both the dictionary of weights and the raw matrix
+        return Response({
+            "category_weights": domain.category_weights or {},
+            "ahp_matrix": domain.ahp_matrix or {}
+        }, status=status.HTTP_200_OK)
 
-    values = request.data.get("values", {})
-    current = dict(domain.category_weights or {})
-    for key, value in values.items():
-        current[key] = value
-    domain.category_weights = current
-    domain.save()
+    if request.method == "POST":
+        # Get data from request
+        new_weights = request.data.get("values", {}) # The AHP results
+        matrix_data = request.data.get("matrix", {}) # The UI matrix
 
-    return Response({"success": True}, status=status.HTTP_200_OK)
+        # Update the category_weights dictionary
+        current_weights = dict(domain.category_weights or {})
+        for key, value in new_weights.items():
+            current_weights[key] = value
+        
+        domain.category_weights = current_weights
+        
+        # Save the raw matrix into its own field
+        domain.ahp_matrix = matrix_data
+        
+        domain.save()
+
+        return Response({"success": True}, status=status.HTTP_200_OK)
