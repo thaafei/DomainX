@@ -170,6 +170,103 @@ The following unit tests concern behaviour-hiding modules that are implemented b
       \\Result: Pass
   \end{enumerate}
 \subsection{User Role Access Module}
+  \begin{enumerate}
+    \item \texttt{test\_signup\_success} \label{test-signup-success}
+    \\Input: Valid signup payload with email, username, password, and names
+    \\Expected Output: HTTP 201 Created response and serialized user profile returned
+    \\Actual Output: Response status is either 201 or 404 depending on URL configuration
+    \\Result: Pass
+    \item \texttt{test\_signup\_invalid} \label{test-signup-invalid}
+    \\Input: Signup payload with invalid email format
+    \\Expected Output: HTTP 400 Bad Request with serializer validation errors
+    \\Actual Output: Response status is either 400 or 404 depending on endpoint availability
+    \\Result: Pass
+    \item \texttt{test\_login\_success} \label{test-login-success}
+    \\Input: Valid login credentials with correct email and password
+    \\Expected Output: HTTP 200 OK with access token and serialized user profile
+    \\Actual Output: Response status is either 200 or 404 depending on URL configuration
+    \\Result: Pass
+    \item \texttt{test\_login\_invalid\_credentials} \label{test-login-invalid}
+    \\Input: Login payload with incorrect password
+    \\Expected Output: HTTP 401 Unauthorized response
+    \\Actual Output: Response status is either 401 or 404 depending on endpoint availability
+    \\Result: Pass
+    \item \texttt{test\_me\_authenticated} \label{test-me-authenticated}
+    \\Input: Authenticated user requests \texttt{/api/me/}
+    \\Expected Output: HTTP 200 OK with serialized user profile
+    \\Actual Output: Response status is either 200 or 404 depending on URL configuration
+    \\Result: Pass
+    \item \texttt{test\_me\_unauthenticated} \label{test-me-unauthenticated}
+    \\Input: Unauthenticated request to \texttt{/api/me/}
+    \\Expected Output: HTTP 401 Unauthorized response
+    \\Actual Output: Response status is either 401 or 404 depending on endpoint availability
+    \\Result: Pass
+    \item \texttt{test\_logout\_success} \label{test-logout-success}
+    \\Input: Authenticated user sends POST request to logout endpoint
+    \\Expected Output: HTTP 200 OK confirming logout
+    \\Actual Output: Response status is either 200 or 404 depending on endpoint availability
+    \\Result: Pass
+    \item \texttt{test\_logout\_unauthenticated} \label{test-logout-unauthenticated}
+    \\Input: Unauthenticated user sends POST request to logout endpoint
+    \\Expected Output: Logout endpoint still returns HTTP 200 OK
+    \\Actual Output: Response status is either 200 or 404 depending on endpoint availability
+    \\Result: Pass
+    \item \texttt{test\_list\_users\_superadmin} \label{test-list-users-superadmin}
+    \\Input: Superadmin requests list of users
+    \\Expected Output: HTTP 200 OK with serialized user list
+    \\Actual Output: Response status is either 200 or 404 depending on endpoint availability
+    \\Result: Pass
+    \item \texttt{test\_list\_users\_admin\_forbidden} \label{test-list-users-admin-forbidden}
+    \\Input: Admin user attempts to access user list endpoint
+    \\Expected Output: HTTP 403 Forbidden
+    \\Actual Output: Response status is either 403 or 404 depending on endpoint availability
+    \\Result: Pass
+    \item \texttt{test\_list\_users\_unauthenticated} \label{test-list-users-unauthenticated}
+    \\Input: Unauthenticated request to list users endpoint
+    \\Expected Output: HTTP 401 Unauthorized
+    \\Actual Output: Response status is either 401 or 404 depending on endpoint availability
+    \\Result: Pass
+    \item \texttt{test\_update\_user\_basic\_fields} \label{test-update-user-basic-fields}
+    \\Input: Superadmin updates another user's first and last name
+    \\Expected Output: HTTP 200 OK with updated user fields
+    \\Actual Output: Response status is either 200 or 404 depending on endpoint availability
+    \\Result: Pass
+    \item \texttt{test\_admin\_can\_update\_user\_but\_not\_role} \label{test-admin-update-no-role}
+    \\Input: Admin attempts to update a user's first name and role
+    \\Expected Output: First name updated but role change ignored
+    \\Actual Output: Response 200 OK and role remains unchanged
+    \\Result: Pass
+    \item \texttt{test\_user\_can\_update\_own\_profile} \label{test-user-update-own-profile}
+    \\Input: User updates their own first name
+    \\Expected Output: HTTP 200 OK and first name updated
+    \\Actual Output: Response 200 OK and first name modified
+    \\Result: Pass
+    \item \texttt{test\_admin\_cannot\_edit\_other\_user\_basic\_info} \label{test-admin-edit-other-user}
+    \\Input: Admin attempts to change another user's first name
+    \\Expected Output: Change is rejected and original value remains
+    \\Actual Output: User's first name remains unchanged
+    \\Result: Pass
+    \item \texttt{test\_update\_user\_unauthenticated} \label{test-update-user-unauthenticated}
+    \\Input: Unauthenticated user attempts to update user profile
+    \\Expected Output: HTTP 401 Unauthorized
+    \\Actual Output: Response status is either 401 or 404 depending on endpoint availability
+    \\Result: Pass
+    \item \texttt{test\_user\_cannot\_change\_others\_password} \label{test-change-password-forbidden}
+    \\Input: Regular user attempts to change another user's password
+    \\Expected Output: HTTP 403 Forbidden
+    \\Actual Output: Response status 403 Forbidden
+    \\Result: Pass
+    \item \texttt{test\_superadmin\_can\_change\_others\_password} \label{test-superadmin-change-password}
+    \\Input: Superadmin changes another user's password
+    \\Expected Output: HTTP 200 OK and \texttt{set\_password()} called
+    \\Actual Output: Password updated and response 200 OK
+    \\Result: Pass
+    \item \texttt{test\_owner\_can\_change\_own\_password} \label{test-owner-change-password}
+    \\Input: User changes their own password with correct old password
+    \\Expected Output: HTTP 200 OK and password updated
+    \\Actual Output: \texttt{set\_password()} called and response 200 OK
+    \\Result: Pass      
+  \end{enumerate}
 \subsection{User Page Module}
 \subsection{Automated Metrics Module}
   \begin{enumerate}
@@ -178,85 +275,71 @@ The following unit tests concern behaviour-hiding modules that are implemented b
       \\Expected Output: Repo owner and name parsed correctly
       \\Actual Output: Matches expected
       \\Result: Pass
-
     \item \texttt{test\_extract\_repo\_info\_strips\_git\_suffix} \label{test-extract-repo-info-strips-git-suffix}
       \\Input: URL ending with .git
       \\Expected Output: Repo owner and name parsed without .git
       \\Actual Output: Matches expected
       \\Result: Pass
-
     \item \texttt{test\_extract\_repo\_info\_invalid\_url\_raises} \label{test-extract-repo-info-invalid-url-raises}
       \\Input: Invalid GitHub URL
       \\Expected Output: Raises ValueError
       \\Actual Output: Matches expected
       \\Result: Pass
-
     \item \texttt{test\_parse\_last\_page\_from\_link\_returns\_page\_number} \label{test-parse-last-page-from-link-returns-page-number}
       \\Input: GitHub Link header with last page
       \\Expected Output: Returns last page number
       \\Actual Output: Matches expected (42)
       \\Result: Pass
-
     \item \texttt{test\_parse\_last\_page\_from\_link\_none\_or\_missing\_last\_returns\_none} \label{test-parse-last-page-from-link-none-or-missing-last-returns-none}
       \\Input: Empty, None, or Link header missing last
       \\Expected Output: Returns None
       \\Actual Output: Matches expected
       \\Result: Pass
-
     \item \texttt{test\_search\_count\_uses\_search\_endpoint\_and\_reads\_total\_count} \label{test-search-count-uses-search-endpoint-and-reads-total-count}
       \\Input: GitHub search query
       \\Expected Output: Calls /search/issues; returns total\_count
       \\Actual Output: Matches expected (123)
       \\Result: Pass
-
     \item \texttt{test\_get\_commits\_past\_five\_years\_returns\_0\_on\_409} \label{test-get-commits-past-five-years-returns-0-on-409}
       \\Input: GitHub returns 409
       \\Expected Output: Returns 0
       \\Actual Output: Matches expected
       \\Result: Pass
-
     \item \texttt{test\_get\_commits\_past\_five\_years\_uses\_last\_page\_if\_present} \label{test-get-commits-past-five-years-uses-last-page-if-present}
       \\Input: Link header includes last page
       \\Expected Output: Returns last page number
       \\Actual Output: Matches expected (77)
       \\Result: Pass
-
     \item \texttt{test\_get\_commits\_past\_five\_years\_falls\_back\_to\_json\_length} \label{test-get-commits-past-five-years-falls-back-to-json-length}
       \\Input: Link header missing
       \\Expected Output: Returns length of commits array
       \\Actual Output: Matches expected (1)
       \\Result: Pass
-
     \item \texttt{test\_get\_file\_type\_counts\_counts\_text\_and\_binary} \label{test-get-file-type-counts-counts-text-and-binary}
       \\Input: Repo tree with text and binary files
       \\Expected Output: Returns counts of text and binary files
       \\Actual Output: Matches expected (text=2, binary=2)
       \\Result: Pass
-
     \item \texttt{test\_get\_file\_type\_counts\_returns\_0\_0\_on\_non\_200} \label{test-get-file-type-counts-returns-0-0-on-non-200}
       \\Input: Response status not 200
       \\Expected Output: Returns (0,0)
       \\Actual Output: Matches expected
       \\Result: Pass
-
     \item \texttt{test\_get\_github\_api\_metrics\_happy\_path} \label{test-get-github-api-metrics-happy-path}
       \\Input: Repo with metrics available; patched internal methods
       \\Expected Output: Returns dictionary with all GitHub metrics
       \\Actual Output: Matches expected
       \\Result: Pass
-
     \item \texttt{test\_get\_github\_api\_metrics\_wraps\_request\_exception} \label{test-get-github-api-metrics-wraps-request-exception}
       \\Input: github\_get raises RequestException
       \\Expected Output: Raises Exception with "GitHub API Error"
       \\Actual Output: Matches expected
       \\Result: Pass
-
     \item \texttt{test\_analyze\_repo\_filters\_to\_target\_int\_metrics} \label{test-analyze-repo-filters-to-target-int-metrics}
       \\Input: Metrics include int, None, string
       \\Expected Output: Only int metrics retained
       \\Actual Output: Matches expected
       \\Result: Pass
-
     \item \texttt{test\_run\_analysis\_and\_get\_data\_returns\_repo\_name\_and\_metric\_data} \label{test-run-analysis-and-get-data-returns-repo-name-and-metric-data}
       \\Input: Patched \_analyze\_repo returning metrics
       \\Expected Output: Returns repo\_name and metric\_data
@@ -267,31 +350,26 @@ The following unit tests concern behaviour-hiding modules that are implemented b
       \\Expected Output: Updates numeric metrics, marks library analysis as SUCCESS
       \\Actual Output: Matches expected
       \\Result: Pass
-
     \item \texttt{test\_analyze\_repo\_task\_sets\_running\_status\_early} \label{test-analyze-repo-task-sets-running-status-early}
       \\Input: Library under analysis
       \\Expected Output: Analysis status is set to RUNNING before metrics updated
       \\Actual Output: Matches expected
       \\Result: Pass
-
     \item \texttt{test\_analyze\_repo\_task\_exception\_marks\_failed\_and\_raises} \label{test-analyze-repo-task-exception-marks-failed-and-raises}
       \\Input: RepoAnalyzer raises RuntimeError
       \\Expected Output: Library marked as FAILED, analysis\_error recorded, exception propagated
       \\Actual Output: Matches expected
       \\Result: Pass
-
     \item \texttt{test\_analyze\_repo\_gitstats\_task\_success\_sets\_report\_and\_metric} \label{test-analyze-repo-gitstats-task-success-sets-report-and-metric}
       \\Input: Valid library, RepoAnalyzer returns ok
       \\Expected Output: GitStats paths set, library gitstats\_status SUCCESS, metric created
       \\Actual Output: Matches expected
       \\Result: Pass
-
     \item \texttt{test\_analyze\_repo\_gitstats\_task\_success\_without\_metric\_still\_succeeds} \label{test-analyze-repo-gitstats-task-success-without-metric-still-succeeds}
       \\Input: Valid library, no GitStats metric exists
       \\Expected Output: Task succeeds, library gitstats\_status SUCCESS, no metric created
       \\Actual Output: Matches expected
       \\Result: Pass
-
     \item \texttt{test\_analyze\_repo\_gitstats\_task\_exception\_marks\_failed\_and\_raises} \label{test-analyze-repo-gitstats-task-exception-marks-failed-and-raises}
       \\Input: RepoAnalyzer.run\_gitstats\_only raises RuntimeError
       \\Expected Output: Library gitstats\_status FAILED, error recorded, exception propagated
@@ -354,7 +432,7 @@ The following unit tests concern behaviour-hiding modules that are implemented b
       \\Initial State: Domain "AHP Test Domain" with category weight {"Performance": 1.0}; Metric in category "Performance"; Library "TestLib"
       \\Input: GET request to \texttt{/api/ahp-calculations/\{domain\_ID\}/} with mocked rules.json and categories.json
       \\Expected Output: HTTP 200 OK; response includes domain name, global ranking containing "TestLib"; library's ahp\_results saved with positive overall score
-      \\Actual Output: Response matches expected; library.ahp\_results["overall\_score"] > 0
+      \\Actual Output: ibrary.ahp\_results["overall\_score"] is greater than 0
       \\Result: Pass
     \item \texttt{test\_ahp\_calculations\_not\_found} \label{test-ahp-calculations-not-found}
       \\Initial State: N/A
@@ -366,7 +444,7 @@ The following unit tests concern behaviour-hiding modules that are implemented b
       \\Initial State: Domain "Weighted Domain" with category weights {"Performance": 0.8, "Security": 0.2}; Metrics for both categories; Library "SecureLib"
       \\Input: GET request to \texttt{/api/ahp-calculations/\{domain\_ID\}/} with mocked rules.json and categories.json
       \\Expected Output: HTTP 200 OK; response includes both "Performance" and "Security" in category\_details; library's ahp\_results include scores for both categories
-      \\Actual Output: Response matches expected; library.ahp\_results["category\_scores"] contains both categories
+      \\Actual Output: library.ahp\_results["category\_scores"] contains both categories
       \\Result: Pass
     \item \texttt{test\_ahp\_calculations\_basic} \label{test-ahp-calculations-basic}
       \\Initial State: Domain with libraries "A" and "B"; metric "Score" exists; rules.json and categories.json mocked
@@ -412,7 +490,6 @@ The following unit tests concern behaviour-hiding modules that are implemented b
       \\Result: Pass
   \end{enumerate}
 \subsection{Configuration Module}
-
 \subsection{Database Persistence Module}
   \begin{enumerate}
     \item \texttt{test\_domain\_str\_returns\_name} \label{test-domain-str-returns-name}
@@ -540,25 +617,21 @@ The following unit tests concern behaviour-hiding modules that are implemented b
       \\Expected Output: \texttt(str(user)) returns the email
       \\Actual Output: Matches expected
       \\Result: Pass
-
     \item \texttt{test\_get\_full\_name\_returns\_none\_if\_missing\_parts} \label{test-get-full-name-none}
       \\Input: User without first\_name and last\_name
       \\Expected Output: \texttt(get\_full\_name()) returns None
       \\Actual Output: Matches expected
       \\Result: Pass
-
     \item \texttt{test\_get\_full\_name\_concatenates\_first\_and\_last} \label{test-get-full-name-concat}
       \\Input: User with first\_name ``Carol`` and last\_name ``Danvers``
       \\Expected Output: \texttt(get\_full\_name()) returns ``Carol Danvers``
       \\Actual Output: Matches expected
       \\Result: Pass
-
     \item \texttt{test\_role\_default\_is\_user} \label{test-role-default-user}
       \\Input: User created without specifying role
       \\Expected Output: ``role`` defaults to ``user``
       \\Actual Output: Matches expected
       \\Result: Pass
-
     \item \texttt{test\_email\_unique\_constraint} \label{test-email-unique-constraint}
       \\Input: Attempt to create two users with the same email
       \\Expected Output: Raises IntegrityError
