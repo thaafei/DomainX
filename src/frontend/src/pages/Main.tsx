@@ -126,52 +126,12 @@ const Main: React.FC = () => {
       prev.includes(category) ? prev.filter(x => x !== category) : [...prev, category]
     );
   };
-  // 1. Define the format globally or as state (SVG is requested)
-const downloadFormat = "svg";
-
-// // 2. The robust helper that won't crash on SVG text
-// const dataUrlToBlob = (data: string) => {
-//   if (!data) return new Blob();
-
-//   // If Plotly returns raw XML (common in some plotly versions)
-//   if (data.startsWith('<svg') || data.startsWith('<?xml')) {
-//     return new Blob([data], { type: 'image/svg+xml;charset=utf-8' });
-//   }
-
-//   // If Plotly returns a Data URL (data:image/svg+xml,...)
-//   if (data.startsWith('data:')) {
-//     const parts = data.split(',');
-//     const header = parts[0];
-//     const body = parts[1];
-
-//     if (header.includes('base64')) {
-//       const bin = window.atob(body);
-//       const arr = new Uint8Array(bin.length).map((_, i) => bin.charCodeAt(i));
-//       return new Blob([arr], { type: header.split(':')[1].split(';')[0] });
-//     } else {
-//       // URL encoded SVG text
-//       return new Blob([decodeURIComponent(body)], { type: 'image/svg+xml;charset=utf-8' });
-//     }
-//   }
-//   return new Blob([data], { type: 'text/plain' });
-// };
-
+  const downloadFormat = "svg";
   //Derived List for Filter Buttons
   const categoryListForAhp = useMemo(() => {
     if (!ahpData?.category_details) return [];
     return Object.keys(ahpData.category_details);
   }, [ahpData]);
-
-  //Shared Chart Layout Helper (Fixes background transparency)
-  // const buildChartLayout = (title: string): Partial<Layout> => ({
-  //   title: { text: title, font: { color: "#fff", size: 16 } },
-  //   paper_bgcolor: "rgba(0,0,0,0)",
-  //   plot_bgcolor: "rgba(0,0,0,0)",
-  //   xaxis: { tickfont: { color: "#8b949e" }},
-  //   yaxis: { tickfont: { color: "#8b949e" } },
-  //   margin: { t: 50, l: 50, r: 30, b: 80 }
-  // });
-
   function buildChartLayout(metric: string, isExport: boolean = false): Partial<Layout> {
   // Website: White text for dark theme | Download: Black text for general use
   const fontColor = isExport ? "#000000" : "#ffffff";
@@ -323,9 +283,6 @@ const downloadFormat = "svg";
       setLibraries(libraryRows);
         setGlobalRanking(data.global_ranking || {});
         
-        // Transform category_details for the table
-        // data.category_details looks like: { "Popularity": { "React": 0.2, "Vue": 0.1 }, ... }
-
         const libraries = Object.keys(data.global_ranking);
         const rows = libraries.map(lib => ({
           name: lib,
