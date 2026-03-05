@@ -26,21 +26,16 @@ interface ChartRow {
 }
 
 const Visualize: React.FC = () => {
-  const navigate = useNavigate();
   const { domainId } = useParams<{ domainId: string }>();
   const DOMAIN_ID = domainId; 
   const [metricList, setMetricList] = useState<Metric[]>([]);
   const [categories, setCategories] = useState<string[]>([]);
   const [libraries, setLibraries] = useState<LibraryRow[]>([]);
-
-  const [graphMode, setGraphMode] = useState<"AHP" | "Metrics">("Metrics");
-  const [ahpMode, setAhpMode] = useState<"Overall" | "Individual">("Overall");
-  const [activeTab, setActiveTab] = useState<"AHP" | "Metrics" | "Libraries">("Metrics");
+  const [activeTab, setActiveTab] = useState< "Metrics" | "Libraries">("Metrics");
 
   const [selectedCategories, setSelectedCategories] = useState<string[]>([]);
   const [selectedMetrics, setSelectedMetrics] = useState<string[]>([]);
   const [selectedLibraries, setSelectedLibraries] = useState<string[]>([]);
-  const [selectedIndividualAhpCategories, setSelectedIndividualAhpCategories] = useState<string[]>([]);
 
   const [chartData, setChartData] = useState<{ metric: string; rows: { label: string; value: number }[] }[] | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -57,14 +52,6 @@ const Visualize: React.FC = () => {
     const visualizableMetricNames = new Set(visualizableMetrics.map(m => m.metric_name));
     setSelectedMetrics(prev => prev.filter(name => visualizableMetricNames.has(name)));
   }, [visualizableMetrics]);
-
-  const [categoryWeights, setCategoryWeights] = useState<Record<string, number>>({});
-  const [initialCategoryWeights, setInitialCategoryWeights] = useState<Record<string, number>>({});
-  const [normalizeWeights, setNormalizeWeights] = useState(true);
-  const [ahpData, setAhpData] = useState<{
-    global_ranking: Record<string, number>;
-    category_details: Record<string, Record<string, number>>;
-  } | null>(null);
 
   useEffect(() => {
   if (!DOMAIN_ID) return;
@@ -90,25 +77,19 @@ const Visualize: React.FC = () => {
         return JSON.parse(responseText);
       };
 
-      const [comparisonRes, metricsRes, categoriesRes, weightsRes, ahpRes] = await Promise.all([
+      const [comparisonRes, metricsRes, categoriesRes] = await Promise.all([
         fetch(apiUrl(`/library_metric_values/comparison/${DOMAIN_ID}/`), {
           credentials: "include",
         }),
         fetch(apiUrl("/metrics/"), { credentials: "include" }),
         fetch(apiUrl("/metrics/categories/"), { credentials: "include" }),
-        fetch(apiUrl(`/domain/${DOMAIN_ID}/category-weights/`), { credentials: "include" }),
-        fetch(apiUrl(`/library_metric_values/ahp/${DOMAIN_ID}/`), { credentials: "include" })
       ]);
 
-      const [comparisonData, metricsData, categoriesData, weightsData, ahpDataResponse] = await Promise.all([
+      const [comparisonData, metricsData, categoriesData] = await Promise.all([
         parseJson(comparisonRes),
         parseJson(metricsRes),
-        parseJson(categoriesRes),
-        parseJson(weightsRes),
-        parseJson(ahpRes),
+        parseJson(categoriesRes)
       ]);
-
-      setAhpData(ahpDataResponse);
 
       setMetricList(Array.isArray(metricsData) ? metricsData : comparisonData.metrics || []);
       const librariesData = comparisonData.libraries || [];
@@ -133,20 +114,6 @@ const Visualize: React.FC = () => {
       const categoryList = hasUncategorized
         ? [...availableCategories, "Uncategorized"]
         : availableCategories;
-
-      const incoming = typeof weightsData === "object" && weightsData ? weightsData : {};
-      const defaults: Record<string, number> = {};
-      categoryList.forEach((cat: string) => {
-        defaults[cat] = typeof (incoming as Record<string, number>)[cat] === "number"
-          ? (incoming as Record<string, number>)[cat]
-          : 1;
-      });
-      const total = Object.values(defaults).reduce((sum, val) => sum + val, 0) || 1;
-      const normalized = Object.fromEntries(
-        Object.entries(defaults).map(([k, v]) => [k, v / total])
-      );
-      setCategoryWeights(normalized);
-      setInitialCategoryWeights(normalized);
     } catch (err) {
       console.error(err);
     }
@@ -193,32 +160,6 @@ const Visualize: React.FC = () => {
     );
   };
 
-  const toggleIndividualAhpCategory = (category: string) => {
-    setSelectedIndividualAhpCategories(prev =>
-      prev.includes(category) ? prev.filter(x => x !== category) : [...prev, category]
-    );
-  };
-
-  const updateCategoryWeight = (category: string, value: number) => {
-    setCategoryWeights(prev => {
-      const next = { ...prev, [category]: value };
-      if (!normalizeWeights) return next;
-      const total = Object.values(next).reduce((sum, v) => sum + v, 0) || 1;
-      return Object.fromEntries(Object.entries(next).map(([k, v]) => [k, v / total]));
-    });
-  };
-
-  const normalizeCategoryWeights = () => {
-    setCategoryWeights(prev => {
-      const total = Object.values(prev).reduce((sum, v) => sum + v, 0) || 1;
-      return Object.fromEntries(Object.entries(prev).map(([k, v]) => [k, v / total]));
-    });
-  };
-
-  const resetCategoryWeights = () => {
-    setCategoryWeights(initialCategoryWeights);
-    setChartData(null);
-  };
 
   const toggleSelectAllLibraries = () => {
     if (libraries.length === 0) return;
@@ -232,11 +173,6 @@ const Visualize: React.FC = () => {
     const allNames = visualizableMetrics.map(m => m.metric_name);
     const allSelected = selectedMetrics.length === allNames.length;
     setSelectedMetrics(allSelected ? [] : allNames);
-  };
-
-  const toggleSelectAllIndividualAhpCategories = () => {
-    const allSelected = selectedIndividualAhpCategories.length === categoryListForAhp.length;
-    setSelectedIndividualAhpCategories(allSelected ? [] : [...categoryListForAhp]);
   };
 
   function buildChartLayout(metric: string): Partial<Layout> {
@@ -316,18 +252,11 @@ const Visualize: React.FC = () => {
   const handleVisualize = () => {
     setError(null);
     setChartData(null);
-
-    if (graphMode === "Metrics") {
-      if (selectedCategories.length === 0 && selectedMetrics.length === 0) {
-        setError("Please select at least one category or metric.");
-        return;
-      }
-    } else if (graphMode === "AHP" && ahpMode === "Individual") {
-      if (selectedIndividualAhpCategories.length === 0) {
-        setError("Please select at least one category for Individual AHP analysis.");
-        return;
-      }
+    if (selectedCategories.length === 0 && selectedMetrics.length === 0) {
+      setError("Please select at least one category or metric.");
+      return;
     }
+  
 
     if (selectedLibraries.length < 2) {
       setError("Select at least two libraries.");
@@ -357,7 +286,7 @@ const Visualize: React.FC = () => {
       (metricsByCategory[cat] || []).forEach(name => selectedMetricNames.add(name));
     });
 
-    if (graphMode === "Metrics" && selectedMetricNames.size === 0) {
+    if (selectedMetricNames.size === 0) {
       setError("Selected categories have no metrics.");
       return;
     }
@@ -378,80 +307,19 @@ const Visualize: React.FC = () => {
 
     let charts: { metric: string; rows: { label: string; value: number }[] }[] = [];
 
-    if (graphMode === "AHP") {
-      if (!ahpData) {
-        setError("AHP data not loaded. Please refresh the page.");
-        return;
-      }
-
-      // Overall AHP mode - recalculate using adjusted category weights
-      if (ahpMode === "Overall") {
-        const rows = selectedLibs
-          .map(l => {
-            // Sum across all categories using their AHP scores and adjusted weights
-            let overallScore = 0;
-            Object.keys(ahpData.category_details).forEach(cat => {
-              const categoryScore = ahpData.category_details[cat][l.library_name] || 0;
-              const weight = categoryWeights[cat] ?? 0;
-              overallScore += categoryScore * weight;
-            });
-            
-            return {
-              label: l.library_name,
-              value: overallScore
-            };
-          })
-          .filter(row => selectedLibraries.some(id => {
-            const lib = libraries.find(lib => lib.library_ID === id);
-            return lib?.library_name === row.label;
-          }))
-          .sort((a, b) => b.value - a.value);
-
-        charts = [{
-          metric: "Overall AHP Score",
-          rows
-        }];
-      }
-
-      // Individual category AHP - use backend category_details
-      if (ahpMode === "Individual" && selectedIndividualAhpCategories.length > 0) {
-        const individualCharts = selectedIndividualAhpCategories.map(cat => {
-          const categoryScores = ahpData.category_details[cat];
-          if (!categoryScores) return null;
-
-          const rows = selectedLibs
-            .map(l => ({
-              label: l.library_name,
-              value: categoryScores[l.library_name] || 0
-            }))
-            .filter(row => selectedLibraries.some(id => {
-              const lib = libraries.find(lib => lib.library_ID === id);
-              return lib?.library_name === row.label;
-            }))
-            .sort((a, b) => b.value - a.value);
-
-          return {
-            metric: `${cat} (Individual AHP)`,
-            rows
-          };
-        }).filter(chart => chart !== null && chart.rows.length > 0) as { metric: string; rows: { label: string; value: number }[] }[];
-
-        charts = [...charts, ...individualCharts];
-      }
-    } else {
       // Metrics mode - show raw metric values
-      charts = selectedMetricArray.map(metricName => {
-        const rows = selectedLibs.map(l => ({
-          label: l.library_name,
-          value: toNumber(l.metrics[metricName])
-        })).sort((a, b) => b.value - a.value);
+    charts = selectedMetricArray.map(metricName => {
+      const rows = selectedLibs.map(l => ({
+        label: l.library_name,
+        value: toNumber(l.metrics[metricName])
+      })).sort((a, b) => b.value - a.value);
 
-        return {
-          metric: metricName,
-          rows
-        };
-      });
-    }
+      return {
+        metric: metricName,
+        rows
+      };
+    });
+    
 
     if (hasInvalid) {
       setError("Some selected metrics have invalid values.");
@@ -461,23 +329,14 @@ const Visualize: React.FC = () => {
     setChartData(charts);
   };
 
-  const displayCategories = (categories.length
-    ? categories
-    : Array.from(new Set(metricList.map(m => m.category).filter(Boolean) as string[]))
-  ).filter(cat => metricList.some(m => m.category === cat));
-  const hasUncategorized = metricList.some(m => !m.category);
-  const categoryListForAhp = hasUncategorized
-    ? [...displayCategories, "Uncategorized"]
-    : displayCategories;
-
+  const handleClear =() => {
+    setError(null);
+    setChartData(null);
+  }
   return (
     <div className="dx-bg" style={{ display: "flex", height: "100vh", overflow: "hidden" }}>
       <VisualizeSidebar
         domainId={domainId}
-        graphMode={graphMode}
-        setGraphMode={setGraphMode}
-        ahpMode={ahpMode}
-        setAhpMode={setAhpMode}
         activeTab={activeTab}
         setActiveTab={setActiveTab}
         metricList={visualizableMetrics}
@@ -487,30 +346,20 @@ const Visualize: React.FC = () => {
         setSelectedMetrics={setSelectedMetrics}
         selectedLibraries={selectedLibraries}
         setSelectedLibraries={setSelectedLibraries}
-        selectedIndividualAhpCategories={selectedIndividualAhpCategories}
-        setSelectedIndividualAhpCategories={setSelectedIndividualAhpCategories}
-        categoryWeights={categoryWeights}
-        updateCategoryWeight={updateCategoryWeight}
-        normalizeWeights={normalizeWeights}
-        setNormalizeWeights={setNormalizeWeights}
-        normalizeCategoryWeights={normalizeCategoryWeights}
-        resetCategoryWeights={resetCategoryWeights}
-        categoryListForAhp={categoryListForAhp}
         error={error}
         setError={setError}
         setChartData={setChartData}
         handleVisualize={handleVisualize}
         handleDownloadAll={handleDownloadAll}
+        handleClear={handleClear}
         chartData={chartData}
         getCategoryMetricNames={getCategoryMetricNames}
         isCategoryFullySelected={isCategoryFullySelected}
         toggleCategory={toggleCategory}
         toggleMetric={toggleMetric}
         toggleLibrary={toggleLibrary}
-        toggleIndividualAhpCategory={toggleIndividualAhpCategory}
         toggleSelectAllMetrics={toggleSelectAllMetrics}
         toggleSelectAllLibraries={toggleSelectAllLibraries}
-        toggleSelectAllIndividualAhpCategories={toggleSelectAllIndividualAhpCategories}
       />
 
       <div
@@ -527,7 +376,7 @@ const Visualize: React.FC = () => {
 
           {!chartData && (
             <div className="dx-vis-placeholder">
-              Select metric + libraries to visualize.
+              Select metric(s) + libraries to visualize.
             </div>
           )}
 
