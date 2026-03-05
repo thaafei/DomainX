@@ -13,15 +13,70 @@ import {
   LabelList,
   Cell,
 } from "recharts";
+import Plot from 'react-plotly.js';
 import { apiUrl } from "../config/api";
 import DomainsList from "../components/DomainsList";
 import DomainInfo from "../components/DomainInfo";
-// 1. Helper for dynamic pastels
+import JSZip from 'jszip';
+import { saveAs } from 'file-saver';
+import Plotly, { Data, Layout } from "plotly.js-dist-min";
+
+// Helper for image conversion
+const dataUrlToBlob = (data: string) => {
+  if (!data) return new Blob();
+
+  // 1. Handle Raw XML/SVG tags
+  if (data.startsWith('<svg') || data.startsWith('<?xml')) {
+    return new Blob([data], { type: 'image/svg+xml;charset=utf-8' });
+  }
+
+  // 2. Handle Data URLs
+  if (data.startsWith('data:')) {
+    const [header, body] = data.split(',');
+    
+    if (header.includes('base64')) {
+      // Decode Base64 (usually for PNG/JPEG)
+      const bin = window.atob(body);
+      const arr = new Uint8Array(bin.length).map((_, i) => bin.charCodeAt(i));
+      return new Blob([arr], { type: header.split(':')[1].split(';')[0] });
+    } else {
+      // Decode URL-encoded string (usually for SVG)
+      return new Blob([decodeURIComponent(body)], { type: 'image/svg+xml;charset=utf-8' });
+    }
+  }
+  
+  return new Blob([data], { type: 'text/plain' });
+};
+
 const getPastelColor = (index: number) => {
   const hue = (index * 137.5) % 360; 
   return `hsl(${hue}, 60%, 70%)`;
 };
 
+interface LibraryRow {
+  library_ID: string;
+  library_name: string;
+  metrics: { [metricName: string]: string | number | null };
+}
+
+interface AhpData {
+  global_ranking: Record<string, number>;
+  category_details: Record<string, Record<string, number>>;
+}
+
+const downloadConfig: any = {
+  responsive: true,
+  displayModeBar: true,
+  modeBarButtonsToRemove: ['select2d', 'lasso2d', 'zoomIn2d', 'zoomOut2d'],
+  toImageButtonOptions: {
+    format: 'png',
+    filename: 'domainx_analysis',
+    height: 500,
+    width: 700,
+    scale: 2,
+    setBackground: 'transparent' 
+  }
+};
 const Main: React.FC = () => {
   const navigate = useNavigate();
   const [leftSidebarOpen, setLeftSidebarOpen] = useState(true);
@@ -62,6 +117,117 @@ const Main: React.FC = () => {
   });
 
   const [showSuccess, setShowSuccess] = useState(false);
+  const [ahpData, setAhpData] = useState<AhpData | null>(null);
+  const [libraries, setLibraries] = useState<LibraryRow[]>([]);
+  const [selectedIndividualAhpCategories, setSelectedIndividualAhpCategories] = useState<string[]>([]);
+  const [plotlyCharts, setPlotlyCharts] = useState<{ metric: string; rows: { label: string; value: number }[] }[]>([]);
+  const toggleIndividualAhpCategory = (category: string) => {
+    setSelectedIndividualAhpCategories(prev =>
+      prev.includes(category) ? prev.filter(x => x !== category) : [...prev, category]
+    );
+  };
+  const downloadFormat = "svg";
+  //Derived List for Filter Buttons
+  const categoryListForAhp = useMemo(() => {
+    if (!ahpData?.category_details) return [];
+    return Object.keys(ahpData.category_details);
+  }, [ahpData]);
+  function buildChartLayout(metric: string, isExport: boolean = false): Partial<Layout> {
+  // Website: White text for dark theme | Download: Black text for general use
+  const fontColor = isExport ? "#000000" : "#ffffff";
+  const gridColor = isExport ? "rgba(0,0,0,0.1)" : "rgba(255,255,255,0.1)";
+
+  return {
+    title: {
+      text: metric,
+      font: { size: 18, color: fontColor },
+    },
+    paper_bgcolor: "rgba(0,0,0,0)", // Keep background transparent for both
+    plot_bgcolor: "rgba(0,0,0,0)",
+    xaxis: {
+      title: { text: "Category", font: { color: fontColor } },
+      tickfont: { color: fontColor },
+      gridcolor: gridColor,
+    },
+    yaxis: {
+      title: { text: metric, font: { color: fontColor } },
+      tickfont: { color: fontColor },
+      gridcolor: gridColor,
+    },
+    margin: { t: 80, l: 60, r: 60, b: 60 },
+    autosize: true,
+  };
+}
+
+  const buildChartData = (rows: { label: string; value: number }[]): Data[] => [{
+    x: rows.map(r => r.label),
+    y: rows.map(r => r.value),
+    type: "bar",
+    marker: { color: "#4facfe" }
+  }];
+
+  // Download All Logic
+  const handleDownloadAll = async () => {
+  if (!plotlyCharts.length) return;
+  const zip = new JSZip();
+  const dateStamp = new Date().toISOString().slice(0, 10);
+
+  try {
+    const downloadPromises = plotlyCharts.map(async (chart) => {
+      const data = buildChartData(chart.rows);
+      const layout = buildChartLayout(chart.metric, true);
+
+      // Generating higher resolution for the zip files
+      const dataUrl = await Plotly.toImage(
+        { data, layout }, 
+        { width: 1200, height: 800, format: 'svg' }
+      );
+
+      const blob = dataUrlToBlob(dataUrl as string);
+      const safeName = chart.metric.replace(/[^\w\s]/gi, '').replace(/\s+/g, "_").toLowerCase();
+      zip.file(`${safeName}.svg`, blob);
+    });
+
+    await Promise.all(downloadPromises);
+    const content = await zip.generateAsync({ type: "blob" });
+    saveAs(content, `DomainX_Analysis_${dateStamp}.zip`);
+  } catch (error) {
+    console.error("Export failed:", error);
+  }
+};
+  // Trigger the update whenever categories or domain changes
+  useEffect(() => {
+      if (selectedDomain && ahpData) {
+          generatePlotlyCharts();
+      }
+  }, [selectedIndividualAhpCategories, selectedDomain, ahpData]);
+
+  const generatePlotlyCharts = () => {
+    // 1. Create the Global chart object
+    const globalChart = {
+      metric: "Global AHP Ranking",
+      rows: chartData.map(d => ({ label: d.name, value: d.score / 100 }))
+    };
+
+    // 2. Create the Category chart objects
+    const categoryCharts = selectedIndividualAhpCategories.map(cat => {
+      const categoryScores = ahpData?.category_details[cat];
+      if (!categoryScores) return null;
+
+      const rows = libraries.map(l => ({
+        label: l.library_name,
+        value: Number(categoryScores[l.library_name]) || 0
+      })).sort((a, b) => b.value - a.value);
+
+      return { metric: `${cat} Score`, rows };
+    }).filter((chart): chart is { metric: string; rows: { label: string; value: number }[] } => 
+      chart !== null
+    );
+
+    // 3. Set state with Global first, then Categories
+    setPlotlyCharts([globalChart, ...categoryCharts]);
+  };
+
 
   const handleUpdateUser = async () => {
     if (!user) return;
@@ -108,10 +274,15 @@ const Main: React.FC = () => {
 
       if (response.ok) {
         const data = await response.json();
+        setAhpData(data);
+        const libraryRows: LibraryRow[] = Object.keys(data.global_ranking).map(name => ({
+        library_ID: name,
+        library_name: name,
+        metrics: {} 
+      }));
+      setLibraries(libraryRows);
         setGlobalRanking(data.global_ranking || {});
         
-        // Transform category_details for the table
-        // data.category_details looks like: { "Popularity": { "React": 0.2, "Vue": 0.1 }, ... }
         const libraries = Object.keys(data.global_ranking);
         const rows = libraries.map(lib => ({
           name: lib,
@@ -164,7 +335,7 @@ const Main: React.FC = () => {
       score: parseFloat(((score as number) * 100).toFixed(2)),
       color: getPastelColor(index),
     }))
-    .sort((a, b) => b.score - a.score).slice(0, 10);;
+    .sort((a, b) => b.score - a.score);;
   const fetchCurrentUser = async () => {
     try {
       const response = await fetch(apiUrl("/me/"), {
@@ -195,27 +366,6 @@ const Main: React.FC = () => {
       console.log("Error fetching users:", error);
     }
   };
-
-  // const getAHPRanking = async (domainId: string) => {
-  //   try {
-  //     const response = await fetch(apiUrl(`/library_metric_values/ahp/${domainId}/`), {
-  //       method: "GET",
-  //       headers: { "Content-Type": "application/json" },
-  //       credentials: "include",
-  //     });
-
-  //     if (response.ok) {
-  //       const data = await response.json();
-  //       setGlobalRanking(data.global_ranking || {});
-  //       setGraph(true);
-  //     } else {
-  //       setGraph(false);
-  //     }
-  //   } catch (err) {
-  //     console.error("AHP fetch failed:", err);
-  //     setGraph(false);
-  //   }
-  // };
 
   const fetchWeights = async (domainId: string) => {
     try {
@@ -389,6 +539,7 @@ const Main: React.FC = () => {
 
   return (
     <div className="dx-bg" style={{ display: "flex", height: "100vh", overflow: "hidden" }}>
+      {/* Left Sidebar - Existing Domains Logic */}
       <DomainsList
         sidebarOpen={leftSidebarOpen}
         setSidebarOpen={setLeftSidebarOpen}
@@ -420,7 +571,9 @@ const Main: React.FC = () => {
         showSuccess={showSuccess}
       />
 
-      <div style={{ flex: 1, display: "flex", flexDirection: "column", alignItems: "center", gap: "20px", overflowY: "auto" }}>
+      <div style={{ flex: 1, display: "flex", flexDirection: "column", alignItems: "center", position: "relative", overflow: "hidden" }}>
+        <div className="stars"></div>
+
         {/* Tab Toggle */}
         <div style={{ 
           display: "inline-flex", 
@@ -428,8 +581,9 @@ const Main: React.FC = () => {
           padding: "4px", 
           borderRadius: "10px", 
           border: "1px solid #30363d",
-          marginBottom: "30px",
-          boxShadow: "0 4px 10px rgba(0,0,0,0.3)"
+          marginTop: "30px",
+          marginBottom: "10px",
+          zIndex: 10
         }}>
           {["graph", "table"].map((tab) => (
             <button
@@ -442,69 +596,85 @@ const Main: React.FC = () => {
                 cursor: "pointer",
                 fontSize: "0.9rem",
                 fontWeight: "600",
-                textTransform: "uppercase",
-                letterSpacing: "0.5px",
-                transition: "all 0.2s cubic-bezier(0.4, 0, 0.2, 1)",
                 background: activeTab === tab ? "#4facfe" : "transparent",
                 color: activeTab === tab ? "#fff" : "#8b949e",
                 minWidth: "120px"
               }}
-              onMouseEnter={(e) => {
-                if (activeTab !== tab) e.currentTarget.style.color = "#fff";
-              }}
-              onMouseLeave={(e) => {
-                if (activeTab !== tab) e.currentTarget.style.color = "#8b949e";
-              }}
             >
-              {tab} View
+              {tab.toUpperCase()} VIEW
             </button>
           ))}
         </div>
 
-        {graph && activeTab === "graph" && (
-          <div className="dx-card" style={{ padding: "30px", width: "95%", maxWidth: "1000px", background: "transparent", border: "none" }}>
-            <h3 style={{ color: "white", marginBottom: "40px", textAlign: "left", fontSize: "1.5rem", fontWeight: "300" }}>
-              Global AHP Ranking
-            </h3>
-
-            <div style={{ width: "100%", height: 450 }}>
-              <ResponsiveContainer width="100%" height="100%">
-                <BarChart data={chartData} margin={{ top: 60, right: 30, left: 20, bottom: 60 }}>
-                  <XAxis 
-                    dataKey="name" 
-                    axisLine={false} 
-                    tickLine={false} 
-                    tick={{ fill: "#666", fontSize: 12 }} 
-                  />
-                  <YAxis hide domain={[0, 110]} />
-                  
-                  <Bar 
-                    dataKey="score" 
-                    shape={<CustomIsometricBar />}
-                    background={{ fill: 'transparent' }} // This allows the shape to receive height info
-                  >
-                    {chartData.map((entry, index) => (
-                      <Cell key={`cell-${index}`} fill={entry.color} />
-                    ))}
-                    
-                    <LabelList 
-                      dataKey="score" 
-                      position="top" 
-                      offset={25} 
-                      fill="#fff"
-                      style={{ fontWeight: 'bold' }}
-                      formatter={(val: any) => `${val}%`} 
-                    />
-                  </Bar>
-                </BarChart>
-              </ResponsiveContainer>
-              
-              {/* Ranking Sub-labels (No.1, No.2, etc.) */}
-              <div style={{ display: "flex", justifyContent: "space-around", marginTop: "-50px", paddingLeft: "40px", paddingRight: "30px" }}>
-                {chartData.map((_, i) => (
-                  <span key={i} style={{ color: "#4facfe", fontSize: "10px", fontWeight: "bold" }}>No.{i+1}</span>
-                ))}
+        {activeTab === "graph" && (
+          <div className="dx-card" style={{ 
+            padding: "24px", 
+            width: "95%", 
+            maxWidth: "1200px", 
+            height: "calc(100vh - 150px)", // Set a fixed height relative to viewport
+            overflowY: "auto",             // Enable vertical scrolling
+            display: "flex", 
+            flexDirection: "column",
+            background: "rgba(13, 17, 23, 0.8)" 
+          }}>
+            
+            {/* Filters and Download Header */}
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-end", marginBottom: "24px", gap: "20px" }}>
+              <div style={{ flex: 1 }}>
+                <h3 style={{ color: "white", marginBottom: "12px" }}>Detailed Analysis Filters</h3>
+                <div style={{ display: "flex", gap: "10px", flexWrap: "wrap" }}>
+                  {categoryListForAhp.map(cat => (
+                    <button 
+                      key={cat}
+                      onClick={() => toggleIndividualAhpCategory(cat)}
+                      style={{
+                        padding: "6px 14px",
+                        borderRadius: "20px",
+                        border: "1px solid #30363d",
+                        background: selectedIndividualAhpCategories.includes(cat) ? "#4facfe" : "#161b22",
+                        color: "white",
+                        cursor: "pointer",
+                        fontSize: "0.85rem"
+                      }}
+                    >
+                      {cat}
+                    </button>
+                  ))}
+                </div>
               </div>
+
+              {plotlyCharts.length > 0 && (
+                <button
+                  className="dx-btn dx-btn-outline"
+                  onClick={handleDownloadAll}
+                  disabled={plotlyCharts.length === 0}
+                >
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                    <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/>
+                  </svg>
+                  Download (.zip)
+                </button>
+              )}
+            </div>
+
+            {/* Scrollable Chart Area */}
+            <div style={{ flex: 1, overflowY: "auto", paddingRight: "10px" }}>
+              {plotlyCharts.length > 0 ? (
+                plotlyCharts.map((chart) => (
+                  <div key={chart.metric} style={{ marginBottom: "25px", background: "rgba(22, 27, 34, 0.5)", padding: "20px", borderRadius: "12px", border: "1px solid #30363d" }}>
+                    <Plot
+                      data={buildChartData(chart.rows)}
+                      layout={buildChartLayout(chart.metric)}
+                      config={downloadConfig}
+                      style={{ width: "100%", height: "400px" }}
+                    />
+                  </div>
+                ))
+              ) : (
+                <div style={{ textAlign: "center", padding: "60px", color: "#8b949e", border: "2px dashed #30363d", borderRadius: "12px" }}>
+                  Select categories above to visualize rankings.
+                </div>
+              )}
             </div>
           </div>
         )}
@@ -557,9 +727,10 @@ const Main: React.FC = () => {
           </div>
         )}
       </div>
+
       <DomainInfo selectedDomain={selectedDomain} sidebarOpen={moreInfoSidebarOpen} setSidebarOpen={setMoreInfoSidebarOpen} />
     </div>
   );
-};
+}
 
 export default Main;
