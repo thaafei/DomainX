@@ -3,6 +3,8 @@
 \usepackage{booktabs}
 \usepackage{tabularx}
 \usepackage{hyperref}
+\usepackage{amsmath}
+\usepackage{float}
 \hypersetup{
     colorlinks,
     citecolor=black,
@@ -68,12 +70,383 @@ This document ...
 
 \section{Nonfunctional Requirements Evaluation}
 
-\subsection{Usability}
-		
-\subsection{Performance}
+\label{sec:nfr}
 
-\subsection{etc.}
+This section reports verification results for the system's nonfunctional
+requirements (NFRs).  Each evaluation
+includes explicit inputs and outputs, an expected-versus-actual comparison,
+and traceability back to the relevant NFR identifiers.  Tables are used to
+summarize results and to support reproducibility.
+
+\subsection{Performance \& Scalability Experiments}
+\label{sec:nfr-perfscalability}
+
+This subsection reports Revision~0 results for the performance and
+scalability experiment specified in the VnV Plan (\S4.2.1).  The experiment
+measures response times for dashboard load, filtering, AHP recomputation, and
+export, and summarizes median and 95th-percentile (p95) values.
+
+\subsubsection{Test Case Summary (T--NF1: Performance and Scalability)}
+\begin{table}[H]
+  \centering
+  \caption{T--NF1 performance experiment: test case summary (Rev0).}
+  \label{tab:tnf1-summary}
+  \begin{tabular}{@{}p{0.22\textwidth}p{0.73\textwidth}@{}}
+    \toprule
+    \textbf{Test Case ID} &
+      T--NF1 (Performance and Scalability) \\
+    \textbf{Traceability} &
+      PR-SL1 (Speed and Latency Requirement). \\
+    \textbf{Initial State} &
+      System deployed and accessible; existing domains available with known
+      library counts (2 and 10). \\
+    \textbf{Input} &
+      Record time to (1) load the dashboard and render the ranking graph,
+      (2) apply a domain filter, (3) update category weights to trigger AHP
+      recomputation, and (4) export visualizations. \\
+    \textbf{Expected Output} &
+      Median and p95 response times are recorded; response times remain within
+      a few seconds for interactive use. \\
+    \textbf{Actual Output} &
+      Dashboard load and AHP recomputation completed within a few seconds.
+      Domain filtering did not narrow results (no observable effect).  Export
+      appeared instantaneous in repeated trials. \\
+    \textbf{Expected vs.\ Actual Match} &
+      Partial (latency acceptable for measured actions; filtering defect
+      prevented filter timing; scaling evaluated at 2 and 10 libraries only). \\
+    \bottomrule
+  \end{tabular}
+\end{table}
+
+\subsubsection{Method (Rev0)}
+Timings were collected manually using a stopwatch, measured from the moment
+the action was initiated (click) to the moment the interface reached a stable
+state (graph rendered or updated).  Due to manual timing, values include human
+reaction time and should be treated as conservative upper bounds.  For small
+sample sizes, p95 is reported conservatively as the maximum observed value.
+
+\subsubsection{Results}
+Table~\ref{tab:tnf1-results} summarizes the observed median and p95 response
+times.
+
+\begin{table}[H]
+  \centering
+  \caption{T--NF1 response time results (Rev0).}
+  \label{tab:tnf1-results}
+  \begin{tabular}{@{}p{0.44\textwidth}p{0.14\textwidth}p{0.14\textwidth}%
+                  p{0.16\textwidth}@{}}
+    \toprule
+    \textbf{Action} & \textbf{Median (s)} & \textbf{p95 (s)} & \textbf{Notes} \\
+    \midrule
+    Dashboard load (2 libraries, n=8) &
+      0.55 & 0.74 &
+      Time to render ranking view. \\
+    Dashboard load (10 libraries, n=10) &
+      2.65 & 2.92 &
+      Time to render ranking view. \\
+    Recompute AHP (edit category weights, n=10) &
+      3.61 & 3.90 &
+      Time from save/apply to updated view. \\
+    Apply domain filter &
+      N/A & N/A &
+      Filter input produced no narrowing of results. \\
+    Export visualizations &
+      $<0.5$ & $<0.5$ &
+      Appeared instantaneous (below stopwatch resolution). \\
+    \bottomrule
+  \end{tabular}
+\end{table}
+
+\subsubsection{Analysis}
+Across the measured actions, response times were within a few seconds, with
+worst observed values below 4 seconds.  Dashboard load increased from a median
+of 0.55 seconds (2 libraries) to a median of 2.65 seconds (10 libraries),
+indicating higher latency as library count increases in the tested
+configuration.  AHP recomputation completed in under 4 seconds in all trials,
+which is acceptable for interactive use.
+
+Domain filtering produced no observable narrowing of the domain list.  This is
+treated as a functional defect and prevented measurement of filter latency in
+Revision~0.
+
+\subsubsection{Limitations and Next Steps}
+Revision~0 results include only 2- and 10-library datasets and manual timing.
+In the next revision, performance will be re-measured using the planned dataset
+sizes (5, 10, 20, and 40 libraries) and automated timing collection where
+possible.  The domain filtering defect will be addressed and re-tested to
+capture filter latency.
+
+\subsection{Usability}
+\label{sec:nfr-usability}
+
+This subsection reports Revision~0 results for the usability evaluation
+(T--NF3).  The VnV Plan defines a one-to-five usability scale where higher
+values indicate better usability and uses a mean rating $\geq 4.0$ as the
+success criterion.  For Revision~0, available evidence consists of a pilot
+task-based proxy evaluation (n = 1), reported below as preliminary evidence.
+
+\subsubsection{Test Case Summary (T--NF3: Usability Pilot)}
+\begin{table}[H]
+  \centering
+  \caption{T--NF3 usability pilot: test case summary (Rev0).}
+  \label{tab:tnf3-summary}
+  \begin{tabular}{@{}p{0.22\textwidth}p{0.73\textwidth}@{}}
+    \toprule
+    \textbf{Test Case ID} &
+      T--NF3 (Usability) \\
+    \textbf{Initial State} &
+      System deployed and accessible; tester starts unauthenticated; no
+      pre-existing domain required. \\
+    \textbf{Input} &
+      Tester completes eight core tasks (account creation/login, create domain,
+      add metrics, add libraries, fill manual metrics, export data, visualize
+      and export raw metrics, visualize and export AHP results) and records
+      task ratings plus qualitative comments. \\
+    \textbf{Expected Output} &
+      Core tasks are discoverable and completable without developer assistance;
+      charts and exports are understandable; required inputs are supported by
+      clear feedback and error messaging (saving does not fail silently). \\
+    \textbf{Actual Output} &
+      All eight tasks were completed.  Two tasks showed reduced ease due to
+      discoverability and feedback issues: adding metrics and locating manual
+      metric fields. \\
+    \textbf{Expected vs.\ Actual Match} &
+      Partial (workflow completion succeeded; specific usability issues were
+      identified). \\
+    \bottomrule
+  \end{tabular}
+\end{table}
+
+\subsubsection{Method (Rev0 Pilot)}
+A proxy user (Ryan) completed a structured, asynchronous worksheet to reduce
+developer influence.  The worksheet captured task \emph{difficulty} on a
+one-to-five scale where 1 = Very Easy and 5 = Very Hard.
+
+Because the VnV Plan convention is higher = better usability, we also report a
+converted task \emph{ease} score using:
+\[
+  \text{EaseScore} = 6 - \text{DifficultyScore}.
+\]
+This conversion preserves the raw ratings while aligning the pilot results
+with the plan's direction.
+
+\subsubsection{Results}
+Table~\ref{tab:usability-pilot} summarizes the proxy user's task ratings and
+key observations.  Both the raw difficulty score and the converted ease score
+are reported.
+
+\begin{table}[H]
+  \centering
+  \caption{Pilot usability task results (n = 1 proxy user).}
+  \label{tab:usability-pilot}
+  \begin{tabular}{@{}p{0.52\textwidth}p{0.10\textwidth}p{0.10\textwidth}%
+                  p{0.22\textwidth}@{}}
+    \toprule
+    \textbf{Task} & \textbf{Diff.} & \textbf{Ease} & \textbf{Key observation} \\
+    \midrule
+    Create an account and login &
+      1 & 5 &
+      No email confirmation after registration. \\
+    Create a new domain &
+      1 & 5 &
+      Straightforward. \\
+    Add metrics to the domain &
+      3 & 3 &
+      Entry point not obvious; saving blocked without a clear warning. \\
+    Add two libraries to the domain &
+      1 & 5 &
+      Easy to complete. \\
+    Fill out manually added metrics &
+      3 & 3 &
+      Difficult to locate fields due to dense inputs and scrolling. \\
+    Export gathered data as a CSV &
+      1 & 5 &
+      Easy export. \\
+    Visualize and export raw metric values &
+      1 & 5 &
+      Easy to use; visualization perceived as useful. \\
+    Visualize and export AHP calculations &
+      1 & 5 &
+      Easy to find and download. \\
+    \bottomrule
+  \end{tabular}
+\end{table}
+
+Summary statistics for the pilot:
+\begin{itemize}
+  \item Mean task difficulty: $3/2$ (1.5); median difficulty: 1.
+  \item Mean converted ease: $9/2$ (4.5); median converted ease: 5.
+  \item Lowest ease tasks (converted): add metrics; fill manual metrics (3/5).
+\end{itemize}
+
+\subsubsection{Analysis and Traceability}
+The converted ease mean of 4.5/5.0 suggests the workflow is generally usable
+in the pilot.  However, two targeted usability risks were identified:
+(1) discoverability and feedback during metric creation, and
+(2) navigational friction when locating manual metric fields among dense
+inputs.  These issues map directly to the traceability targets for clear
+feedback and efficient navigation.
+
+Table~\ref{tab:usability-trace} summarizes traceability between usability
+requirements and pilot evidence.
+
+\begin{table}[H]
+  \centering
+  \caption{Usability traceability summary (Rev0 pilot).}
+  \label{tab:usability-trace}
+  \begin{tabular}{@{}p{0.18\textwidth}p{0.25\textwidth}p{0.50\textwidth}@{}}
+    \toprule
+    \textbf{Req.\ ID} & \textbf{Intent} & \textbf{Pilot evidence} \\
+    \midrule
+    UH-UP3 &
+      Clear feedback and error messages &
+      Saving was blocked during metric creation without a clear warning,
+      increasing confusion and trial-and-error. \\
+    UH-EU1 &
+      Efficient navigation for core actions &
+      Manual metric fields were difficult to locate among many inputs, which
+      suggests increased clicks and time-on-task. \\
+    LF-SR2 &
+      Clear, minimalist graph design &
+      Visualization and export of raw metrics and AHP results were rated very
+      easy and described as useful. \\
+    LF-AR2 &
+      Responsiveness across screens &
+      Not explicitly evaluated in the Rev0 pilot; pending in the full study. \\
+    UH-AR1 &
+      Font scalability/accessibility &
+      Not explicitly evaluated in the Rev0 pilot; pending in the full study. \\
+    \bottomrule
+  \end{tabular}
+\end{table}
+
+Additional improvement opportunities were noted by the proxy user, including
+providing registration confirmation feedback and supporting bulk import of
+libraries and automatic suggestion of repository URLs to reduce manual effort.
+
+\subsubsection{Limitations and Next Steps}
+The Revision~0 usability evidence is a pilot result with a single proxy user.
+The Appendix~B usability survey with multiple participants will be executed in
+the next revision to evaluate the plan's survey-based success criterion.
+The pilot findings above will be converted into tracked usability issues and
+re-tested after implementing improved discoverability for metric creation and
+clearer save-time feedback for required fields.
+
+\noindent \textbf{Evidence:} Pilot usability worksheet (Ryan), stored in the
+project repository at \texttt{/test/reports/usability/UserTesting-Ryan.pdf}.
+
+\subsection{Maintainability}
+\label{sec:nfr-maintainability}
+
+This subsection reports Revision~0 results for maintainability.  Evidence is
+taken from automated GitHub Actions runs and repository documentation related
+to testing.  The evaluation targets MS-MR1--MS-MR6 (maintainability standards:
+style compliance, modularity, testability, and documentation).
+
+\subsubsection{Test Case Summary (T--NF6: Maintainability)}
+\begin{table}[H]
+  \centering
+  \caption{T--NF6 maintainability: test case summary (Rev0).}
+  \label{tab:tnf6-summary}
+  \begin{tabular}{@{}p{0.22\textwidth}p{0.73\textwidth}@{}}
+    \toprule
+    \textbf{Test Case ID} &
+      T--NF6 (Maintainability) \\
+    \textbf{Initial State} &
+      Repository contains an automated test workflow in GitHub Actions and a
+      dedicated \texttt{test/} directory with documentation. \\
+    \textbf{Input} &
+      Trigger the \texttt{tests.yml} workflow via a pull request update and
+      inspect the run status, logs, and artifacts.  Inspect \texttt{test/}
+      documentation to confirm test execution instructions are provided. \\
+    \textbf{Expected Output} &
+      Automated tests execute successfully; a CI coverage summary is produced
+      and meets the target (planned $\geq 80\%$); test documentation exists for
+      developers to run tests locally. \\
+    \textbf{Actual Output} &
+      The \texttt{tests.yml} workflow executed successfully with separate
+      \texttt{backend-test} and \texttt{frontend-test} jobs.  Backend tests ran
+      with coverage and produced TOTAL backend coverage of 73\%.  A coverage
+      HTML artifact (\texttt{coverage-html}) was uploaded.  The repository
+      includes \texttt{test/README.md} documenting how to run tests locally. \\
+    \textbf{Expected vs.\ Actual Match} &
+      Partial (tests and reporting present; coverage below 80\% target;
+      documentation present). \\
+    \bottomrule
+  \end{tabular}
+\end{table}
+
+\subsubsection{Results}
+Table~\ref{tab:maint-results} summarizes maintainability evidence for Rev0.
+The workflow run selected for evidence is the most recent successful run at
+the time of reporting.
+
+\begin{table}[H]
+  \centering
+  \caption{Maintainability evidence summary (Rev0).}
+  \label{tab:maint-results}
+  \begin{tabular}{@{}p{0.34\textwidth}p{0.18\textwidth}p{0.40\textwidth}@{}}
+    \toprule
+    \textbf{Item} & \textbf{Observed} & \textbf{Notes} \\
+    \midrule
+    Automated CI tests (GitHub Actions) &
+      Yes &
+      \texttt{tests.yml} runs on pull requests with backend and frontend jobs. \\
+    Backend tests &
+      Pass &
+      \texttt{pytest} executed in CI; tests passed (with warnings). \\
+    Frontend tests &
+      Pass &
+      Frontend job executed in CI (Playwright-based). \\
+    Coverage reporting enabled &
+      Yes &
+      Coverage printed in logs; HTML report uploaded as artifact. \\
+    Overall backend coverage &
+      73\% &
+      Below planned target of $\geq 80\%$. \\
+    Test execution documentation &
+      Yes &
+      \texttt{test/README.md} documents setup and running \texttt{pytest}. \\
+    Lint/format automation &
+      Not observed &
+      No CI evidence of flake8/black in the sampled workflow logs. \\
+    \bottomrule
+  \end{tabular}
+\end{table}
+
+\subsubsection{Analysis and Traceability}
+The existence of an automated test workflow integrated into pull requests
+supports maintainability through testability and regression resistance.  The
+workflow runs backend and frontend tests and produces a coverage report, which
+enables repeatable inspection of covered and uncovered code paths.  The
+presence of \texttt{test/README.md} further supports maintainability by
+documenting how developers can run the test suite locally.
+
+The observed overall backend coverage (73\%) does not meet the planned
+$\geq 80\%$ target for Rev0.  This indicates that additional tests should be
+added, particularly for modules with low coverage, to increase confidence in
+future refactors and to align with MS-MR testability expectations.
+
+This evaluation traces to MS-MR1--MS-MR6.  Rev0 evidence most directly
+supports testability and documentation.  Explicit evidence for style
+compliance via automated lint/format checks remains to be captured.
+
+\subsubsection{Limitations and Next Steps}
+In the next revision, maintainability will be strengthened by:
+(1) increasing automated test coverage to reach the $\geq 80\%$ target,
+(2) adding or capturing explicit lint/format checks in CI if required by the
+VnV Plan, and
+(3) recording a brief team code walkthrough note summarizing modular structure
+and documentation completeness, with follow-up items tracked in GitHub issues.
+
+\noindent \textbf{Evidence:}
+GitHub Actions \texttt{tests.yml} workflow and latest successful run
+(\texttt{backend-test} and \texttt{frontend-test}), including coverage output
+(TOTAL coverage) and the \texttt{coverage-html} artifact; repository test
+documentation at \texttt{/test/README.md}.
 	
+
+
 \section{Comparison to Existing Implementation}	
 
 This section will not be appropriate for every project.
