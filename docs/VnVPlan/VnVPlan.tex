@@ -11,6 +11,7 @@
 \usepackage{caption}
 \usepackage{xcolor,colortbl}
 \usepackage{enumitem,amssymb}
+\usepackage{multicol}
 
 \renewcommand{\arraystretch}{1.15}
 \setlength{\tabcolsep}{6pt}
@@ -1061,7 +1062,6 @@ Also aligns with \href{https://github.com/thaafei/DomainX/blob/main/docs/HazardA
 
 
 \section{Unit Test Description}
-N/a
 % \wss{This section should not be filled in until after the MIS (detailed design
 %   document) has been completed.}
 
@@ -1076,114 +1076,131 @@ N/a
 % and output here, you could point to the unit testing code.  For this to work, you code 
 % needs to be well-documented, with meaningful names for all of the tests.}
 
-% \subsection{Unit Testing Scope}
+We use both \href{https://docs.pytest.org/en/stable/}{pytest} and \href{https://jestjs.io/}{jest} to implement automatic unit tests for both the frontend and backend of the system. 
+Unit tests will be located in the \href{https://github.com/thaafei/DomainX/tree/main/test}{test} subfolder of the project. 
 
-% \wss{What modules are outside of the scope.  If there are modules that are
-%   developed by someone else, then you would say here if you aren't planning on
-%   verifying them.  There may also be modules that are part of your software, but
-%   have a lower priority for verification than others.  If this is the case,
-%   explain your rationale for the ranking of module importance.}
+\subsection{Unit Testing Scope}
+The scope of the unit tests will only be focused on modules developed by the DomainX team, which are: 
+\begin{multicols}{2}
+  \begin{enumerate}
+    \item Domains Page Module
+    \item Data Edit Module
+    \item User Role Access Module
+    \item User Management Module
+    \item Automated Metrics Module
+    \item Comparison Module
+    \item Visualization Module
+    \item Database Persistence Module
+  \end{enumerate}
+\end{multicols}
 
-% \subsection{Tests for Functional Requirements}
+The \href{https://github.com/thaafei/DomainX/blob/main/docs/Design/SoftDetailedDes/MIS.pdf}{WSS} lists out all the modules and their use, syntax, and semantics.
+Our testing philosophy is to consider the general use case of the user, with the most expected function. We will also include a few use cases where the user is expected to encounter errors.
 
-% \wss{Most of the verification will be through automated unit testing.  If
-%   appropriate specific modules can be verified by a non-testing based
-%   technique.  That can also be documented in this section.}
-
-% \subsubsection{Module 1}
-
-% \wss{Include a blurb here to explain why the subsections below cover the module.
-%   References to the MIS would be good.  You will want tests from a black box
-%   perspective and from a white box perspective.  Explain to the reader how the
-%   tests were selected.}
-
-% \begin{enumerate}
-
-% \item{test-id1\\}
-
-% Type: \wss{Functional, Dynamic, Manual, Automatic, Static etc. Most will
-%   be automatic}
-					
-% Initial State: 
-					
-% Input: 
-					
-% Output: \wss{The expected result for the given inputs}
-
-% Test Case Derivation: \wss{Justify the expected value given in the Output field}
-
-% How test will be performed: 
-					
-% \item{test-id2\\}
-
-% Type: \wss{Functional, Dynamic, Manual, Automatic, Static etc. Most will
-%   be automatic}
-					
-% Initial State: 
-					
-% Input: 
-					
-% Output: \wss{The expected result for the given inputs}
-
-% Test Case Derivation: \wss{Justify the expected value given in the Output field}
-
-% How test will be performed: 
-
-% \item{...\\}
+\subsection{Domains Page Module}
+\begin{enumerate}
+  \item{test-id1\\}
+  Initial State: 
+  
+  Input: 
+  
+  Output: \wss{The expected result for the given inputs}
+  
+  Test Case Derivation: \wss{Justify the expected value given in the Output field}
     
-% \end{enumerate}
+\end{enumerate}
+\subsection{Data Edit Module}
+\begin{enumerate}
+  \item{test-id1\\}
+  Initial State: 
+  
+  Input: 
+  
+  Output: \wss{The expected result for the given inputs}
+  
+  Test Case Derivation: \wss{Justify the expected value given in the Output field}
+    
+\end{enumerate}
+\subsection{User Role Access Module}
+\begin{enumerate}
+  \item{test-id1\\}
+  Initial State: 
+  
+  Input: 
+  
+  Output: \wss{The expected result for the given inputs}
+  
+  Test Case Derivation: \wss{Justify the expected value given in the Output field}
+    
+\end{enumerate}
+\subsection{User Management Module}
+\begin{enumerate}
+  \item{test-id1\\}
+  Initial State: 
+  
+  Input: 
+  
+  Output: \wss{The expected result for the given inputs}
+  
+  Test Case Derivation: \wss{Justify the expected value given in the Output field}
+    
+\end{enumerate}
+\subsection{Automated Metrics Module}
+\begin{enumerate}
+  \item{test-id1\\}
+  Initial State: 
+  
+  Input: 
+  
+  Output: \wss{The expected result for the given inputs}
+  
+  Test Case Derivation: \wss{Justify the expected value given in the Output field}
+    
+\end{enumerate}
+\subsection{Comparison Module}
+\begin{enumerate}
+  \item{test-id1\\}
+  Initial State: 
+  
+  Input: 
+  
+  Output: \wss{The expected result for the given inputs}
+  
+  Test Case Derivation: \wss{Justify the expected value given in the Output field}
+    
+\end{enumerate}
+\subsection{Visualization Module}
+\begin{enumerate}
+  \item{test-id1\\}
+  Initial State: 
+  
+  Input: 
+  
+  Output: \wss{The expected result for the given inputs}
+  
+  Test Case Derivation: \wss{Justify the expected value given in the Output field}
+    
+\end{enumerate}
 
-% \subsubsection{Module 2}
+\subsection{Database Persistence Module}
+  The tests for this are in relation to the persistence of our models in the database. They will include the validation and serialization of the data for the following database models:
+  \begin{multicols}{2}
+    \begin{enumerate}
+      \item users
+      \item domain
+      \item libraries
+      \item library metric values
+    \end{enumerate}
+  \end{multicols}
 
-% ...
-
-% \subsection{Tests for Nonfunctional Requirements}
-
-% \wss{If there is a module that needs to be independently assessed for
-%   performance, those test cases can go here.  In some projects, planning for
-%   nonfunctional tests of units will not be that relevant.}
-
-% \wss{These tests may involve collecting performance data from previously
-%   mentioned functional tests.}
-
-% \subsubsection{Module ?}
-		
-% \begin{enumerate}
-
-% \item{test-id1\\}
-
-% Type: \wss{Functional, Dynamic, Manual, Automatic, Static etc. Most will
-%   be automatic}
-					
-% Initial State: 
-					
-% Input/Condition: 
-					
-% Output/Result: 
-					
-% How test will be performed: 
-					
-% \item{test-id2\\}
-
-% Type: Functional, Dynamic, Manual, Static etc.
-					
-% Initial State: 
-					
-% Input: 
-					
-% Output: 
-					
-% How test will be performed: 
-
-% \end{enumerate}
-
-% \subsubsection{Module ?}
-
-% ...
-
-% \subsection{Traceability Between Test Cases and Modules}
-
-% \wss{Provide evidence that all of the modules have been considered.}
+  The rational for these tests are to ensure data is properly validated and stored, and validates the business logic and restrictions associated with the models.
+  This is crucial for modules upstream which will depend on the data.
+  An example set of such tests for the domain model are:
+  \begin{enumerate}
+    \item test\_domain\_str\_returns\_name: Tests if calling a domain object will return domain name instead of domain id.
+    \item test\_get\_domain\_id\_returns\_string\_uuid: Tests that the get_domain_id function returns the uuid of the domain. 
+    \item test\_defaults\_and\_blank\_fields: Tests the creation of a domain object with only required fields, and check if blank fields are populated with the expected values.
+  \end{enumerate}
 \section{References}
 
 \begin{enumerate}
