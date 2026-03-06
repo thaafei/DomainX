@@ -65,6 +65,146 @@ Date 2 & 1.1 & Notes\\
 This document ...
 
 \section{Functional Requirements Evaluation}
+\hspace{2em}This section presents the results of the functional tests defined in the project's
+Verification and Validation (VnV) Plan. These tests verify that the implemented system
+satisfies the functional requirements specified in the Software Requirements Specification
+(SRS). The tests are organized according to the system's main feature areas.
+
+\subsection{User Authentication and Profile Management}
+\hspace{2em}The test results below verify that users can successfully authenticate
+and manage their account information within the system. These tests ensure that
+login, profile updates, and password modification operate correctly while
+restricting access to authorized users only.
+
+\begin{mdframed}[linewidth=0.5mm] \par
+\textbf{Test Case Identifier:} T--AC--1 \par
+\textbf{Input:} Submission of valid sign-up information through the system interface. \par
+\textbf{Expected Output:} The expected result is that a new user account is created successfully and the user is brought to the login page. \par
+\textbf{Actual Output:} The actual result is that a new user account is created successfully and the user is brought to the login page. \par
+\textbf{Expected and Actual Output Match:} True \par
+\textbf{Relevant Functional Requirement(s):} FR2
+\end{mdframed}
+
+\begin{mdframed}[linewidth=0.5mm] \par
+\textbf{Test Case Identifier:} T--AC--2 \par
+\textbf{Input:} Submission of valid login credentials through the system login interface. \par
+\textbf{Expected Output:} The expected result is that the user enters valid login credentials and is brought to the system dashboard. \par
+\textbf{Actual Output:} The actual result is that the user enters valid login credentials and is brought to the system dashboard. \par
+\textbf{Expected and Actual Output Match:} True \par
+\textbf{Relevant Functional Requirement(s):}  FR3
+\end{mdframed}
+
+\begin{mdframed}[linewidth=0.5mm] \par
+\textbf{Test Case Identifier:} T--AC--3 \par
+\textbf{Input:} A user with the Contributor role logs into the system and attempts to edit metric values in the interactive data table. \par
+\textbf{Expected Output:} The expected result is that the user is able to view library data and successfully edit metric values in the interactive table. \par
+\textbf{Actual Output:} The actual result is that the user is able to view library data and successfully edit metric values in the interactive table. \par
+\textbf{Expected and Actual Output Match:} True \par
+\textbf{Relevant Functional Requirement(s):} SR--AC2
+\end{mdframed}
+
+\begin{mdframed}[linewidth=0.5mm] \par
+\textbf{Test Case Identifier:} T--AC--4 \par
+\textbf{Input:} A user with the Super Admin role logs into the system and attempts to access administrative functionality for managing users. \par
+\textbf{Expected Output:} The expected result is that the user is able to access administrative functionality and manage user accounts within the system. \par
+\textbf{Actual Output:} The actual result is that the user is able to access administrative functionality and manage user accounts within the system. \par
+\textbf{Expected and Actual Output Match:} True \par
+\textbf{Relevant Functional Requirement(s):} SR--AC2
+\end{mdframed}
+
+
+\begin{mdframed}[linewidth=0.5mm] \par
+\textbf{Test Case Identifier:} T--AC--5 \par
+\textbf{Input:} Submission of invalid login credentials or an unregistered email through the system login interface. \par
+\textbf{Expected Output:} The expected result is that access is denied, an Invalid credentials error message is displayed, and no session token is created. \par
+\textbf{Actual Output:} The actual result is that access is denied, an Invalid credentials error message is displayed, and no session token is created. \par
+\textbf{Expected and Actual Output Match:} True \par
+\textbf{Relevant Functional Requirement(s):} SR--AC5, UH--UP3, LF--AR6
+\end{mdframed}
+
+\begin{mdframed}[linewidth=0.5mm] \par
+\textbf{Test Case Identifier:} T--AC--6 \par
+\textbf{Input:} A Super Admin updates the role of an existing user (e.g., Contributor to Super Admin) through the user management interface. \par
+\textbf{Expected Output:} The expected result is that the user role is updated successfully and the interface updates to reflect the new permissions associated with the role. \par
+\textbf{Actual Output:} The actual result is that the user role is updated successfully and the interface updates to reflect the new permissions associated with the role. \par
+\textbf{Expected and Actual Output Match:} True \par
+\textbf{Relevant Functional Requirement(s):} SR--AC4, PR--SC3, FR7
+\end{mdframed}
+
+\begin{mdframed}[linewidth=0.5mm] \par
+\textbf{Test Case Identifier:} T--AC--7 \par
+\textbf{Input:} An authenticated user accesses their profile page and submits a request to change their password using the password update form. \par
+\textbf{Expected Output:} The expected result is that the user password is updated successfully and the new password is required for subsequent logins. \par
+\textbf{Actual Output:} The actual result is that the user password is updated successfully and the new password is required for subsequent logins. \par
+\textbf{Expected and Actual Output Match:} True \par
+\textbf{Relevant Functional Requirement(s):} SR--AC5, PR--SC1
+\end{mdframed}
+
+
+\subsection{Domain and Data Management}
+\begin{mdframed}[linewidth=0.5mm] \par
+\textbf{Test Case Identifier:} T--DM--1 \par
+\textbf{Input:} A Super Admin submits valid domain information through the domain creation interface. \par
+\textbf{Expected Output:} The expected result is that the new domain is created successfully, appears in the system interface, and is stored in the database with a unique identifier. \par
+\textbf{Actual Output:} The actual result is that the new domain is created successfully, appears in the system interface, and is stored in the database with a unique identifier. \par
+\textbf{Expected and Actual Output Match:} True \par
+\textbf{Relevant Functional Requirement(s):} FR--5, SR--INT1, SR--AC3
+\end{mdframed}
+
+\begin{mdframed}[linewidth=0.5mm] \par
+\textbf{Test Case Identifier:} T--DM--2 \par
+\textbf{Input:} A Contributor or Super Admin adds a library to a domain by providing a valid GitHub repository URL. \par
+\textbf{Expected Output:} The expected result is that the library is added successfully and repository metadata (e.g., commits, issues, lines of code, etc.) is automatically retrieved using GitHub API, SCC, and GitStats without errors. \par
+\textbf{Actual Output:} The actual result is that the library is added successfully and repository metadata (e.g., commits, issues, lines of code, etc.) is automatically retrieved using GitHub API, SCC, and GitStats without errors. \par
+\textbf{Expected and Actual Output Match:} True \par
+\textbf{Relevant Functional Requirement(s):} FR--7, FR--10, OE--IA1, SR--INT2, SR--INT3
+\end{mdframed}
+
+
+
+\subsubsection{Features Currently in Progress}
+
+\hspace{2em}Some functional requirements described in the SRS are currently
+under development or undergoing design revisions. These features are partially
+implemented and are expected to be completed in future iterations of the system.
+The current status of these requirements is summarized below.
+
+\item \textbf{SR--AC1: Public Viewing and Restricted Editing}
+The authorization mechanism required to allow public viewing while restricting
+data modification to approved users is currently being implemented. Page-level
+and button-level authorization controls are partially implemented and are still
+being refined.
+
+\item \textbf{FR2: User Self Sign-Up}
+The original design included a public sign-up page. During development this
+approach was reconsidered, and the system is being modified so that only a
+Super Admin can create new user accounts. The self sign-up feature will therefore
+be removed from the final implementation.
+
+
+\item \textbf{Unauthorized API Access Control (SR--AC6, SR--AU1, SR--IM1)}
+
+Unauthorized API access control is currently under development. The intended
+behavior is that attempts to perform restricted actions (e.g., deleting a
+domain without sufficient privileges) return an HTTP 403 Forbidden response
+and generate an audit log entry. At present, restricted actions are hidden
+in the user interface, while API-level authorization checks are still being
+implemented and are not yet ready for testing.
+
+Security requirements related to SQL injection protection and credential
+storage are already satisfied through the use of Django ORM (which avoids
+raw SQL queries) and environment variables for storing sensitive data.
+
+\item \textbf{FR--4: Password Reset via Email}
+
+The system is intended to allow users to reset their password through
+an email verification workflow if they forget their credentials. The
+expected behaviour is that the user receives a password reset email,
+validates their email address using a token, and is able to set a new
+password for future logins.
+
+This functionality is currently under development and has not yet been
+fully implemented or tested.
 
 \section{Nonfunctional Requirements Evaluation}
 
