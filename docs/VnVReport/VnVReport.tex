@@ -169,48 +169,8 @@ The following unit tests concern behaviour-hiding modules that are implemented b
       \\Actual Output: Matches expected; stars updated to 99, forks set to None
       \\Result: Pass
   \end{enumerate}
-\subsection{User Role Access Module}
+\subsection{User Management Module}
   \begin{enumerate}
-    \item \texttt{test\_signup\_success} \label{test-signup-success}
-    \\Input: Valid signup payload with email, username, password, and names
-    \\Expected Output: HTTP 201 Created response and serialized user profile returned
-    \\Actual Output: Response status is either 201 or 404 depending on URL configuration
-    \\Result: Pass
-    \item \texttt{test\_signup\_invalid} \label{test-signup-invalid}
-    \\Input: Signup payload with invalid email format
-    \\Expected Output: HTTP 400 Bad Request with serializer validation errors
-    \\Actual Output: Response status is either 400 or 404 depending on endpoint availability
-    \\Result: Pass
-    \item \texttt{test\_login\_success} \label{test-login-success}
-    \\Input: Valid login credentials with correct email and password
-    \\Expected Output: HTTP 200 OK with access token and serialized user profile
-    \\Actual Output: Response status is either 200 or 404 depending on URL configuration
-    \\Result: Pass
-    \item \texttt{test\_login\_invalid\_credentials} \label{test-login-invalid}
-    \\Input: Login payload with incorrect password
-    \\Expected Output: HTTP 401 Unauthorized response
-    \\Actual Output: Response status is either 401 or 404 depending on endpoint availability
-    \\Result: Pass
-    \item \texttt{test\_me\_authenticated} \label{test-me-authenticated}
-    \\Input: Authenticated user requests \texttt{/api/me/}
-    \\Expected Output: HTTP 200 OK with serialized user profile
-    \\Actual Output: Response status is either 200 or 404 depending on URL configuration
-    \\Result: Pass
-    \item \texttt{test\_me\_unauthenticated} \label{test-me-unauthenticated}
-    \\Input: Unauthenticated request to \texttt{/api/me/}
-    \\Expected Output: HTTP 401 Unauthorized response
-    \\Actual Output: Response status is either 401 or 404 depending on endpoint availability
-    \\Result: Pass
-    \item \texttt{test\_logout\_success} \label{test-logout-success}
-    \\Input: Authenticated user sends POST request to logout endpoint
-    \\Expected Output: HTTP 200 OK confirming logout
-    \\Actual Output: Response status is either 200 or 404 depending on endpoint availability
-    \\Result: Pass
-    \item \texttt{test\_logout\_unauthenticated} \label{test-logout-unauthenticated}
-    \\Input: Unauthenticated user sends POST request to logout endpoint
-    \\Expected Output: Logout endpoint still returns HTTP 200 OK
-    \\Actual Output: Response status is either 200 or 404 depending on endpoint availability
-    \\Result: Pass
     \item \texttt{test\_list\_users\_superadmin} \label{test-list-users-superadmin}
     \\Input: Superadmin requests list of users
     \\Expected Output: HTTP 200 OK with serialized user list
@@ -267,7 +227,6 @@ The following unit tests concern behaviour-hiding modules that are implemented b
     \\Actual Output: \texttt{set\_password()} called and response 200 OK
     \\Result: Pass      
   \end{enumerate}
-\subsection{User Page Module}
 \subsection{Automated Metrics Module}
   \begin{enumerate}
     \item \texttt{test\_extract\_repo\_info\_valid\_url} \label{test-extract-repo-info-valid-url}
@@ -375,12 +334,41 @@ The following unit tests concern behaviour-hiding modules that are implemented b
       \\Expected Output: Library gitstats\_status FAILED, error recorded, exception propagated
       \\Actual Output: Matches expected
       \\Result: Pass
+    \item \texttt{test\_analyze\_library\_success\_202} \label{test-analyze-library-success-202}
+      \\Initial State: Library "A" exists
+      \\Input: POST request to analyze library; enqueue patched to return task IDs
+      \\Expected Output: HTTP 202 Accepted; analysis queued with task IDs
+      \\Actual Output: Status 202; response includes analysis\_task\_id "t1" and gitstats\_task\_id "g1"
+      \\Result: Pass
+    \item \texttt{test\_analyze\_library\_enqueue\_returns\_none\_400} \label{test-analyze-library-enqueue-returns-none-400}
+      \\Initial State: Library "A" has \texttt{analysis\_error = "bad"}
+      \\Input: POST request to analyze library; enqueue patched to return None
+      \\Expected Output: HTTP 400 Bad Request; error returned
+      \\Actual Output: Matches expected
+      \\Result: Pass
+    \item \texttt{test\_analyze\_library\_enqueue\_raises\_500\_and\_marks\_failed} \label{test-analyze-library-enqueue-raises-500-and-marks-failed}
+      \\Initial State: Library "A" exists
+      \\Input: POST request; enqueue patched to raise RuntimeError("boom")
+      \\Expected Output: HTTP 500 Internal Server Error; library analysis status FAILED and error recorded
+      \\Actual Output: Matches expected
+      \\Result: Pass
+    \item \texttt{test\_analyze\_domain\_libraries\_mixed\_results} \label{test-analyze-domain-libraries-mixed-results}
+      \\Initial State: Domain with libraries "A" and "B"
+      \\Input: POST request to analyze all domain libraries; enqueue patched to succeed for "A" and fail for "B"
+      \\Expected Output: HTTP 202 Accepted; queued and failed lists populated appropriately
+      \\Actual Output: Matches expected; queued includes "A", failed includes "B"
+      \\Result: Pass
+    \item \texttt{test\_analyze\_domain\_libraries\_exception\_marks\_failed} \label{test-analyze-domain-libraries-exception-marks-failed}
+      \\Initial State: Domain with libraries "A" and "B"
+      \\Input: POST request; enqueue raises exception for "A"
+      \\Expected Output: Library "A" marked FAILED; "B" queued; response HTTP 202
+      \\Actual Output: Matches expected
+      \\Result: Pass
     \item \texttt{test\_library\_analysis\_missing\_url} \label{test-library-analysis-missing-url}
       \\Input: Library with no URL
       \\Expected Output: Task not queued, library marked as FAILED, error set
       \\Actual Output: Matches expected
       \\Result: Pass
-
     \item \texttt{test\_library\_analysis\_with\_url\_queues\_both\_tasks\_and\_sets\_ids} \label{test-library-analysis-with-url-queues-both-tasks-and-sets-ids}
       \\Input: Library with valid URL
       \\Expected Output: Both Celery tasks queued, library task IDs recorded, analysis and gitstats statuses set to PENDING
@@ -432,7 +420,7 @@ The following unit tests concern behaviour-hiding modules that are implemented b
       \\Initial State: Domain "AHP Test Domain" with category weight {"Performance": 1.0}; Metric in category "Performance"; Library "TestLib"
       \\Input: GET request to \texttt{/api/ahp-calculations/\{domain\_ID\}/} with mocked rules.json and categories.json
       \\Expected Output: HTTP 200 OK; response includes domain name, global ranking containing "TestLib"; library's ahp\_results saved with positive overall score
-      \\Actual Output: ibrary.ahp\_results["overall\_score"] is greater than 0
+      \\Actual Output: library.ahp\_results["overall\_score"] is greater than 0
       \\Result: Pass
     \item \texttt{test\_ahp\_calculations\_not\_found} \label{test-ahp-calculations-not-found}
       \\Initial State: N/A
@@ -456,36 +444,6 @@ The following unit tests concern behaviour-hiding modules that are implemented b
       \\Initial State: Domain with libraries "A" and "B"; metrics "Stars Count" and "Forks Count"; metric values assigned
       \\Input: GET request to domain comparison endpoint
       \\Expected Output: HTTP 200 OK; metrics and library rows include values and evidence; gitstats\_report\_url populated
-      \\Actual Output: Matches expected
-      \\Result: Pass
-    \item \texttt{test\_analyze\_library\_success\_202} \label{test-analyze-library-success-202}
-      \\Initial State: Library "A" exists
-      \\Input: POST request to analyze library; enqueue patched to return task IDs
-      \\Expected Output: HTTP 202 Accepted; analysis queued with task IDs
-      \\Actual Output: Status 202; response includes analysis\_task\_id "t1" and gitstats\_task\_id "g1"
-      \\Result: Pass
-    \item \texttt{test\_analyze\_library\_enqueue\_returns\_none\_400} \label{test-analyze-library-enqueue-returns-none-400}
-      \\Initial State: Library "A" has \texttt{analysis\_error = "bad"}
-      \\Input: POST request to analyze library; enqueue patched to return None
-      \\Expected Output: HTTP 400 Bad Request; error returned
-      \\Actual Output: Matches expected
-      \\Result: Pass
-    \item \texttt{test\_analyze\_library\_enqueue\_raises\_500\_and\_marks\_failed} \label{test-analyze-library-enqueue-raises-500-and-marks-failed}
-      \\Initial State: Library "A" exists
-      \\Input: POST request; enqueue patched to raise RuntimeError("boom")
-      \\Expected Output: HTTP 500 Internal Server Error; library analysis status FAILED and error recorded
-      \\Actual Output: Matches expected
-      \\Result: Pass
-    \item \texttt{test\_analyze\_domain\_libraries\_mixed\_results} \label{test-analyze-domain-libraries-mixed-results}
-      \\Initial State: Domain with libraries "A" and "B"
-      \\Input: POST request to analyze all domain libraries; enqueue patched to succeed for "A" and fail for "B"
-      \\Expected Output: HTTP 202 Accepted; queued and failed lists populated appropriately
-      \\Actual Output: Matches expected; queued includes "A", failed includes "B"
-      \\Result: Pass
-    \item \texttt{test\_analyze\_domain\_libraries\_exception\_marks\_failed} \label{test-analyze-domain-libraries-exception-marks-failed}
-      \\Initial State: Domain with libraries "A" and "B"
-      \\Input: POST request; enqueue raises exception for "A"
-      \\Expected Output: Library "A" marked FAILED; "B" queued; response HTTP 202
       \\Actual Output: Matches expected
       \\Result: Pass
   \end{enumerate}
