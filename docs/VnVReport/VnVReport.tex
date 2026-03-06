@@ -160,6 +160,32 @@ restricting access to authorized users only.
 \textbf{Relevant Functional Requirement(s):} FR--7, FR--10, OE--IA1, SR--INT2, SR--INT3
 \end{mdframed}
 
+\begin{mdframed}[linewidth=0.5mm] \par
+\textbf{Test Case Identifier:} T--DM--3 \par
+\textbf{Input:} A Contributor or Super Admin edits a metric value for a library through the metric editing interface. \par
+\textbf{Expected Output:} The expected result is that the updated metric value is stored successfully in the database and the AHP ranking is recalculated to reflect the new value. \par
+\textbf{Actual Output:} The actual result is that the updated metric value is stored successfully in the database and the AHP ranking is recalculated to reflect the new value. \par
+\textbf{Expected and Actual Output Match:} True \par
+\textbf{Relevant Functional Requirement(s):} FR--7, FR--12, SR--INT4, SR--IM2
+\end{mdframed}
+
+\begin{mdframed}[linewidth=0.5mm] \par
+\textbf{Test Case Identifier:} T--DM--4 \par
+\textbf{Input:} An API request for repository analysis is forced to fail by temporarily reducing the request timeout during testing. \par
+\textbf{Expected Output:} The expected result is that the system reports the analysis failure to the user while preserving previously stored metric data for the library. \par
+\textbf{Actual Output:} The actual result is that the system displays a failure message in the interface while previously stored metric data remains unchanged. \par
+\textbf{Expected and Actual Output Match:} True \par
+\textbf{Relevant Functional Requirement(s):} PR--RFT1, PR--RFT2, SR--INT5
+\end{mdframed}
+
+\begin{mdframed}[linewidth=0.5mm] \par
+\textbf{Test Case Identifier:} T--DM--5 \par
+\textbf{Input:} A user selects the export option to download the comparison table for a domain as an Excel file. \par
+\textbf{Expected Output:} The expected result is that the system generates and downloads an Excel file containing all libraries in the selected domain along with their associated metrics and stored metric values. \par
+\textbf{Actual Output:} The actual result is that the system generates and downloads an Excel file containing all libraries in the selected domain along with their associated metrics and stored metric values. \par
+\textbf{Expected and Actual Output Match:} True \par
+\textbf{Relevant Functional Requirement(s):} FR--14, SR--INT7, OE--PR4
+\end{mdframed}
 
 
 \subsubsection{Features Currently in Progress}
@@ -205,6 +231,23 @@ password for future logins.
 
 This functionality is currently under development and has not yet been
 fully implemented or tested.
+
+\item \textbf{FR--9: Bulk Data Upload}
+
+This requirement was originally intended to allow users to upload domain
+data in bulk. Based on supervisor feedback, this functionality was removed
+from the project scope and will not be implemented. Therefore, testing for
+this requirement was not performed.
+
+\textbf{Relevant Functional Requirement(s):} FR--9, SR--INT1, UH--EU2
+
+\item \textbf{FR--6: Publish Domain for Public Access}
+
+This feature is currently under development as part of the authorization
+implementation. The ability to publish a domain so that it becomes visible
+to all users will be completed together with the remaining access-control functionality.
+
+\textbf{Relevant Functional Requirement(s):} FR--6, OE--PR3, FR--14
 
 \section{Nonfunctional Requirements Evaluation}
 
