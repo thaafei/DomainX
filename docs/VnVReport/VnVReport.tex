@@ -1,5 +1,7 @@
 \documentclass[12pt, titlepage]{article}
-
+\usepackage{pdflscape}
+\usepackage{longtable}
+\usepackage{url}
 \usepackage{booktabs}
 \usepackage{tabularx}
 \usepackage{hyperref}
@@ -32,8 +34,7 @@
 \begin{tabularx}{\textwidth}{p{3cm}p{2cm}X}
 \toprule {\bf Date} & {\bf Version} & {\bf Notes}\\
 \midrule
-Date 1 & 1.0 & Notes\\
-Date 2 & 1.1 & Notes\\
+March 6 & Rev 1 & First copy of VnV Report done by the whole team\\
 \bottomrule
 \end{tabularx}
 
@@ -499,14 +500,563 @@ This feature is currently under development as part of the remaining authorizati
 \subsection{Performance}
 
 \subsection{etc.}
-	
-\section{Comparison to Existing Implementation}	
-
-This section will not be appropriate for every project.
 
 \section{Unit Testing}
+The following unit tests concern behaviour-hiding modules that are implemented by the tool. Modules implemented by external libraries are assumed to be tested themselves and therefore don't need to be unit tested. 
+\subsection{Data Edit Module}
+  \begin{enumerate}
+    \item \texttt{test\_list\_libraries\_returns\_only\_domain\_libraries} \label{test-list-libraries-returns-only-domain-libraries}
+      \\Initial State: Domain "D1" with 2 libraries, another domain "Other" with 1 library
+      \\Input: GET request to \texttt{/api/libraries/by\_domain/\{domain\_ID\}/}
+      \\Expected Output: Returns only libraries belonging to the specified domain
+      \\Actual Output: Returned libraries "A" and "B" from domain "D1"
+      \\Result: Pass
+    \item \texttt{test\_create\_library\_requires\_domain} \label{test-create-library-requires-domain}
+      \\Initial State: N/A
+      \\Input: POST request to \texttt{/api/libraries/} with empty payload
+      \\Expected Output: HTTP 400 Bad Request; domain is required
+      \\Actual Output: Status 400, error indicates missing domain
+      \\Result: Pass
+    \item \texttt{test\_create\_library\_invalid\_domain} \label{test-create-library-invalid-domain}
+      \\Initial State: N/A
+      \\Input: POST request with invalid UUID for domain
+      \\Expected Output: HTTP 400 Bad Request; invalid domain
+      \\Actual Output: Status 400, error indicates domain field issue
+      \\Result: Pass
+    \item \texttt{test\_create\_library\_success\_sets\_pending\_and\_returns\_task\_id} \label{test-create-library-success-sets-pending-and-returns-task-id}
+      \\Initial State: N/A
+      \\Input: POST request with valid domain and library payload; enqueue analysis patched to return "task-123"
+      \\Expected Output: Library created, analysis status pending, task ID returned
+      \\Actual Output: Library created, \texttt{analysis\_status = PENDING}, \texttt{task\_id = "task-123"}
+      \\Result: Pass
+    \item \texttt{test\_create\_library\_enqueue\_raises\_marks\_failed\_and\_task\_id\_none} \label{test-create-library-enqueue-raises-marks-failed-and-task-id-none}
+      \\Initial State: N/A
+      \\Input: POST request with valid payload; enqueue analysis patched to raise RuntimeError("boom")
+      \\Expected Output: Library created, analysis status FAILED, task ID is None
+      \\Actual Output: Library \texttt{analysis\_status = FAILED}, \texttt{task\_id = None}, error message "boom"
+      \\Result: Pass
+    \item \texttt{test\_patch\_library\_success} \label{test-patch-library-success}
+      \\Initial State: Library "OldName" exists under a domain
+      \\Input: PATCH request to update \texttt{library\_name} to "NewName"
+      \\Expected Output: Library updated successfully; name changed
+      \\Actual Output: \texttt{library\_name = "NewName"} confirmed in response and database
+      \\Result: Pass
+    \item \texttt{test\_put\_library\_success} \label{test-put-library-success}
+      \\Initial State: Library "Name1" exists
+      \\Input: PUT request with new domain, name, URL, and programming language
+      \\Expected Output: Library updated successfully with all new fields
+      \\Actual Output: Fields updated as expected in response and database
+      \\Result: Pass
+    \item \texttt{test\_put\_library\_rejects\_non\_github\_url} \label{test-put-library-rejects-non-github-url}
+      \\Initial State: Library exists with a GitHub URL
+      \\Input: PUT request with a non-GitHub URL
+      \\Expected Output: HTTP 400 Bad Request; URL field rejected
+      \\Actual Output: Status 400; error returned for URL
+      \\Result: Pass
+    \item \texttt{test\_delete\_library\_not\_found} \label{test-delete-library-not-found}
+      \\Initial State: N/A
+      \\Input: DELETE request with non-existent library ID
+      \\Expected Output: HTTP 404 Not Found
+      \\Actual Output: Status 404
+      \\Result: Pass
+    \item \texttt{test\_delete\_library\_success} \label{test-delete-library-success}
+      \\Initial State: Library "Temp" exists
+      \\Input: DELETE request to remove the library
+      \\Expected Output: HTTP 204 No Content; library deleted from database
+      \\Actual Output: Status 204; library no longer exists in database
+      \\Result: Pass
+    \item \texttt{test\_library\_metric\_value\_update\_requires\_metrics\_dict} \label{test-library-metric-value-update-requires-metrics-dict}
+      \\Initial State: Library "A" exists
+      \\Input: POST request with invalid metrics payload (list instead of dict)
+      \\Expected Output: HTTP 400 Bad Request; error indicates metrics must be dict
+      \\Actual Output: Matches expected
+      \\Result: Pass
+    \item \texttt{test\_library\_metric\_value\_update\_creates\_value\_and\_evidence} \label{test-library-metric-value-update-creates-value-and-evidence}
+      \\Initial State: Library "A" exists; metrics "Stars Count" and "Forks Count" exist
+      \\Input: POST request updating metrics with values and evidence; includes unknown metric
+      \\Expected Output: Values and evidence updated for known metrics; unknown metric ignored; HTTP 200
+      \\Actual Output: Matches expected; database updated correctly
+      \\Result: Pass
+    \item \texttt{test\_metric\_value\_bulk\_update\_rejects\_non\_list} \label{test-metric-value-bulk-update-rejects-non-list}
+      \\Initial State: N/A
+      \\Input: POST request with non-list payload
+      \\Expected Output: HTTP 400 Bad Request; error indicates expected a list
+      \\Actual Output: Matches expected
+      \\Result: Pass
+    \item \texttt{test\_metric\_value\_bulk\_update\_empty\_list\_returns\_200} \label{test-metric-value-bulk-update-empty-list-returns-200}
+      \\Initial State: N/A
+      \\Input: POST request with empty list
+      \\Expected Output: HTTP 200 OK; status indicates no data to update
+      \\Actual Output: Matches expected
+      \\Result: Pass
+    \item \texttt{test\_metric\_value\_bulk\_update\_success} \label{test-metric-value-bulk-update-success}
+      \\Initial State: Library "A" exists; metrics "Stars Count" and "Forks Count" exist
+      \\Input: POST request with multiple update entries including empty and None values
+      \\Expected Output: HTTP 200 OK; values updated accordingly; unknown library skipped
+      \\Actual Output: Matches expected; stars updated to 99, forks set to None
+      \\Result: Pass
+  \end{enumerate}
+\subsection{User Management Module}
+  \begin{enumerate}
+    \item \texttt{test\_list\_users\_superadmin} \label{test-list-users-superadmin}
+    \\Input: Superadmin requests list of users
+    \\Expected Output: HTTP 200 OK with serialized user list
+    \\Actual Output: Response status is either 200 or 404 depending on endpoint availability
+    \\Result: Pass
+    \item \texttt{test\_list\_users\_admin\_forbidden} \label{test-list-users-admin-forbidden}
+    \\Input: Admin user attempts to access user list endpoint
+    \\Expected Output: HTTP 403 Forbidden
+    \\Actual Output: Response status is either 403 or 404 depending on endpoint availability
+    \\Result: Pass
+    \item \texttt{test\_list\_users\_unauthenticated} \label{test-list-users-unauthenticated}
+    \\Input: Unauthenticated request to list users endpoint
+    \\Expected Output: HTTP 401 Unauthorized
+    \\Actual Output: Response status is either 401 or 404 depending on endpoint availability
+    \\Result: Pass
+    \item \texttt{test\_update\_user\_basic\_fields} \label{test-update-user-basic-fields}
+    \\Input: Superadmin updates another user's first and last name
+    \\Expected Output: HTTP 200 OK with updated user fields
+    \\Actual Output: Response status is either 200 or 404 depending on endpoint availability
+    \\Result: Pass
+    \item \texttt{test\_admin\_can\_update\_user\_but\_not\_role} \label{test-admin-update-no-role}
+    \\Input: Admin attempts to update a user's first name and role
+    \\Expected Output: First name updated but role change ignored
+    \\Actual Output: Response 200 OK and role remains unchanged
+    \\Result: Pass
+    \item \texttt{test\_user\_can\_update\_own\_profile} \label{test-user-update-own-profile}
+    \\Input: User updates their own first name
+    \\Expected Output: HTTP 200 OK and first name updated
+    \\Actual Output: Response 200 OK and first name modified
+    \\Result: Pass
+    \item \texttt{test\_admin\_cannot\_edit\_other\_user\_basic\_info} \label{test-admin-edit-other-user}
+    \\Input: Admin attempts to change another user's first name
+    \\Expected Output: Change is rejected and original value remains
+    \\Actual Output: User's first name remains unchanged
+    \\Result: Pass
+    \item \texttt{test\_update\_user\_unauthenticated} \label{test-update-user-unauthenticated}
+    \\Input: Unauthenticated user attempts to update user profile
+    \\Expected Output: HTTP 401 Unauthorized
+    \\Actual Output: Response status is either 401 or 404 depending on endpoint availability
+    \\Result: Pass
+    \item \texttt{test\_user\_cannot\_change\_others\_password} \label{test-change-password-forbidden}
+    \\Input: Regular user attempts to change another user's password
+    \\Expected Output: HTTP 403 Forbidden
+    \\Actual Output: Response status 403 Forbidden
+    \\Result: Pass
+    \item \texttt{test\_superadmin\_can\_change\_others\_password} \label{test-superadmin-change-password}
+    \\Input: Superadmin changes another user's password
+    \\Expected Output: HTTP 200 OK and \texttt{set\_password()} called
+    \\Actual Output: Password updated and response 200 OK
+    \\Result: Pass
+    \item \texttt{test\_owner\_can\_change\_own\_password} \label{test-owner-change-password}
+    \\Input: User changes their own password with correct old password
+    \\Expected Output: HTTP 200 OK and password updated
+    \\Actual Output: \texttt{set\_password()} called and response 200 OK
+    \\Result: Pass      
+  \end{enumerate}
+\subsection{Automated Metrics Module}
+  \begin{enumerate}
+    \item \texttt{test\_extract\_repo\_info\_valid\_url} \label{test-extract-repo-info-valid-url}
+      \\Input: Valid GitHub URL
+      \\Expected Output: Repo owner and name parsed correctly
+      \\Actual Output: Matches expected
+      \\Result: Pass
+    \item \texttt{test\_extract\_repo\_info\_strips\_git\_suffix} \label{test-extract-repo-info-strips-git-suffix}
+      \\Input: URL ending with .git
+      \\Expected Output: Repo owner and name parsed without .git
+      \\Actual Output: Matches expected
+      \\Result: Pass
+    \item \texttt{test\_extract\_repo\_info\_invalid\_url\_raises} \label{test-extract-repo-info-invalid-url-raises}
+      \\Input: Invalid GitHub URL
+      \\Expected Output: Raises ValueError
+      \\Actual Output: Matches expected
+      \\Result: Pass
+    \item \texttt{test\_parse\_last\_page\_from\_link\_returns\_page\_number} \label{test-parse-last-page-from-link-returns-page-number}
+      \\Input: GitHub Link header with last page
+      \\Expected Output: Returns last page number
+      \\Actual Output: Matches expected (42)
+      \\Result: Pass
+    \item \texttt{test\_parse\_last\_page\_from\_link\_none\_or\_missing\_last\_returns\_none} \label{test-parse-last-page-from-link-none-or-missing-last-returns-none}
+      \\Input: Empty, None, or Link header missing last
+      \\Expected Output: Returns None
+      \\Actual Output: Matches expected
+      \\Result: Pass
+    \item \texttt{test\_search\_count\_uses\_search\_endpoint\_and\_reads\_total\_count} \label{test-search-count-uses-search-endpoint-and-reads-total-count}
+      \\Input: GitHub search query
+      \\Expected Output: Calls /search/issues; returns total\_count
+      \\Actual Output: Matches expected (123)
+      \\Result: Pass
+    \item \texttt{test\_get\_commits\_past\_five\_years\_returns\_0\_on\_409} \label{test-get-commits-past-five-years-returns-0-on-409}
+      \\Input: GitHub returns 409
+      \\Expected Output: Returns 0
+      \\Actual Output: Matches expected
+      \\Result: Pass
+    \item \texttt{test\_get\_commits\_past\_five\_years\_uses\_last\_page\_if\_present} \label{test-get-commits-past-five-years-uses-last-page-if-present}
+      \\Input: Link header includes last page
+      \\Expected Output: Returns last page number
+      \\Actual Output: Matches expected (77)
+      \\Result: Pass
+    \item \texttt{test\_get\_commits\_past\_five\_years\_falls\_back\_to\_json\_length} \label{test-get-commits-past-five-years-falls-back-to-json-length}
+      \\Input: Link header missing
+      \\Expected Output: Returns length of commits array
+      \\Actual Output: Matches expected (1)
+      \\Result: Pass
+    \item \texttt{test\_get\_file\_type\_counts\_counts\_text\_and\_binary} \label{test-get-file-type-counts-counts-text-and-binary}
+      \\Input: Repo tree with text and binary files
+      \\Expected Output: Returns counts of text and binary files
+      \\Actual Output: Matches expected (text=2, binary=2)
+      \\Result: Pass
+    \item \texttt{test\_get\_file\_type\_counts\_returns\_0\_0\_on\_non\_200} \label{test-get-file-type-counts-returns-0-0-on-non-200}
+      \\Input: Response status not 200
+      \\Expected Output: Returns (0,0)
+      \\Actual Output: Matches expected
+      \\Result: Pass
+    \item \texttt{test\_get\_github\_api\_metrics\_happy\_path} \label{test-get-github-api-metrics-happy-path}
+      \\Input: Repo with metrics available; patched internal methods
+      \\Expected Output: Returns dictionary with all GitHub metrics
+      \\Actual Output: Matches expected
+      \\Result: Pass
+    \item \texttt{test\_get\_github\_api\_metrics\_wraps\_request\_exception} \label{test-get-github-api-metrics-wraps-request-exception}
+      \\Input: github\_get raises RequestException
+      \\Expected Output: Raises Exception with "GitHub API Error"
+      \\Actual Output: Matches expected
+      \\Result: Pass
+    \item \texttt{test\_analyze\_repo\_filters\_to\_target\_int\_metrics} \label{test-analyze-repo-filters-to-target-int-metrics}
+      \\Input: Metrics include int, None, string
+      \\Expected Output: Only int metrics retained
+      \\Actual Output: Matches expected
+      \\Result: Pass
+    \item \texttt{test\_run\_analysis\_and\_get\_data\_returns\_repo\_name\_and\_metric\_data} \label{test-run-analysis-and-get-data-returns-repo-name-and-metric-data}
+      \\Input: Patched \_analyze\_repo returning metrics
+      \\Expected Output: Returns repo\_name and metric\_data
+      \\Actual Output: Matches expected
+      \\Result: Pass
+    \item \texttt{test\_analyze\_repo\_task\_success\_updates\_metrics\_and\_marks\_success} \label{test-analyze-repo-task-success-updates-metrics-and-marks-success}
+      \\Input: Valid library, metrics, RepoAnalyzer returns metrics
+      \\Expected Output: Updates numeric metrics, marks library analysis as SUCCESS
+      \\Actual Output: Matches expected
+      \\Result: Pass
+    \item \texttt{test\_analyze\_repo\_task\_sets\_running\_status\_early} \label{test-analyze-repo-task-sets-running-status-early}
+      \\Input: Library under analysis
+      \\Expected Output: Analysis status is set to RUNNING before metrics updated
+      \\Actual Output: Matches expected
+      \\Result: Pass
+    \item \texttt{test\_analyze\_repo\_task\_exception\_marks\_failed\_and\_raises} \label{test-analyze-repo-task-exception-marks-failed-and-raises}
+      \\Input: RepoAnalyzer raises RuntimeError
+      \\Expected Output: Library marked as FAILED, analysis\_error recorded, exception propagated
+      \\Actual Output: Matches expected
+      \\Result: Pass
+    \item \texttt{test\_analyze\_repo\_gitstats\_task\_success\_sets\_report\_and\_metric} \label{test-analyze-repo-gitstats-task-success-sets-report-and-metric}
+      \\Input: Valid library, RepoAnalyzer returns ok
+      \\Expected Output: GitStats paths set, library gitstats\_status SUCCESS, metric created
+      \\Actual Output: Matches expected
+      \\Result: Pass
+    \item \texttt{test\_analyze\_repo\_gitstats\_task\_success\_without\_metric\_still\_succeeds} \label{test-analyze-repo-gitstats-task-success-without-metric-still-succeeds}
+      \\Input: Valid library, no GitStats metric exists
+      \\Expected Output: Task succeeds, library gitstats\_status SUCCESS, no metric created
+      \\Actual Output: Matches expected
+      \\Result: Pass
+    \item \texttt{test\_analyze\_repo\_gitstats\_task\_exception\_marks\_failed\_and\_raises} \label{test-analyze-repo-gitstats-task-exception-marks-failed-and-raises}
+      \\Input: RepoAnalyzer.run\_gitstats\_only raises RuntimeError
+      \\Expected Output: Library gitstats\_status FAILED, error recorded, exception propagated
+      \\Actual Output: Matches expected
+      \\Result: Pass
+    \item \texttt{test\_analyze\_library\_success\_202} \label{test-analyze-library-success-202}
+      \\Initial State: Library "A" exists
+      \\Input: POST request to analyze library; enqueue patched to return task IDs
+      \\Expected Output: HTTP 202 Accepted; analysis queued with task IDs
+      \\Actual Output: Status 202; response includes analysis\_task\_id "t1" and gitstats\_task\_id "g1"
+      \\Result: Pass
+    \item \texttt{test\_analyze\_library\_enqueue\_returns\_none\_400} \label{test-analyze-library-enqueue-returns-none-400}
+      \\Initial State: Library "A" has \texttt{analysis\_error = "bad"}
+      \\Input: POST request to analyze library; enqueue patched to return None
+      \\Expected Output: HTTP 400 Bad Request; error returned
+      \\Actual Output: Matches expected
+      \\Result: Pass
+    \item \texttt{test\_analyze\_library\_enqueue\_raises\_500\_and\_marks\_failed} \label{test-analyze-library-enqueue-raises-500-and-marks-failed}
+      \\Initial State: Library "A" exists
+      \\Input: POST request; enqueue patched to raise RuntimeError("boom")
+      \\Expected Output: HTTP 500 Internal Server Error; library analysis status FAILED and error recorded
+      \\Actual Output: Matches expected
+      \\Result: Pass
+    \item \texttt{test\_analyze\_domain\_libraries\_mixed\_results} \label{test-analyze-domain-libraries-mixed-results}
+      \\Initial State: Domain with libraries "A" and "B"
+      \\Input: POST request to analyze all domain libraries; enqueue patched to succeed for "A" and fail for "B"
+      \\Expected Output: HTTP 202 Accepted; queued and failed lists populated appropriately
+      \\Actual Output: Matches expected; queued includes "A", failed includes "B"
+      \\Result: Pass
+    \item \texttt{test\_analyze\_domain\_libraries\_exception\_marks\_failed} \label{test-analyze-domain-libraries-exception-marks-failed}
+      \\Initial State: Domain with libraries "A" and "B"
+      \\Input: POST request; enqueue raises exception for "A"
+      \\Expected Output: Library "A" marked FAILED; "B" queued; response HTTP 202
+      \\Actual Output: Matches expected
+      \\Result: Pass
+    \item \texttt{test\_library\_analysis\_missing\_url} \label{test-library-analysis-missing-url}
+      \\Input: Library with no URL
+      \\Expected Output: Task not queued, library marked as FAILED, error set
+      \\Actual Output: Matches expected
+      \\Result: Pass
+    \item \texttt{test\_library\_analysis\_with\_url\_queues\_both\_tasks\_and\_sets\_ids} \label{test-library-analysis-with-url-queues-both-tasks-and-sets-ids}
+      \\Input: Library with valid URL
+      \\Expected Output: Both Celery tasks queued, library task IDs recorded, analysis and gitstats statuses set to PENDING
+      \\Actual Output: Matches expected
+      \\Result: Pass
+  \end{enumerate}
+\subsection{Domains Page Module}
+  \begin{enumerate}
+    \item \texttt{test\_create\_domain\_success} \label{test-create-domain-success}
+      \\Initial State: Create user and fixture of API client
+      \\Input: Create payload containing domain name, description, and \texttt{creator\_ids} with the creator and call POST
+      \\Expected Output: Response returns status 201 for created, and querying for the domain object contains the same as in the payload
+      \\Actual Output: Matches expected
+      \\Result: Pass
+    \item \texttt{test\_create\_domain\_missing\_domain\_name} \label{test-create-domain-missing-domain-name}
+      \\Initial State: Create fixture of API client
+      \\Input: Create payload with only description and call POST
+      \\Expected Output: Response returns 400 bad request and informs of missing field
+      \\Actual Output: Matches expected, data returns dictionary with \texttt{domain\_name} and value of "This field is required"
+      \\Result: Pass
+    \item \texttt{test\_create\_domain\_missing\_description} \label{test-create-domain-missing-description}
+      \\Initial State: Create fixture of API client
+      \\Input: Create payload with only domain name and call POST
+      \\Response returns 400 bad request and informs of missing field
+      \\Actual Output: Matches expected, data returns dictionary with "description" and value of "Description field is required"
+      \\Result: Pass
+    \item \texttt{test\_list\_domains} \label{test-list-domains}
+      \\Initial State: Create fixture of API client and create two domain objects
+      \\Input: Calling GET for domain
+      \\Expected Output: Response 200 OK with list of domains matching the created domains
+      \\Actual Output: Matches expected
+      \\Result: Pass
+    \item \texttt{test\_update\_domain\_sets\_creators} \label{test-update-domain-sets-creators}
+      \\Initial State: Create domain object with only \texttt{domain\_name} and description and fixture of API client
+      \\Input: Create two users and add them to a payload with updated domain name and description. Then call POST with the domain ID
+      \\Expected Output: Response 200, domain should contain the new information and be linked to the two users
+      \\Actual Output: Matches expected
+      \\Result: Pass
+    \item \texttt{test\_delete\_domain} \label{test-delete-domain}
+      \\Initial State: Create fixture of API client and create a domain object
+      \\Input: Call DELETE with the domain ID
+      \\Expected Output: Querying for the domain ID returns None
+      \\Actual Output: Matches Expected
+      \\Result: Pass
+  \end{enumerate}
+\subsection{Comparison Module}
+  \begin{enumerate}
+    \item \texttt{test\_ahp\_calculations\_success} \label{test-ahp-calculations-success}
+      \\Initial State: Domain "AHP Test Domain" with category weight {"Performance": 1.0}; Metric in category "Performance"; Library "TestLib"
+      \\Input: GET request to \texttt{/api/ahp-calculations/\{domain\_ID\}/} with mocked rules.json and categories.json
+      \\Expected Output: HTTP 200 OK; response includes domain name, global ranking containing "TestLib"; library's ahp\_results saved with positive overall score
+      \\Actual Output: library.ahp\_results["overall\_score"] is greater than 0
+      \\Result: Pass
+    \item \texttt{test\_ahp\_calculations\_not\_found} \label{test-ahp-calculations-not-found}
+      \\Initial State: N/A
+      \\Input: GET request to \texttt{/api/ahp-calculations/999/} (non-existent domain ID)
+      \\Expected Output: HTTP 404 Not Found
+      \\Actual Output: Status 404 returned
+      \\Result: Pass
+    \item \texttt{test\_ahp\_calculations\_with\_weighted\_categories} \label{test-ahp-calculations-with-weighted-categories}
+      \\Initial State: Domain "Weighted Domain" with category weights {"Performance": 0.8, "Security": 0.2}; Metrics for both categories; Library "SecureLib"
+      \\Input: GET request to \texttt{/api/ahp-calculations/\{domain\_ID\}/} with mocked rules.json and categories.json
+      \\Expected Output: HTTP 200 OK; response includes both "Performance" and "Security" in category\_details; library's ahp\_results include scores for both categories
+      \\Actual Output: library.ahp\_results["category\_scores"] contains both categories
+      \\Result: Pass
+    \item \texttt{test\_ahp\_calculations\_basic} \label{test-ahp-calculations-basic}
+      \\Initial State: Domain with libraries "A" and "B"; metric "Score" exists; rules.json and categories.json mocked
+      \\Input: GET request to AHP calculation endpoint
+      \\Expected Output: HTTP 200 OK; global ranking includes both libraries; ahp\_results populated for both
+      \\Actual Output: Matches expected; overall\_score and category\_scores present
+      \\Result: Pass
+    \item \texttt{test\_domain\_comparison\_returns\_metrics\_and\_rows\_with\_values\_and\_evidence} \label{test-domain-comparison-returns-metrics-and-rows-with-values-and-evidence}
+      \\Initial State: Domain with libraries "A" and "B"; metrics "Stars Count" and "Forks Count"; metric values assigned
+      \\Input: GET request to domain comparison endpoint
+      \\Expected Output: HTTP 200 OK; metrics and library rows include values and evidence; gitstats\_report\_url populated
+      \\Actual Output: Matches expected
+      \\Result: Pass
+  \end{enumerate}
+\subsection{Visualization Module}
+\begin{enumerate}
+    \item \texttt{test\_library\_raw\_values\_appear} \label{test-library-raw-values-appear}
+    \\Initial State: With a new domain, create library "A" and library "B", and input "123" and "456" for the Commit Count metric for each library respectively.
+    \\Input: Selecting the two libraries and associated commit count metric and press visualize.
+    \\Expected Output: Bar graph of Commit Count appears with library "A" and "B" as a bar graph, with the value of the bar being "123" and "456" respectively.
+    \\Actual Output: Matches expected
+    \\Result: Pass
+    \item \texttt{test\_missing\_metric\_values} \label{test-missing-metric-values}
+    \\Initial State: With a new domain, create library "A" and library "B", and input "123" for "A" for the Commit Count metric.
+    \\Input: Selecting the two libraries and associated commit count metric and press visualize.
+    \\Expected Output: No graph appears, error message appears informing user that an issue occurred.
+    \\Actual Output: No graph appears, error message stating "Invalid metrics selected" appears above the visualization button.
+    \\Result: Pass
+    \item \texttt{test\_error\_shown\_when\_less\_then\_two\_libraries\_are\_selected} \label{test-error-shown-when-less-then-two-libraries-are-selected}
+    \\Initial State: With a new domain, create library "A" and library "B", and input "123" for "A" for the Commit Count metric.
+    \\Input: Select "A" and Commit Count metric and press visualize.
+    \\Expected Output: No graph appears, error message appears informing user that an issue occurred.
+    \\Actual Output: No graph appears, error message stating "At least two libraries must be selected" appears above the visualization button.
+    \\Result: Pass
+    \item \texttt{test\_only\_display\_non\-text\_metrics} \label{test-only-display-non-text-metrics}
+    \\Initial State: With a new domain, create a new metric called Institutions and set the type to string. Create library "A" and library "B" and metric values "McMaster" and "UofT" for the metric respectively.
+    \\Input: Select "A" and "B".
+    \\Expected Output: The Institutions metric should not appear in the metrics tab.
+    \\Actual Output: Matches expected.
+    \\Result: Pass
+    \item \texttt{test\_download\_visualizations} \label{test-download-visualizations}
+    \\Initial State: With a new domain, create library "A" and library "B", and input "123" and "456" for the Commit Count metric for each library respectively.
+    \\Input: Select both libraries and the Commit Count metric and press Visualize, then select Download All.
+    \\Expected Output: A zip folder with the visualization is downloaded on the user's computer. Unzipping and opening the folder we can see the same visualized graph.
+    \\Actual Output: Matches expected.
+    \\Result: Pass
+\end{enumerate}
+\subsection{Database Persistence Module}
+  \begin{enumerate}
+    \item \texttt{test\_domain\_str\_returns\_name} \label{test-domain-str-returns-name}
+      \\Initial State: N/A
+      \\Input: Directly creating a new domain object with \texttt{domain\_name} "Alpha" and description "desc"
+      \\Expected Output: Calling newly created object returns the domain name "Alpha"
+      \\Actual Output: Returned "Alpha"
+      \\Result: Pass
+    \item \texttt{test\_get\_domain\_ID\_returns\_string\_uuid} \label{test-get-domain-ID-returns-string-uuid}
+      \\Initial State: N/A
+      \\Input: Directly creating a new domain object with \texttt{domain\_name} "Beta" and description "desc"
+      \\Expected Output: Calling \texttt{get\_domain\_ID()} on new domain returns the UUID
+      \\Actual Output: Method matches \texttt{domain\_id} parameter and is instance of string
+      \\Result: Pass
+    \item \texttt{test\_defaults\_and\_blank\_fields}\label{test-defaults-and-blank-fields}
+      \\Initial State: N/A
+      \\Input: Directly creating a new domain object with \texttt{domain\_name} "Gamma"
+      \\Expected Output: Initializes domain object with default fields \texttt{{published: False, paper\_name: None, paper\_url: "", category\_weights: {}}}
+      \\Actual Output: Output matches expected
+      \\Result: Pass
+    \item \texttt{test\_unique\_domain\_name\_constraint} \label{test-unique-domain-name-constraint}
+      \\Initial State: Domain object with \texttt{domain\_name} "Delta" and description "one"
+      \\Input: Directly creating a new domain object with \texttt{domain\_name} "Delta" and description "two"
+      \\Expected Output: Throws integrity error due to duplicate domain names
+      \\Actual Output: Matches expected
+      \\Result: Pass
+    \item \texttt{test\_creators\_many\_to\_many\_assignment} \label{test-creators-many-to-many-assignment}
+      \\Initial State: Create two users with admin role
+      \\Input: Create two domain objects with separate names, add both creators to each domain.
+      \\Expected Output: Filtering in each domain's creators by the id of the creator, both creators should exist
+      \\Actual Output: Matches expected
+      \\Result: Pass
+    \item \texttt{test\_library\_str\_returns\_name} \label{test-library-str-returns-name}
+      \\Initial State: N/A
+      \\Input: Directly creating a new library object with \texttt{library\_name} "LibA" under a domain "D1"
+      \\Expected Output: Calling \texttt{str()} on the library object returns "LibA"
+      \\Actual Output: Returned "LibA"
+      \\Result: Pass
+    \item \texttt{test\_get\_library\_id\_returns\_string\_uuid} \label{test-get-library-id-returns-string-uuid}
+      \\Initial State: N/A
+      \\Input: Directly creating a new library object "LibB" under a domain "D2"
+      \\Expected Output: Calling \texttt{get\_library\_id()} returns the library's UUID as a string
+      \\Actual Output: Method returns a string that matches the library\_ID
+      \\Result: Pass
+    \item \texttt{test\_defaults\_and\_blank\_fields} \label{test-defaults-and-blank-fields}
+      \\Initial State: N/A
+      \\Input: Directly creating a new library object "LibC" under a domain "D3"
+      \\Expected Output: Default fields initialized: \texttt{ahp\_results={}}, optional fields None, statuses set to pending, timestamps set
+      \\Actual Output: Matches expected default values
+      \\Result: Pass
+    \item \texttt{test\_unique\_library\_name\_per\_domain\_constraint} \label{test-unique-library-name-per-domain-constraint}
+      \\Initial State: Library object "SameName" exists under domain "D4"
+      \\Input: Attempt to create another library with \texttt{library\_name="SameName"} in the same domain
+      \\Expected Output: Raises \texttt{IntegrityError} due to duplicate name in the same domain
+      \\Actual Output: IntegrityError raised
+      \\Result: Pass
+    \item \texttt{test\_same\_library\_name\_allowed\_in\_different\_domains} \label{test-same-library-name-allowed-in-different-domains}
+      \\Initial State: Two different domains "D5A" and "D5B"
+      \\Input: Create libraries with the same name "SharedName" in both domains
+      \\Expected Output: Each domain can have the same library name independently
+      \\Actual Output: Both libraries exist in their respective domains
+      \\Result: Pass
+    \item \texttt{test\_unique\_url\_per\_domain\_constraint} \label{test-unique-url-per-domain-constraint}
+      \\Initial State: Library object with URL "https://github.com/x/y" exists in domain "D6"
+      \\Input: Attempt to create another library with the same URL in the same domain
+      \\Expected Output: Raises \texttt{IntegrityError} due to duplicate URL
+      \\Actual Output: IntegrityError raised
+      \\Result: Pass
+    \item \texttt{test\_same\_url\_allowed\_in\_different\_domains} \label{test-same-url-allowed-in-different-domains}
+      \\Initial State: Two different domains "D7A" and "D7B"
+      \\Input: Create libraries with the same URL "https://github.com/x/y" in both domains
+      \\Expected Output: URL uniqueness is enforced per domain only
+      \\Actual Output: Both libraries exist in their respective domains
+      \\Result: Pass
+    \item \texttt{test\_null\_url\_does\_not\_break\_basic\_creation} \label{test-null-url-does-not-break-basic-creation}
+      \\Initial State: N/A
+      \\Input: Create a library with \texttt{url=None} under domain "D8"
+      \\Expected Output: Library created successfully with \texttt{url=None}
+      \\Actual Output: Library created, \texttt{url} is None
+      \\Result: Pass
+    \item \texttt{test\_library\_metric\_value\_str\_format} \label{test-library-metric-value-str-format}
+      \\Initial State: Library "RepoA" and Metric "Stars Count" exist
+      \\Input: Create a LibraryMetricValue with \texttt{value=\{"count": 10\}}
+      \\Expected Output: \texttt{str(lmv)} returns "RepoA - Stars Count: \{'count': 10\}"
+      \\Actual Output: Returned string matches expected
+      \\Result: Pass
+    \item \texttt{test\_value\_id\_is\_uuid} \label{test-value-id-is-uuid}
+      \\Initial State: Library "RepoA" and Metric exist
+      \\Input: Create a LibraryMetricValue with numeric value 5
+      \\Expected Output: \texttt{value\_ID} is an instance of UUID
+      \\Actual Output: Matches expected
+      \\Result: Pass
+    \item \texttt{test\_value\_can\_be\_null} \label{test-value-can-be-null}
+      \\Initial State: Library "RepoA" and Metric exist
+      \\Input: Create a LibraryMetricValue with \texttt{value=None}
+      \\Expected Output: Value remains None; string representation shows "None"
+      \\Actual Output: Matches expected
+      \\Result: Pass
+    \item \texttt{test\_optional\_fields\_defaults} \label{test-optional-fields-defaults}
+      \\Initial State: Library and Metric exist
+      \\Input: Create a LibraryMetricValue without providing optional fields
+      \\Expected Output: \texttt{value, evidence, collected\_by = None}; \texttt{last\_modified} is set
+      \\Actual Output: Matches expected defaults
+      \\Result: Pass
+    \item \texttt{test\_last\_modified\_updates\_on\_save} \label{test-last-modified-updates-on-save}
+      \\Initial State: LibraryMetricValue created with value 1
+      \\Input: Modify value to 2 and save
+      \\Expected Output: \texttt{last\_modified} timestamp updated
+      \\Actual Output: \texttt{last\_modified} >= previous timestamp
+      \\Result: Pass
+    \item \texttt{test\_cascade\_delete\_when\_library\_deleted} \label{test-cascade-delete-when-library-deleted}
+      \\Initial State: Library "ToDelete" exists with one associated LibraryMetricValue
+      \\Input: Delete the library
+      \\Expected Output: Associated LibraryMetricValue is deleted
+      \\Actual Output: LibraryMetricValue no longer exists
+      \\Result: Pass
+    \item \texttt{test\_cascade\_delete\_when\_metric\_deleted} \label{test-cascade-delete-when-metric-deleted}
+      \\Initial State: Metric "Forks Count" exists with one LibraryMetricValue
+      \\Input: Delete the metric
+      \\Expected Output: Associated LibraryMetricValue is deleted
+      \\Actual Output: LibraryMetricValue no longer exists
+      \\Result: Pass
+    \item \texttt{test\_str\_returns\_email} \label{test-str-returns-email}
+      \\Input: User with email ``alice@example.com``
+      \\Expected Output: \texttt(str(user)) returns the email
+      \\Actual Output: Matches expected
+      \\Result: Pass
+    \item \texttt{test\_get\_full\_name\_returns\_none\_if\_missing\_parts} \label{test-get-full-name-none}
+      \\Input: User without first\_name and last\_name
+      \\Expected Output: \texttt(get\_full\_name()) returns None
+      \\Actual Output: Matches expected
+      \\Result: Pass
+    \item \texttt{test\_get\_full\_name\_concatenates\_first\_and\_last} \label{test-get-full-name-concat}
+      \\Input: User with first\_name ``Carol`` and last\_name ``Danvers``
+      \\Expected Output: \texttt(get\_full\_name()) returns ``Carol Danvers``
+      \\Actual Output: Matches expected
+      \\Result: Pass
+    \item \texttt{test\_role\_default\_is\_user} \label{test-role-default-user}
+      \\Input: User created without specifying role
+      \\Expected Output: ``role`` defaults to ``user``
+      \\Actual Output: Matches expected
+      \\Result: Pass
+    \item \texttt{test\_email\_unique\_constraint} \label{test-email-unique-constraint}
+      \\Input: Attempt to create two users with the same email
+      \\Expected Output: Raises IntegrityError
+      \\Actual Output: Matches expected
+      \\Result: Pass
+  \end{enumerate}
 
-\section{Changes Due to Testing}
+  \section{Changes Due to Testing}
 
 \wss{This section should highlight how feedback from the users and from 
 the supervisor (when one exists) shaped the final product.  In particular 
@@ -575,7 +1125,56 @@ not included in the table and are discussed earlier in the
 \section{Trace to Modules}		
 
 \section{Code Coverage Metrics}
+The following report is automatically generated by pytest. We obtained a total coverage of 73\%. The actual coverage should be slightly higher since some files that contain no logic are being counted towards the percentage (i.e. \href{https://github.com/thaafei/DomainX/blob/main/src/backend/api/database/edit_history/views.py}{edit\_history/views}).
+\begin{landscape}
+  \begin{longtable}{|p{10cm}|c|c|c|c|}
+    \caption{Backend Code Coverage Report} \\
+    \hline
+    \textbf{File} & \textbf{Statements} & \textbf{Missing} & \textbf{Excluded} & \textbf{Coverage} \\ 
+    \hline
+    \endfirsthead
 
+    \hline
+    \textbf{File} & \textbf{Statements} & \textbf{Missing} & \textbf{Excluded} & \textbf{Coverage} \\ 
+    \hline
+    \endhead
+      \textbf{\path{src/backend/api/database/backup_logs/admin.py}} & 1 & 0 & 0 & 100\% \\ \hline
+      \textbf{\path{src/backend/api/database/backup\_logs/models.py}} & 12 & 1 & 0  & 92\% \\ \hline
+      \textbf{\path{src/backend/api/database/backup\_logs/views.py}} & 1 & 1 & 0 & 0\% \\ \hline
+      \textbf{\path{src/backend/api/database/domain/models.py}} & 17 & 0 & 0 & 100\% \\ \hline
+      \textbf{\path{src/backend/api/database/domain/serializers.py}} & 16 & 1 & 0  & 94\% \\ \hline
+      \textbf{\path{src/backend/api/database/domain/views.py}} & 51 & 15 & 0  & 71\% \\ \hline
+      \textbf{\path{src/backend/api/database/edit\_history/admin.py}} & 1 & 0 & 0  & 100\% \\ \hline
+      \textbf{\path{src/backend/api/database/edit\_historymodels.pyy}} & 16 & 1 & 0  & 94\% \\ \hline
+      \textbf{\path{src/backend/api/database/edit\_historyviews.py}}  & 1 & 1 & 0  & 0\% \\ \hline
+      \textbf{\path{src/backend/api/database/libraries/models.py}} & 38 & 0 & 0  & 100\% \\ \hline
+      \textbf{\path{src/backend/api/database/libraries/serializers.py}}  & 35 & 2 & 0  & 94\% \\ \hline
+      \textbf{\path{src/backend/api/database/libraries/views.py}}  & 67 & 1 & 0  & 99\% \\ \hline
+      \textbf{\path{src/backend/api/database/library\_metric\_values/admin.py}}  & 8 & 0 & 0  & 100\% \\ \hline
+      \textbf{\path{src/backend/api/database/library\_metric\_values/models.py}}  & 14 & 0 & 0  & 100\% \\ \hline
+      \textbf{\path{src/backend/api/database/library\_metric\_values/serializers.py}}  & 12 & 0 & 0  & 100\% \\ \hline
+      \textbf{\path{src/backend/api/database/library\_metric\_values/views.py}}  & 153 & 7 & 0  & 95\% \\ \hline
+      \textbf{\path{src/backend/api/database/metrics/admin.py}}  & 6 & 0 & 0  & 100\% \\ \hline
+      \textbf{\path{src/backend/api/database/metrics/models.py}}  & 15 & 1 & 0  & 93\% \\ \hline
+      \textbf{\path{src/backend/api/database/metrics/serializers.py}}  & 10 & 0 & 0  & 100\% \\ \hline
+      \textbf{\path{src/backend/api/database/metrics/views.py}}  & 53 & 28 & 0  & 47\% \\ \hline
+      \textbf{\path{src/backend/api/database/services.py}}  & 241 & 129 & 0  & 46\% \\ \hline
+      \textbf{\path{src/backend/api/models.py}}  & 5 & 0 & 0  & 100\% \\ \hline
+      \textbf{\path{src/backend/api/serializers.py}}  & 4 & 4 & 0  & 0\% \\ \hline
+      \textbf{\path{src/backend/api/services/github\_http.py}}  & 67 & 0 & 0  & 100\% \\ \hline
+      \textbf{\path{src/backend/api/tasks.py}}  & 109 & 19 & 0  & 83\% \\ \hline
+      \textbf{\path{src/backend/api/utils/analysis.py}}  & 26 & 0 & 0  & 100\% \\ \hline
+      \textbf{\path{src/backend/manage\_local.py}}  & 55 & 55 & 0  & 0\% \\ \hline
+      \textbf{\path{src/backend/users/auth.py}}  & 11 & 5 & 0  & 55\% \\ \hline
+      \textbf{\path{src/backend/users/backends.py}}  & 15 & 15 & 0  & 0\% \\ \hline
+      \textbf{\path{src/backend/users/models.py}}  & 14 & 0 & 0  & 100\% \\ \hline
+      \textbf{\path{src/backend/users/permissions.py}}  & 7 & 7 & 0  & 0\% \\ \hline
+      \textbf{\path{src/backend/users/serializers.py}}  & 28 & 5 & 0  & 82\% \\ \hline
+      \textbf{\path{src/backend/users/views/auth\_views.py}}  & 131 & 32 & 0  & 76\% \\ \hline
+      \textbf{\path{src/backend/users/views/profile.py}}  & 25 & 12 & 0  & 52\% \\ \hline
+      \textbf{Total}  & 1265 & 342 & 0  & 73\% \\ \hline
+  \end{longtable}
+\end{landscape}
 \bibliographystyle{plainnat}
 \bibliography{../../refs/References}
 
@@ -589,25 +1188,36 @@ graduate attribute of Reflection.
 
 \begin{enumerate}
   \item What went well while writing this deliverable?\\
-  \textbf{Haniye:} One aspect that went well while writing this deliverable was that many of the test scenarios were already clear from the development process. While implementing features such as domain management, metric editing, and visualization, the system was frequently tested to verify correct behaviour. As a result, when preparing the VnV report it was easier to define the test inputs and expected outcomes because the implemented features had already been validated during development.
+  
+  \textbf{Haniye:} One aspect that went well while writing this deliverable was that many of the test scenarios were already clear from the development process. While implementing features such as domain management, metric editing, and visualization, the system was frequently tested to verify correct behaviour. As a result, when preparing the VnV report it was easier to define the test inputs and expected outcomes because the implemented features had already been validated during development.    \textbf{Fei:} I was responsible for the unit test portion. Since we decided to write unit test as we develop, instead of all at the end, writing this portion was much simpler as I just had to compile what we had into a report format.\\
+
+  \textbf{Fei:} I was responsible for the unit test portion. Since we decided to write unit test as we develop, instead of all at the end, writing this portion was much simpler as I just had to compile what we had into a report format.\\
+
   \item What pain points did you experience during this deliverable, and how
     did you resolve them?\\
-  \textbf{Haniye:} A minor challenge during this deliverable was ensuring that
+
+    \textbf{Haniye:} A minor challenge during this deliverable was ensuring that
     the tests described in the report aligned with the original VnV Plan while
     also reflecting the current implementation of the system. Some features had
     changed during development, which made it necessary to adjust how certain
     tests were documented. Feedback from the teaching assistant helped clarify
     how the tests should be structured, allowing the report to accurately
     represent the implemented functionality.
+
+    \textbf{Fei:} Setting up the testing frameworks was complete, due to the way our project repository was structured. Our code also wasn't as modularized as intended, so many unit tests had to have a lot of mocking in place. The way I resolved them was just adding the testing frameworks earlier, so there was more time to deal with unexpected issues, as opposed to having to cram it all in this week. \\
+
   \item Which parts of this document stemmed from speaking to your client(s) or
   a proxy (e.g. your peers)? Which ones were not, and why?\\
+  
   \textbf{Haniye:} Some parts of this document were influenced by discussions
     with the project supervisor. For example, the bulk data upload feature was removed from the project scope after supervisor feedback
     indicated that it would not be necessary for the final tool. The
     supervisor also suggested removing the public sign-up feature and
     instead allowing a Super Admin to create user accounts directly, with
     users updating their password afterward.
-
+   
+  \textbf{Fei:} N/A\\
+  
   \item In what ways was the Verification and Validation (VnV) Plan different
   from the activities that were actually conducted for VnV?  If there were
   differences, what changes required the modification in the plan?  Why did
@@ -616,6 +1226,7 @@ graduate attribute of Reflection.
   predict a feasible amount of effort and the right tasks needed to build the
   evidence that demonstrates the required quality?  (It is expected that most
   teams will have had to deviate from their original VnV Plan.)\\
+  
   \textbf{Haniye:} Most of the verification and validation activities followed
     the original VnV Plan. Some small differences occurred due to time
     constraints and changes in project priorities. For example, the bulk data
@@ -630,6 +1241,8 @@ graduate attribute of Reflection.
 
     In future projects, some of these adjustments could be anticipated by
     planning additional tests for integration and deployment scenarios.
+
+  \textbf{Fei:} The changes I had to make to the unit test portion was the modules. As we developed the tool, we ended up condensing a few modules together since that made more sense during the development. This just meant combining the related unit tests of the combined modules into one. For future projects, I don't think we can mitigate it completely. Since we designed the project before development, during development new insights arises which results in changes to the theoretical plan.\\
 \end{enumerate}
 
 \end{document}

@@ -11,6 +11,7 @@
 \usepackage{caption}
 \usepackage{xcolor,colortbl}
 \usepackage{enumitem,amssymb}
+\usepackage{multicol}
 
 \renewcommand{\arraystretch}{1.15}
 \setlength{\tabcolsep}{6pt}
@@ -50,7 +51,8 @@
 \textbf{Date} & \textbf{Developer(s)} & \textbf{Change}\\
 \midrule
 October 17, 2025  & Awurama, Fei & Initial v0 Draft\\
-March 07, 2026  & Haniye & Updated Functional Requirement Plan Section\\
+March 6, 2026  & Fei & Update Unit Test section\\
+March 7, 2026  & Haniye & Updated Functional Requirement Plan Section\\
 \bottomrule
 \end{tabularx}
 \end{table}
@@ -1057,7 +1059,6 @@ Also aligns with \href{https://github.com/thaafei/DomainX/blob/main/docs/HazardA
 
 
 \section{Unit Test Description}
-N/a
 % \wss{This section should not be filled in until after the MIS (detailed design
 %   document) has been completed.}
 
@@ -1072,114 +1073,114 @@ N/a
 % and output here, you could point to the unit testing code.  For this to work, you code 
 % needs to be well-documented, with meaningful names for all of the tests.}
 
-% \subsection{Unit Testing Scope}
+We use \href{https://docs.pytest.org/en/stable/}{pytest} to implement unit tests for the system. All tests are done automatically through github actions, unless otherwise stated.
+Unit tests will be located in the \href{https://github.com/thaafei/DomainX/tree/main/test}{test} subfolder of the project. More detailed reports of the unit tests can be found in the \href{https://github.com/thaafei/DomainX/blob/main/docs/VnVReport/VnVReport.pdf}{VnVReport} under the Unit Test section.
 
-% \wss{What modules are outside of the scope.  If there are modules that are
-%   developed by someone else, then you would say here if you aren't planning on
-%   verifying them.  There may also be modules that are part of your software, but
-%   have a lower priority for verification than others.  If this is the case,
-%   explain your rationale for the ranking of module importance.}
+\subsection{Unit Testing Scope}
+The scope of the unit tests will only be focused on modules developed by the DomainX team, which are: 
+\begin{multicols}{2}
+  \begin{enumerate}
+    \item Domains Page Module
+    \item Data Edit Module
+    \item User Management Module
+    \item Automated Metrics Module
+    \item Comparison Module
+    \item Visualization Module
+    \item Database Persistence Module
+  \end{enumerate}
+\end{multicols}
 
-% \subsection{Tests for Functional Requirements}
+The \href{https://github.com/thaafei/DomainX/blob/main/docs/Design/SoftDetailedDes/MIS.pdf}{WSS} lists out all the modules and their use, syntax, and semantics.
+Our testing philosophy is to consider the general use case of the user, with the most expected function. We will also include a few use cases where the user is expected to encounter errors.
 
-% \wss{Most of the verification will be through automated unit testing.  If
-%   appropriate specific modules can be verified by a non-testing based
-%   technique.  That can also be documented in this section.}
+\subsection{Domains Page Module}
+  Tests for this module concerns the creation of a new domain, updating domain information and associated admins as creators to the domain. The test should provide assurance that mapping between creators and domains are working correctly, and business restrictions for creating new domains.
+  \begin{enumerate}
+    \item \texttt{test\_create\_domain\_success}: The base case, creating a new domain with domain name and description should be successful and the newly created domain should be stored in the database.
+    \item \texttt{test\_create\_domain\_missing\_domain\_name/description}: We required domains to have both a name and description, if a domain is being created without one or the other, an error response should be returned and won't be created in the database.
+    \item \texttt{test\_list/delete\_domains}: Basic functionalities such as listing all the domains and deleting a specific domain is working. Also testing that when deleting a domain, the mapping between creators and domains are destroyed.
+    \item \texttt{test\_update\_domain\_sets\_creators}: The mapping between admin(creators) and domains is crucial so researchers can be associated with the data gathered. We test that this connection can be created successfully, and existing domains can edit this connection.
+  \end{enumerate}
 
-% \subsubsection{Module 1}
+\subsection{Data Edit Module}
+  Tests for this module checks that data is being stored correctly in the backend and that our validation and filtering mechanisms are working correctly so that we catch incorrect payloads.
+  \begin{enumerate}
+    \item \texttt{test\_list\_libraries\_returns\_only\_domain\_libraries}: Test if the API endpoint \texttt{/api/libraries/by\_domain/\{domain\_ID\}/} returns only the libraries belonging to the specific domain. As different domains can contain the same library, this function validates that it will return the correct associated data.
+    \item \texttt{test\_create\_library\_requires\_domain}: API endpoint \texttt{/api/libraries/} to libraries can only create a new library if it is associated with a domain. 
+    \item \texttt{test\_create\_library\_invalid\_domain}: If a request to create a library is sent, there should be validations in place that the associated domain actually exists.
+    \item \texttt{test\_create\_library\_success\_sets\_pending\_and\_returns\_task\_id}: When a new library is created, it automatically start an analysis of automated metrics.
+    \item \texttt{test\_create\_library\_enqueue\_raises\_marks\_failed\_and\_task\_id\_none}: There should be proper user feedback for a created library that has a failed analysis.
+    \item \texttt{test\_patch/put\_library\_success}: Updating single or multiple field related to the library should provide user feedback and changes should be made in the database.
+    \item \texttt{test\_put\_library\_rejects\_non\_github\_url}: The tool depends on retrieving automated metrics from github, we test if a new library creation will be rejected if provided github url isn't actually from github.
+    \item \texttt{test\_delete\_library\_success/fail}: Test both cases of deleting a library successfully and when deletion fails, such as provided library does not exist.
+    \item \texttt{test\_library\_metric\_value\_update\_requires\_metrics\_dict}: Test the API endpoint of updating the associated metric values for a library will validate the payload and provide user feedback if it doesn't.
+    \item \texttt{test\_library\_metric\_value\_update\_creates\_value\_and\_evidence}: Since we depend on external APIs to populate some of the metrics, we should have tests to ensure the proper filtering is in place. This test will check if given a payload, request to update an existing metric is successful, and request to update a nonexistent metric will be ignored and won't be created in the database.
+    \item \texttt{test\_metric\_value\_bulk\_update\_rejects\_non\_list}: Test that the format of the payload to request bulk updates is correct. This ensures there are less issues downstream which can result in potential missed data.
+    \item \texttt{test\_metric\_value\_bulk\_update\_success}: We also test the base case that the bulk update is triggered with the correct payload, and the expected metric values are updated.
+  \end{enumerate}
+\subsection{User Management Module}
+  Tests for this module validates that our business logic determining the amount of functionality a user can do within the system by their role in the system is working as expected.
+  \begin{enumerate}
+    \item \texttt{test\_list\_users\_superadmin/user}: Only superadmin should have the ability to list all the users in the system. Admin and user roles, as well as unauthenticated users should get a forbidden response when calling the endpoint.
+    \item \texttt{test\_superadmin/admin/user\_update\_role}: For security, only superadmin should be able to update other user's roles. Both admin and user shouldn't be able to, and receive forbidden responses if they call the endpoint.
+    \item \texttt{test\_superadmin/admin/user\_edit\_user\_profile}: As usual, superadmin have the permission to edit user information for all. Admin and users can only edit their own profile and receive forbidden responses if they call the endpoint to edit someone else's profile.
+    \item \texttt{test\_superadmin/admin/user\_edit\_domain}: We don't want anyone editing a domain so editing domain is restricted to superadmins, who can edit all the domains, and admins, who can edit their own domain. Normal users will get a forbidden response.
+  \end{enumerate}
 
-% \wss{Include a blurb here to explain why the subsections below cover the module.
-%   References to the MIS would be good.  You will want tests from a black box
-%   perspective and from a white box perspective.  Explain to the reader how the
-%   tests were selected.}
+\subsection{Automated Metrics Module}
+  Tests for this module ensure the extraction of the associated automated metrics from Github's API, git\_stats, and scc are successfully, and correctly stored in the database.
+  An example set of tests for the response from Github's API:
+  \begin{enumerate}
+    \item \texttt{test\_extract\_repo\_info\_valid\_url}: Tests that we extract the repository name and owner from github's api correctly.
+    \item \texttt{test\_extract\_repo\_info\_strips\_git\_suffix}: Tests that we remove suffix from github's response.
+  \end{enumerate}
 
-% \begin{enumerate}
+  We also test that during the analysis and processing of automated metrics, the system displays to the user the correct status of current operations.
+  An example such as:
+  \begin{enumerate}
+    \item \texttt{test\_analyze\_repo\_task\_success\_updates\_metrics\_and\_marks\_success}: User should have feedback when the automated metrics are all successfully extracted and stored in the database for the associated library.
+    \item \texttt{test\_analyze\_repo\_task\_sets\_running\_status\_early}: We should inform the user that something is happening in the system, even if we haven't actively started extracting from the library.
+    \item \texttt{test\_analyze\_repo\_task\_exception\_marks\_failed\_and\_raises}: If there is a failure, user feedback should be given and errors should be handled smoothly.
+  \end{enumerate}
 
-% \item{test-id1\\}
+\subsection{Comparison Module}
+  Tests for this module consists of testing if the comparison of libraries within a domain is working as expected. It includes testing the AHP calculations and using different weights for categories.
+  We also test if the module can gracefully handle error and provide user feedback when problems occur.
+    \begin{enumerate}
+      \item \texttt{test\_ahp\_calculations\_success}: The base case, when we use the AHP calculations it should process the passed in data in the manner we expect.
+      \item \texttt{test\_ahp\_calculations\_not\_found}: Calling the comparison endpoint with an invalid domain id should return an error response, instead of failing.
+      \item \texttt{test\_ahp\_calculations\_with\_weighted\_categories}: Using AHP calculations and adjusting the weight of categories, we should see the expected results based on the rules set. 
+      \item \texttt{test\_domain\_comparison\_returns\_metrics\_and\_rows\_with\_values\_and\_evidence}: We have a multitude of data gathered for each library in a domain. We should be able to retrieve all of them successfully with their corresponding evidence (for the automated ones) in order to be displayed.
+    \end{enumerate}
+  \subsection{Database Persistence Module}
+    The tests for this are in relation to the persistence of our models in the database. They will include the validation and serialization of the data for the following database models:
+    \begin{multicols}{2}
+      \begin{enumerate}
+        \item users
+        \item domain
+        \item libraries
+        \item library metric values
+      \end{enumerate}
+    \end{multicols}
 
-% Type: \wss{Functional, Dynamic, Manual, Automatic, Static etc. Most will
-%   be automatic}
-					
-% Initial State: 
-					
-% Input: 
-					
-% Output: \wss{The expected result for the given inputs}
+    The rational for these tests are to ensure data is properly validated and stored, and validates the business logic and restrictions associated with the models.
+    This is crucial for modules upstream which will depend on the data.
+    An example set of such tests for the domain model are:
+    \begin{enumerate}
+      \item \texttt{test\_domain\_str\_returns\_name}: Tests if calling a domain object will return domain name instead of domain id.
+      \item \texttt{test\_get\_domain\_id\_returns\_string\_uuid}: Tests that the get\_domain\_id function returns the uuid of the domain. 
+      \item \texttt{test\_defaults\_and\_blank\_fields}: Tests the creation of a domain object with only required fields, and check if blank fields are populated with the expected values.
+    \end{enumerate}
 
-% Test Case Derivation: \wss{Justify the expected value given in the Output field}
-
-% How test will be performed: 
-					
-% \item{test-id2\\}
-
-% Type: \wss{Functional, Dynamic, Manual, Automatic, Static etc. Most will
-%   be automatic}
-					
-% Initial State: 
-					
-% Input: 
-					
-% Output: \wss{The expected result for the given inputs}
-
-% Test Case Derivation: \wss{Justify the expected value given in the Output field}
-
-% How test will be performed: 
-
-% \item{...\\}
-    
-% \end{enumerate}
-
-% \subsubsection{Module 2}
-
-% ...
-
-% \subsection{Tests for Nonfunctional Requirements}
-
-% \wss{If there is a module that needs to be independently assessed for
-%   performance, those test cases can go here.  In some projects, planning for
-%   nonfunctional tests of units will not be that relevant.}
-
-% \wss{These tests may involve collecting performance data from previously
-%   mentioned functional tests.}
-
-% \subsubsection{Module ?}
-		
-% \begin{enumerate}
-
-% \item{test-id1\\}
-
-% Type: \wss{Functional, Dynamic, Manual, Automatic, Static etc. Most will
-%   be automatic}
-					
-% Initial State: 
-					
-% Input/Condition: 
-					
-% Output/Result: 
-					
-% How test will be performed: 
-					
-% \item{test-id2\\}
-
-% Type: Functional, Dynamic, Manual, Static etc.
-					
-% Initial State: 
-					
-% Input: 
-					
-% Output: 
-					
-% How test will be performed: 
-
-% \end{enumerate}
-
-% \subsubsection{Module ?}
-
-% ...
-
-% \subsection{Traceability Between Test Cases and Modules}
-
-% \wss{Provide evidence that all of the modules have been considered.}
+\subsection{Visualization Module}
+  Since this module mainly consists of frontend components that calls the previously mentioned modules in order to render data for users, the following tests will be dynamic, since we have to run the code in order to test the output.
+  \begin{enumerate}
+    \item \texttt{test\_library\_raw\_values\_appear}: The raw values of the metric values should appear for the associated metrics across selected libraries. This tests that we are properly retrieving the correct information from the backend and database.
+    \item \texttt{test\_missing\_metric\_values}: There should be user feedback when some libraries don't have the metric values filled for the selected metrics to visualize.
+    \item \texttt{test\_error\_shown\_when\_less\_then\_two\_libraries\_are\_selected}: Comparing visualizations requires at minimum two libraries to be selected for a metric. There should be feedback if there are less than two.
+    \item \texttt{test\_only\_display\_non\-text\_metrics}: There is no feasible way to display metrics that are text-based, we should filter these out so users can't select them.
+    \item \texttt{test\_download\_visualizations}: Users should be able to successfully download all visualizations they currently have displayed.
+  \end{enumerate} 
 \section{References}
 
 \begin{enumerate}
@@ -1265,21 +1266,20 @@ Supports \textbf{MS--MR3}–\textbf{MS--MR4}. \\
 \subsection{Usability Survey Questions?}
 \label{sec:usability-survey}
 % \wss{This is a section that would be appropriate for some projects.}
-These are the survey questions referenced in
-Section~4.2.3~(Usability~Evaluation). Each question is rated on a 1–5
-Likert scale (1 = Strongly Disagree, 5 = Strongly Agree).
+These are the user tasks referenced in provided to the user. Each question is rated on a 1–5
+Likert scale (1 = Very Easy, 5 = Very Difficult) based on the difficulty it is to complete.
 
 \begin{enumerate}
-  \item The interface layout was intuitive and easy to navigate.
-  \item I could complete all main tasks (create domain, add libraries, export results) without external help.
-  \item The information displayed in charts and tables was clear and easy to understand.
-  \item The tool responded quickly to my actions (no major lag or errors).
-  \item Error messages were clear and helped me understand how to fix issues.
-  \item I found the overall design (colours, font size, contrast) visually comfortable.
-  \item I would feel confident using this tool again for a research project.
+  \item Create an account and login.
+  \item Create a new Domain.
+  \item Add Metrics to the Domain you created.
+  \item Add two libraries to your domain.
+  \item Fill out the manually added metrics for the libraries you added.
+  \item Export the data you gathered as a CSV for your domain.
+  \item Visualize and export raw metric values.
+  \item Visualize and Export your AHP calculations.
 \end{enumerate}
-
-\newpage{}
+  \newpage{}
 \section*{Appendix --- Reflection}
 
 The information in this section will be used to evaluate the team members on the
