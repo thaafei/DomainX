@@ -448,6 +448,36 @@ The following unit tests concern behaviour-hiding modules that are implemented b
   \end{enumerate}
 \subsection{Visualization Module}
 \begin{enumerate}
+    \item \texttt{test\_library\_raw\_values\_appear} \label{test-library-raw-values-appear}
+    \\Initial State: With a new domain, create library "A" and library "B", and input "123" and "456" for the Commit Count metric for each library respectively.
+    \\Input: Selecting the two libraries and associated commit count metric and press visualize.
+    \\Expected Output: Bar graph of Commit Count appears with library "A" and "B" as a bar graph, with the value of the bar being "123" and "456" respectively.
+    \\Actual Output: Matches expected
+    \\Result: Pass
+    \item \texttt{test\_missing\_metric\_values} \label{test-missing-metric-values}
+    \\Initial State: With a new domain, create library "A" and library "B", and input "123" for "A" for the Commit Count metric.
+    \\Input: Selecting the two libraries and associated commit count metric and press visualize.
+    \\Expected Output: No graph appears, error message appears informing user that an issue occurred.
+    \\Actual Output: No graph appears, error message stating "Invalid metrics selected" appears above the visualization button.
+    \\Result: Pass
+    \item \texttt{test\_error\_shown\_when\_less\_then\_two\_libraries\_are\_selected} \label{test-error-shown-when-less-then-two-libraries-are-selected}
+    \\Initial State: With a new domain, create library "A" and library "B", and input "123" for "A" for the Commit Count metric.
+    \\Input: Select "A" and Commit Count metric and press visualize.
+    \\Expected Output: No graph appears, error message appears informing user that an issue occurred.
+    \\Actual Output: No graph appears, error message stating "At least two libraries must be selected" appears above the visualization button.
+    \\Result: Pass
+    \item \texttt{test\_only\_display\_non\-text\_metrics} \label{test-only-display-non-text-metrics}
+    \\Initial State: With a new domain, create a new metric called Institutions and set the type to string. Create library "A" and library "B" and metric values "McMaster" and "UofT" for the metric respectively.
+    \\Input: Select "A" and "B".
+    \\Expected Output: The Institutions metric should not appear in the metrics tab.
+    \\Actual Output: Matches expected.
+    \\Result: Pass
+    \item \texttt{test\_download\_visualizations} \label{test-download-visualizations}
+    \\Initial State: With a new domain, create library "A" and library "B", and input "123" and "456" for the Commit Count metric for each library respectively.
+    \\Input: Select both libraries and the Commit Count metric and press Visualize, then select Download All.
+    \\Expected Output: A zip folder with the visualization is downloaded on the user's computer. Unzipping and opening the folder we can see the same visualized graph.
+    \\Actual Output: Matches expected.
+    \\Result: Pass
 \end{enumerate}
 \subsection{Database Persistence Module}
   \begin{enumerate}
