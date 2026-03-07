@@ -15,33 +15,37 @@ from ....library_metric_values.models import LibraryMetricValue
 COL_METRIC = "Metrics & Description"
 COL_POSSIBLE = "Possible Measurement Values"
 
-ROW_SOFTWARE_NAME = re.compile(r"^\s*Software\s*name\?\s*$", re.IGNORECASE)
-ROW_SOURCE_CODE_URL = re.compile(r"^\s*Source\s*code\s*URL\?\s*$", re.IGNORECASE)
-ROW_PROG_LANGS = re.compile(r"^\s*Programming\s*language\(s\)\?\s*$", re.IGNORECASE)
-
-
-CANON_PUNCT_RE = re.compile(r"[^\w\s]")
+ROW_SOFTWARE_NAME = re.compile(r"^\s*Software\s*name\??\s*$", re.IGNORECASE)
+ROW_SOURCE_CODE_URL = re.compile(r"^\s*Source\s*code\s*URL\??\s*$", re.IGNORECASE)
+ROW_PROG_LANGS = re.compile(r"^\s*Programming\s*language\(s\)\??\s*$", re.IGNORECASE)
 
 
 def canon_metric(s: str) -> str:
-
     s = (s or "").strip().lower()
     s = s.replace("\u00a0", " ")
+    s = s.replace("∗", "*")
     s = re.sub(r"\(.*?\)", "", s)
+    s = re.sub(r"\*.*$", "", s)
+    s = re.sub(r"[^\w\s]", " ", s)
     s = re.sub(r"\s+", " ", s)
-    s = s.rstrip("?").strip()
-    s = CANON_PUNCT_RE.sub("", s)
-    s = re.sub(r"\s+", " ", s).strip()
-    return s
+
+    return s.strip()
 
 
 def clean_cell(v):
     if v is None:
         return None
+
     s = str(v).strip()
     if not s or s.lower() == "nan":
         return None
-    return s
+    while len(s) >= 2 and (
+        (s[0] == '"' and s[-1] == '"') or
+        (s[0] == "'" and s[-1] == "'")
+    ):
+        s = s[1:-1].strip()
+
+    return s or None
 
 
 def find_row_index(df: pd.DataFrame, pattern: re.Pattern) -> int | None:
@@ -52,16 +56,13 @@ def find_row_index(df: pd.DataFrame, pattern: re.Pattern) -> int | None:
 
 
 def clean_url(u: str | None) -> str | None:
+    u = clean_cell(u)
     if not u:
-        return None
-    u = u.strip()
-    if u.lower() in {"nan", ""}:
         return None
     return u[:-4] if u.endswith(".git") else u
 
 
 def pick_first_choice(model_cls, field_name: str) -> str:
-
     f = model_cls._meta.get_field(field_name)
     choices = list(getattr(f, "choices", []) or [])
     if not choices:
@@ -73,8 +74,8 @@ def pick_first_choice(model_cls, field_name: str) -> str:
 class Command(BaseCommand):
     help = (
         "Import a wide Excel sheet: metrics in rows, libraries in columns.\n"
-        "Creates libraries from rows: Software name?, Source code URL?, Programming language(s)?\n"
-        "Upserts metric values for all other rows by matching metrics_metric.metric_name flexibly."
+        "Creates or reuses libraries from rows: Software name?, Source code URL?, Programming language(s)?\n"
+        "Upserts metric values for all other rows by matching metrics flexibly."
     )
 
     def add_arguments(self, parser):
@@ -102,7 +103,7 @@ class Command(BaseCommand):
         all_cols = list(df.columns)
         lib_cols = [c for c in all_cols if c not in (COL_METRIC, COL_POSSIBLE)]
         if not lib_cols:
-            self.stderr.write(self.style.ERROR("No library columns detected (expected columns after first two)."))
+            self.stderr.write(self.style.ERROR("No library columns detected."))
             return
 
         idx_name = find_row_index(df, ROW_SOFTWARE_NAME)
@@ -110,7 +111,7 @@ class Command(BaseCommand):
         idx_lang = find_row_index(df, ROW_PROG_LANGS)
 
         if idx_name is None:
-            self.stderr.write(self.style.ERROR("Could not find row 'Software name?' (must match)."))
+            self.stderr.write(self.style.ERROR("Could not find row 'Software name?'"))
             return
 
         skip_metric_value_rows = {idx_name}
@@ -121,6 +122,7 @@ class Command(BaseCommand):
 
         metrics_by_key = {}
         collisions = {}
+
         for m in Metric.objects.all():
             key = canon_metric(m.metric_name)
             if key in metrics_by_key and metrics_by_key[key].metric_ID != m.metric_ID:
@@ -137,7 +139,6 @@ class Command(BaseCommand):
 
         default_analysis_status = pick_first_choice(Library, "analysis_status")
         default_gitstats_status = pick_first_choice(Library, "gitstats_status")
-
         now = timezone.now()
 
         created_libs = 0
@@ -149,18 +150,21 @@ class Command(BaseCommand):
             lib_name = clean_cell(df.at[idx_name, col])
             if not lib_name:
                 continue
-            lib_name = lib_name.strip()
 
-            repo_url = clean_url(clean_cell(df.at[idx_repo, col])) if idx_repo is not None else None
+            repo_url = clean_url(df.at[idx_repo, col]) if idx_repo is not None else None
             langs = clean_cell(df.at[idx_lang, col]) if idx_lang is not None else None
 
-            library = Library.objects.filter(domain_id=domain.domain_ID, library_name=lib_name).first()
-            library = Library.objects.filter(domain_id=domain.domain_ID, library_name=lib_name).first()
+            library = Library.objects.filter(
+                domain_id=domain.domain_ID,
+                library_name=lib_name,
+            ).first()
+
             if library:
                 existing_libs += 1
-                library.url = repo_url
-                library.programming_language = langs
-                library.save(update_fields=["url", "programming_language"])
+                if not opts["dry_run"]:
+                    library.url = repo_url
+                    library.programming_language = langs
+                    library.save(update_fields=["url", "programming_language"])
             else:
                 if opts["dry_run"]:
                     self.stdout.write(f"[DRY] create library: {lib_name} | github={repo_url} | langs={langs}")
@@ -192,6 +196,11 @@ class Command(BaseCommand):
 
                 metric_key = canon_metric(raw_metric_name)
                 metric_obj = metrics_by_key.get(metric_key)
+                if not metric_obj:
+                    for key, m in metrics_by_key.items():
+                        if metric_key in key or key in metric_key:
+                            metric_obj = m
+                            break
 
                 if not metric_obj:
                     skipped_values_no_match += 1
