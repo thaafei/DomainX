@@ -14,6 +14,7 @@ class MetricSerializer(serializers.ModelSerializer):
             "description",
             "weight",
             "created_at",
+            "scoring_dict"
         )
 
 class FlatMetricSerializer(serializers.ModelSerializer):
