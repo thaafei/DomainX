@@ -1077,7 +1077,7 @@ Also aligns with \href{https://github.com/thaafei/DomainX/blob/main/docs/HazardA
 % and output here, you could point to the unit testing code.  For this to work, you code 
 % needs to be well-documented, with meaningful names for all of the tests.}
 
-We use both \href{https://docs.pytest.org/en/stable/}{pytest} and \href{https://jestjs.io/}{jest} to implement automatic unit tests for both the frontend and backend of the system. 
+We use \href{https://docs.pytest.org/en/stable/}{pytest} to implement unit tests for the system. All tests are done automatically through github actions, unless otherwise stated.
 Unit tests will be located in the \href{https://github.com/thaafei/DomainX/tree/main/test}{test} subfolder of the project. More detailed reports of the unit tests can be found in the \href{https://github.com/thaafei/DomainX/blob/main/docs/VnVReport/VnVReport.pdf}{VnVReport} under the Unit Test section.
 
 \subsection{Unit Testing Scope}
@@ -1089,6 +1089,7 @@ The scope of the unit tests will only be focused on modules developed by the Dom
     \item User Management Module
     \item Automated Metrics Module
     \item Comparison Module
+    \item Visualization Module
     \item Database Persistence Module
   \end{enumerate}
 \end{multicols}
@@ -1147,33 +1148,39 @@ Our testing philosophy is to consider the general use case of the user, with the
   \end{enumerate}
 
 \subsection{Comparison Module}
-Tests for this module consists of testing if the comparison of libraries within a domain is working as expected. It includes testing the AHP calculations and using different weights for categories.
-We also test if the module can gracefully handle error and provide user feedback when problems occur.
-  \begin{enumerate}
-    \item \texttt{test\_ahp\_calculations\_success}: The base case, when we use the AHP calculations it should process the passed in data in the manner we expect.
-    \item \texttt{test\_ahp\_calculations\_not\_found}: Calling the comparison endpoint with an invalid domain id should return an error response, instead of failing.
-    \item \texttt{test\_ahp\_calculations\_with\_weighted\_categories}: Using AHP calculations and adjusting the weight of categories, we should see the expected results based on the rules set. 
-    \item \texttt{test\_domain\_comparison\_returns\_metrics\_and\_rows\_with\_values\_and\_evidence}: We have a multitude of data gathered for each library in a domain. We should be able to retrieve all of them successfully with their corresponding evidence (for the automated ones) in order to be displayed.
-  \end{enumerate}
-\subsection{Database Persistence Module}
-  The tests for this are in relation to the persistence of our models in the database. They will include the validation and serialization of the data for the following database models:
-  \begin{multicols}{2}
+  Tests for this module consists of testing if the comparison of libraries within a domain is working as expected. It includes testing the AHP calculations and using different weights for categories.
+  We also test if the module can gracefully handle error and provide user feedback when problems occur.
     \begin{enumerate}
-      \item users
-      \item domain
-      \item libraries
-      \item library metric values
+      \item \texttt{test\_ahp\_calculations\_success}: The base case, when we use the AHP calculations it should process the passed in data in the manner we expect.
+      \item \texttt{test\_ahp\_calculations\_not\_found}: Calling the comparison endpoint with an invalid domain id should return an error response, instead of failing.
+      \item \texttt{test\_ahp\_calculations\_with\_weighted\_categories}: Using AHP calculations and adjusting the weight of categories, we should see the expected results based on the rules set. 
+      \item \texttt{test\_domain\_comparison\_returns\_metrics\_and\_rows\_with\_values\_and\_evidence}: We have a multitude of data gathered for each library in a domain. We should be able to retrieve all of them successfully with their corresponding evidence (for the automated ones) in order to be displayed.
     \end{enumerate}
-  \end{multicols}
+  \subsection{Database Persistence Module}
+    The tests for this are in relation to the persistence of our models in the database. They will include the validation and serialization of the data for the following database models:
+    \begin{multicols}{2}
+      \begin{enumerate}
+        \item users
+        \item domain
+        \item libraries
+        \item library metric values
+      \end{enumerate}
+    \end{multicols}
 
-  The rational for these tests are to ensure data is properly validated and stored, and validates the business logic and restrictions associated with the models.
-  This is crucial for modules upstream which will depend on the data.
-  An example set of such tests for the domain model are:
-  \begin{enumerate}
-    \item test\_domain\_str\_returns\_name: Tests if calling a domain object will return domain name instead of domain id.
-    \item test\_get\_domain\_id\_returns\_string\_uuid: Tests that the get\_domain\_id function returns the uuid of the domain. 
-    \item test\_defaults\_and\_blank\_fields: Tests the creation of a domain object with only required fields, and check if blank fields are populated with the expected values.
-  \end{enumerate}
+    The rational for these tests are to ensure data is properly validated and stored, and validates the business logic and restrictions associated with the models.
+    This is crucial for modules upstream which will depend on the data.
+    An example set of such tests for the domain model are:
+    \begin{enumerate}
+      \item test\_domain\_str\_returns\_name: Tests if calling a domain object will return domain name instead of domain id.
+      \item test\_get\_domain\_id\_returns\_string\_uuid: Tests that the get\_domain\_id function returns the uuid of the domain. 
+      \item test\_defaults\_and\_blank\_fields: Tests the creation of a domain object with only required fields, and check if blank fields are populated with the expected values.
+    \end{enumerate}
+
+\subsection{Visualization Module}
+Since this module mainly consists of frontend components that calls the previously mentioned modules in order to render data for users, the following tests will be dynamic, since we have to run the code in order to test the output.
+\begin{enumerate}
+  \item \texttt{test\_library\_raw\_values\_appear}: The raw values of the metric values should appear for the associaited metrics across selected libraries.  
+\end{enumerate} 
 \section{References}
 
 \begin{enumerate}
