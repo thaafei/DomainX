@@ -219,6 +219,11 @@ restricting access to authorized users only.
 
 \subsection{Domain and Data Management}
 
+\hspace{2em}The following tests verify that domains, libraries, and metrics
+can be created, modified, and stored correctly within the system. These
+tests ensure that domain data management and metric updates function as
+expected.
+
 \begin{mdframed}[linewidth=0.5mm]
 \setlength{\parindent}{0pt}
 \textbf{Test Case Identifier:} T--DM--1
@@ -319,7 +324,134 @@ restricting access to authorized users only.
 \textbf{Relevant Functional Requirement(s):} FR--14, SR--INT7, OE--PR4
 \end{mdframed}
 
-\subsubsection{Features Currently in Progress}
+\subsection{Visualization and Reporting}
+
+\hspace{2em}The following tests verify that the system correctly generates
+visualizations for domain comparison and accurately represents stored
+metric values for libraries.
+
+\begin{mdframed}[linewidth=0.5mm]
+\setlength{\parindent}{0pt}
+\textbf{Test Case Identifier:} T--VR--1
+\vspace{0.4em}
+
+\textbf{Input:} A user opens the visualization page for a domain containing at least three libraries, selects one or more metrics and libraries, and clicks the \textit{Visualize} button.
+\vspace{0.4em}
+
+\textbf{Expected Output:} The expected result is that the system generates comparative graphs for the selected libraries and metrics on the visualization page.
+\vspace{0.4em}
+
+\textbf{Actual Output:} The actual result is that the system generates comparative graphs for the selected libraries and metrics on the visualization page.
+\vspace{0.4em}
+
+\textbf{Expected and Actual Output Match:} True
+\vspace{0.4em}
+
+\textbf{Relevant Functional Requirement(s):} FR--13, FR--12, SR--VIS1, SR--IM1
+\end{mdframed}
+
+\begin{mdframed}[linewidth=0.5mm]
+\setlength{\parindent}{0pt}
+\textbf{Test Case Identifier:} T--VR--2
+\vspace{0.4em}
+
+\textbf{Input:} A user modifies the selected metrics or libraries on the visualization page and clicks the \textit{Visualize} button to regenerate the graphs.
+\vspace{0.4em}
+
+\textbf{Expected Output:} The expected result is that the system updates the graphs to reflect the newly selected metrics or libraries.
+\vspace{0.4em}
+
+\textbf{Actual Output:} The actual result is that the system updates the graphs to reflect the newly selected metrics or libraries.
+\vspace{0.4em}
+
+\textbf{Expected and Actual Output Match:} True
+\vspace{0.4em}
+
+\textbf{Relevant Functional Requirement(s):} FR--13, SR--VIS2, PR--SL1
+\end{mdframed}
+
+
+\begin{mdframed}[linewidth=0.5mm]
+\setlength{\parindent}{0pt}
+\textbf{Test Case Identifier:} T--VR--3
+\vspace{0.4em}
+
+\textbf{Input:} A user clicks the \textit{Download All} button on the visualization page after generating graphs.
+\vspace{0.4em}
+
+\textbf{Expected Output:} The expected result is that the system generates and downloads the visualization plots as PNG image files.
+\vspace{0.4em}
+
+\textbf{Actual Output:} The actual result is that the system generates and downloads the visualization plots as PNG image files.
+\vspace{0.4em}
+
+\textbf{Expected and Actual Output Match:} True
+\vspace{0.4em}
+
+\textbf{Relevant Functional Requirement(s):} FR--15, OE--PR4, SR--INT7
+\end{mdframed}
+
+\begin{mdframed}[linewidth=0.5mm]
+\setlength{\parindent}{0pt}
+\textbf{Test Case Identifier:} T--VR--4
+\vspace{0.4em}
+
+\textbf{Input:} A user resizes the browser window or opens the visualization page on different screen resolutions.
+\vspace{0.4em}
+
+\textbf{Expected Output:} The expected result is that the graphs remain readable and the interface layout adjusts correctly without overlapping elements.
+\vspace{0.4em}
+
+\textbf{Actual Output:} The actual result is that the graphs remain readable and the interface layout adjusts correctly without overlapping elements.
+\vspace{0.4em}
+
+\textbf{Expected and Actual Output Match:} True
+\vspace{0.4em}
+
+\textbf{Relevant Functional Requirement(s):} LF--AR2, LF--SR2, UH--AR1
+\end{mdframed}
+
+\begin{mdframed}[linewidth=0.5mm]
+\setlength{\parindent}{0pt}
+\textbf{Test Case Identifier:} T--VR--5
+\vspace{0.4em}
+
+\textbf{Input:} A domain contains a library where one or more metric values are missing when the user generates visualization graphs.
+\vspace{0.4em}
+
+\textbf{Expected Output:} The expected result is that the visualization is generated successfully and the system handles the missing metric value without runtime errors.
+\vspace{0.4em}
+
+\textbf{Actual Output:} The actual result is that the visualization is generated successfully and the system handles the missing metric value without runtime errors.
+\vspace{0.4em}
+
+\textbf{Expected and Actual Output Match:} True
+\vspace{0.4em}
+
+\textbf{Relevant Functional Requirement(s):} PR--RFT1, SR--INT5
+\end{mdframed}
+
+\begin{mdframed}[linewidth=0.5mm]
+\setlength{\parindent}{0pt}
+\textbf{Test Case Identifier:} T--VR--6
+\vspace{0.4em}
+
+\textbf{Input:} A user opens the Manage Metrics page for a domain.
+\vspace{0.4em}
+
+\textbf{Expected Output:} The expected result is that the system displays a list of all metrics associated with the domain, including their names and corresponding definitions or configuration details.
+\vspace{0.4em}
+
+\textbf{Actual Output:} The actual result is that the system displays a list of all metrics associated with the domain, including their names and corresponding definitions or configuration details.
+\vspace{0.4em}
+
+\textbf{Expected and Actual Output Match:} True
+\vspace{0.4em}
+
+\textbf{Relevant Functional Requirement(s):} FR--11, UH--LR2, LF--AR3
+\end{mdframed}
+
+\subsection{Features Currently in Progress}
 
 \hspace{2em}Some functional requirements identified in the SRS are still under development, while others were revised after further discussion and feedback. These items are not yet fully implemented or were removed from the final project scope. Their current status is summarized below.
 
@@ -399,9 +531,17 @@ graduate attribute of Reflection.
 \input{../Reflection.tex}
 
 \begin{enumerate}
-  \item What went well while writing this deliverable? 
+  \item What went well while writing this deliverable?\\
+  \textbf{Haniye:} One aspect that went well while writing this deliverable was that many of the test scenarios were already clear from the development process. While implementing features such as domain management, metric editing, and visualization, the system was frequently tested to verify correct behaviour. As a result, when preparing the VnV report it was easier to define the test inputs and expected outcomes because the implemented features had already been validated during development.
   \item What pain points did you experience during this deliverable, and how
-    did you resolve them?
+    did you resolve them?\\
+  \textbf{Haniye:} A minor challenge during this deliverable was ensuring that
+    the tests described in the report aligned with the original VnV Plan while
+    also reflecting the current implementation of the system. Some features had
+    changed during development, which made it necessary to adjust how certain
+    tests were documented. Feedback from the teaching assistant helped clarify
+    how the tests should be structured, allowing the report to accurately
+    represent the implemented functionality.
   \item Which parts of this document stemmed from speaking to your client(s) or
   a proxy (e.g. your peers)? Which ones were not, and why?
   \item In what ways was the Verification and Validation (VnV) Plan different
