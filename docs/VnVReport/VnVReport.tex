@@ -30,7 +30,7 @@
 \begin{tabularx}{\textwidth}{p{3cm}p{2cm}X}
 \toprule {\bf Date} & {\bf Version} & {\bf Notes}\\
 \midrule
-Date 1 & 1.0 & Notes\\
+March 6, 2026 & 1.0 & Added Sections 2, 7 and 8\\
 Date 2 & 1.1 & Notes\\
 \bottomrule
 \end{tabularx}
@@ -44,7 +44,7 @@ Date 2 & 1.1 & Notes\\
   \toprule		
   \textbf{symbol} & \textbf{description}\\
   \midrule 
-  T & Test\\
+  AHP & Analytic Hierarchy Process \\
   \bottomrule
 \end{tabular}\\
 
@@ -82,13 +82,30 @@ This section will not be appropriate for every project.
 
 \section{Changes Due to Testing}
 
-\wss{This section should highlight how feedback from the users and from 
-the supervisor (when one exists) shaped the final product.  In particular 
-the feedback from the Rev 0 demo to the supervisor (or to potential users) 
-should be highlighted.}
+\subsection{AHP Methodology Alignment}
+Following the feedback from the Rev 0 meeting, we identified a discrepancy between our initial implementation and the established research methodology.
+\begin{itemize}
+  \item \textbf{Previous Iteration:} AHP was only applied to calculate the ``Local Weights'' of libraries within a single criterion. Users were then asked to manually assign a flat percentage to each overarching criterion.
+  \item \textbf{The Revision:} To align with the formal AHP framework, we transitioned to a Pairwise Comparison Matrix for criterion weighting. Users now compare the relative importance of categories (e.g., Usability vs. Reliability) using the Saaty 1--9 scale. The system then mathematically derives the global weights and validates the results via a Consistency Ratio (CR) check, ensuring the data is scientifically sound.
+\end{itemize}
+
+\subsection{Visualization and Data Density}
+We addressed the limitations regarding how library rankings were displayed to improve transparency.
+
+\begin{itemize}
+  \item \textbf{Graph Scalability:} Previously, the dashboard was limited to the top 10 libraries to avoid overcrowding. However, to provide a comprehensive view of the domain, we have redesigned the visualization format to clearly accommodate and display all libraries simultaneously.
+  \item \textbf{Tabular Data:} Based on user recommendations, we have introduced a Ranking Table to complement the graphical data. This allows users to view precise numerical scores and rankings alongside the visual trends.
+\end{itemize}
+
+\subsection{Data Integrity and Input Validation}
+To reduce user error, we refined the data entry process. We replaced open-ended text fields with context-aware inputs. The system now provides dropdown menus for Booleans and Ranges, preventing invalid data types from corrupting the AHP calculations.
+\textit{Note: No changes were required based on current unit testing results, as the core logic remains stable.}
 
 \section{Automated Testing}
-		
+
+Pytest and the \texttt{pytest-django} ecosystem serve as the foundation for our automated testing suite, which offers a high-performance, adaptable framework for verifying environment setups and application logic. To ensure that model-level constraints are carefully enforced before code reaches production, we use specialized decorators like \texttt{@pytest.mark.django\_db} to safely communicate with a temporary test database. We can swiftly find and fix errors in our fundamental business logic, such the concatenation rules for user profiles, by utilizing Pytest's sophisticated assertion introspection.
+
+Using Django's \texttt{SimpleTestCase} and the \texttt{unittest.mock} module, we developed a strong configuration testing method in addition to standard data validation. This enables us to test that our settings dynamically swap between SQLite and MySQL engines as planned by programmatically simulating various deployment scenarios (e.g., Local vs. Production). We make sure the application stays stable and properly configured across different infrastructure states without having to manually review environment files by simulating environment variables and altering settings within our tests.		
 \section{Trace to Requirements}
 		
 \section{Trace to Modules}		
