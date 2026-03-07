@@ -3,6 +3,8 @@
 \usepackage{booktabs}
 \usepackage{tabularx}
 \usepackage{hyperref}
+\usepackage{graphicx}
+\usepackage{float}
 \hypersetup{
     colorlinks,
     citecolor=black,
@@ -11,7 +13,7 @@
     urlcolor=blue
 }
 \usepackage[round]{natbib}
-
+\usepackage{mdframed}
 \input{../Comments}
 \input{../Common}
 
@@ -65,7 +67,431 @@ Date 2 & 1.1 & Notes\\
 This document ...
 
 \section{Functional Requirements Evaluation}
+\hspace{2em}This section presents the results of the functional tests defined in the project's
+Verification and Validation (VnV) Plan. These tests verify that the implemented system
+satisfies the functional requirements specified in the Software Requirements Specification
+(SRS). The tests are organized according to the system's main feature areas.
 
+\subsection{User Authentication and Profile Management}
+\hspace{2em}The test results below verify that users can successfully authenticate
+and manage their account information within the system. These tests ensure that
+login, profile updates, and password modification operate correctly while
+restricting access to authorized users only.
+
+\begin{mdframed}[linewidth=0.5mm]
+\setlength{\parindent}{0pt}
+\textbf{Test Case Identifier:} T--AC--1
+\vspace{0.4em}
+
+\textbf{Input:} Submission of valid sign-up information through the system interface.
+\vspace{0.4em}
+
+\textbf{Expected Output:} The expected result is that a new user account is created successfully and the user is redirected to the login page.
+\vspace{0.4em}
+
+\textbf{Actual Output:} The actual result is that a new user account is created successfully and the user is redirected to the login page.
+\vspace{0.4em}
+
+\textbf{Expected and Actual Output Match:} True
+\vspace{0.4em}
+
+\textbf{Relevant Functional Requirement(s):} FR2
+\end{mdframed}
+
+\begin{mdframed}[linewidth=0.5mm]
+\setlength{\parindent}{0pt}
+\textbf{Test Case Identifier:} T--AC--2
+\vspace{0.4em}
+
+\textbf{Input:} Submission of valid login credentials through the system login interface.
+\vspace{0.4em}
+
+\textbf{Expected Output:} The expected result is that the user enters valid login credentials and is redirected to the system dashboard.
+\vspace{0.4em}
+
+\textbf{Actual Output:} The actual result is that the user enters valid login credentials and is redirected to the system dashboard.
+\vspace{0.4em}
+
+\textbf{Expected and Actual Output Match:} True
+\vspace{0.4em}
+
+\textbf{Relevant Functional Requirement(s):}  FR3
+\end{mdframed}
+
+\begin{mdframed}[linewidth=0.5mm]
+\setlength{\parindent}{0pt}
+\textbf{Test Case Identifier:} T--AC--3
+\vspace{0.4em}
+
+\textbf{Input:} A user with the Contributor role logs into the system and attempts to edit metric values in the interactive data table.
+\vspace{0.4em}
+
+\textbf{Expected Output:} The expected result is that the user is able to view library data and successfully edit metric values in the interactive table.
+\vspace{0.4em}
+
+\textbf{Actual Output:} The actual result is that the user is able to view library data and successfully edit metric values in the interactive table.
+\vspace{0.4em}
+
+\textbf{Expected and Actual Output Match:} True
+\vspace{0.4em}
+
+\textbf{Relevant Functional Requirement(s):} SR--AC2
+\end{mdframed}
+
+\begin{mdframed}[linewidth=0.5mm]
+\setlength{\parindent}{0pt}
+\textbf{Test Case Identifier:} T--AC--4
+\vspace{0.4em}
+
+\textbf{Input:} A user with the Super Admin role logs into the system and attempts to access administrative functionality for managing users.
+\vspace{0.4em}
+
+\textbf{Expected Output:} The expected result is that the user is able to access administrative functionality and manage user accounts within the system.
+\vspace{0.4em}
+
+\textbf{Actual Output:} The actual result is that the user is able to access administrative functionality and manage user accounts within the system.
+\vspace{0.4em}
+
+\textbf{Expected and Actual Output Match:} True
+\vspace{0.4em}
+
+\textbf{Relevant Functional Requirement(s):} SR--AC2
+\end{mdframed}
+
+\begin{mdframed}[linewidth=0.5mm]
+\setlength{\parindent}{0pt}
+\textbf{Test Case Identifier:} T--AC--5
+\vspace{0.4em}
+
+\textbf{Input:} Submission of invalid login credentials or an unregistered email through the system login interface.
+\vspace{0.4em}
+
+\textbf{Expected Output:} The expected result is that access is denied, an Invalid credentials error message is displayed, and no session token is created.
+\vspace{0.4em}
+
+\textbf{Actual Output:} The actual result is that access is denied, an Invalid credentials error message is displayed, and no session token is created.
+\vspace{0.4em}
+
+\textbf{Expected and Actual Output Match:} True
+\vspace{0.4em}
+
+\textbf{Relevant Functional Requirement(s):} SR--AC5, UH--UP3, LF--AR6
+\end{mdframed}
+
+\begin{mdframed}[linewidth=0.5mm]
+\setlength{\parindent}{0pt}
+\textbf{Test Case Identifier:} T--AC--6
+\vspace{0.4em}
+
+\textbf{Input:} A Super Admin updates the role of an existing user (e.g., Contributor to Super Admin) through the user management interface.
+\vspace{0.4em}
+
+\textbf{Expected Output:} The expected result is that the user role is updated successfully and the interface updates to reflect the new permissions associated with the role.
+\vspace{0.4em}
+
+\textbf{Actual Output:} The actual result is that the user role is updated successfully and the interface updates to reflect the new permissions associated with the role.
+\vspace{0.4em}
+
+\textbf{Expected and Actual Output Match:} True
+\vspace{0.4em}
+
+\textbf{Relevant Functional Requirement(s):} SR--AC4, PR--SC3, FR7
+\end{mdframed}
+
+\begin{mdframed}[linewidth=0.5mm]
+\setlength{\parindent}{0pt}
+\textbf{Test Case Identifier:} T--AC--7
+\vspace{0.4em}
+
+\textbf{Input:} An authenticated user accesses their profile page and submits a request to change their password using the password update form.
+\vspace{0.4em}
+
+\textbf{Expected Output:} The expected result is that the user password is updated successfully and the new password is required for subsequent logins.
+\vspace{0.4em}
+
+\textbf{Actual Output:} The actual result is that the user password is updated successfully and the new password is required for subsequent logins.
+\vspace{0.4em}
+
+\textbf{Expected and Actual Output Match:} True
+\vspace{0.4em}
+
+\textbf{Relevant Functional Requirement(s):} SR--AC5, PR--SC1
+\end{mdframed}
+
+
+\subsection{Domain and Data Management}
+
+\hspace{2em}The following tests verify that domains, libraries, and metrics
+can be created, modified, and stored correctly within the system. These
+tests ensure that domain data management and metric updates function as
+expected.
+
+\begin{mdframed}[linewidth=0.5mm]
+\setlength{\parindent}{0pt}
+\textbf{Test Case Identifier:} T--DM--1
+\vspace{0.4em}
+
+\textbf{Input:} A Super Admin submits valid domain information through the domain creation interface.
+\vspace{0.4em}
+
+\textbf{Expected Output:} The expected result is that the new domain is created successfully, appears in the system interface, and is stored in the database with a unique identifier.
+\vspace{0.4em}
+
+\textbf{Actual Output:} The actual result is that the new domain is created successfully, appears in the system interface, and is stored in the database with a unique identifier.
+\vspace{0.4em}
+
+\textbf{Expected and Actual Output Match:} True
+\vspace{0.4em}
+
+\textbf{Relevant Functional Requirement(s):} FR--5, SR--INT1, SR--AC3
+\end{mdframed}
+
+\begin{mdframed}[linewidth=0.5mm]
+\setlength{\parindent}{0pt}
+\textbf{Test Case Identifier:} T--DM--2
+\vspace{0.4em}
+
+\textbf{Input:} A Contributor or Super Admin adds a library to a domain by providing a valid GitHub repository URL.
+\vspace{0.4em}
+
+\textbf{Expected Output:} The expected result is that the library is added successfully and repository metadata (e.g., commits, issues, lines of code, etc.) is automatically retrieved using GitHub API, SCC, and GitStats without errors.
+\vspace{0.4em}
+
+\textbf{Actual Output:} The actual result is that the library is added successfully and repository metadata (e.g., commits, issues, lines of code, etc.) is automatically retrieved using GitHub API, SCC, and GitStats without errors.
+\vspace{0.4em}
+
+\textbf{Expected and Actual Output Match:} True
+\vspace{0.4em}
+
+\textbf{Relevant Functional Requirement(s):} FR--7, FR--10, OE--IA1, SR--INT2, SR--INT3
+\end{mdframed}
+
+\begin{mdframed}[linewidth=0.5mm]
+\setlength{\parindent}{0pt}
+\textbf{Test Case Identifier:} T--DM--3
+\vspace{0.4em}
+
+\textbf{Input:} A Contributor or Super Admin edits a metric value for a library through the metric editing interface.
+\vspace{0.4em}
+
+\textbf{Expected Output:} The expected result is that the updated metric value is stored successfully in the database and the AHP ranking is recalculated to reflect the new value.
+\vspace{0.4em}
+
+\textbf{Actual Output:} The actual result is that the updated metric value is stored successfully in the database and the AHP ranking is recalculated to reflect the new value.
+\vspace{0.4em}
+
+\textbf{Expected and Actual Output Match:} True
+\vspace{0.4em}
+
+\textbf{Relevant Functional Requirement(s):} FR--7, FR--12, SR--INT4, SR--IM2
+\end{mdframed}
+
+\begin{mdframed}[linewidth=0.5mm]
+\setlength{\parindent}{0pt}
+\textbf{Test Case Identifier:} T--DM--4
+\vspace{0.4em}
+
+\textbf{Input:} An API request for repository analysis is forced to fail by temporarily reducing the request timeout during testing.
+\vspace{0.4em}
+
+\textbf{Expected Output:} The expected result is that the system reports the analysis failure to the user while preserving previously stored metric data for the library.
+\vspace{0.4em}
+
+\textbf{Actual Output:} The actual result is that the system displays a failure message in the interface while previously stored metric data remains unchanged.
+\vspace{0.4em}
+
+\textbf{Expected and Actual Output Match:} True
+\vspace{0.4em}
+
+\textbf{Relevant Functional Requirement(s):} PR--RFT1, PR--RFT2, SR--INT5
+\end{mdframed}
+
+\begin{mdframed}[linewidth=0.5mm]
+\setlength{\parindent}{0pt}
+\textbf{Test Case Identifier:} T--DM--5
+\vspace{0.4em}
+
+\textbf{Input:} A user selects the export option to download the comparison table for a domain as an Excel file.
+\vspace{0.4em}
+
+\textbf{Expected Output:} The expected result is that the system generates and downloads an Excel file containing all libraries in the selected domain along with their associated metrics and stored metric values.
+\vspace{0.4em}
+
+\textbf{Actual Output:} The actual result is that the system generates and downloads an Excel file containing all libraries in the selected domain along with their associated metrics and stored metric values.
+\vspace{0.4em}
+
+\textbf{Expected and Actual Output Match:} True
+\vspace{0.4em}
+
+\textbf{Relevant Functional Requirement(s):} FR--14, SR--INT7, OE--PR4
+\end{mdframed}
+
+\subsection{Visualization and Reporting}
+
+\hspace{2em}The following tests verify that the system correctly generates
+visualizations for domain comparison and accurately represents stored
+metric values for libraries.
+
+\begin{mdframed}[linewidth=0.5mm]
+\setlength{\parindent}{0pt}
+\textbf{Test Case Identifier:} T--VR--1
+\vspace{0.4em}
+
+\textbf{Input:} A user opens the visualization page for a domain containing at least three libraries, selects one or more metrics and libraries, and clicks the \textit{Visualize} button.
+\vspace{0.4em}
+
+\textbf{Expected Output:} The expected result is that the system generates comparative graphs for the selected libraries and metrics on the visualization page.
+\vspace{0.4em}
+
+\textbf{Actual Output:} The actual result is that the system generates comparative graphs for the selected libraries and metrics on the visualization page.
+\vspace{0.4em}
+
+\textbf{Expected and Actual Output Match:} True
+\vspace{0.4em}
+
+\textbf{Relevant Functional Requirement(s):} FR--13, FR--12, SR--VIS1, SR--IM1
+\end{mdframed}
+
+\begin{mdframed}[linewidth=0.5mm]
+\setlength{\parindent}{0pt}
+\textbf{Test Case Identifier:} T--VR--2
+\vspace{0.4em}
+
+\textbf{Input:} A user modifies the selected metrics or libraries on the visualization page and clicks the \textit{Visualize} button to regenerate the graphs.
+\vspace{0.4em}
+
+\textbf{Expected Output:} The expected result is that the system updates the graphs to reflect the newly selected metrics or libraries.
+\vspace{0.4em}
+
+\textbf{Actual Output:} The actual result is that the system updates the graphs to reflect the newly selected metrics or libraries.
+\vspace{0.4em}
+
+\textbf{Expected and Actual Output Match:} True
+\vspace{0.4em}
+
+\textbf{Relevant Functional Requirement(s):} FR--13, SR--VIS2, PR--SL1
+\end{mdframed}
+
+
+\begin{mdframed}[linewidth=0.5mm]
+\setlength{\parindent}{0pt}
+\textbf{Test Case Identifier:} T--VR--3
+\vspace{0.4em}
+
+\textbf{Input:} A user clicks the \textit{Download All} button on the visualization page after generating graphs.
+\vspace{0.4em}
+
+\textbf{Expected Output:} The expected result is that the system generates and downloads the visualization plots as PNG image files.
+\vspace{0.4em}
+
+\textbf{Actual Output:} The actual result is that the system generates and downloads the visualization plots as PNG image files.
+\vspace{0.4em}
+
+\textbf{Expected and Actual Output Match:} True
+\vspace{0.4em}
+
+\textbf{Relevant Functional Requirement(s):} FR--15, OE--PR4, SR--INT7
+\end{mdframed}
+
+\begin{mdframed}[linewidth=0.5mm]
+\setlength{\parindent}{0pt}
+\textbf{Test Case Identifier:} T--VR--4
+\vspace{0.4em}
+
+\textbf{Input:} A user resizes the browser window or opens the visualization page on different screen resolutions.
+\vspace{0.4em}
+
+\textbf{Expected Output:} The expected result is that the graphs remain readable and the interface layout adjusts correctly without overlapping elements.
+\vspace{0.4em}
+
+\textbf{Actual Output:} The actual result is that the graphs remain readable and the interface layout adjusts correctly without overlapping elements.
+\vspace{0.4em}
+
+\textbf{Expected and Actual Output Match:} True
+\vspace{0.4em}
+
+\textbf{Relevant Functional Requirement(s):} LF--AR2, LF--SR2, UH--AR1
+\end{mdframed}
+
+\begin{mdframed}[linewidth=0.5mm]
+\setlength{\parindent}{0pt}
+\textbf{Test Case Identifier:} T--VR--5
+\vspace{0.4em}
+
+\textbf{Input:} A domain contains a library where one or more metric values are missing when the user generates visualization graphs.
+\vspace{0.4em}
+
+\textbf{Expected Output:} The expected result is that the visualization is generated successfully and the system handles the missing metric value without runtime errors.
+\vspace{0.4em}
+
+\textbf{Actual Output:} The actual result is that the visualization is generated successfully and the system handles the missing metric value without runtime errors.
+\vspace{0.4em}
+
+\textbf{Expected and Actual Output Match:} True
+\vspace{0.4em}
+
+\textbf{Relevant Functional Requirement(s):} PR--RFT1, SR--INT5
+\end{mdframed}
+
+\begin{mdframed}[linewidth=0.5mm]
+\setlength{\parindent}{0pt}
+\textbf{Test Case Identifier:} T--VR--6
+\vspace{0.4em}
+
+\textbf{Input:} A user opens the Manage Metrics page for a domain.
+\vspace{0.4em}
+
+\textbf{Expected Output:} The expected result is that the system displays a list of all metrics associated with the domain, including their names and corresponding definitions or configuration details.
+\vspace{0.4em}
+
+\textbf{Actual Output:} The actual result is that the system displays a list of all metrics associated with the domain, including their names and corresponding definitions or configuration details.
+\vspace{0.4em}
+
+\textbf{Expected and Actual Output Match:} True
+\vspace{0.4em}
+
+\textbf{Relevant Functional Requirement(s):} FR--11, UH--LR2, LF--AR3
+\end{mdframed}
+
+\subsection{Features Currently in Progress}
+
+\hspace{2em}Some functional requirements identified in the SRS are still under development, while others were revised after further discussion and feedback. These items are not yet fully implemented or were removed from the final project scope. Their current status is summarized below.
+
+\begin{description}
+
+\item[\textbf{SR--AC1:}] \textbf{Public Viewing and Restricted Editing}
+
+This requirement is currently under development as part of the system's authorization implementation. The intended behaviour is to allow public users to view published domain data while restricting modification privileges to approved users only. Page-level and button-level authorization controls have been partially implemented and are still being refined.
+
+\item[\textbf{FR--2:}] \textbf{User Self Sign-Up}
+
+This requirement was originally intended to allow users to create their own accounts through a public sign-up page. During development, this design was reconsidered, and the system is being revised so that only a Super Admin can create new user accounts. As a result, self sign-up will not appear in the final implementation.
+
+\item[\textbf{SR--AC6, SR--AU1, SR--IM1:}] \textbf{Unauthorized API Access Control}
+
+Unauthorized API access control is currently under development. The intended behaviour is that attempts to perform restricted actions, such as deleting a domain without sufficient privileges, will return an HTTP 403 Forbidden response and generate an audit log entry. At present, restricted actions are hidden in the user interface, while API-level authorization checks are still being implemented and are not yet ready for formal testing.
+
+Security requirements related to SQL injection prevention and secure credential storage are already satisfied through the use of the Django ORM, which avoids raw SQL queries, and environment variables for sensitive configuration data.
+
+\item[\textbf{FR--4:}] \textbf{Password Reset via Email}
+
+This feature is intended to allow users to reset their password through an email verification workflow. The expected behaviour is that a user who forgets their password receives a reset email, verifies their identity through a tokenized link, and sets a new password for future logins.
+
+This functionality is currently under development and has not yet been fully implemented or tested.
+
+\item[\textbf{FR--9:}] \textbf{Bulk Data Upload}
+
+This requirement was originally intended to support bulk upload of domain data through an Excel template. Based on supervisor feedback, this functionality was removed from the project scope and will not be implemented. Therefore, no testing was performed for this requirement.
+
+\textbf{Relevant Functional Requirement(s):} FR--9, SR--INT1, UH--EU2
+
+\item[\textbf{FR--6:}] \textbf{Publish Domain for Public Access}
+
+This feature is currently under development as part of the remaining authorization work. The intended behaviour is that a completed domain can be published and made visible to all users, with its data available for public viewing and download. This functionality will be completed together with the remaining access-control features.
+
+\textbf{Relevant Functional Requirement(s):} FR--6, OE--PR3, FR--14
+
+\end{description}
 \section{Nonfunctional Requirements Evaluation}
 
 \subsection{Usability}
@@ -90,7 +516,62 @@ should be highlighted.}
 \section{Automated Testing}
 		
 \section{Trace to Requirements}
-		
+Table~\ref{tab:trace} presents the traceability between the
+system test cases and the requirements defined in the Software Requirements
+Specification (SRS). The table indicates which test cases provide verification
+evidence for each requirement implemented in the system.
+
+\begin{table}[H]
+\centering
+\caption{Traceability Between Requirements and System Test Cases}
+\label{tab:trace}
+\resizebox{\textwidth}{!}{
+\begin{tabular}{|l|c|c|c|c|c|c|c|c|c|c|c|c|c|c|c|c|}
+\hline
+Requirement & T-AC-1 & T-AC-2 & T-AC-3 & T-AC-4 & T-AC-5 & T-DM-1 & T-DM-2 & T-DM-3 & T-DM-4 & T-DM-5 & T-VR-1 & T-VR-2 & T-VR-3 & T-VR-4 & T-VR-5 & T-VR-6 \\ \hline
+
+FR2  & X &  &  &  &  &  &  &  &  &  &  &  &  &  &  &  \\ \hline
+FR3  &  & X & X &  &  &  &  &  &  &  &  &  &  &  &  &  \\ \hline
+FR4  &  &  &  & X &  &  &  &  &  &  &  &  &  &  &  &  \\ \hline
+FR5  &  &  &  &  &  & X &  &  &  &  &  &  &  &  &  &  \\ \hline
+FR7  &  &  &  &  &  &  & X & X &  &  &  &  &  &  &  &  \\ \hline
+FR10 &  &  &  &  &  &  & X &  &  &  &  &  &  &  &  &  \\ \hline
+FR11 &  &  &  &  &  &  &  &  &  &  &  &  &  &  &  & X \\ \hline
+FR12 &  &  &  &  &  &  &  & X &  &  & X &  &  &  &  &  \\ \hline
+FR13 &  &  &  &  &  &  &  &  &  &  & X & X &  &  &  &  \\ \hline
+FR14 &  &  &  &  &  &  &  &  &  & X &  &  &  &  &  &  \\ \hline
+FR15 &  &  &  &  &  &  &  &  &  &  &  &  & X &  &  &  \\ \hline
+
+SR-AC4 &  &  &  &  & X &  &  &  &  &  &  &  &  &  &  &  \\ \hline
+SR-AC5 & X & X & X & X &  &  &  &  &  &  &  &  &  &  &  &  \\ \hline
+
+SR-VIS1 &  &  &  &  &  &  &  &  &  &  & X &  &  &  &  &  \\ \hline
+SR-VIS2 &  &  &  &  &  &  &  &  &  &  &  & X &  &  &  &  \\ \hline
+
+PR-RFT1 &  &  &  &  &  &  &  &  & X &  &  &  &  &  & X &  \\ \hline
+SR-INT5 &  &  &  &  &  &  &  &  & X &  &  &  &  &  & X &  \\ \hline
+
+LF-AR2 &  &  &  &  &  &  &  &  &  &  &  &  &  & X &  &  \\ \hline
+LF-AR3 &  &  &  &  &  &  &  &  &  &  &  &  &  &  &  & X \\ \hline
+LF-SR2 &  &  &  &  &  &  &  &  &  &  &  &  &  & X &  &  \\ \hline
+
+UH-AR1 &  &  &  &  &  &  &  &  &  &  &  &  &  & X &  &  \\ \hline
+
+OE-PR4 &  &  &  &  &  &  &  &  &  & X &  &  & X &  &  &  \\ \hline
+
+\end{tabular}
+}
+\end{table}
+
+The tests listed in this report were primarily designed to verify
+functional requirements. However, some of these tests also provide
+evidence related to certain non-functional requirements, which is why
+those requirements appear in the traceability matrix. Requirements that
+were still under development or removed from the final project scope are
+not included in the table and are discussed earlier in the
+\textit{Features Currently in Progress} subsection of the
+\textit{Functional Requirements Evaluation} section.
+
 \section{Trace to Modules}		
 
 \section{Code Coverage Metrics}
@@ -107,11 +588,26 @@ graduate attribute of Reflection.
 \input{../Reflection.tex}
 
 \begin{enumerate}
-  \item What went well while writing this deliverable? 
+  \item What went well while writing this deliverable?\\
+  \textbf{Haniye:} One aspect that went well while writing this deliverable was that many of the test scenarios were already clear from the development process. While implementing features such as domain management, metric editing, and visualization, the system was frequently tested to verify correct behaviour. As a result, when preparing the VnV report it was easier to define the test inputs and expected outcomes because the implemented features had already been validated during development.
   \item What pain points did you experience during this deliverable, and how
-    did you resolve them?
+    did you resolve them?\\
+  \textbf{Haniye:} A minor challenge during this deliverable was ensuring that
+    the tests described in the report aligned with the original VnV Plan while
+    also reflecting the current implementation of the system. Some features had
+    changed during development, which made it necessary to adjust how certain
+    tests were documented. Feedback from the teaching assistant helped clarify
+    how the tests should be structured, allowing the report to accurately
+    represent the implemented functionality.
   \item Which parts of this document stemmed from speaking to your client(s) or
-  a proxy (e.g. your peers)? Which ones were not, and why?
+  a proxy (e.g. your peers)? Which ones were not, and why?\\
+  \textbf{Haniye:} Some parts of this document were influenced by discussions
+    with the project supervisor. For example, the bulk data upload feature was removed from the project scope after supervisor feedback
+    indicated that it would not be necessary for the final tool. The
+    supervisor also suggested removing the public sign-up feature and
+    instead allowing a Super Admin to create user accounts directly, with
+    users updating their password afterward.
+
   \item In what ways was the Verification and Validation (VnV) Plan different
   from the activities that were actually conducted for VnV?  If there were
   differences, what changes required the modification in the plan?  Why did
@@ -119,7 +615,21 @@ graduate attribute of Reflection.
   projects?  If there weren't any differences, how was your team able to clearly
   predict a feasible amount of effort and the right tasks needed to build the
   evidence that demonstrates the required quality?  (It is expected that most
-  teams will have had to deviate from their original VnV Plan.)
+  teams will have had to deviate from their original VnV Plan.)\\
+  \textbf{Haniye:} Most of the verification and validation activities followed
+    the original VnV Plan. Some small differences occurred due to time
+    constraints and changes in project priorities. For example, the bulk data
+    upload feature was removed from the project scope based on supervisor
+    feedback, so its related test was not implemented.
+    Some tests were also influenced by issues discovered during deployment.
+    For instance, while deploying the system, GitStats initially did not run
+    correctly on the server and the analysis process continued for an
+    unexpectedly long time. During debugging, the request timeout was reduced,
+    which allowed us to observe the system’s failure message and verify that
+    the application handled the error properly.
+
+    In future projects, some of these adjustments could be anticipated by
+    planning additional tests for integration and deployment scenarios.
 \end{enumerate}
 
 \end{document}
