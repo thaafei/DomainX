@@ -155,8 +155,12 @@ class Command(BaseCommand):
             langs = clean_cell(df.at[idx_lang, col]) if idx_lang is not None else None
 
             library = Library.objects.filter(domain_id=domain.domain_ID, library_name=lib_name).first()
+            library = Library.objects.filter(domain_id=domain.domain_ID, library_name=lib_name).first()
             if library:
                 existing_libs += 1
+                library.url = repo_url
+                library.programming_language = langs
+                library.save(update_fields=["url", "programming_language"])
             else:
                 if opts["dry_run"]:
                     self.stdout.write(f"[DRY] create library: {lib_name} | github={repo_url} | langs={langs}")
