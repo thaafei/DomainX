@@ -32,8 +32,9 @@
 \begin{tabularx}{\textwidth}{p{3cm}p{2cm}X}
 \toprule {\bf Date} & {\bf Version} & {\bf Notes}\\
 \midrule
-Date 1 & 1.0 & Notes\\
-Date 2 & 1.1 & Notes\\
+March 05,2026 & 1.0 & Completed first 2 sections of functional requirements\\
+March 06,2026 & 1.1 & Completed last section of functional requirements\\
+March 07,2026 & 1.2 & Completed traceability table of functional requirements\\
 \bottomrule
 \end{tabularx}
 
@@ -600,7 +601,14 @@ graduate attribute of Reflection.
     how the tests should be structured, allowing the report to accurately
     represent the implemented functionality.
   \item Which parts of this document stemmed from speaking to your client(s) or
-  a proxy (e.g. your peers)? Which ones were not, and why?
+  a proxy (e.g. your peers)? Which ones were not, and why?\\
+  \textbf{Haniye:} Some parts of this document were influenced by discussions
+    with the project supervisor. For example, the bulk data upload feature was removed from the project scope after supervisor feedback
+    indicated that it would not be necessary for the final tool. The
+    supervisor also suggested removing the public sign-up feature and
+    instead allowing a Super Admin to create user accounts directly, with
+    users updating their password afterward.
+
   \item In what ways was the Verification and Validation (VnV) Plan different
   from the activities that were actually conducted for VnV?  If there were
   differences, what changes required the modification in the plan?  Why did
@@ -608,7 +616,21 @@ graduate attribute of Reflection.
   projects?  If there weren't any differences, how was your team able to clearly
   predict a feasible amount of effort and the right tasks needed to build the
   evidence that demonstrates the required quality?  (It is expected that most
-  teams will have had to deviate from their original VnV Plan.)
+  teams will have had to deviate from their original VnV Plan.)\\
+  \textbf{Haniye:} Most of the verification and validation activities followed
+    the original VnV Plan. Some small differences occurred due to time
+    constraints and changes in project priorities. For example, the bulk data
+    upload feature was removed from the project scope based on supervisor
+    feedback, so its related test was not implemented.
+    Some tests were also influenced by issues discovered during deployment.
+    For instance, while deploying the system, GitStats initially did not run
+    correctly on the server and the analysis process continued for an
+    unexpectedly long time. During debugging, the request timeout was reduced,
+    which allowed us to observe the system’s failure message and verify that
+    the application handled the error properly.
+
+    In future projects, some of these adjustments could be anticipated by
+    planning additional tests for integration and deployment scenarios.
 \end{enumerate}
 
 \end{document}
