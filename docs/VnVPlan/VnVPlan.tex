@@ -1171,16 +1171,20 @@ Our testing philosophy is to consider the general use case of the user, with the
     This is crucial for modules upstream which will depend on the data.
     An example set of such tests for the domain model are:
     \begin{enumerate}
-      \item test\_domain\_str\_returns\_name: Tests if calling a domain object will return domain name instead of domain id.
-      \item test\_get\_domain\_id\_returns\_string\_uuid: Tests that the get\_domain\_id function returns the uuid of the domain. 
-      \item test\_defaults\_and\_blank\_fields: Tests the creation of a domain object with only required fields, and check if blank fields are populated with the expected values.
+      \item \texttt{test\_domain\_str\_returns\_name}: Tests if calling a domain object will return domain name instead of domain id.
+      \item \texttt{test\_get\_domain\_id\_returns\_string\_uuid}: Tests that the get\_domain\_id function returns the uuid of the domain. 
+      \item \texttt{test\_defaults\_and\_blank\_fields}: Tests the creation of a domain object with only required fields, and check if blank fields are populated with the expected values.
     \end{enumerate}
 
 \subsection{Visualization Module}
-Since this module mainly consists of frontend components that calls the previously mentioned modules in order to render data for users, the following tests will be dynamic, since we have to run the code in order to test the output.
-\begin{enumerate}
-  \item \texttt{test\_library\_raw\_values\_appear}: The raw values of the metric values should appear for the associaited metrics across selected libraries.  
-\end{enumerate} 
+  Since this module mainly consists of frontend components that calls the previously mentioned modules in order to render data for users, the following tests will be dynamic, since we have to run the code in order to test the output.
+  \begin{enumerate}
+    \item \texttt{test\_library\_raw\_values\_appear}: The raw values of the metric values should appear for the associated metrics across selected libraries. This tests that we are properly retrieving the correct information from the backend and database.
+    \item \texttt{test\_missing\_metric\_values}: There should be user feedback when some libraries don't have the metric values filled for the selected metrics to visualize.
+    \item \texttt{test\_error\_shown\_when\_less\_then\_two\_libraries\_are\_selected}: Comparing visualizations requires at minimum two libraries to be selected for a metric. There should be feedback if there are less than two.
+    \item \texttt{test\_only\_display\_non\-text\_metrics}: There is no feasible way to display metrics that are text-based, we should filter these out so users can't select them.
+    \item \texttt{test\_download\_visualizations}: Users should be able to successfully download all visualizations they currently have displayed.
+  \end{enumerate} 
 \section{References}
 
 \begin{enumerate}
@@ -1266,21 +1270,20 @@ Supports \textbf{MS--MR3}–\textbf{MS--MR4}. \\
 \subsection{Usability Survey Questions?}
 \label{sec:usability-survey}
 % \wss{This is a section that would be appropriate for some projects.}
-These are the survey questions referenced in
-Section~4.2.3~(Usability~Evaluation). Each question is rated on a 1–5
-Likert scale (1 = Strongly Disagree, 5 = Strongly Agree).
+These are the user tasks referenced in provided to the user. Each question is rated on a 1–5
+Likert scale (1 = Very Easy, 5 = Very Difficult) based on the difficulty it is to complete.
 
 \begin{enumerate}
-  \item The interface layout was intuitive and easy to navigate.
-  \item I could complete all main tasks (create domain, add libraries, export results) without external help.
-  \item The information displayed in charts and tables was clear and easy to understand.
-  \item The tool responded quickly to my actions (no major lag or errors).
-  \item Error messages were clear and helped me understand how to fix issues.
-  \item I found the overall design (colours, font size, contrast) visually comfortable.
-  \item I would feel confident using this tool again for a research project.
+  \item Create an account and login.
+  \item Create a new Domain.
+  \item Add Metrics to the Domain you created.
+  \item Add two libraries to your domain.
+  \item Fill out the manually added metrics for the libraries you added.
+  \item Export the data you gathered as a CSV for your domain.
+  \item Visualize and export raw metric values.
+  \item Visualize and Export your AHP calculations.
 \end{enumerate}
-
-\newpage{}
+  \newpage{}
 \section*{Appendix --- Reflection}
 
 The information in this section will be used to evaluate the team members on the
