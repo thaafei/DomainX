@@ -10,7 +10,7 @@ class Library(models.Model):
     domain = models.ForeignKey(Domain, on_delete=models.CASCADE, related_name='libraries')
     library_name = models.CharField(max_length=100)
     ahp_results = models.JSONField(default=dict, blank=True)
-    programming_language = models.CharField(max_length=50, blank=True, null=True)
+    programming_language = models.CharField(max_length=255, blank=True, null=True)
     created_at = models.DateTimeField(auto_now_add=True)
     url = models.CharField(max_length=500, blank=True, null=True)
     gitstats_report_path = models.CharField(max_length=1000, blank=True, null=True)
