@@ -3,6 +3,9 @@
 \usepackage{booktabs}
 \usepackage{tabularx}
 \usepackage{hyperref}
+\usepackage{float}
+\usepackage{graphicx}
+
 \hypersetup{
     colorlinks,
     citecolor=black,
@@ -31,6 +34,7 @@
 \toprule {\bf Date} & {\bf Version} & {\bf Notes}\\
 \midrule
 March 6, 2026 & 1.0 & Added Sections 2, 7 and 8\\
+March 8, 2026 & 2.0 & Added Sections 10\\
 Date 2 & 1.1 & Notes\\
 \bottomrule
 \end{tabularx}
@@ -109,6 +113,35 @@ Using Django's \texttt{SimpleTestCase} and the \texttt{unittest.mock} module, we
 \section{Trace to Requirements}
 		
 \section{Trace to Modules}		
+Table~\ref{tab:trace} presents the traceability between the system test cases and the software modules defined in the system architecture. The table indicates which test cases provide verification evidence for each module implemented in the system.
+\begin{table}[H]
+\centering
+\caption{Traceability Between Modules and System Test Cases}
+\label{tab:trace}
+\resizebox{\textwidth}{!}{
+\begin{tabular}{|l|c|c|c|c|c|c|c|c|c|c|c|c|c|c|c|c|c|c|}
+\hline
+\textbf{Module} & \textbf{T-AC-1} & \textbf{T-AC-2} & \textbf{T-AC-3} & \textbf{T-AC-4} & \textbf{T-AC-5} & \textbf{T-AC-6} & \textbf{T-AC-7} & \textbf{T-DM-1} & \textbf{T-DM-2} & \textbf{T-DM-3} & \textbf{T-DM-4} & \textbf{T-DM-5} & \textbf{T-VR-1} & \textbf{T-VR-2} & \textbf{T-VR-3} & \textbf{T-VR-4} & \textbf{T-VR-5} & \textbf{T-VR-6} \\ \hline
+M2  &   &   &   &   &   &   &   &   &   &   &   &   &   &   &   & X &   &   \\ \hline
+M3  &   &   &   &   & X &   & X &   &   & X &   & X &   &   & X & X &   & X \\ \hline
+M4  &   &   &   &   &   & X &   & X & X & X &   &   &   &   &   &   &   &   \\ \hline
+M5  & X & X &   &   &   &   & X &   &   &   &   &   &   &   &   &   &   &   \\ \hline
+M6  &   &   & X & X &   & X &   & X &   &   &   &   &   &   &   &   &   &   \\ \hline
+M7  & X &   &   &   &   &   &   &   &   &   &   &   &   &   &   &   &   &   \\ \hline
+M8  &   &   &   &   &   &   &   &   & X &   &   &   &   &   &   &   &   &   \\ \hline
+M9  &   &   &   &   &   &   &   & X &   &   &   &   &   &   &   &   &   & X \\ \hline
+M10 &   &   &   &   &   &   &   &   &   &   & X & X &   &   & X & X & X & X \\ \hline
+M11 &   &   &   &   &   &   &   &   &   & X &   &   & X &   &   &   &   &   \\ \hline
+M12 &   &   &   &   &   &   &   &   &   &   &   &   & X & X & X & X &   & X \\ \hline
+M14 &   &   &   &   &   & X &   &   & X & X &   & X &   &   & X &   &   &   \\ \hline
+M15 &   &   &   &   &   &   &   &   & X &   &   &   &   &   &   &   &   &   \\ \hline
+M16 &   &   &   &   &   &   &   &   &   & X &   &   & X & X &   &   &   &   \\ \hline
+M17 &   &   &   &   &   & X &   &   & X & X & X &   & X &   &   &   & X &   \\ \hline
+M18 &   &   &   &   &   &   &   &   &   &   & X &   &   &   &   &   & X &   \\ \hline
+M19 &   &   &   &   &   &   &   & X &   &   &   &   &   &   &   &   &   &   \\ \hline
+\end{tabular}
+}
+\end{table}
 
 \section{Code Coverage Metrics}
 
@@ -125,10 +158,16 @@ graduate attribute of Reflection.
 
 \begin{enumerate}
   \item What went well while writing this deliverable? 
+  
+  \textbf{Ghena:} A lot of test cases were already written and used throughout the development process, making sure that any ant changes to the code follows the logic of the requirements. This made the document easy to write since a lot of it was alreadt built.
   \item What pain points did you experience during this deliverable, and how
     did you resolve them?
+
+  \textbf{Ghena:} A significant challenge during this deliverable was ensuring the AHP Ranking Module (M11) was implemented correctly to avoid any methodology misunderstandings. To resolve this, the team held a focused meeting with the supervisor to walk through the exact calculation requirements and conducted a thorough review of the assigned research paper.
   \item Which parts of this document stemmed from speaking to your client(s) or
   a proxy (e.g. your peers)? Which ones were not, and why?
+
+  \textbf{Ghena:} All of the changes made due to testing came from the our client/stackholder meetings. However The specific direct mapping (e.g., tracing T–AC–1 to M5 and M7) didn't stem from those meetings. 
   \item In what ways was the Verification and Validation (VnV) Plan different
   from the activities that were actually conducted for VnV?  If there were
   differences, what changes required the modification in the plan?  Why did
@@ -137,6 +176,8 @@ graduate attribute of Reflection.
   predict a feasible amount of effort and the right tasks needed to build the
   evidence that demonstrates the required quality?  (It is expected that most
   teams will have had to deviate from their original VnV Plan.)
+
+  \textbf{Ghena:} The final VnV activities deviated from the plan primarily because the AHP Calculation Module (M11) required restructuring to align with the methodology in the assigned research paper, replacing an initial simplified model. These changes could have been avoided had the module been revised more properly during the initial design phase. Additionally, features like Excel bulk upload (FR9) were removed to prioritize core stability. While some scope reductions are manageable, predicting the future requirements of this project proved difficult and would remain a challenge in future iterations.
 \end{enumerate}
 
 \end{document}
