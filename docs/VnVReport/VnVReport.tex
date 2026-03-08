@@ -176,6 +176,112 @@ sizes (5, 10, 20, and 40 libraries) and automated timing collection where
 possible.  The domain filtering defect will be addressed and re-tested to
 capture filter latency.
 
+\subsection{Reliability and Fault Tolerance}
+\label{sec:nfr-reliability}
+
+This subsection reports Revision~0 results for reliability and fault
+tolerance.  The goal is to confirm the system remains stable, consistent, and
+capable of recovery when services fail or operations are interrupted.
+
+\subsubsection{Test Case Summary (T--NF2: Reliability and Fault Tolerance)}
+\begin{table}[H]
+  \centering
+  \caption{T--NF2 reliability and fault tolerance: test case summary (Rev0).}
+  \label{tab:tnf2-summary}
+  \begin{tabular}{@{}p{0.22\textwidth}p{0.73\textwidth}@{}}
+    \toprule
+    \textbf{Test Case ID} &
+      T--NF2 (Reliability and Fault Tolerance) \\
+    \textbf{Traceability} &
+      PR-RFT1--PR-RFT3, SR-INT5. \\
+    \textbf{Initial State} &
+      System deployed and accessible; at least one existing domain is loaded. \\
+    \textbf{Input} &
+      (1) Simulate service/API failure by forcing the client offline in the
+      browser and attempt common read actions (switch view tabs and open the
+      comparison tool).  (2) Interrupt a mid-update transaction by modifying
+      category weights, clicking save, and toggling offline immediately after
+      the save attempt.  (3) Restore connectivity and verify recovery and data
+      integrity. \\
+    \textbf{Expected Output} &
+      The tool remains stable (no crash), displays a user-visible warning/error
+      instead of failing silently, and recovers once services return.
+      Interrupted updates rollback to the last valid state and do not leave
+      partial/corrupt state. \\
+    \textbf{Actual Output} &
+      When offline, the interface remained responsive and did not crash.
+      Domain metadata and results were not displayed (Details panel showed
+      Name: N/A) and key actions produced no observable effect.  No user-visible
+      warning or cached fallback results were observed.  After restoring
+      connectivity (No throttling), the dashboard resumed normal operation and
+      loaded domain details and rankings correctly.  In the interrupted-write
+      test (save category weights then go offline), the system reverted to the
+      pre-change configuration after recovery (the attempted change was not
+      persisted), and no half-created/partial state was observed. \\
+    \textbf{Expected vs.\ Actual Match} &
+      Partial (stable, recoverable, and rollback-safe, but weak failure
+      messaging and no offline fallback behavior). \\
+    \bottomrule
+  \end{tabular}
+\end{table}
+
+\subsubsection{Results}
+\begin{table}[H]
+  \centering
+  \caption{Reliability experiment results (Rev0).}
+  \label{tab:tnf2-results}
+  \begin{tabular}{@{}p{0.44\textwidth}p{0.16\textwidth}p{0.32\textwidth}@{}}
+    \toprule
+    \textbf{Scenario} & \textbf{Result} & \textbf{Notes} \\
+    \midrule
+    Client forced offline (API failure proxy) &
+      Partial &
+      No crash; content unavailable (Name: N/A); actions no-op; no warning
+      shown; no cached fallback observed. \\
+    Recovery after reconnect &
+      Pass &
+      After returning online, domain details and rankings rendered normally. \\
+    Interrupted mid-update transaction (save then offline) &
+      Pass &
+      After recovery the system reverted to the last valid state (changes not
+      persisted); no partial state observed. \\
+    Integrity after failure/recovery &
+      Pass &
+      No half-created/corrupt state observed in the UI after recovery. \\
+    HTTP 429 (rate limiting) &
+      Not tested &
+      Not reproducible/observed in Rev0. \\
+    Backup and restore (within one hour) &
+      Pending &
+      Requires DB-level procedure execution and timing. \\
+    \bottomrule
+  \end{tabular}
+\end{table}
+
+\subsubsection{Analysis}
+The system remained stable during a simulated service outage (offline mode) and
+successfully recovered once connectivity was restored.  The interrupted-write
+test also indicates safe failure handling: the system returned to the last valid
+configuration after recovery and did not leave partial or corrupt state.
+
+However, the failure mode is not communicated clearly to the user: data becomes
+unavailable and actions become no-ops without a warning message or fallback
+behavior.  Improvements should include explicit error messaging, disabling
+actions that require connectivity, and (if feasible) displaying cached last-known
+results with an ``offline'' banner.  Save operations should also provide clear
+success/failure feedback when the backend is unreachable.
+
+\subsubsection{Limitations and Next Steps}
+Revision~0 reliability evidence is based on manual fault injection (offline
+mode) and a single interrupted-write scenario.  In the next revision,
+explicit HTTP 429 scenarios will be exercised if rate limiting is enabled, and
+a backup-and-restore procedure will be executed and timed to confirm recovery
+within one hour.
+
+\noindent \textbf{Conclusion:} Rev0 demonstrates stability and safe rollback
+under outages, but highlights a gap in user-facing fault messaging and offline
+fallback behavior.
+
 \subsection{Usability}
 \label{sec:nfr-usability}
 
