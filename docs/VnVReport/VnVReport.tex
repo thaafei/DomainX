@@ -2026,6 +2026,8 @@ graduate attribute of Reflection.
   
   \textbf{Ghena:} A lot of test cases were already written and used throughout the development process, making sure that any ant changes to the code follows the logic of the requirements. This made the document easy to write since a lot of it was alreadt built.
 
+  \textbf{Awurama}: Converting our real testing into a consistent structure (summary to method to results to analysis to next steps) worked well. We reused concrete evidence (timings, UI observations, CI output, and code excerpts) and traceability was straightforward because the VnV Plan already mapped each T--NF test to requirement IDs.
+
   \item What pain points did you experience during this deliverable, and how
     did you resolve them?\\
 
@@ -2041,6 +2043,8 @@ graduate attribute of Reflection.
 
     \textbf{Ghena:} A significant challenge during this deliverable was ensuring the AHP Ranking Module (M11) was implemented correctly to avoid any methodology misunderstandings. To resolve this, the team held a focused meeting with the supervisor to walk through the exact calculation requirements and conducted a thorough review of the assigned research paper.
 
+    \textbf{Awurama}:  Some planned tests were not feasible in Rev0 (domain filter no-op, HTTP 429 not reproducible, backup/restore requires DB-level procedure). We reported what we could verify, marked missing items as \emph{Not tested}/\emph{Pending}, and listed clear next steps. Manual stopwatch timing also adds reaction-time error, so we documented the method and treated results as conservative upper bounds.
+
   \item Which parts of this document stemmed from speaking to your client(s) or
   a proxy (e.g. your peers)? Which ones were not, and why?\\
   
@@ -2054,6 +2058,8 @@ graduate attribute of Reflection.
   \textbf{Fei:} N/A\\
   
   \textbf{Ghena:} All of the changes made due to testing came from the our client/stackholder meetings. However The specific direct mapping (e.g., tracing T–AC–1 to M5 and M7) didn't stem from those meetings. 
+
+  \textbf{Awurama}: The usability section (T--NF3) stems from a proxy user worksheet with task ratings and comments. The remaining NFR sections were primarily tool/code/CI-based verification (performance timing, offline fault injection and recovery, repo-field spot checks, security configuration review, CI maintainability evidence), so they did not require client input in Rev0.
 
   \item In what ways was the Verification and Validation (VnV) Plan different
   from the activities that were actually conducted for VnV?  If there were
@@ -2082,6 +2088,9 @@ graduate attribute of Reflection.
   \textbf{Fei:} The changes I had to make to the unit test portion was the modules. As we developed the tool, we ended up condensing a few modules together since that made more sense during the development. This just meant combining the related unit tests of the combined modules into one. For future projects, I don't think we can mitigate it completely. Since we designed the project before development, during development new insights arises which results in changes to the theoretical plan.\\
   
   \textbf{Ghena:} The final VnV activities deviated from the plan primarily because the AHP Calculation Module (M11) required restructuring to align with the methodology in the assigned research paper, replacing an initial simplified model. These changes could have been avoided had the module been revised more properly during the initial design phase. Additionally, features like Excel bulk upload (FR9) were removed to prioritize core stability. While some scope reductions are manageable, predicting the future requirements of this project proved difficult and would remain a challenge in future iterations.
+
+  \textbf{Awurama}: Rev0 deviated from the plan mainly due to feasibility and environment constraints: performance used available domains (2 and 10 libraries) with manual timing instead of 5/10/20/40 and automated measurement; reliability used offline-mode fault injection since 429 was not reproducible and caching/warnings were not observable; computational accuracy captured tool priorities plus a GitHub spot check but did not complete the full manual AHP computation with $2\%$ error checks; security verified settings/auth/logging but did not confirm lockout/session timeout (no explicit configuration found); maintainability used CI evidence but coverage did not meet the planned target and lint automation was not observed. These changes occurred because data, reproducible fault triggers, and infra access were limited in Rev0. In future projects, we can anticipate these risks and plan mitigations (early dataset prep, instrumentation for timing, fault-injection hooks, and explicit Rev0 vs.\ Rev1 evidence expectations).
+
 \end{enumerate}
 
 \end{document}
