@@ -260,7 +260,7 @@ class TestUserUpdateView:
             
             payload = {
                 'first_name': 'AdminChange',
-                'role': 'superadmin'
+                'role': 'ad'
             }
             response = api_client.patch(f'/api/users/{target_user.id}/', payload)
             
@@ -331,8 +331,8 @@ class TestChangePasswordView:
         target_user.set_password.assert_called_with("SuperSetPassword123!")
 
     @patch('users.models.CustomUser.objects.get')
-    def test_owner_can_change_own_password(self, mock_get, api_client, mock_user):
-        """Test that owner can change password if old password is correct"""
+    def test_user_can_change_own_password(self, mock_get, api_client, mock_user):
+        """Test that user can change password if old password is correct"""
         api_client.force_authenticate(user=mock_user)
         mock_user.id = 1
         mock_get.return_value = mock_user

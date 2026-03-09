@@ -8,3 +8,12 @@ class DomainSerializer(serializers.ModelSerializer):
     class Meta:
         model = Domain
         fields = '__all__'
+
+    def validate(self, data):
+        if not data.get("domain_name"):
+            raise serializers.ValidationError({"domain_name": "Domain name is required."})
+
+        if not data.get("description"):
+            raise serializers.ValidationError({"description": "Description is required."})
+
+        return data
