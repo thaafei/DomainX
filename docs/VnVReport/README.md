@@ -2,4 +2,4 @@
 
 The folders and files for this folder are as follows:
 
-Describe ...
+Verification and Validation report PDF, latex and associated makefile to compile the latex.
