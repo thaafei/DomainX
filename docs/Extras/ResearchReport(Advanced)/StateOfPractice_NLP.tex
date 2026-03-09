@@ -1,0 +1,302 @@
+\documentclass[final,1p,times,authoryear,12pt]{elsarticle}
+
+%% The amssymb package provides various useful mathematical symbols
+\usepackage{amssymb}
+%% The amsthm package provides extended theorem environments
+%% \usepackage{amsthm}
+
+\usepackage{longtable}
+\usepackage{paralist}
+\usepackage{booktabs}
+\usepackage{float}
+\restylefloat{table}
+\usepackage{graphicx}
+\usepackage{subcaption}
+\usepackage{hyperref}
+%\usepackage{geometry}
+\usepackage{pdflscape}
+\usepackage{color}
+\usepackage{xcolor} 
+\usepackage{xspace}
+\usepackage{fullpage}
+\usepackage{tabularx}
+\usepackage{wrapfig}
+\providecommand{\wss}[1]{\textcolor{blue}{\textit{#1}}}
+
+\begin{document}
+\begin{frontmatter}
+
+\title{State of the Practice for Open-Source Neural Network Software}
+\address{Department of Computing and Software \\
+McMaster University \\
+Hamilton, Ontario, Canada}
+
+\begin{abstract}
+% \wss{150--250 word abstract: problem/gap, method (measurement template + repo metrics + AHP),
+%  headline results, contributions (DomainX tool + dataset + findings). 
+%  one-line pointer to the DomainX repo and a brief data availability statement.}
+
+Neural network (NN) libraries underpin modern research and production AI systems, yet their software-engineering practices vary 
+widely and are rarely assessed in a transparent, reproducible way. Existing comparisons are often ad hoc, relying on manual 
+checklists and spreadsheets that are difficult to audit and update as repositories evolve. 
+We present DomainX, a tool-supported workflow for conducting a state-of-practice assessment of NN software based on a published
+ methodology. DomainX centralizes evidence capture from public artifacts (documentation, tests, issue trackers, releases, and CI pipelines),
+  supports scoring via a measurement template across nine software-quality attributes, and incorporates repository-based measures extracted from public repositories. 
+  Using these inputs, DomainX computes an overall comparison using the Analytic Hierarchy Process (AHP) and exports traceable assessment artifacts. 
+  We apply the workflow to a curated shortlist of 28 open-source NN software packages, producing a traceable dataset of template responses, measures, 
+  and package-level references (project website and repository URLs), along with an evidence-based ranking and per-quality breakdowns. A companion repository provides the tool and assessment artifacts to support review 
+  and reuse.
+\end{abstract}
+
+\begin{keyword}
+% \wss{state of practice; research software; NLP libraries; software quality;
+%  measurement template; AHP; reproducibility; traceability.}
+state of practice; research software; neural network libraries; software quality;
+measurement template; Analytic Hierarchy Process (AHP); traceability; reproducibility; repository mining.
+\end{keyword}
+
+\end{frontmatter}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{Introduction}\label{introduction}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% \wss{why software quality matters for research/engineering outcomes 
+% and why a state-of-practice assessment is useful for the domain.
+%   why assessment is difficult in practice (evidence scattered across docs/tests/issues/CI,
+%    manual spreadsheet workflows are time-consuming and hard to audit/reproduce).}
+
+% \wss{State contributions explicitly as a short bullet list: DomainX tool support (include repo pointer), ffinal shortlist + completed dataset,
+%  ranking + sensitivity analysis + insights/recommendations.}
+
+% \wss{ short paragraph that states what software is being evaluated: 
+% the set of open-source packages in the selected domain, what they generally do, the final shortlist size,
+%  and a pointer to the appendix/table listing the packages.}
+
+% \wss{ roadmap of the remainder of the paper.}
+
+Research and engineering outcomes increasingly depend on software, and the quality of that software affects reliability,
+ maintainability, and reproducibility. In domains where open-source libraries are widely reused,
+  understanding current development practice is a prerequisite for improving it. A \emph{state-of-practice} assessment provides
+   a structured way to characterize what developers commonly do in a domain by evaluating representative software packages against 
+   explicit software-quality criteria using traceable evidence.
+
+Conducting such assessments rigorously is challenging in practice. Evidence relevant to software quality is distributed across many 
+public artifacts, including documentation, tutorials, repository history, tests, issue trackers, releases, and continuous integration 
+(CI) configurations. As a result, assessments are often performed using manual spreadsheet-based workflows with ad hoc scoring 
+and limited traceability, making the process time-consuming, difficult to audit, and hard to reproduce as repositories evolve.
+
+This paper presents a tool-supported state-of-practice assessment for \emph{neural network (NN) software}. 
+The target audience is developers and maintainers of NN software; accordingly, the scope is restricted to NN packages rather than 
+general-purpose NN-supporting libraries from adjacent communities. The assessment workflow follows a published state-of-practice 
+methodology based on (i) a measurement template organized by software-quality attributes, (ii) repository-based measures extracted 
+from public repositories, and (iii) an Analytic Hierarchy Process (AHP) ranking procedure to combine evidence into transparent 
+comparisons.
+
+The contributions of this work are:
+\begin{itemize}
+  \item A curated shortlist of 28 open-source NN software packages evaluated using a consistent, evidence-based procedure (Appendix~\ref{app-packages}).
+  \item A traceable assessment dataset recording measurement-template responses, repository-based measures, and associated evidence links for auditability and reuse.
+  \item DomainX, a tool that supports evidence capture, scoring, ranking computations, and export of results to reduce manual effort and improve traceability (\url{https://github.com/thaafei/DomainX}).
+\end{itemize}
+
+The remainder of this paper defines key concepts and summarizes background (Section~\ref{background}), describes the assessment methodology and tool support (Section~\ref{methods}), 
+and reports results and observations from applying the approach to the shortlisted packages (Section~\ref{results}).
+ The paper concludes with discussion, recommendations, and limitations (Sections~\ref{discussion}--\ref{conclusion}).
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{Background and Definitions} \label{background}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% \wss{Define key terms: research software, domain, library/package,
+%  and evidence (public artifacts such as docs, repository history, issues, tests, CI configs).
+%    state-of-the-art vs state-of-practice and why gaps occur.}
+
+% \wss{brief overview of the assessment methodology being followed (cite the methodology paper)
+%  and  short explanation of AHP and why it is used for ranking in this context.}
+%%CITE THE METHODOLOGY PAPERRR
+
+In this paper, \emph{research software} refers to software used to support scientific or engineering work such as data processing,
+ model training or inference, experimentation, and analysis. A \emph{domain} is a coherent problem area characterized by 
+ shared goals and typical workflows; in a state-of-practice assessment, the domain determines which software packages are 
+ relevant and what evidence is meaningful for evaluation. A \emph{library} (or package) is a reusable software component intended
+  to be integrated into other programs. We use \emph{evidence} to mean publicly available artifacts that indicate software-development
+   practice, including documentation and tutorials, repository history (commits and releases), issue trackers and pull requests,
+    tests, and continuous integration (CI) configurations.
+
+The \emph{state of the art} describes the most advanced methods and recommended best practices reported in research and practitioner
+ literature. The \emph{state of practice} describes what is commonly done in real projects: the tools used, the artifacts produced,
+  and the quality-related practices that are routinely applied. Gaps between state of the art and state of practice are common,
+   particularly in research settings where incentives and timelines may prioritize functionality and 
+   novelty over long-term maintainability, transparency, or reproducibility. 
+   A state-of-practice assessment aims to characterize this reality using explicit criteria and traceable evidence,
+    enabling systematic comparison and targeted recommendations.
+
+A published state-of-practice methodology guides our assessment by combining (i) a measurement template grounded in software-quality
+ attributes with (ii) evidence extracted from public artifacts and repository-based measures, enabling comparisons that are intended 
+ to be reproducible and auditable. %%don't forget to actually cite the paper
+
+To produce an overall comparison across multiple criteria, we use the Analytic Hierarchy Process (AHP), 
+a multi-criteria decision-making method that derives weights from pairwise comparisons of criteria and aggregates scores accordingly. 
+AHP is well suited to this setting because it makes weighting assumptions explicit and supports transparent trade-offs
+ among software-quality attributes. In this work, AHP is used to compute an evidence-based ranking and to support sensitivity analysis
+  on how rankings change under different weighting choices.
+ %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{Methods}\label{methods}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\subsection{Domain framing and scope}\label{scope}
+% \wss{Define the assessed domain, what is in scope vs out of scope for “NN software” in this assessment. 
+% Include inclusion/exclusion criteria (public repo, docs, relevant functionality, examples).}
+
+Neural network (NN) software is defined here as open-source libraries whose primary purpose is to enable the development, 
+training, deployment, analysis, or direct use of neural network models. The target audience for this assessment is developers
+ and maintainers of NN software. Accordingly, general-purpose NN-supporting packages
+ (e.g., numerical computing, data manipulation, or plotting libraries) are out of scope because they belong to different developer 
+ communities and would confound interpretation of NN software development practice. 
+ Packages are included when they have a publicly accessible repository and sufficient publicly available artifacts 
+ (e.g., documentation and repository history) to support evidence-based evaluation.
+
+\subsection{Candidate identification and filtering}\label{filtering}
+% \wss{Describe how candidates were identified (sources/search style) , how filtering produced the final set.
+%  Report counts at each step and the final shortlist size. Final shortlist: 28. 
+%  Point to Appendix~\ref{app-packages} for the full list and exclusions (see emails).}
+
+ Candidate packages were compiled by aggregating package names from authoritative sources and normalizing duplicates 
+ and naming variants. To align the assessment with the intended audience, packages that were NN-supporting rather than NN software 
+ were removed. Following supervisor guidance, NN software packages were retained even when they appeared only once across the
+  authoritative sources to prioritize completeness of coverage. The final shortlist contains 28 packages. 
+  The full shortlist and excluded candidates (with brief reasons) are provided in Appendix~\ref{app-packages}.
+
+\subsection{Evidence sources and data collection}\label{data}
+% \wss{Describe evidence sources used to score each package: 
+% documentation/README, tutorials/examples, repository history, releases, issues/PRs, tests, CI/CD configuration. 
+%  automated extraction vs manual inspection (repo metrics vs others). 
+%   how evidence was recorded to make results traceable and auditable? (metrics spreadsheet)}
+
+Evidence was derived from publicly available artifacts associated with each package, 
+including documentation (e.g., README and installation guides), tutorials/examples, 
+repository history, releases, issue trackers and pull requests, tests, and continuous integration (CI) configuration when available. 
+Repository-based measures were extracted using automated scripts/tools. Some measurement-template questions required manual
+ judgment (e.g., installation and usage guidance, presence of tests, or CI configuration). 
+ Responses were recorded directly in the measurement template, and each package entry includes a project website URL and a source-code 
+ repository URL that can be used to verify the recorded responses against the corresponding public artifacts.
+
+\subsection{Measurement template and scoring}\label{template}
+% \wss{the assessment uses the methodology paper’s measurement template organized by software qualities. 
+% Qualities assessed: installability, correctness \& verifiability, surface reliability, surface robustness, surface usability, 
+% maintainability, reusability, surface understandability, visibility/transparency. 
+%  scoring approach summary (evidence $\rightarrow$ question response $\rightarrow$ normalized score $\rightarrow$ aggregation). 
+%   rules for missing/unclear evidence and any consistency checks.}
+
+The assessment uses a published measurement template organized by software-quality attributes. 
+The qualities assessed are: installability; correctness and verifiability; surface reliability; surface robustness; surface usability;
+ maintainability; reusability; surface understandability; and visibility/transparency. 
+ For each package, publicly available evidence was used to answer template questions and derive per-quality scores according 
+ to the template’s scoring rules. Scores were normalized and aggregated to support cross-package comparison.
+  When evidence was missing or ambiguous, responses were recorded conservatively and flagged for traceability.
+
+\subsection{Repository-based measures}\label{metrics}
+\wss{Describe repository/empirical measures collected (e.g. GitHub-based measures + codebase statistics). 
+ the tools/sources used (e.g., GitHub API, scc, git\_stats) and what each category captures. 
+  enough detail to reproduce extraction.}
+
+\subsection{Ranking method (AHP) and sensitivity analysis}\label{ahp}
+%%Ghena
+\wss{Explain how AHP was used to compute weights and produce an overall ranking from quality scores. 
+Describe how pairwise comparisons were obtained and how final scores were computed. 
+ sensitivity analysis results (plan if not yet complete) to assess ranking stability under reasonable weight changes. 
+ ranking supports comparison/insight rather than a universal claim of “best.”}
+
+\subsection{Tool support: DomainX}\label{domainx}
+\wss{ DomainX at the key-feature level: centralized evidence capture, structured template completion, 
+metric extraction, AHP computation, and export of results.  reduced manual effort and improved traceability/auditability. 
+Repository: \url{https://github.com/thaafei/DomainX} }
+
+%%add snapshot
+
+\subsection{Environment and reproducibility}\label{env}
+%%Fei
+\wss{Describe the evaluation environment and  steps to take for reproducing (e.g. pinned versions, standardized install attempts). 
+Mention Dockerfiles used for older packages where needed and connect this to repeatability and transparency.}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{Results}\label{results}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\subsection{Descriptive summary of assessed packages}\label{results-summary}
+\wss{Summarize the evaluated set (final no., alive/dead counts, languages/activity/licensing if reported). 
+Present  statistics that help give insight into the domain landscape before ranking.}
+
+\subsection{Overall ranking}\label{results-ranking}
+\wss{ the final ranking table and a short explanation of how to read it. 
+Highlight  top-ranked packages without overconfidence/ overdoing it. Reference DomainX ranking output as a figure/table.}
+
+\subsection{Quality-by-quality breakdown}\label{results-byquality}
+\wss{ results by quality attribute (tables/figures). Identify strong/weak packages per quality and report domain-wide patterns
+ supported by evidence.}
+
+\subsection{Sensitivity analysis}\label{results-sensitivity}
+\wss{ how rankings change under weight variation, identify stable vs unstable parts of the ranking and summary of implications.}
+
+\subsection{Popularity vs evidence-based ranking (optional)}\label{results-popularity}
+\wss{Compare evidence-based results against reputation indicators (e.g. stars/download). Discuss alignment/misalignment
+ and what it suggests about state-of-practice versus  popularity.}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{Discussion and Recommendations}\label{discussion}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\wss{ what the results imply for users and maintainers. 
+ actionable recommendations organized by quality attribute (installability, maintainability, transparency...). 
+ Keep recommendations evidence-backed.}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{Threats to Validity and Limitations}\label{validity}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\wss{ construct validity, internal validity, external validity, and temporal validity. 
+Note limitations such as evolving repositories, subjectivity in scoring, missing/ambiguous evidence,
+ and interviews not conducted yet.}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{Conclusion and Future Work}\label{conclusion}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\wss{Summarize contributions (DomainX + dataset + findings), key results,  list future work 
+(interviews, expanded shortlist, stronger sensitivity analysis, refined scoring rules, deeper automation).}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\appendix
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\section{Assessed packages and exclusions}\label{app-packages}
+\wss{table listing all assessed packages and excluded candidates with brief reasons to help traceability.}
+
+\section{Measurement template excerpt and scoring rules}\label{app-template}
+\wss{compact excerpt of measurement template and key scoring/normalization rules, or provide link to full template.}
+
+\section{AHP weights and matrices}\label{app-ahp}
+\wss{ final AHP weights and any matrices needed for transparency and reproducibility.}
+
+\section{DomainX screenshots and exported artifacts}\label{app-tool}
+\wss{potential figures: ranking view, table view, metric editing view, export example. }
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% References
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\bibliographystyle{plainnat}
+\bibliography{../../refs/References}
+
+\end{document}
