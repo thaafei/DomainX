@@ -5,6 +5,7 @@
 \usepackage{booktabs}
 \usepackage{tabularx}
 \usepackage{hyperref}
+\usepackage{float}
 \usepackage{graphicx}
 \usepackage{float}
 \usepackage{amsmath}
@@ -46,14 +47,26 @@ March 6 & Rev 1 & First copy of VnV Report done by the whole team\\
 \renewcommand{\arraystretch}{1.2}
 \begin{tabular}{l l} 
   \toprule		
-  \textbf{symbol} & \textbf{description}\\
+  \textbf{Symbol} & \textbf{Description}\\
   \midrule 
-  T & Test\\
+    AHP & Analytic Hierarchy Process \\
+    API & Application Programming Interface \\
+    CR & Consistency Ratio (AHP) \\
+    DB & Database \\
+    FR & Functional Requirement \\
+    NFR & Non-Functional Requirement \\
+    ORM & Object-Relational Mapping (e.g., Django ORM) \\
+    SRS & Software Requirements Specification \\
+    T & Test Case Identifier \\
+    VnV & Verification and Validation \\
+    JSON & JavaScript Object Notation \\
+    SRS & Software Requirements Specification \\
+    UUID   & Universally Unique Identifier \\
+    PATCH / POST / PUT & Standard HTTP methods used for updating, creating, and replacing resources, respectively.\\
   \bottomrule
 \end{tabular}\\
 
-\wss{symbols, abbreviations or acronyms -- you can reference the SRS tables if needed}
-
+\noindent\textit{All additional terms conform to those defined in the \href{https://github.com/thaafei/DomainX/blob/main/docs/SRS/SRS.pdf}{SRS} Glossary (Section~4.1).}
 \newpage
 
 \tableofcontents
@@ -1778,21 +1791,38 @@ The following unit tests concern behaviour-hiding modules that are implemented b
       \\Result: Pass
   \end{enumerate}
 
-  \section{Changes Due to Testing}
+\section{Changes Due to Testing}
 
-\wss{This section should highlight how feedback from the users and from 
-the supervisor (when one exists) shaped the final product.  In particular 
-the feedback from the Rev 0 demo to the supervisor (or to potential users) 
-should be highlighted.}
+\subsection{AHP Methodology Alignment}
+Following the feedback from the Rev 0 meeting, we identified a discrepancy between our initial implementation and the established research methodology.
+\begin{itemize}
+  \item \textbf{Previous Iteration:} AHP was only applied to calculate the ``Local Weights'' of libraries within a single criterion. Users were then asked to manually assign a flat percentage to each overarching criterion.
+  \item \textbf{The Revision:} To align with the formal AHP framework, we transitioned to a Pairwise Comparison Matrix for criterion weighting. Users now compare the relative importance of categories (e.g., Usability vs. Reliability) using the Saaty 1--9 scale. The system then mathematically derives the global weights and validates the results via a Consistency Ratio (CR) check, ensuring the data is scientifically sound.
+\end{itemize}
+
+\subsection{Visualization and Data Density}
+We addressed the limitations regarding how library rankings were displayed to improve transparency.
+
+\begin{itemize}
+  \item \textbf{Graph Scalability:} Previously, the dashboard was limited to the top 10 libraries to avoid overcrowding. However, to provide a comprehensive view of the domain, we have redesigned the visualization format to clearly accommodate and display all libraries simultaneously.
+  \item \textbf{Tabular Data:} Based on user recommendations, we have introduced a Ranking Table to complement the graphical data. This allows users to view precise numerical scores and rankings alongside the visual trends.
+\end{itemize}
+
+\subsection{Data Integrity and Input Validation}
+To reduce user error, we refined the data entry process. We replaced open-ended text fields with context-aware inputs. The system now provides dropdown menus for Booleans and Ranges, preventing invalid data types from corrupting the AHP calculations.
+\textit{Note: No changes were required based on current unit testing results, as the core logic remains stable.}
 
 \section{Automated Testing}
-		
+
+Pytest and the \texttt{pytest-django} ecosystem serve as the foundation for our automated testing suite, which offers a high-performance, adaptable framework for verifying environment setups and application logic. To ensure that model-level constraints are carefully enforced before code reaches production, we use specialized decorators like \texttt{@pytest.mark.django\_db} to safely communicate with a temporary test database. We can swiftly find and fix errors in our fundamental business logic, such the concatenation rules for user profiles, by utilizing Pytest's sophisticated assertion introspection.
+
+Using Django's \texttt{SimpleTestCase} and the \texttt{unittest.mock} module, we developed a strong configuration testing method in addition to standard data validation. This enables us to test that our settings dynamically swap between SQLite and MySQL engines as planned by programmatically simulating various deployment scenarios (e.g., Local vs. Production). We make sure the application stays stable and properly configured across different infrastructure states without having to manually review environment files by simulating environment variables and altering settings within our tests.		
 \section{Trace to Requirements}
 Table~\ref{tab:trace} presents the traceability between the
 system test cases and the requirements defined in the Software Requirements
 Specification (SRS). The table indicates which test cases provide verification
 evidence for each requirement implemented in the system.
-
+		
 \begin{table}[H]
 \centering
 \caption{Traceability Between Requirements and System Test Cases}
@@ -1894,6 +1924,36 @@ evidence may include Pass, Partial, or Pending outcomes as reported in the
 nonfunctional requirements evaluation section.
 
 \section{Trace to Modules}		
+Table~\ref{tab:trace} presents the traceability between the system test cases and the software modules defined in the system architecture. The table indicates which test cases provide verification evidence for each module implemented in the system.
+\begin{table}[H]
+\centering
+\caption{Traceability Between Modules and System Test Cases}
+\label{tab:trace}
+\resizebox{\textwidth}{!}{
+\begin{tabular}{|l|c|c|c|c|c|c|c|c|c|c|c|c|c|c|c|c|c|c|}
+\hline
+\textbf{Module} & \textbf{T-AC-1} & \textbf{T-AC-2} & \textbf{T-AC-3} & \textbf{T-AC-4} & \textbf{T-AC-5} & \textbf{T-AC-6} & \textbf{T-AC-7} & \textbf{T-DM-1} & \textbf{T-DM-2} & \textbf{T-DM-3} & \textbf{T-DM-4} & \textbf{T-DM-5} & \textbf{T-VR-1} & \textbf{T-VR-2} & \textbf{T-VR-3} & \textbf{T-VR-4} & \textbf{T-VR-5} & \textbf{T-VR-6} \\ \hline
+M2  &   &   &   &   &   &   &   &   &   &   &   &   &   &   &   & X &   &   \\ \hline
+M3  &   &   &   &   & X &   & X &   &   & X &   & X &   &   & X & X &   & X \\ \hline
+M4  &   &   &   &   &   & X &   & X & X & X &   &   &   &   &   &   &   &   \\ \hline
+M5  & X & X &   &   &   &   & X &   &   &   &   &   &   &   &   &   &   &   \\ \hline
+M6  &   &   & X & X &   & X &   & X &   &   &   &   &   &   &   &   &   &   \\ \hline
+M7  & X &   &   &   &   &   &   &   &   &   &   &   &   &   &   &   &   &   \\ \hline
+M8  &   &   &   &   &   &   &   &   & X &   &   &   &   &   &   &   &   &   \\ \hline
+M9  &   &   &   &   &   &   &   & X &   &   &   &   &   &   &   &   &   & X \\ \hline
+M10 &   &   &   &   &   &   &   &   &   &   & X & X &   &   & X & X & X & X \\ \hline
+M11 &   &   &   &   &   &   &   &   &   & X &   &   & X &   &   &   &   &   \\ \hline
+M12 &   &   &   &   &   &   &   &   &   &   &   &   & X & X & X & X &   & X \\ \hline
+M14 &   &   &   &   &   & X &   &   & X & X &   & X &   &   & X &   &   &   \\ \hline
+M15 &   &   &   &   &   &   &   &   & X &   &   &   &   &   &   &   &   &   \\ \hline
+M16 &   &   &   &   &   &   &   &   &   & X &   &   & X & X &   &   &   &   \\ \hline
+M17 &   &   &   &   &   & X &   &   & X & X & X &   & X &   &   &   & X &   \\ \hline
+M18 &   &   &   &   &   &   &   &   &   &   & X &   &   &   &   &   & X &   \\ \hline
+M19 &   &   &   &   &   &   &   & X &   &   &   &   &   &   &   &   &   &   \\ \hline
+\end{tabular}
+}
+\end{table}
+	
 
 \section{Code Coverage Metrics}
 The following report is automatically generated by pytest. We obtained a total coverage of 73\%. The actual coverage should be slightly higher since some files that contain no logic are being counted towards the percentage (i.e. \href{https://github.com/thaafei/DomainX/blob/main/src/backend/api/database/edit_history/views.py}{edit\_history/views}).
@@ -1959,15 +2019,17 @@ graduate attribute of Reflection.
 
 \begin{enumerate}
   \item What went well while writing this deliverable?\\
-  
+
   \textbf{Haniye:} One aspect that went well while writing this deliverable was that many of the test scenarios were already clear from the development process. While implementing features such as domain management, metric editing, and visualization, the system was frequently tested to verify correct behaviour. As a result, when preparing the VnV report it was easier to define the test inputs and expected outcomes because the implemented features had already been validated during development.    \textbf{Fei:} I was responsible for the unit test portion. Since we decided to write unit test as we develop, instead of all at the end, writing this portion was much simpler as I just had to compile what we had into a report format.\\
 
   \textbf{Fei:} I was responsible for the unit test portion. Since we decided to write unit test as we develop, instead of all at the end, writing this portion was much simpler as I just had to compile what we had into a report format.\\
+  
+  \textbf{Ghena:} A lot of test cases were already written and used throughout the development process, making sure that any ant changes to the code follows the logic of the requirements. This made the document easy to write since a lot of it was alreadt built.
 
   \item What pain points did you experience during this deliverable, and how
     did you resolve them?\\
 
-    \textbf{Haniye:} A minor challenge during this deliverable was ensuring that
+  \textbf{Haniye:} A minor challenge during this deliverable was ensuring that
     the tests described in the report aligned with the original VnV Plan while
     also reflecting the current implementation of the system. Some features had
     changed during development, which made it necessary to adjust how certain
@@ -1976,6 +2038,8 @@ graduate attribute of Reflection.
     represent the implemented functionality.
 
     \textbf{Fei:} Setting up the testing frameworks was complete, due to the way our project repository was structured. Our code also wasn't as modularized as intended, so many unit tests had to have a lot of mocking in place. The way I resolved them was just adding the testing frameworks earlier, so there was more time to deal with unexpected issues, as opposed to having to cram it all in this week. \\
+
+    \textbf{Ghena:} A significant challenge during this deliverable was ensuring the AHP Ranking Module (M11) was implemented correctly to avoid any methodology misunderstandings. To resolve this, the team held a focused meeting with the supervisor to walk through the exact calculation requirements and conducted a thorough review of the assigned research paper.
 
   \item Which parts of this document stemmed from speaking to your client(s) or
   a proxy (e.g. your peers)? Which ones were not, and why?\\
@@ -1989,6 +2053,8 @@ graduate attribute of Reflection.
    
   \textbf{Fei:} N/A\\
   
+  \textbf{Ghena:} All of the changes made due to testing came from the our client/stackholder meetings. However The specific direct mapping (e.g., tracing T–AC–1 to M5 and M7) didn't stem from those meetings. 
+
   \item In what ways was the Verification and Validation (VnV) Plan different
   from the activities that were actually conducted for VnV?  If there were
   differences, what changes required the modification in the plan?  Why did
@@ -2014,6 +2080,8 @@ graduate attribute of Reflection.
     planning additional tests for integration and deployment scenarios.
 
   \textbf{Fei:} The changes I had to make to the unit test portion was the modules. As we developed the tool, we ended up condensing a few modules together since that made more sense during the development. This just meant combining the related unit tests of the combined modules into one. For future projects, I don't think we can mitigate it completely. Since we designed the project before development, during development new insights arises which results in changes to the theoretical plan.\\
+  
+  \textbf{Ghena:} The final VnV activities deviated from the plan primarily because the AHP Calculation Module (M11) required restructuring to align with the methodology in the assigned research paper, replacing an initial simplified model. These changes could have been avoided had the module been revised more properly during the initial design phase. Additionally, features like Excel bulk upload (FR9) were removed to prioritize core stability. While some scope reductions are manageable, predicting the future requirements of this project proved difficult and would remain a challenge in future iterations.
 \end{enumerate}
 
 \end{document}
