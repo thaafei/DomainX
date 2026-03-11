@@ -47,11 +47,18 @@ const clamp3Style: React.CSSProperties = {
   overflow: "hidden",
 };
 
+const clamp4Style: React.CSSProperties = {
+  display: "-webkit-box",
+  WebkitLineClamp: 4,
+  WebkitBoxOrient: "vertical",
+  overflow: "hidden",
+};
+
 const cellBaseStyle: React.CSSProperties = {
-  padding: "9px 10px",
+  padding: "7px 8px",
   verticalAlign: "top",
-  fontSize: 13.5,
-  lineHeight: 1.4,
+  fontSize: 13,
+  lineHeight: 1.32,
   overflowWrap: "anywhere",
 };
 
@@ -62,14 +69,171 @@ const metricCellStyle: React.CSSProperties = {
 
 const headerCellStyle: React.CSSProperties = {
   textAlign: "left",
-  padding: "10px 10px",
-  fontSize: 13,
-  lineHeight: 1.3,
+  padding: "8px 8px",
+  fontSize: 12.5,
+  lineHeight: 1.25,
   fontWeight: 700,
   color: "rgba(255,255,255,0.92)",
   background: "rgba(20, 24, 38, 0.96)",
   borderBottom: "1px solid rgba(255,255,255,0.08)",
   overflowWrap: "anywhere",
+};
+
+const compactButtonStyle: React.CSSProperties = {
+  border: "none",
+  background: "transparent",
+  color: "var(--accent)",
+  cursor: "pointer",
+  padding: 0,
+  marginTop: 4,
+  fontSize: 11.5,
+  lineHeight: 1.2,
+  alignSelf: "flex-start",
+};
+
+const overlayCardStyle: React.CSSProperties = {
+  position: "absolute",
+  top: "100%",
+  left: 0,
+  marginTop: 6,
+  minWidth: 260,
+  maxWidth: 560,
+  maxHeight: 280,
+  overflow: "auto",
+  padding: "10px 12px",
+  borderRadius: 12,
+  background: "rgba(20, 24, 38, 0.98)",
+  border: "1px solid rgba(255,255,255,0.12)",
+  boxShadow: "0 12px 32px rgba(0,0,0,0.45)",
+  zIndex: 10020,
+  color: "rgba(255,255,255,0.92)",
+  whiteSpace: "pre-wrap",
+  overflowWrap: "anywhere",
+  userSelect: "text",
+};
+
+const ExpandableText: React.FC<{
+  text: string;
+  lines?: 2 | 3 | 4;
+  emptyText?: string;
+  textStyle?: React.CSSProperties;
+  preserveWhitespace?: boolean;
+}> = ({ text, lines = 2, emptyText = "—", textStyle, preserveWhitespace = false }) => {
+  const [open, setOpen] = useState(false);
+  const [truncated, setTruncated] = useState(false);
+  const textRef = useRef<HTMLDivElement>(null);
+  const wrapRef = useRef<HTMLDivElement>(null);
+
+  useLayoutEffect(() => {
+    const el = textRef.current;
+    if (!el) return;
+
+    const check = () => {
+      setTruncated(
+        el.scrollHeight > el.clientHeight + 1 ||
+          el.scrollWidth > el.clientWidth + 1
+      );
+    };
+
+    check();
+    window.addEventListener("resize", check);
+    return () => window.removeEventListener("resize", check);
+  }, [text, lines]);
+
+  useEffect(() => {
+    if (!open) return;
+
+    const onDocClick = (e: MouseEvent) => {
+      if (!wrapRef.current) return;
+      if (!wrapRef.current.contains(e.target as Node)) setOpen(false);
+    };
+
+    const onEsc = (e: KeyboardEvent) => {
+      if (e.key === "Escape") setOpen(false);
+    };
+
+    document.addEventListener("mousedown", onDocClick);
+    document.addEventListener("keydown", onEsc);
+
+    return () => {
+      document.removeEventListener("mousedown", onDocClick);
+      document.removeEventListener("keydown", onEsc);
+    };
+  }, [open]);
+
+  if (!text) {
+    return <div style={textStyle}>{emptyText}</div>;
+  }
+
+  const clampStyle =
+    lines === 4 ? clamp4Style : lines === 3 ? clamp3Style : clamp2Style;
+
+  return (
+    <div
+      ref={wrapRef}
+      style={{
+        position: "relative",
+        display: "flex",
+        flexDirection: "column",
+        alignItems: "flex-start",
+        minWidth: 0,
+        width: "100%",
+      }}
+    >
+      <div
+        ref={textRef}
+        style={{
+          ...clampStyle,
+          ...textStyle,
+          width: "100%",
+          overflowWrap: "anywhere",
+          whiteSpace: preserveWhitespace ? "pre-wrap" : undefined,
+        }}
+        title={open ? "" : text}
+      >
+        {text}
+      </div>
+
+      {truncated && (
+        <button
+          type="button"
+          onClick={() => setOpen((v) => !v)}
+          style={compactButtonStyle}
+        >
+          {open ? "less" : "more"}
+        </button>
+      )}
+
+      {open && (
+        <div
+          style={{
+            ...overlayCardStyle,
+            whiteSpace: preserveWhitespace ? "pre-wrap" : "pre-wrap",
+            fontFamily: preserveWhitespace
+              ? 'ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace'
+              : undefined,
+            fontSize: preserveWhitespace ? 12.5 : undefined,
+            lineHeight: preserveWhitespace ? 1.35 : undefined,
+          }}
+        >
+          <div style={{ marginBottom: 8 }}>{text}</div>
+
+          <button
+            type="button"
+            className="dx-btn dx-btn-outline"
+            style={{ padding: "5px 8px", fontSize: 12 }}
+            onClick={async () => {
+              try {
+                await navigator.clipboard.writeText(text);
+              } catch {}
+            }}
+          >
+            Copy
+          </button>
+        </div>
+      )}
+    </div>
+  );
 };
 
 const MetricsPage: React.FC = () => {
@@ -245,6 +409,7 @@ const MetricsPage: React.FC = () => {
   const modalSourceType = modalMode === "create" ? newSourceType : editSourceType;
   const modalMetricKey = modalMode === "create" ? newMetricKey : editMetricKey;
   const modalAutoOptions = autoMetricOptions[modalSourceType as keyof AutoMetricOptionsResponse] || [];
+
   const getReadableErrorMessage = (err: unknown) => {
     const fallback = "Could not save metric. Please check the form and try again.";
 
@@ -729,56 +894,59 @@ const MetricsPage: React.FC = () => {
                           }}
                           title={m.metric_name}
                         >
-                          <div style={clamp2Style}>{m.metric_name}</div>
+                          <ExpandableText
+                            text={m.metric_name || ""}
+                            lines={2}
+                            textStyle={{ fontWeight: 700, fontSize: 14.5, lineHeight: 1.35 }}
+                          />
                         </td>
 
-                        <td
-                          style={metricCellStyle}
-                          title={m.value_type}
-                        >
-                          <div style={clamp2Style}>{m.value_type}</div>
+                        <td style={metricCellStyle} title={m.value_type}>
+                          <ExpandableText
+                            text={m.value_type || ""}
+                            lines={2}
+                            emptyText="—"
+                          />
                         </td>
 
-                        <td
-                          style={metricCellStyle}
-                          title={displayInputCategory(m)}
-                        >
-                          <div style={clamp3Style}>{displayInputCategory(m)}</div>
+                        <td style={metricCellStyle} title={displayInputCategory(m)}>
+                          <ExpandableText
+                            text={displayInputCategory(m)}
+                            lines={3}
+                            emptyText="—"
+                          />
                         </td>
 
-                        <td
-                          style={metricCellStyle}
-                          title={displayRulePreview(m)}
-                        >
-                          <code
-                            style={{
-                              display: "-webkit-box",
-                              WebkitLineClamp: 4,
-                              WebkitBoxOrient: "vertical",
-                              overflow: "hidden",
-                              whiteSpace: "pre-wrap",
-                              overflowWrap: "anywhere",
-                              color: "inherit",
+                        <td style={metricCellStyle} title={displayRulePreview(m)}>
+                          <ExpandableText
+                            text={displayRulePreview(m)}
+                            lines={4}
+                            emptyText="—"
+                            preserveWhitespace
+                            textStyle={{
+                              fontFamily:
+                                'ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace',
                               fontSize: 12.5,
                               lineHeight: 1.35,
+                              color: "inherit",
                             }}
-                          >
-                            {displayRulePreview(m)}
-                          </code>
+                          />
                         </td>
 
-                        <td
-                          style={metricCellStyle}
-                          title={m.category || "—"}
-                        >
-                          <div style={clamp3Style}>{m.category || "—"}</div>
+                        <td style={metricCellStyle} title={m.category || "—"}>
+                          <ExpandableText
+                            text={m.category || ""}
+                            lines={3}
+                            emptyText="—"
+                          />
                         </td>
 
-                        <td
-                          style={metricCellStyle}
-                          title={m.description || "—"}
-                        >
-                          <div style={clamp3Style}>{m.description || "—"}</div>
+                        <td style={metricCellStyle} title={m.description || "—"}>
+                          <ExpandableText
+                            text={m.description || ""}
+                            lines={3}
+                            emptyText="—"
+                          />
                         </td>
                       </tr>
                     );
@@ -866,7 +1034,7 @@ const MetricsPage: React.FC = () => {
                 style={{
                   display: "grid",
                   gridTemplateColumns: "repeat(2, minmax(0, 1fr))",
-                  gap: 12,
+                  gap: 10,
                 }}
               >
                 <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
@@ -1030,7 +1198,7 @@ const MetricsPage: React.FC = () => {
                       gridColumn: "1 / -1",
                       display: "grid",
                       gridTemplateColumns: "repeat(2, minmax(0, 1fr))",
-                      gap: 12,
+                      gap: 10,
                     }}
                   >
                     <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>

@@ -40,10 +40,10 @@ const clamp3Style: React.CSSProperties = {
 };
 
 const cellBaseStyle: React.CSSProperties = {
-  padding: "9px 10px",
+  padding: "7px 8px",
   verticalAlign: "top",
-  fontSize: 13.5,
-  lineHeight: 1.4,
+  fontSize: 13,
+  lineHeight: 1.32,
   overflowWrap: "anywhere",
 };
 
@@ -54,14 +54,159 @@ const metricCellStyle: React.CSSProperties = {
 
 const headerCellStyle: React.CSSProperties = {
   textAlign: "left",
-  padding: "10px 10px",
-  fontSize: 13,
-  lineHeight: 1.3,
+  padding: "8px 8px",
+  fontSize: 12.5,
+  lineHeight: 1.25,
   fontWeight: 700,
   color: "rgba(255,255,255,0.92)",
   background: "rgba(20, 24, 38, 0.96)",
   borderBottom: "1px solid rgba(255,255,255,0.08)",
   overflowWrap: "anywhere",
+};
+
+const compactButtonStyle: React.CSSProperties = {
+  border: "none",
+  background: "transparent",
+  color: "var(--accent)",
+  cursor: "pointer",
+  padding: 0,
+  marginTop: 4,
+  fontSize: 11.5,
+  lineHeight: 1.2,
+  alignSelf: "flex-start",
+};
+
+const overlayCardStyle: React.CSSProperties = {
+  position: "absolute",
+  top: "100%",
+  left: 0,
+  marginTop: 6,
+  minWidth: 260,
+  maxWidth: 560,
+  maxHeight: 280,
+  overflow: "auto",
+  padding: "10px 12px",
+  borderRadius: 12,
+  background: "rgba(20, 24, 38, 0.98)",
+  border: "1px solid rgba(255,255,255,0.12)",
+  boxShadow: "0 12px 32px rgba(0,0,0,0.45)",
+  zIndex: 10020,
+  color: "rgba(255,255,255,0.92)",
+  whiteSpace: "pre-wrap",
+  overflowWrap: "anywhere",
+  userSelect: "text",
+};
+
+const ExpandableText: React.FC<{
+  text: string;
+  lines?: 2 | 3;
+  emptyText?: string;
+  textStyle?: React.CSSProperties;
+}> = ({ text, lines = 2, emptyText = "—", textStyle }) => {
+  const [open, setOpen] = useState(false);
+  const [truncated, setTruncated] = useState(false);
+  const textRef = React.useRef<HTMLDivElement>(null);
+  const wrapRef = React.useRef<HTMLDivElement>(null);
+
+  React.useLayoutEffect(() => {
+    const el = textRef.current;
+    if (!el) return;
+
+    const check = () => {
+      setTruncated(
+        el.scrollHeight > el.clientHeight + 1 ||
+          el.scrollWidth > el.clientWidth + 1
+      );
+    };
+
+    check();
+    window.addEventListener("resize", check);
+    return () => window.removeEventListener("resize", check);
+  }, [text, lines]);
+
+  React.useEffect(() => {
+    if (!open) return;
+
+    const onDocClick = (e: MouseEvent) => {
+      if (!wrapRef.current) return;
+      if (!wrapRef.current.contains(e.target as Node)) {
+        setOpen(false);
+      }
+    };
+
+    const onEsc = (e: KeyboardEvent) => {
+      if (e.key === "Escape") setOpen(false);
+    };
+
+    document.addEventListener("mousedown", onDocClick);
+    document.addEventListener("keydown", onEsc);
+    return () => {
+      document.removeEventListener("mousedown", onDocClick);
+      document.removeEventListener("keydown", onEsc);
+    };
+  }, [open]);
+
+  if (!text) {
+    return <div style={textStyle}>{emptyText}</div>;
+  }
+
+  const clampStyle = lines === 3 ? clamp3Style : clamp2Style;
+
+  return (
+    <div
+      ref={wrapRef}
+      style={{
+        position: "relative",
+        display: "flex",
+        flexDirection: "column",
+        alignItems: "flex-start",
+        minWidth: 0,
+        width: "100%",
+      }}
+    >
+      <div
+        ref={textRef}
+        style={{
+          ...clampStyle,
+          ...textStyle,
+          width: "100%",
+          overflowWrap: "anywhere",
+        }}
+        title={open ? "" : text}
+      >
+        {text}
+      </div>
+
+      {truncated && (
+        <button
+          type="button"
+          onClick={() => setOpen((v) => !v)}
+          style={compactButtonStyle}
+        >
+          {open ? "less" : "more"}
+        </button>
+      )}
+
+      {open && (
+        <div style={overlayCardStyle}>
+          <div style={{ marginBottom: 8 }}>{text}</div>
+
+          <button
+            type="button"
+            className="dx-btn dx-btn-outline"
+            style={{ padding: "5px 8px", fontSize: 12 }}
+            onClick={async () => {
+              try {
+                await navigator.clipboard.writeText(text);
+              } catch {}
+            }}
+          >
+            Copy
+          </button>
+        </div>
+      )}
+    </div>
+  );
 };
 
 const ComparisonToolPage: React.FC = () => {
@@ -341,7 +486,7 @@ const ComparisonToolPage: React.FC = () => {
                     <td
                       className="dx-sticky-left"
                       style={{
-                        padding: 10,
+                        padding: "8px 10px",
                         fontWeight: 600,
                         verticalAlign: "top",
                         left: 0,
@@ -353,10 +498,10 @@ const ComparisonToolPage: React.FC = () => {
                       <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
                         <div
                           style={{
-                            ...clamp2Style,
                             fontWeight: 700,
                             fontSize: 14.5,
                             lineHeight: 1.35,
+                            width: "100%",
                           }}
                         >
                           {row.url ? (
@@ -368,13 +513,32 @@ const ComparisonToolPage: React.FC = () => {
                                 color: "var(--accent)",
                                 textDecoration: "none",
                                 fontWeight: 700,
+                                display: "block",
+                                width: "100%",
                               }}
                               title={row.url}
                             >
-                              {row.library_name}
+                              <ExpandableText
+                                text={row.library_name || ""}
+                                lines={2}
+                                textStyle={{
+                                  fontWeight: 700,
+                                  fontSize: 14.5,
+                                  lineHeight: 1.35,
+                                  color: "var(--accent)",
+                                }}
+                              />
                             </a>
                           ) : (
-                            row.library_name
+                            <ExpandableText
+                              text={row.library_name || ""}
+                              lines={2}
+                              textStyle={{
+                                fontWeight: 700,
+                                fontSize: 14.5,
+                                lineHeight: 1.35,
+                              }}
+                            />
                           )}
                         </div>
 
@@ -427,6 +591,8 @@ const ComparisonToolPage: React.FC = () => {
                             </a>
                           )}
                         </div>
+
+
                       </div>
                     </td>
 
@@ -473,7 +639,11 @@ const ComparisonToolPage: React.FC = () => {
                           }}
                           title={cellVal != null ? String(cellVal) : "—"}
                         >
-                          <div style={clamp3Style}>{cellVal ?? "—"}</div>
+                          <ExpandableText
+                            text={cellVal != null ? String(cellVal) : ""}
+                            lines={3}
+                            emptyText="—"
+                          />
                         </td>
                       );
                     })}

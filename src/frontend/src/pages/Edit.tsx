@@ -7,6 +7,7 @@ import { ArrowLeft } from "lucide-react";
 interface Metric {
   metric_ID: string;
   metric_name: string;
+  description?: string | null;
   value_type: string;
   source_type?: string;
   metric_key?: string | null;
@@ -47,10 +48,10 @@ const clamp3Style: React.CSSProperties = {
 };
 
 const cellBaseStyle: React.CSSProperties = {
-  padding: "9px 10px",
+  padding: "7px 8px",
   verticalAlign: "top",
-  fontSize: 13.5,
-  lineHeight: 1.4,
+  fontSize: 13,
+  lineHeight: 1.32,
   overflowWrap: "anywhere",
 };
 
@@ -61,14 +62,47 @@ const metricCellStyle: React.CSSProperties = {
 
 const headerCellStyle: React.CSSProperties = {
   textAlign: "left",
-  padding: "10px 10px",
-  fontSize: 13,
-  lineHeight: 1.3,
+  padding: "8px 8px",
+  fontSize: 12.5,
+  lineHeight: 1.25,
   fontWeight: 700,
   color: "rgba(255,255,255,0.92)",
   background: "rgba(20, 24, 38, 0.96)",
   borderBottom: "1px solid rgba(255,255,255,0.08)",
   overflowWrap: "anywhere",
+};
+
+const compactButtonStyle: React.CSSProperties = {
+  border: "none",
+  background: "transparent",
+  color: "var(--accent)",
+  cursor: "pointer",
+  padding: 0,
+  marginTop: 4,
+  fontSize: 11.5,
+  lineHeight: 1.2,
+  alignSelf: "flex-start",
+};
+
+const overlayCardStyle: React.CSSProperties = {
+  position: "absolute",
+  top: "100%",
+  left: 0,
+  marginTop: 6,
+  minWidth: 260,
+  maxWidth: 520,
+  maxHeight: 260,
+  overflow: "auto",
+  padding: "10px 12px",
+  borderRadius: 12,
+  background: "rgba(20, 24, 38, 0.98)",
+  border: "1px solid rgba(255,255,255,0.12)",
+  boxShadow: "0 12px 32px rgba(0,0,0,0.45)",
+  zIndex: 10020,
+  color: "rgba(255,255,255,0.92)",
+  whiteSpace: "pre-wrap",
+  overflowWrap: "anywhere",
+  userSelect: "text",
 };
 
 const normalizeStatus = (
@@ -96,6 +130,9 @@ const statusColor = (s?: AnalysisStatus) => {
   return "rgba(255,255,255,0.65)";
 };
 
+const isAffectedMetric = (m: Metric) =>
+  String(m.source_type || "").toLowerCase().trim() !== "manual";
+
 type ConfirmState =
   | null
   | {
@@ -106,6 +143,118 @@ type ConfirmState =
   | {
       type: "all";
     };
+
+const ExpandableText: React.FC<{
+  text: string;
+  lines?: 2 | 3;
+  emptyText?: string;
+  textStyle?: React.CSSProperties;
+}> = ({ text, lines = 2, emptyText = "—", textStyle }) => {
+  const [open, setOpen] = useState(false);
+  const [truncated, setTruncated] = useState(false);
+  const textRef = useRef<HTMLDivElement>(null);
+  const wrapRef = useRef<HTMLDivElement>(null);
+
+  useLayoutEffect(() => {
+    const el = textRef.current;
+    if (!el) return;
+
+    const check = () => {
+      setTruncated(
+        el.scrollHeight > el.clientHeight + 1 ||
+          el.scrollWidth > el.clientWidth + 1
+      );
+    };
+
+    check();
+    window.addEventListener("resize", check);
+    return () => window.removeEventListener("resize", check);
+  }, [text, lines]);
+
+  useEffect(() => {
+    if (!open) return;
+
+    const onDocClick = (e: MouseEvent) => {
+      if (!wrapRef.current) return;
+      if (!wrapRef.current.contains(e.target as Node)) {
+        setOpen(false);
+      }
+    };
+
+    const onEsc = (e: KeyboardEvent) => {
+      if (e.key === "Escape") setOpen(false);
+    };
+
+    document.addEventListener("mousedown", onDocClick);
+    document.addEventListener("keydown", onEsc);
+    return () => {
+      document.removeEventListener("mousedown", onDocClick);
+      document.removeEventListener("keydown", onEsc);
+    };
+  }, [open]);
+
+  if (!text) {
+    return <div style={textStyle}>{emptyText}</div>;
+  }
+
+  const clampStyle = lines === 3 ? clamp3Style : clamp2Style;
+
+  return (
+    <div
+      ref={wrapRef}
+      style={{
+        position: "relative",
+        display: "flex",
+        flexDirection: "column",
+        alignItems: "flex-start",
+        minWidth: 0,
+        width: "100%",
+      }}
+    >
+      <div
+        ref={textRef}
+        style={{
+          ...clampStyle,
+          ...textStyle,
+          width: "100%",
+          overflowWrap: "anywhere",
+        }}
+        title={open ? "" : text}
+      >
+        {text}
+      </div>
+
+      {truncated && (
+        <button
+          type="button"
+          onClick={() => setOpen((v) => !v)}
+          style={compactButtonStyle}
+        >
+          {open ? "less" : "more"}
+        </button>
+      )}
+
+      {open && (
+        <div style={overlayCardStyle}>
+          <div style={{ marginBottom: 8 }}>{text}</div>
+
+          <button
+            type="button"
+            className="dx-btn dx-btn-outline"
+            style={{ padding: "5px 8px", fontSize: 12 }}
+            onClick={async () => {
+              try {
+                await navigator.clipboard.writeText(text);
+              } catch {}
+            }}
+          >
+            Copy
+          </button>
+        </div>
+      )}
+    </div>
+  );
+};
 
 const ConfirmModal: React.FC<{
   open: boolean;
@@ -150,7 +299,7 @@ const ConfirmModal: React.FC<{
       <div
         onMouseDown={(e) => e.stopPropagation()}
         style={{
-          width: "min(620px, 100%)",
+          width: "min(700px, 100%)",
           borderRadius: 18,
           overflow: "hidden",
           border: "1px solid rgba(255,255,255,0.14)",
@@ -306,7 +455,16 @@ const EditMetricValuesModal: React.FC<{
   onClose: () => void;
   onChangeValue: (metricName: string, value: any) => void;
   onSave: () => void;
-}> = ({ open, row, metricList, pageLoading, fieldErrors, onClose, onChangeValue, onSave }) => {
+}> = ({
+  open,
+  row,
+  metricList,
+  pageLoading,
+  fieldErrors,
+  onClose,
+  onChangeValue,
+  onSave,
+}) => {
   if (!open || !row) return null;
 
   const hasValidationErrors = Object.keys(fieldErrors).length > 0;
@@ -354,8 +512,21 @@ const EditMetricValuesModal: React.FC<{
             gap: 12,
           }}
         >
-          <div style={{ display: "flex", flexDirection: "column", gap: 4, minWidth: 0 }}>
-            <div style={{ fontSize: "1.15rem", fontWeight: 700, color: "var(--accent)" }}>
+          <div
+            style={{
+              display: "flex",
+              flexDirection: "column",
+              gap: 4,
+              minWidth: 0,
+            }}
+          >
+            <div
+              style={{
+                fontSize: "1.15rem",
+                fontWeight: 700,
+                color: "var(--accent)",
+              }}
+            >
               Edit Metric Values
             </div>
             <div
@@ -385,7 +556,7 @@ const EditMetricValuesModal: React.FC<{
           style={{
             display: "grid",
             gridTemplateColumns: "repeat(2, minmax(0, 1fr))",
-            gap: 12,
+            gap: 10,
             marginBottom: 14,
           }}
         >
@@ -399,19 +570,22 @@ const EditMetricValuesModal: React.FC<{
               minWidth: 0,
             }}
           >
-            <div style={{ opacity: 0.75, fontSize: 13, marginBottom: 4, color: "rgba(255,255,255,0.72)" }}>
-              GitHub URL
-            </div>
             <div
               style={{
-                color: "rgba(255,255,255,0.92)",
-                overflowWrap: "anywhere",
-                ...clamp3Style,
+                opacity: 0.75,
+                fontSize: 13,
+                marginBottom: 4,
+                color: "rgba(255,255,255,0.72)",
               }}
-              title={row.github_url || "—"}
             >
-              {row.github_url || "—"}
+              GitHub URL
             </div>
+            <ExpandableText
+              text={row.github_url || ""}
+              lines={3}
+              emptyText="—"
+              textStyle={{ color: "rgba(255,255,255,0.92)" }}
+            />
           </div>
 
           <div
@@ -424,19 +598,22 @@ const EditMetricValuesModal: React.FC<{
               minWidth: 0,
             }}
           >
-            <div style={{ opacity: 0.75, fontSize: 13, marginBottom: 4, color: "rgba(255,255,255,0.72)" }}>
-              URL
-            </div>
             <div
               style={{
-                color: "rgba(255,255,255,0.92)",
-                overflowWrap: "anywhere",
-                ...clamp3Style,
+                opacity: 0.75,
+                fontSize: 13,
+                marginBottom: 4,
+                color: "rgba(255,255,255,0.72)",
               }}
-              title={row.url || "—"}
             >
-              {row.url || "—"}
+              URL
             </div>
+            <ExpandableText
+              text={row.url || ""}
+              lines={3}
+              emptyText="—"
+              textStyle={{ color: "rgba(255,255,255,0.92)" }}
+            />
           </div>
 
           <div
@@ -448,7 +625,14 @@ const EditMetricValuesModal: React.FC<{
               color: "white",
             }}
           >
-            <div style={{ opacity: 0.75, fontSize: 13, marginBottom: 4, color: "rgba(255,255,255,0.72)" }}>
+            <div
+              style={{
+                opacity: 0.75,
+                fontSize: 13,
+                marginBottom: 4,
+                color: "rgba(255,255,255,0.72)",
+              }}
+            >
               Language
             </div>
             <div style={{ color: "rgba(255,255,255,0.92)" }}>
@@ -465,7 +649,14 @@ const EditMetricValuesModal: React.FC<{
               color: "white",
             }}
           >
-            <div style={{ opacity: 0.75, fontSize: 13, marginBottom: 4, color: "rgba(255,255,255,0.72)" }}>
+            <div
+              style={{
+                opacity: 0.75,
+                fontSize: 13,
+                marginBottom: 4,
+                color: "rgba(255,255,255,0.72)",
+              }}
+            >
               API+SCC Status
             </div>
             <div style={{ color: statusColor(row.analysis_status) }}>
@@ -482,7 +673,14 @@ const EditMetricValuesModal: React.FC<{
               color: "white",
             }}
           >
-            <div style={{ opacity: 0.75, fontSize: 13, marginBottom: 4, color: "rgba(255,255,255,0.72)" }}>
+            <div
+              style={{
+                opacity: 0.75,
+                fontSize: 13,
+                marginBottom: 4,
+                color: "rgba(255,255,255,0.72)",
+              }}
+            >
               GitStats Status
             </div>
             <div style={{ color: statusColor(row.gitstats_status) }}>
@@ -495,12 +693,13 @@ const EditMetricValuesModal: React.FC<{
           style={{
             display: "grid",
             gridTemplateColumns: "repeat(2, minmax(0, 1fr))",
-            gap: 14,
+            gap: 10,
           }}
         >
           {metricList.map((m) => {
             const cellVal = row.metrics[m.metric_name];
             const fieldError = fieldErrors[m.metric_name];
+            const desc = (m.description || "").trim();
 
             return (
               <div
@@ -508,25 +707,52 @@ const EditMetricValuesModal: React.FC<{
                 style={{
                   display: "flex",
                   flexDirection: "column",
-                  gap: 6,
-                  padding: "10px 12px",
+                  gap: 4,
+                  padding: "8px 10px",
                   borderRadius: 10,
                   background: "rgba(255,255,255,0.03)",
                   border: "1px solid rgba(255,255,255,0.08)",
                   minWidth: 0,
                 }}
               >
-                <label
+                <div
                   style={{
-                    color: "rgba(255,255,255,0.85)",
-                    fontSize: 13,
-                    overflowWrap: "anywhere",
-                    ...clamp2Style,
+                    display: "flex",
+                    flexDirection: "column",
+                    gap: 4,
+                    minHeight: 42,
                   }}
-                  title={m.metric_name}
                 >
-                  {m.metric_name}
-                </label>
+                  <label
+                    style={{
+                      color: "rgba(255,255,255,0.88)",
+                      fontSize: 13,
+                      fontWeight: 600,
+                      overflowWrap: "anywhere",
+                      ...clamp2Style,
+                    }}
+                    title={m.metric_name}
+                  >
+                    {m.metric_name}
+                  </label>
+
+                  <div
+                    style={{
+                      fontSize: 11.5,
+                      color: "rgba(255,255,255,0.52)",
+                      minHeight: 28,
+                      lineHeight: 1.25,
+                      overflowWrap: "anywhere",
+                    }}
+                    title={desc || ""}
+                  >
+                    {desc ? (
+                      <span style={clamp2Style}>({desc})</span>
+                    ) : (
+                      <span>&nbsp;</span>
+                    )}
+                  </div>
+                </div>
 
                 {m.metric_key === "gitstats_report" ? (
                   cellVal ? (
@@ -539,7 +765,15 @@ const EditMetricValuesModal: React.FC<{
                       View report
                     </a>
                   ) : (
-                    <div style={{ lineHeight: 2.2, opacity: 0.7, color: "rgba(255,255,255,0.72)" }}>—</div>
+                    <div
+                      style={{
+                        lineHeight: 2.2,
+                        opacity: 0.7,
+                        color: "rgba(255,255,255,0.72)",
+                      }}
+                    >
+                      —
+                    </div>
                   )
                 ) : m.scoring_dict && Object.keys(m.scoring_dict).length > 0 ? (
                   <select
@@ -548,7 +782,9 @@ const EditMetricValuesModal: React.FC<{
                     onChange={(e) => onChangeValue(m.metric_name, e.target.value)}
                     disabled={pageLoading}
                     style={{
-                      borderColor: fieldError ? "rgba(255, 99, 99, 0.75)" : undefined,
+                      borderColor: fieldError
+                        ? "rgba(255, 99, 99, 0.75)"
+                        : undefined,
                     }}
                   >
                     <option value="" className="dx-input-select">
@@ -567,7 +803,9 @@ const EditMetricValuesModal: React.FC<{
                     onChange={(e) => onChangeValue(m.metric_name, e.target.value)}
                     disabled={pageLoading}
                     style={{
-                      borderColor: fieldError ? "rgba(255, 99, 99, 0.75)" : undefined,
+                      borderColor: fieldError
+                        ? "rgba(255, 99, 99, 0.75)"
+                        : undefined,
                     }}
                   />
                 )}
@@ -582,7 +820,14 @@ const EditMetricValuesModal: React.FC<{
           })}
         </div>
 
-        <div style={{ display: "flex", justifyContent: "flex-end", gap: 10, marginTop: 18 }}>
+        <div
+          style={{
+            display: "flex",
+            justifyContent: "flex-end",
+            gap: 10,
+            marginTop: 18,
+          }}
+        >
           <button
             className="dx-btn dx-btn-outline"
             onClick={onClose}
@@ -635,6 +880,8 @@ const EditValuesPage: React.FC = () => {
 
   const firstColRef = useRef<HTMLTableCellElement>(null);
   const [offset, setOffset] = useState(0);
+
+  const affectedMetrics = metricList.filter(isAffectedMetric);
 
   const showSuccess = (msg: string) => {
     setSuccessMessage(msg);
@@ -806,7 +1053,11 @@ const EditValuesPage: React.FC = () => {
     }
   };
 
-  const updateEditDraftValue = (metric: string, value: any, isEvidence: boolean = false) => {
+  const updateEditDraftValue = (
+    metric: string,
+    value: any,
+    isEvidence: boolean = false
+  ) => {
     const key = isEvidence ? `${metric}_evidence` : metric;
 
     setEditDraft((prev) =>
@@ -847,9 +1098,7 @@ const EditValuesPage: React.FC = () => {
       setErrorMsg(null);
 
       const res = await fetch(
-        apiUrl(
-          `/library_metric_values/libraries/${row.library_ID}/update-values/`
-        ),
+        apiUrl(`/library_metric_values/libraries/${row.library_ID}/update-values/`),
         {
           method: "POST",
           headers: { "Content-Type": "application/json" },
@@ -993,10 +1242,18 @@ const EditValuesPage: React.FC = () => {
   };
 
   const countStatus = (key: "analysis_status" | "gitstats_status") => {
-    const pending = rows.filter((r) => normalizeStatus(r[key]) === "pending").length;
-    const running = rows.filter((r) => normalizeStatus(r[key]) === "running").length;
-    const success = rows.filter((r) => normalizeStatus(r[key]) === "success").length;
-    const failed = rows.filter((r) => normalizeStatus(r[key]) === "failed").length;
+    const pending = rows.filter(
+      (r) => normalizeStatus(r[key]) === "pending"
+    ).length;
+    const running = rows.filter(
+      (r) => normalizeStatus(r[key]) === "running"
+    ).length;
+    const success = rows.filter(
+      (r) => normalizeStatus(r[key]) === "success"
+    ).length;
+    const failed = rows.filter(
+      (r) => normalizeStatus(r[key]) === "failed"
+    ).length;
     return { pending, running, success, failed };
   };
 
@@ -1015,10 +1272,13 @@ const EditValuesPage: React.FC = () => {
         message={
           confirm?.type === "library" ? (
             <div>
-              This will run <b>GitHub API</b>, <b>SCC</b>, and <b>GitStats</b> for:
+              <div style={{ marginBottom: 10 }}>
+                This will run <b>GitHub API</b>, <b>SCC</b>, and <b>GitStats</b> for:
+              </div>
+
               <div
                 style={{
-                  marginTop: 10,
+                  marginBottom: 12,
                   padding: "10px 12px",
                   border: "1px solid rgba(255,255,255,0.12)",
                   borderRadius: 10,
@@ -1026,11 +1286,77 @@ const EditValuesPage: React.FC = () => {
               >
                 <b>{confirm.library_name}</b>
               </div>
+
+              <div style={{ marginBottom: 8 }}>
+                The following columns will be affected:
+              </div>
+
+              <div
+                style={{
+                  display: "flex",
+                  flexWrap: "wrap",
+                  gap: 8,
+                }}
+              >
+                {affectedMetrics.length > 0 ? (
+                  affectedMetrics.map((m) => (
+                    <span
+                      key={m.metric_ID}
+                      style={{
+                        padding: "5px 9px",
+                        borderRadius: 999,
+                        background: "rgba(255,255,255,0.06)",
+                        border: "1px solid rgba(255,255,255,0.10)",
+                        fontSize: 12.5,
+                        color: "rgba(235,238,245,0.92)",
+                      }}
+                    >
+                      {m.metric_name}
+                    </span>
+                  ))
+                ) : (
+                  <span style={{ opacity: 0.75 }}>No non-manual metrics found.</span>
+                )}
+              </div>
             </div>
           ) : confirm?.type === "all" ? (
             <div>
-              This will run <b>GitHub API</b>, <b>SCC</b>, and <b>GitStats</b> for{" "}
-              <b>all libraries</b> in this domain.
+              <div style={{ marginBottom: 10 }}>
+                This will run <b>GitHub API</b>, <b>SCC</b>, and <b>GitStats</b> for{" "}
+                <b>all libraries</b> in this domain.
+              </div>
+
+              <div style={{ marginBottom: 8 }}>
+                The following columns will be affected:
+              </div>
+
+              <div
+                style={{
+                  display: "flex",
+                  flexWrap: "wrap",
+                  gap: 8,
+                }}
+              >
+                {affectedMetrics.length > 0 ? (
+                  affectedMetrics.map((m) => (
+                    <span
+                      key={m.metric_ID}
+                      style={{
+                        padding: "5px 9px",
+                        borderRadius: 999,
+                        background: "rgba(255,255,255,0.06)",
+                        border: "1px solid rgba(255,255,255,0.10)",
+                        fontSize: 12.5,
+                        color: "rgba(235,238,245,0.92)",
+                      }}
+                    >
+                      {m.metric_name}
+                    </span>
+                  ))
+                ) : (
+                  <span style={{ opacity: 0.75 }}>No non-manual metrics found.</span>
+                )}
+              </div>
             </div>
           ) : null
         }
@@ -1136,12 +1462,21 @@ const EditValuesPage: React.FC = () => {
             </button>
           </div>
 
-          {infoMsg && <div style={{ marginBottom: 10, opacity: 0.9, fontSize: 14 }}>{infoMsg}</div>}
-          {errorMsg && <div style={{ marginBottom: 10, color: "#ff8f8f", fontSize: 14 }}>{errorMsg}</div>}
+          {infoMsg && (
+            <div style={{ marginBottom: 10, opacity: 0.9, fontSize: 14 }}>
+              {infoMsg}
+            </div>
+          )}
+          {errorMsg && (
+            <div style={{ marginBottom: 10, color: "#ff8f8f", fontSize: 14 }}>
+              {errorMsg}
+            </div>
+          )}
 
           <div style={{ marginBottom: 10, fontSize: 13, opacity: 0.85 }}>
             <div style={{ marginTop: 6, opacity: 0.8 }}>
-              Auto-reload is disabled for comfortable editing. When you want updated results, click <b>Reload</b> (or refresh the page).
+              Auto-reload is disabled for comfortable editing. When you want
+              updated results, click <b>Reload</b> (or refresh the page).
             </div>
           </div>
 
@@ -1250,7 +1585,14 @@ const EditValuesPage: React.FC = () => {
                           wordBreak: "break-word",
                         }}
                       >
-                        <div style={{ display: "flex", gap: 6, alignItems: "center", flexWrap: "wrap" }}>
+                        <div
+                          style={{
+                            display: "flex",
+                            gap: 6,
+                            alignItems: "center",
+                            flexWrap: "wrap",
+                          }}
+                        >
                           <button
                             className="dx-btn dx-btn-outline dx-btn-inline"
                             onClick={() => openConfirmLibrary(row)}
@@ -1295,7 +1637,11 @@ const EditValuesPage: React.FC = () => {
                         }}
                         title={row.library_name}
                       >
-                        <div style={clamp2Style}>{row.library_name}</div>
+                        <ExpandableText
+                          text={row.library_name || ""}
+                          lines={2}
+                          textStyle={{ fontWeight: 600 }}
+                        />
                       </td>
 
                       <td
@@ -1306,7 +1652,11 @@ const EditValuesPage: React.FC = () => {
                         }}
                         title={row.github_url || "—"}
                       >
-                        <div style={clamp3Style}>{row.github_url || "—"}</div>
+                        <ExpandableText
+                          text={row.github_url || ""}
+                          lines={3}
+                          emptyText="—"
+                        />
                       </td>
 
                       <td
@@ -1317,7 +1667,11 @@ const EditValuesPage: React.FC = () => {
                         }}
                         title={row.url || "—"}
                       >
-                        <div style={clamp3Style}>{row.url || "—"}</div>
+                        <ExpandableText
+                          text={row.url || ""}
+                          lines={3}
+                          emptyText="—"
+                        />
                       </td>
 
                       <td
@@ -1328,11 +1682,16 @@ const EditValuesPage: React.FC = () => {
                         }}
                         title={row.programming_language || "—"}
                       >
-                        <div style={clamp2Style}>{row.programming_language || "—"}</div>
+                        <ExpandableText
+                          text={row.programming_language || ""}
+                          lines={2}
+                          emptyText="—"
+                        />
                       </td>
 
                       {metricList.map((m) => {
                         const cellVal = row.metrics[m.metric_name];
+
                         if (m.metric_key === "gitstats_report") {
                           const url = cellVal ? String(cellVal) : null;
                           return (
@@ -1351,7 +1710,10 @@ const EditValuesPage: React.FC = () => {
                                     href={url}
                                     target="_blank"
                                     rel="noreferrer"
-                                    style={{ color: "var(--accent)", textDecoration: "none" }}
+                                    style={{
+                                      color: "var(--accent)",
+                                      textDecoration: "none",
+                                    }}
                                   >
                                     View report
                                   </a>
@@ -1373,7 +1735,11 @@ const EditValuesPage: React.FC = () => {
                             }}
                             title={cellVal != null ? String(cellVal) : "—"}
                           >
-                            <div style={clamp3Style}>{cellVal ?? "—"}</div>
+                            <ExpandableText
+                              text={cellVal != null ? String(cellVal) : ""}
+                              lines={3}
+                              emptyText="—"
+                            />
                           </td>
                         );
                       })}

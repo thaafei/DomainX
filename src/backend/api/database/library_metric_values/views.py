@@ -165,6 +165,7 @@ def domain_comparison(request, domain_id):
                 {
                     "metric_ID": str(m.metric_ID),
                     "metric_name": m.metric_name,
+                    "description": m.description,
                     "metric_key": m.metric_key,
                     "value_type": m.value_type,
                     "source_type": m.source_type,
