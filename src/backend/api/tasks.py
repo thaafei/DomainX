@@ -45,16 +45,16 @@ def analyze_repo_task(self, library_id: str, repo_url: str):
         results = analyzer.run_analysis_and_get_data()
         metrics_data = results.get("metric_data", {}) or {}
 
-        metric_names = list(metrics_data.keys())
-        metrics = Metric.objects.filter(metric_name__in=metric_names)
-        metrics_by_name = {m.metric_name: m for m in metrics}
+        metric_keys = list(metrics_data.keys())
+        metrics = Metric.objects.filter(metric_key__in=metric_keys)
+        metrics_by_key = {m.metric_key: m for m in metrics}
 
         updated_count = 0
         skipped_count = 0
 
         with transaction.atomic():
-            for metric_name, value in metrics_data.items():
-                metric_obj = metrics_by_name.get(metric_name)
+            for metric_key, value in metrics_data.items():
+                metric_obj = metrics_by_key.get(metric_key)
                 if not metric_obj:
                     skipped_count += 1
                     logger.debug(
@@ -62,22 +62,30 @@ def analyze_repo_task(self, library_id: str, repo_url: str):
                         extra={
                             "library_id": library_id,
                             "task_id": task_id,
-                            "metric_name": metric_name,
+                            "metric_key": metric_key,
                         },
                     )
                     continue
 
                 try:
-                    int_value = int(value)
+                    if metric_obj.value_type == "int":
+                        stored_value = int(value)
+                    elif metric_obj.value_type == "float":
+                        stored_value = float(value)
+                    elif metric_obj.value_type == "bool":
+                        stored_value = bool(value)
+                    else:
+                        stored_value = str(value)
                 except (TypeError, ValueError):
                     skipped_count += 1
                     logger.debug(
-                        "Metric value not an int; skipping",
+                        "Metric value could not be converted; skipping",
                         extra={
                             "library_id": library_id,
                             "task_id": task_id,
-                            "metric_name": metric_name,
+                            "metric_key": metric_key,
                             "value": value,
+                            "value_type": metric_obj.value_type,
                         },
                     )
                     continue
@@ -86,7 +94,7 @@ def analyze_repo_task(self, library_id: str, repo_url: str):
                     library=lib,
                     metric=metric_obj,
                     defaults={
-                        "value": int_value,
+                        "value": stored_value,
                         "evidence": f"Auto-calculated via GitHub API/SCC on {timezone.now().isoformat()}",
                     },
                 )
@@ -170,7 +178,7 @@ def analyze_repo_gitstats_task(self, library_id: str, repo_url: str):
                 ]
             )
 
-            metric = Metric.objects.filter(metric_name="GitStats Report").first()
+            metric = Metric.objects.filter(metric_key="gitstats_report").first()
             if metric:
                 LibraryMetricValue.objects.update_or_create(
                     library=lib,
@@ -199,7 +207,7 @@ def analyze_repo_gitstats_task(self, library_id: str, repo_url: str):
             ]
         )
 
-        metric = Metric.objects.filter(metric_name="GitStats Report").first()
+        metric = Metric.objects.filter(metric_key="gitstats_report").first()
         if metric:
             LibraryMetricValue.objects.update_or_create(
                 library=lib,

@@ -9,30 +9,19 @@ import json
 import shutil
 import tempfile
 import subprocess
+from django.conf import settings
 
 logger = logging.getLogger("api.services.repo_analyzer")
 
-# Define all target numerical metrics that can be calculated automatically
-TARGET_METRICS = {
-    'Stars Count': 'The total number of stargazers for the repository.',
-    'Forks Count': 'The total number of forks/copies of the repository.',
-    'Watchers Count': 'The number of users currently watching the repository.',
-    'Open Issues Count': 'The number of open issues in the repository.',
-    'Commit Count': 'The total number of commits in the repository history.',
-    'Branch Count': 'The number of branches in the repository.',
-    "Open PRs Count": "Number of open pull requests.",
-    "Closed PRs Count": "Number of closed pull requests.",
-    'Text Files': 'Number of non-binary files.',
-    'Binary Files': 'Number of binary files (images, executables, etc.).',
-    'Commits (Last 5 Years)': 'Commits made in the last 60 months.',
-    "Text Files (SCC)": "Number of text-based files (SCC).",
-    "Total Lines (SCC)": "Number of total lines in text-based files (SCC).",
-    "Code Lines (SCC)": "Number of code lines in text-based files (SCC).",
-    "Comment Lines (SCC)": "Number of comment lines in text-based files (SCC).",
-    "Blank Lines (SCC)": "Number of blank lines in text-based files (SCC).",
-    "GitStats Report": "1 if git_stats report generation succeeded.",
 
-}
+def load_auto_metric_definitions():
+    path = os.path.join(settings.BASE_DIR, "api", "database", "auto_metrics.json")
+    with open(path, "r") as f:
+        return json.load(f)
+
+
+# Define all target numerical metrics that can be calculated automatically
+TARGET_METRICS = load_auto_metric_definitions()
 
 
 
@@ -192,17 +181,17 @@ class RepoAnalyzer:
             logger.debug("File counts for %s/%s: text=%d binary=%d", self.repo_owner, self.repo_name, text_files, binary_files)
 
             return {
-                "Stars Count": data.get("stargazers_count"),
-                "Forks Count": data.get("forks_count"),
-                "Watchers Count": data.get("subscribers_count"),
-                "Open Issues Count": self._get_open_issues_count(),
-                "Commit Count": self._get_total_commit_count_via_api(),
-                "Branch Count": self._get_branch_count_via_api(),
-                "Open PRs Count": self._get_open_prs_count(),
-                "Closed PRs Count": self._get_closed_prs_count(),
-                "Commits (Last 5 Years)": self._get_commits_past_five_years(),
-                "Text Files": text_files,
-                "Binary Files": binary_files
+                "stars_count": data.get("stargazers_count"),
+                "forks_count": data.get("forks_count"),
+                "watchers_count": data.get("subscribers_count"),
+                "open_issues_count": self._get_open_issues_count(),
+                "commit_count": self._get_total_commit_count_via_api(),
+                "branch_count": self._get_branch_count_via_api(),
+                "open_prs_count": self._get_open_prs_count(),
+                "closed_prs_count": self._get_closed_prs_count(),
+                "commits_last_5_years": self._get_commits_past_five_years(),
+                "text_files": text_files,
+                "binary_files": binary_files
             }
         except requests.exceptions.RequestException as e:
             raise Exception(f"GitHub API Error: {e}") from e
@@ -286,11 +275,11 @@ class RepoAnalyzer:
             files = sum(pick_int(r, ["Count", "Files", "files"]) for r in data) if files == 0 else files
 
         return {
-            "Text Files (SCC)": int(files),
-            "Total Lines (SCC)": int(lines),
-            "Blank Lines (SCC)": int(blanks),
-            "Comment Lines (SCC)": int(comments),
-            "Code Lines (SCC)": int(code),
+            "text_files_scc": int(files),
+            "total_lines_scc": int(lines),
+            "blank_lines_scc": int(blanks),
+            "comment_lines_scc": int(comments),
+            "code_lines_scc": int(code),
         }
 
     def _analyze_repo(self):
@@ -308,7 +297,7 @@ class RepoAnalyzer:
 
         final_results = {
             k: v for k, v in merged.items()
-            if k in TARGET_METRICS and v is not None and isinstance(v, int)
+            if k in TARGET_METRICS and v is not None
         }
 
         logger.debug("GitHub API raw metrics: %s", github_api_results)
@@ -386,7 +375,7 @@ class RepoAnalyzer:
                     found.append(os.path.join(r, "index.html"))
             raise Exception(f"git_stats index.html not found at expected location. Found: {found[:3]}")
 
-        return {"GitStats Report": f"/gitstats/{library_id}/git_stats/index.html"}
+        return {"gitstats_report": f"/gitstats/{library_id}/git_stats/index.html"}
 
 
 
@@ -429,5 +418,3 @@ class RepoAnalyzer:
             raise Exception("Clone timed out.")
         except subprocess.CalledProcessError as e:
             raise Exception(f"Clone failed: {e.stderr[-500:]}")
-
-
