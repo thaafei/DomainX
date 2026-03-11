@@ -128,6 +128,7 @@ def domain_comparison(request, domain_id):
             "library_ID": str(lib.library_ID),
             "library_name": lib.library_name,
             "github_url": lib.github_url,
+            "url": lib.url,
             "programming_language": lib.programming_language,
             "analysis_status": lib.analysis_status,
             "analysis_task_id": lib.analysis_task_id,

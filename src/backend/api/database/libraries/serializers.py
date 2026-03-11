@@ -14,6 +14,7 @@ class LibrarySerializer(serializers.ModelSerializer):
             "library_ID",
             "library_name",
             "github_url",
+            "url",
             "domain",
             "programming_language",
             "created_at",
@@ -72,7 +73,7 @@ class LibraryUpdateSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Library
-        fields = ["library_name", "github_url", "programming_language", "domain"]
+        fields = ["library_name", "github_url","url", "programming_language", "domain"]
         validators = []
 
     def validate_github_url(self, value):
@@ -125,6 +126,7 @@ class LibraryWithMetricsSerializer(serializers.ModelSerializer):
             "library_ID",
             "library_name",
             "github_url",
+            "url",
             "domain",
             "created_at",
             "library_metric_values",
