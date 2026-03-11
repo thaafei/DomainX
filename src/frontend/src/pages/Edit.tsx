@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useRef, useLayoutEffect } from "react";
+import React, { useEffect, useState, useRef, useLayoutEffect, useMemo } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { apiUrl } from "../config/api";
 import SuccessNotification from "../components/SuccessNotification";
@@ -51,6 +51,8 @@ const statusLabel = (s?: AnalysisStatus) => {
 const statusColor = (s?: AnalysisStatus) => {
   const v = normalizeStatus(s);
   if (v === "failed") return "rgba(255, 143, 143, 0.95)";
+  if (v === "success") return "rgba(130, 255, 170, 0.92)";
+  if (v === "running") return "rgba(255, 220, 120, 0.92)";
   return "rgba(255,255,255,0.65)";
 };
 
@@ -260,11 +262,14 @@ const EditMetricValuesModal: React.FC<{
   row: EditableRow | null;
   metricList: Metric[];
   pageLoading: boolean;
+  fieldErrors: Record<string, string>;
   onClose: () => void;
   onChangeValue: (metricName: string, value: any) => void;
   onSave: () => void;
-}> = ({ open, row, metricList, pageLoading, onClose, onChangeValue, onSave }) => {
+}> = ({ open, row, metricList, pageLoading, fieldErrors, onClose, onChangeValue, onSave }) => {
   if (!open || !row) return null;
+
+  const hasValidationErrors = Object.keys(fieldErrors).length > 0;
 
   return (
     <div
@@ -415,6 +420,7 @@ const EditMetricValuesModal: React.FC<{
         >
           {metricList.map((m) => {
             const cellVal = row.metrics[m.metric_name];
+            const fieldError = fieldErrors[m.metric_name];
 
             return (
               <div
@@ -459,6 +465,9 @@ const EditMetricValuesModal: React.FC<{
                     value={cellVal ?? ""}
                     onChange={(e) => onChangeValue(m.metric_name, e.target.value)}
                     disabled={pageLoading}
+                    style={{
+                      borderColor: fieldError ? "rgba(255, 99, 99, 0.75)" : undefined,
+                    }}
                   >
                     <option value="" className="dx-input-select">
                       -- Select --
@@ -475,7 +484,16 @@ const EditMetricValuesModal: React.FC<{
                     value={cellVal ?? ""}
                     onChange={(e) => onChangeValue(m.metric_name, e.target.value)}
                     disabled={pageLoading}
+                    style={{
+                      borderColor: fieldError ? "rgba(255, 99, 99, 0.75)" : undefined,
+                    }}
                   />
+                )}
+
+                {fieldError && (
+                  <div style={{ color: "#ff9b9b", fontSize: 12, marginTop: 2 }}>
+                    {fieldError}
+                  </div>
                 )}
               </div>
             );
@@ -494,8 +512,8 @@ const EditMetricValuesModal: React.FC<{
           <button
             className="dx-btn dx-btn-primary"
             onClick={onSave}
-            disabled={pageLoading}
-            style={{ opacity: pageLoading ? 0.7 : 1 }}
+            disabled={pageLoading || hasValidationErrors}
+            style={{ opacity: pageLoading || hasValidationErrors ? 0.7 : 1 }}
           >
             Save
           </button>
@@ -531,6 +549,7 @@ const EditValuesPage: React.FC = () => {
 
   const [editModalOpen, setEditModalOpen] = useState(false);
   const [editDraft, setEditDraft] = useState<EditableRow | null>(null);
+  const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
 
   const firstColRef = useRef<HTMLTableCellElement>(null);
   const [offset, setOffset] = useState(0);
@@ -561,6 +580,7 @@ const EditValuesPage: React.FC = () => {
       if (e.key === "Escape" && editModalOpen && !pageLoading) {
         setEditModalOpen(false);
         setEditDraft(null);
+        setFieldErrors({});
       }
     };
     window.addEventListener("keydown", onKeyDown);
@@ -619,15 +639,62 @@ const EditValuesPage: React.FC = () => {
     setRows(editableRows);
   };
 
+  const validateMetricValue = (metric: Metric, value: any): string => {
+    const raw = value == null ? "" : String(value).trim();
+
+    if (raw === "") return "";
+
+    if (metric.scoring_dict && Object.keys(metric.scoring_dict).length > 0) {
+      return "";
+    }
+
+    if (metric.metric_key === "gitstats_report") {
+      return "";
+    }
+
+    if (metric.value_type === "int") {
+      return /^-?\d+$/.test(raw) ? "" : "Please enter a whole number.";
+    }
+
+    if (metric.value_type === "float") {
+      return /^-?\d+(\.\d+)?$/.test(raw) ? "" : "Please enter a valid number.";
+    }
+
+    if (metric.value_type === "text") {
+      return "";
+    }
+
+    return "";
+  };
+
+  const validateDraft = (draft: EditableRow | null, metrics: Metric[]) => {
+    if (!draft) return {};
+
+    const errors: Record<string, string> = {};
+
+    metrics.forEach((metric) => {
+      const value = draft.metrics[metric.metric_name];
+      const error = validateMetricValue(metric, value);
+      if (error) {
+        errors[metric.metric_name] = error;
+      }
+    });
+
+    return errors;
+  };
+
   const startEdit = (id: string) => {
     const row = rows.find((r) => r.library_ID === id);
     if (!row) return;
 
-    setEditDraft({
+    const draft = {
       ...row,
       metrics: { ...row.metrics },
       isEditing: true,
-    });
+    };
+
+    setEditDraft(draft);
+    setFieldErrors(validateDraft(draft, metricList));
     setEditModalOpen(true);
   };
 
@@ -635,6 +702,7 @@ const EditValuesPage: React.FC = () => {
     if (pageLoading) return;
     setEditModalOpen(false);
     setEditDraft(null);
+    setFieldErrors({});
   };
 
   const cancelEdit = async () => {
@@ -646,6 +714,7 @@ const EditValuesPage: React.FC = () => {
       setInfoMsg(null);
       setEditModalOpen(false);
       setEditDraft(null);
+      setFieldErrors({});
     } catch (e: any) {
       const msg = e?.message || "Failed to refresh.";
       setErrorMsg(msg);
@@ -673,6 +742,7 @@ const EditValuesPage: React.FC = () => {
 
   const updateEditDraftValue = (metric: string, value: any, isEvidence: boolean = false) => {
     const key = isEvidence ? `${metric}_evidence` : metric;
+
     setEditDraft((prev) =>
       prev
         ? {
@@ -684,9 +754,27 @@ const EditValuesPage: React.FC = () => {
           }
         : prev
     );
+
+    const metricObj = metricList.find((m) => m.metric_name === metric);
+    if (metricObj) {
+      const error = validateMetricValue(metricObj, value);
+      setFieldErrors((prev) => {
+        const next = { ...prev };
+        if (error) next[metric] = error;
+        else delete next[metric];
+        return next;
+      });
+    }
   };
 
   const saveRow = async (row: EditableRow) => {
+    const validationErrors = validateDraft(row, metricList);
+    if (Object.keys(validationErrors).length > 0) {
+      setFieldErrors(validationErrors);
+      showFail("Please fix the invalid values before saving.");
+      return;
+    }
+
     try {
       setPageLoading(true);
       setInfoMsg("Saving…");
@@ -717,6 +805,7 @@ const EditValuesPage: React.FC = () => {
       setTimeout(() => setInfoMsg(null), 1500);
       setEditModalOpen(false);
       setEditDraft(null);
+      setFieldErrors({});
     } catch (e: any) {
       const msg = e?.message || "Save failed.";
       setErrorMsg(msg);
@@ -893,6 +982,7 @@ const EditValuesPage: React.FC = () => {
         row={editDraft}
         metricList={metricList}
         pageLoading={pageLoading}
+        fieldErrors={fieldErrors}
         onClose={closeEditModal}
         onChangeValue={updateEditDraftValue}
         onSave={() => {

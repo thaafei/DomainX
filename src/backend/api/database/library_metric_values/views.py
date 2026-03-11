@@ -17,6 +17,40 @@ from ..metrics.models import Metric
 from .models import LibraryMetricValue
 from ...utils.analysis import enqueue_library_analysis
 
+
+def validate_metric_value(metric, value):
+    if value in ("", None):
+        return None, None
+
+    if metric.metric_key == "gitstats_report":
+        return "This metric is read-only and cannot be edited manually.", None
+
+    if metric.scoring_dict and isinstance(metric.scoring_dict, dict):
+        allowed_values = [str(k) for k in metric.scoring_dict.keys()]
+        if str(value) not in allowed_values:
+            return f"{metric.metric_name} must be one of: {', '.join(allowed_values)}.", None
+        return None, value
+
+    if metric.value_type == "int":
+        try:
+            parsed = int(str(value).strip())
+            return None, parsed
+        except (TypeError, ValueError):
+            return f"{metric.metric_name} must be a whole number.", None
+
+    if metric.value_type == "float":
+        try:
+            parsed = float(str(value).strip())
+            return None, parsed
+        except (TypeError, ValueError):
+            return f"{metric.metric_name} must be a valid number.", None
+
+    if metric.value_type == "text":
+        return None, value
+
+    return None, value
+
+
 @api_view(["POST"])
 def analyze_library(request, library_id):
     lib = get_object_or_404(Library, pk=library_id)
@@ -161,8 +195,14 @@ class LibraryMetricValueUpdateView(APIView):
             value_to_store = None if value in ("", None) else value
 
             metric = Metric.objects.filter(metric_name=metric_name).first()
-            if not metric:
+            if not metric or metric.metric_key == "gitstats_report":
                 continue
+
+            if field_to_update == "value":
+                error_message, validated_value = validate_metric_value(metric, value_to_store)
+                if error_message:
+                    return Response({"error": error_message}, status=status.HTTP_400_BAD_REQUEST)
+                value_to_store = validated_value
 
             LibraryMetricValue.objects.update_or_create(
                 library=library,
@@ -197,10 +237,17 @@ class MetricValueBulkUpdateView(APIView):
                     library = get_object_or_404(Library, pk=library_id)
                     metric = get_object_or_404(Metric, pk=metric_id)
 
+                    if metric.metric_key == "gitstats_report":
+                        continue
+
+                    error_message, validated_value = validate_metric_value(metric, value_to_store)
+                    if error_message:
+                        return Response({"error": error_message}, status=status.HTTP_400_BAD_REQUEST)
+
                     LibraryMetricValue.objects.update_or_create(
                         library=library,
                         metric=metric,
-                        defaults={"value": value_to_store},
+                        defaults={"value": validated_value},
                     )
 
             return Response(
