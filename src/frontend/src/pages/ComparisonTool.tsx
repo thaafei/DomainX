@@ -5,6 +5,7 @@ import { BarChart3, Plus, Pencil, Download, ArrowLeft } from "lucide-react";
 interface Metric {
   metric_ID: string;
   metric_name: string;
+  metric_key?: string | null;
 }
 
 interface LibraryMetricRow {
@@ -81,7 +82,7 @@ const ComparisonToolPage: React.FC = () => {
 
       const headers = [
         "Library",
-        ...metricList.map((m) => (m.metric_name === "GitStats Report" ? "GitStats Report URL" : m.metric_name)),
+        ...metricList.map((m) => (m.metric_key === "gitstats_report" ? "GitStats Report URL" : m.metric_name)),
       ];
 
       const rows = tableRows.map((row) => {
@@ -90,7 +91,7 @@ const ComparisonToolPage: React.FC = () => {
           ...metricList.map((m) => {
             const v = row.metrics[m.metric_name];
 
-            if (m.metric_name === "GitStats Report") {
+            if (m.metric_key === "gitstats_report") {
               const url = v ? String(v) : "";
 
               if (!url) return "";
@@ -267,7 +268,7 @@ const ComparisonToolPage: React.FC = () => {
                     {metricList.map((m) => {
                       const cellVal = row.metrics[m.metric_name];
 
-                      if (m.metric_name === "GitStats Report") {
+                      if (m.metric_key === "gitstats_report") {
                         const url = cellVal ? String(cellVal) : null;
                         return (
                           <td

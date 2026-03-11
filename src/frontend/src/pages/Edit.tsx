@@ -8,6 +8,8 @@ interface Metric {
   metric_ID: string;
   metric_name: string;
   value_type: string;
+  source_type?: string;
+  metric_key?: string | null;
   scoring_dict?: Record<string, number> | null;
 }
 
@@ -783,7 +785,7 @@ const EditValuesPage: React.FC = () => {
 
                       {metricList.map((m) => {
                         const cellVal = row.metrics[m.metric_name];
-                        if (!row.isEditing && m.metric_name === "GitStats Report") {
+                        if (!row.isEditing && m.metric_key === "gitstats_report") {
                           const url = cellVal ? String(cellVal) : null;
                           return (
                             <td key={m.metric_ID}>
