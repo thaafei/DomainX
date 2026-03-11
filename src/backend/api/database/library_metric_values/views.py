@@ -126,12 +126,21 @@ def domain_comparison(request, domain_id):
 
     return Response(
         {
-            "metrics": [{"metric_ID": str(m.metric_ID), "metric_name": m.metric_name, "scoring_dict": m.scoring_dict} for m in metrics],
+            "metrics": [
+                {
+                    "metric_ID": str(m.metric_ID),
+                    "metric_name": m.metric_name,
+                    "metric_key": m.metric_key,
+                    "value_type": m.value_type,
+                    "source_type": m.source_type,
+                    "scoring_dict": m.scoring_dict,
+                }
+                for m in metrics
+            ],
             "libraries": table,
         },
         status=status.HTTP_200_OK,
     )
-
 
 class LibraryMetricValueUpdateView(APIView):
     def post(self, request, library_id):
