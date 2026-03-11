@@ -566,7 +566,7 @@ const MetricsPage: React.FC = () => {
               }}
             >
               <button className="dx-btn dx-btn-primary" onClick={openCreateModal}>
-                Add New Metric
+                + Add New Metric
               </button>
             </div>
 
