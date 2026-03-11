@@ -293,8 +293,6 @@ const ComparisonToolPage: React.FC = () => {
               style={{
                 tableLayout: "fixed",
                 width: "100%",
-                borderCollapse: "separate",
-                borderSpacing: 0,
               }}
             >
               <thead>
@@ -303,11 +301,9 @@ const ComparisonToolPage: React.FC = () => {
                     className="dx-th-sticky dx-sticky-left"
                     style={{
                       ...headerCellStyle,
-                      width: 300,
-                      minWidth: 300,
-                      maxWidth: 300,
+                      textAlign: "left",
+                      width: 320,
                       left: 0,
-                      zIndex: 3,
                     }}
                   >
                     Library
@@ -319,9 +315,8 @@ const ComparisonToolPage: React.FC = () => {
                       className="dx-th-sticky"
                       style={{
                         ...headerCellStyle,
+                        textAlign: "left",
                         width: 170,
-                        minWidth: 170,
-                        maxWidth: 170,
                       }}
                       title={m.metric_name}
                     >
@@ -346,17 +341,12 @@ const ComparisonToolPage: React.FC = () => {
                     <td
                       className="dx-sticky-left"
                       style={{
-                        ...cellBaseStyle,
+                        padding: 10,
                         fontWeight: 600,
+                        verticalAlign: "top",
                         left: 0,
-                        background:
-                          rowIndex % 2 === 0
-                            ? "rgba(15,18,30,0.98)"
-                            : "rgba(18,22,34,0.98)",
-                        zIndex: 2,
-                        width: 300,
-                        minWidth: 300,
-                        maxWidth: 300,
+                        whiteSpace: "normal",
+                        wordBreak: "break-word",
                       }}
                       title={row.library_name}
                     >
@@ -448,7 +438,11 @@ const ComparisonToolPage: React.FC = () => {
                         return (
                           <td
                             key={m.metric_ID}
-                            style={metricCellStyle}
+                            style={{
+                              ...metricCellStyle,
+                              whiteSpace: "normal",
+                              wordBreak: "break-word",
+                            }}
                             title={url || "—"}
                           >
                             <div style={clamp2Style}>
@@ -472,7 +466,11 @@ const ComparisonToolPage: React.FC = () => {
                       return (
                         <td
                           key={m.metric_ID}
-                          style={metricCellStyle}
+                          style={{
+                            ...metricCellStyle,
+                            whiteSpace: "normal",
+                            wordBreak: "break-word",
+                          }}
                           title={cellVal != null ? String(cellVal) : "—"}
                         >
                           <div style={clamp3Style}>{cellVal ?? "—"}</div>

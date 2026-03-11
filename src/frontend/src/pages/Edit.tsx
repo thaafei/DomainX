@@ -1151,8 +1151,6 @@ const EditValuesPage: React.FC = () => {
               style={{
                 tableLayout: "fixed",
                 width: "100%",
-                borderCollapse: "separate",
-                borderSpacing: 0,
               }}
             >
               <thead>
@@ -1164,9 +1162,6 @@ const EditValuesPage: React.FC = () => {
                       ...headerCellStyle,
                       left: 0,
                       width: 210,
-                      minWidth: 210,
-                      maxWidth: 210,
-                      zIndex: 4,
                     }}
                   >
                     Actions
@@ -1177,9 +1172,6 @@ const EditValuesPage: React.FC = () => {
                       ...headerCellStyle,
                       left: offset,
                       width: 220,
-                      minWidth: 220,
-                      maxWidth: 220,
-                      zIndex: 3,
                     }}
                   >
                     Name
@@ -1189,8 +1181,6 @@ const EditValuesPage: React.FC = () => {
                     style={{
                       ...headerCellStyle,
                       width: 220,
-                      minWidth: 220,
-                      maxWidth: 220,
                     }}
                   >
                     GitHub URL
@@ -1200,8 +1190,6 @@ const EditValuesPage: React.FC = () => {
                     style={{
                       ...headerCellStyle,
                       width: 220,
-                      minWidth: 220,
-                      maxWidth: 220,
                     }}
                   >
                     URL
@@ -1211,8 +1199,6 @@ const EditValuesPage: React.FC = () => {
                     style={{
                       ...headerCellStyle,
                       width: 120,
-                      minWidth: 120,
-                      maxWidth: 120,
                     }}
                   >
                     Language
@@ -1224,8 +1210,6 @@ const EditValuesPage: React.FC = () => {
                       style={{
                         ...headerCellStyle,
                         width: 170,
-                        minWidth: 170,
-                        maxWidth: 170,
                       }}
                       title={m.metric_name}
                     >
@@ -1245,34 +1229,25 @@ const EditValuesPage: React.FC = () => {
                   const apiDots = apiStatus === "running" ? "..." : "";
                   const gsDots = gsStatus === "running" ? "..." : "";
 
-                  const rowBg =
-                    rowIndex % 2 === 0
-                      ? "rgba(255,255,255,0.01)"
-                      : "rgba(255,255,255,0.025)";
-
-                  const stickyBg =
-                    rowIndex % 2 === 0
-                      ? "rgba(15,18,30,0.98)"
-                      : "rgba(18,22,34,0.98)";
-
                   return (
                     <tr
                       key={row.library_ID}
                       style={{
                         borderBottom: "1px solid rgba(255,255,255,0.08)",
-                        background: rowBg,
+                        background:
+                          rowIndex % 2 === 0
+                            ? "rgba(255,255,255,0.01)"
+                            : "rgba(255,255,255,0.025)",
                       }}
                     >
                       <td
                         className="dx-sticky-left"
                         style={{
-                          ...cellBaseStyle,
+                          padding: 10,
+                          verticalAlign: "top",
                           left: 0,
-                          width: 210,
-                          minWidth: 210,
-                          maxWidth: 210,
-                          background: stickyBg,
-                          zIndex: 2,
+                          whiteSpace: "normal",
+                          wordBreak: "break-word",
                         }}
                       >
                         <div style={{ display: "flex", gap: 6, alignItems: "center", flexWrap: "wrap" }}>
@@ -1311,29 +1286,48 @@ const EditValuesPage: React.FC = () => {
                       <td
                         className="dx-sticky-left"
                         style={{
-                          ...cellBaseStyle,
+                          padding: 10,
+                          verticalAlign: "top",
                           left: offset,
-                          width: 220,
-                          minWidth: 220,
-                          maxWidth: 220,
-                          background: stickyBg,
-                          zIndex: 1,
                           fontWeight: 600,
+                          whiteSpace: "normal",
+                          wordBreak: "break-word",
                         }}
                         title={row.library_name}
                       >
                         <div style={clamp2Style}>{row.library_name}</div>
                       </td>
 
-                      <td style={metricCellStyle} title={row.github_url || "—"}>
+                      <td
+                        style={{
+                          ...metricCellStyle,
+                          whiteSpace: "normal",
+                          wordBreak: "break-word",
+                        }}
+                        title={row.github_url || "—"}
+                      >
                         <div style={clamp3Style}>{row.github_url || "—"}</div>
                       </td>
 
-                      <td style={metricCellStyle} title={row.url || "—"}>
+                      <td
+                        style={{
+                          ...metricCellStyle,
+                          whiteSpace: "normal",
+                          wordBreak: "break-word",
+                        }}
+                        title={row.url || "—"}
+                      >
                         <div style={clamp3Style}>{row.url || "—"}</div>
                       </td>
 
-                      <td style={metricCellStyle} title={row.programming_language || "—"}>
+                      <td
+                        style={{
+                          ...metricCellStyle,
+                          whiteSpace: "normal",
+                          wordBreak: "break-word",
+                        }}
+                        title={row.programming_language || "—"}
+                      >
                         <div style={clamp2Style}>{row.programming_language || "—"}</div>
                       </td>
 
@@ -1344,7 +1338,11 @@ const EditValuesPage: React.FC = () => {
                           return (
                             <td
                               key={m.metric_ID}
-                              style={metricCellStyle}
+                              style={{
+                                ...metricCellStyle,
+                                whiteSpace: "normal",
+                                wordBreak: "break-word",
+                              }}
                               title={url || "—"}
                             >
                               <div style={clamp2Style}>
@@ -1368,7 +1366,11 @@ const EditValuesPage: React.FC = () => {
                         return (
                           <td
                             key={m.metric_ID}
-                            style={metricCellStyle}
+                            style={{
+                              ...metricCellStyle,
+                              whiteSpace: "normal",
+                              wordBreak: "break-word",
+                            }}
                             title={cellVal != null ? String(cellVal) : "—"}
                           >
                             <div style={clamp3Style}>{cellVal ?? "—"}</div>
