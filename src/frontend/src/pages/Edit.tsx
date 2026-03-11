@@ -1496,7 +1496,7 @@ const EditValuesPage: React.FC = () => {
                     style={{
                       ...headerCellStyle,
                       left: 0,
-                      width: 210,
+                      width: 190,
                     }}
                   >
                     Actions
@@ -1506,7 +1506,7 @@ const EditValuesPage: React.FC = () => {
                     style={{
                       ...headerCellStyle,
                       left: offset,
-                      width: 220,
+                      width: 190,
                     }}
                   >
                     Name
@@ -1576,15 +1576,16 @@ const EditValuesPage: React.FC = () => {
                       }}
                     >
                       <td
-                        className="dx-sticky-left"
-                        style={{
-                          padding: 10,
-                          verticalAlign: "top",
-                          left: 0,
-                          whiteSpace: "normal",
-                          wordBreak: "break-word",
-                        }}
-                      >
+                          className="dx-sticky-left"
+                          style={{
+                            padding: "8px 8px",
+                            verticalAlign: "top",
+                            left: 0,
+                            whiteSpace: "normal",
+                            wordBreak: "break-word",
+                            fontSize: 12.5,
+                          }}
+                        >
                         <div
                           style={{
                             display: "flex",
@@ -1594,25 +1595,35 @@ const EditValuesPage: React.FC = () => {
                           }}
                         >
                           <button
-                            className="dx-btn dx-btn-outline dx-btn-inline"
-                            onClick={() => openConfirmLibrary(row)}
-                            disabled={pageLoading || rowUpdating}
-                            style={{ opacity: pageLoading || rowUpdating ? 0.7 : 1 }}
-                          >
+                              className="dx-btn dx-btn-outline dx-btn-inline"
+                              onClick={() => openConfirmLibrary(row)}
+                              disabled={pageLoading || rowUpdating}
+                              style={{
+                                opacity: pageLoading || rowUpdating ? 0.7 : 1,
+                                padding: "5px 8px",
+                                fontSize: 14,
+                                lineHeight: 1.4,
+                              }}
+                            >
                             {rowUpdating ? "Updating..." : "Update"}
                           </button>
 
                           <button
-                            className="dx-btn dx-btn-outline"
-                            onClick={() => startEdit(row.library_ID)}
-                            disabled={pageLoading}
-                            style={{ opacity: pageLoading ? 0.7 : 1 }}
-                          >
+                              className="dx-btn dx-btn-outline"
+                              onClick={() => startEdit(row.library_ID)}
+                              disabled={pageLoading}
+                              style={{
+                                opacity: pageLoading ? 0.7 : 1,
+                                padding: "5px 8px",
+                                fontSize: 14,
+                                lineHeight: 1.4,
+                              }}
+                            >
                             Edit
                           </button>
                         </div>
 
-                        <div style={{ marginTop: 6, fontSize: 12, lineHeight: 1.3 }}>
+                        <div style={{ marginTop: 5, fontSize: 11.5, lineHeight: 1.22 }}>
                           <div style={{ color: statusColor(row.analysis_status), ...clamp2Style }}>
                             API+SCC: {statusLabel(row.analysis_status)}
                             {apiDots}
@@ -1625,22 +1636,28 @@ const EditValuesPage: React.FC = () => {
                         </div>
                       </td>
 
-                      <td
-                        className="dx-sticky-left"
-                        style={{
-                          padding: 10,
-                          verticalAlign: "top",
-                          left: offset,
-                          fontWeight: 600,
-                          whiteSpace: "normal",
-                          wordBreak: "break-word",
-                        }}
-                        title={row.library_name}
-                      >
+                     <td
+                          className="dx-sticky-left"
+                          style={{
+                            padding: "8px 8px",
+                            verticalAlign: "top",
+                            left: offset,
+                            fontWeight: 600,
+                            whiteSpace: "normal",
+                            wordBreak: "break-word",
+                            fontSize: 14,
+                            lineHeight: 1.4,
+                          }}
+                          title={row.library_name}
+                        >
                         <ExpandableText
                           text={row.library_name || ""}
                           lines={2}
-                          textStyle={{ fontWeight: 600 }}
+                          textStyle={{
+                            fontWeight: 600,
+                            fontSize: 12.75,
+                            lineHeight: 1.28,
+                          }}
                         />
                       </td>
 
