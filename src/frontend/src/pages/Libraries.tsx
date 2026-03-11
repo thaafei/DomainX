@@ -12,6 +12,45 @@ interface Library {
   programming_language: string;
 }
 
+const clamp2Style: React.CSSProperties = {
+  display: "-webkit-box",
+  WebkitLineClamp: 2,
+  WebkitBoxOrient: "vertical",
+  overflow: "hidden",
+};
+
+const clamp3Style: React.CSSProperties = {
+  display: "-webkit-box",
+  WebkitLineClamp: 3,
+  WebkitBoxOrient: "vertical",
+  overflow: "hidden",
+};
+
+const cellBaseStyle: React.CSSProperties = {
+  padding: "9px 10px",
+  verticalAlign: "top",
+  fontSize: 13.5,
+  lineHeight: 1.4,
+  overflowWrap: "anywhere",
+};
+
+const metricCellStyle: React.CSSProperties = {
+  ...cellBaseStyle,
+  color: "rgba(255,255,255,0.9)",
+};
+
+const headerCellStyle: React.CSSProperties = {
+  textAlign: "left",
+  padding: "10px 10px",
+  fontSize: 13,
+  lineHeight: 1.3,
+  fontWeight: 700,
+  color: "rgba(255,255,255,0.92)",
+  background: "rgba(20, 24, 38, 0.96)",
+  borderBottom: "1px solid rgba(255,255,255,0.08)",
+  overflowWrap: "anywhere",
+};
+
 const ErrorNotification: React.FC<{ show: boolean; message: string }> = ({
   show,
   message,
@@ -356,7 +395,7 @@ const AddLibraryPage: React.FC = () => {
       <div
         style={{
           flex: 1,
-          padding: "40px 60px",
+          padding: "28px 32px",
           color: "white",
           overflow: "hidden",
           display: "flex",
@@ -410,7 +449,9 @@ const AddLibraryPage: React.FC = () => {
             style={{
               display: "flex",
               justifyContent: "flex-start",
-              marginBottom: 6,
+              marginBottom: 10,
+              flexWrap: "wrap",
+              gap: 10,
             }}
           >
             <button className="dx-btn dx-btn-primary" onClick={openCreateModal}>
@@ -424,29 +465,44 @@ const AddLibraryPage: React.FC = () => {
           >
             <table
               className="dx-table"
-              style={{ tableLayout: "fixed", width: "100%" }}
+              style={{
+                tableLayout: "fixed",
+                width: "100%",
+                borderCollapse: "separate",
+                borderSpacing: 0,
+              }}
             >
               <thead>
                 <tr>
                   <th
                     className="dx-th-sticky"
-                    style={{ textAlign: "left", width: 220 }}
+                    style={{
+                      ...headerCellStyle,
+                      width: 220,
+                      minWidth: 220,
+                      maxWidth: 220,
+                    }}
                   >
                     Name
                   </th>
                   <th
                     className="dx-th-sticky"
-                    style={{ textAlign: "left", width: 160 }}
+                    style={{
+                      ...headerCellStyle,
+                      width: 150,
+                      minWidth: 150,
+                      maxWidth: 150,
+                    }}
                   >
                     Language
                   </th>
                   <th
                     className="dx-th-sticky"
                     style={{
-                      textAlign: "left",
+                      ...headerCellStyle,
                       width: 260,
-                      whiteSpace: "normal",
-                      wordBreak: "break-word",
+                      minWidth: 260,
+                      maxWidth: 260,
                     }}
                   >
                     GitHub URL
@@ -454,77 +510,78 @@ const AddLibraryPage: React.FC = () => {
                   <th
                     className="dx-th-sticky"
                     style={{
-                      textAlign: "left",
-                      whiteSpace: "normal",
-                      wordBreak: "break-word",
+                      ...headerCellStyle,
+                      width: 260,
+                      minWidth: 260,
+                      maxWidth: 260,
                     }}
                   >
                     URL
                   </th>
-                  <th className="dx-th-sticky" style={{ width: 220 }} />
+                  <th
+                    className="dx-th-sticky"
+                    style={{
+                      ...headerCellStyle,
+                      width: 210,
+                      minWidth: 210,
+                      maxWidth: 210,
+                    }}
+                  />
                 </tr>
               </thead>
 
               <tbody>
-                {libraries.map((lib) => (
+                {libraries.map((lib, index) => (
                   <tr
                     key={lib.library_ID}
-                    style={{ borderBottom: "1px solid rgba(255,255,255,0.08)" }}
+                    style={{
+                      borderBottom: "1px solid rgba(255,255,255,0.08)",
+                      background:
+                        index % 2 === 0
+                          ? "rgba(255,255,255,0.01)"
+                          : "rgba(255,255,255,0.025)",
+                    }}
                   >
                     <td
                       style={{
-                        padding: 10,
-                        fontWeight: 600,
-                        whiteSpace: "normal",
-                        wordBreak: "break-word",
-                        verticalAlign: "top",
+                        ...cellBaseStyle,
+                        fontWeight: 700,
+                        fontSize: 14.5,
+                        lineHeight: 1.35,
                       }}
                       title={lib.library_name}
                     >
-                      {lib.library_name}
+                      <div style={clamp2Style}>{lib.library_name}</div>
                     </td>
 
                     <td
-                      style={{
-                        padding: 10,
-                        whiteSpace: "normal",
-                        wordBreak: "break-word",
-                        verticalAlign: "top",
-                      }}
+                      style={metricCellStyle}
+                      title={lib.programming_language || "—"}
                     >
-                      {lib.programming_language || "—"}
+                      <div style={clamp2Style}>{lib.programming_language || "—"}</div>
                     </td>
 
                     <td
-                      style={{
-                        padding: 10,
-                        whiteSpace: "normal",
-                        wordBreak: "break-word",
-                        verticalAlign: "top",
-                      }}
-                      title={lib.github_url || ""}
+                      style={metricCellStyle}
+                      title={lib.github_url || "—"}
                     >
-                      {lib.github_url || "—"}
+                      <div style={clamp3Style}>{lib.github_url || "—"}</div>
                     </td>
 
                     <td
-                      style={{
-                        padding: 10,
-                        whiteSpace: "normal",
-                        wordBreak: "break-word",
-                        verticalAlign: "top",
-                      }}
-                      title={lib.url || ""}
+                      style={metricCellStyle}
+                      title={lib.url || "—"}
                     >
-                      {lib.url || "—"}
+                      <div style={clamp3Style}>{lib.url || "—"}</div>
                     </td>
 
-                    <td style={{ padding: 10, verticalAlign: "top" }}>
+                    <td style={{ ...cellBaseStyle, paddingTop: 8, paddingBottom: 8 }}>
                       <div
                         style={{
                           display: "flex",
                           justifyContent: "flex-end",
                           gap: 8,
+                          flexWrap: "wrap",
                         }}
                       >
                         <button
@@ -592,7 +649,7 @@ const AddLibraryPage: React.FC = () => {
                 gap: 14,
               }}
             >
-              <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+              <div style={{ display: "flex", alignItems: "center", gap: 12, minWidth: 0 }}>
                 <h2
                   style={{ margin: 0, color: "var(--accent)", fontSize: "1.25rem" }}
                 >
@@ -739,6 +796,7 @@ const AddLibraryPage: React.FC = () => {
                   gap: 10,
                   justifyContent: "flex-end",
                   marginTop: 6,
+                  flexWrap: "wrap",
                 }}
               >
                 <button className="dx-btn dx-btn-outline" onClick={closeModal}>

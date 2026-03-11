@@ -33,6 +33,45 @@ interface AutoMetricOptionsResponse {
 
 type ModalMode = "create" | "edit" | null;
 
+const clamp2Style: React.CSSProperties = {
+  display: "-webkit-box",
+  WebkitLineClamp: 2,
+  WebkitBoxOrient: "vertical",
+  overflow: "hidden",
+};
+
+const clamp3Style: React.CSSProperties = {
+  display: "-webkit-box",
+  WebkitLineClamp: 3,
+  WebkitBoxOrient: "vertical",
+  overflow: "hidden",
+};
+
+const cellBaseStyle: React.CSSProperties = {
+  padding: "9px 10px",
+  verticalAlign: "top",
+  fontSize: 13.5,
+  lineHeight: 1.4,
+  overflowWrap: "anywhere",
+};
+
+const metricCellStyle: React.CSSProperties = {
+  ...cellBaseStyle,
+  color: "rgba(255,255,255,0.9)",
+};
+
+const headerCellStyle: React.CSSProperties = {
+  textAlign: "left",
+  padding: "10px 10px",
+  fontSize: 13,
+  lineHeight: 1.3,
+  fontWeight: 700,
+  color: "rgba(255,255,255,0.92)",
+  background: "rgba(20, 24, 38, 0.96)",
+  borderBottom: "1px solid rgba(255,255,255,0.08)",
+  overflowWrap: "anywhere",
+};
+
 const MetricsPage: React.FC = () => {
   const navigate = useNavigate();
 
@@ -207,53 +246,54 @@ const MetricsPage: React.FC = () => {
   const modalMetricKey = modalMode === "create" ? newMetricKey : editMetricKey;
   const modalAutoOptions = autoMetricOptions[modalSourceType as keyof AutoMetricOptionsResponse] || [];
   const getReadableErrorMessage = (err: unknown) => {
-      const fallback = "Could not save metric. Please check the form and try again.";
+    const fallback = "Could not save metric. Please check the form and try again.";
 
-      if (!(err instanceof Error) || !err.message) return fallback;
+    if (!(err instanceof Error) || !err.message) return fallback;
 
-      const msg = err.message;
+    const msg = err.message;
 
-      const apiPrefix = "API Error";
-      const apiIndex = msg.indexOf(": ");
-      const raw = msg.startsWith(apiPrefix) && apiIndex !== -1 ? msg.slice(apiIndex + 2) : msg;
+    const apiPrefix = "API Error";
+    const apiIndex = msg.indexOf(": ");
+    const raw = msg.startsWith(apiPrefix) && apiIndex !== -1 ? msg.slice(apiIndex + 2) : msg;
 
-      try {
-        const parsed = JSON.parse(raw);
+    try {
+      const parsed = JSON.parse(raw);
 
-        if (typeof parsed === "string") return parsed;
+      if (typeof parsed === "string") return parsed;
 
-        if (parsed.metric_name) {
-          const metricNameError = Array.isArray(parsed.metric_name)
-            ? parsed.metric_name[0]
-            : parsed.metric_name;
-          if (String(metricNameError).toLowerCase().includes("already exists")) {
-              return "A metric with this name already exists. Please choose a different name.";
-            }
-            return `Metric name: ${metricNameError}`;
+      if (parsed.metric_name) {
+        const metricNameError = Array.isArray(parsed.metric_name)
+          ? parsed.metric_name[0]
+          : parsed.metric_name;
+        if (String(metricNameError).toLowerCase().includes("already exists")) {
+          return "A metric with this name already exists. Please choose a different name.";
         }
-
-        if (parsed.metric_key) {
-          const metricKeyError = Array.isArray(parsed.metric_key)
-            ? parsed.metric_key[0]
-            : parsed.metric_key;
-          return `System metric: ${metricKeyError}`;
-        }
-
-        if (parsed.non_field_errors) {
-          return Array.isArray(parsed.non_field_errors)
-            ? parsed.non_field_errors[0]
-            : parsed.non_field_errors;
-        }
-
-        const firstValue = Object.values(parsed)[0];
-        if (Array.isArray(firstValue) && firstValue.length > 0) return String(firstValue[0]);
-        if (typeof firstValue === "string") return firstValue;
-
-        return fallback;
-      } catch {
-        return raw || fallback;
+        return `Metric name: ${metricNameError}`;
       }
-    };
+
+      if (parsed.metric_key) {
+        const metricKeyError = Array.isArray(parsed.metric_key)
+          ? parsed.metric_key[0]
+          : parsed.metric_key;
+        return `System metric: ${metricKeyError}`;
+      }
+
+      if (parsed.non_field_errors) {
+        return Array.isArray(parsed.non_field_errors)
+          ? parsed.non_field_errors[0]
+          : parsed.non_field_errors;
+      }
+
+      const firstValue = Object.values(parsed)[0];
+      if (Array.isArray(firstValue) && firstValue.length > 0) return String(firstValue[0]);
+      if (typeof firstValue === "string") return firstValue;
+
+      return fallback;
+    } catch {
+      return raw || fallback;
+    }
+  };
+
   const addMetric = async (): Promise<boolean> => {
     if (!newName.trim()) {
       setFormError("Metric name is required.");
@@ -399,7 +439,7 @@ const MetricsPage: React.FC = () => {
 
       showSuccess("Metric updated successfully!");
       return true;
-     } catch (err) {
+    } catch (err) {
       console.error(err);
       setFormError(getReadableErrorMessage(err));
       return false;
@@ -492,7 +532,7 @@ const MetricsPage: React.FC = () => {
       <div
         style={{
           flex: 1,
-          padding: "40px 60px",
+          padding: "28px 32px",
           color: "white",
           overflow: "hidden",
           display: "flex",
@@ -516,125 +556,233 @@ const MetricsPage: React.FC = () => {
               flexDirection: "column",
             }}
           >
-            <div style={{ display: "flex", justifyContent: "flex-start", marginBottom: 6 }}>
+            <div
+              style={{
+                display: "flex",
+                justifyContent: "flex-start",
+                marginBottom: 10,
+                flexWrap: "wrap",
+                gap: 10,
+              }}
+            >
               <button className="dx-btn dx-btn-primary" onClick={openCreateModal}>
                 Add New Metric
               </button>
             </div>
 
             <div className="dx-table-wrap dx-table-scroll" style={{ flex: 1, minHeight: 0 }}>
-              <table className="dx-table">
+              <table
+                className="dx-table"
+                style={{
+                  tableLayout: "fixed",
+                  width: "100%",
+                  borderCollapse: "separate",
+                  borderSpacing: 0,
+                }}
+              >
                 <thead>
                   <tr>
-                    <th ref={firstColRef} className="dx-th-sticky dx-sticky-left" style={{ left: 0 }}>
+                    <th
+                      ref={firstColRef}
+                      className="dx-th-sticky dx-sticky-left"
+                      style={{
+                        ...headerCellStyle,
+                        left: 0,
+                        width: 160,
+                        minWidth: 160,
+                        maxWidth: 160,
+                        zIndex: 4,
+                      }}
+                    >
                       Actions
                     </th>
-                    <th className="dx-th-sticky dx-sticky-left" style={{ left: offset }}>
+                    <th
+                      className="dx-th-sticky dx-sticky-left"
+                      style={{
+                        ...headerCellStyle,
+                        left: offset,
+                        width: 180,
+                        minWidth: 180,
+                        maxWidth: 180,
+                        zIndex: 3,
+                      }}
+                    >
                       Name
                     </th>
-                    <th className="dx-th-sticky">Type</th>
-                    <th className="dx-th-sticky">Input Category</th>
-                    <th className="dx-th-sticky">Scoring Rule</th>
-                    <th className="dx-th-sticky">Category</th>
-                    <th className="dx-th-sticky">Description</th>
+                    <th
+                      className="dx-th-sticky"
+                      style={{
+                        ...headerCellStyle,
+                        width: 100,
+                        minWidth: 100,
+                        maxWidth: 100,
+                      }}
+                    >
+                      Type
+                    </th>
+                    <th
+                      className="dx-th-sticky"
+                      style={{
+                        ...headerCellStyle,
+                        width: 170,
+                        minWidth: 170,
+                        maxWidth: 170,
+                      }}
+                    >
+                      Input Category
+                    </th>
+                    <th
+                      className="dx-th-sticky"
+                      style={{
+                        ...headerCellStyle,
+                        width: 260,
+                        minWidth: 260,
+                        maxWidth: 260,
+                      }}
+                    >
+                      Scoring Rule
+                    </th>
+                    <th
+                      className="dx-th-sticky"
+                      style={{
+                        ...headerCellStyle,
+                        width: 170,
+                        minWidth: 170,
+                        maxWidth: 170,
+                      }}
+                    >
+                      Category
+                    </th>
+                    <th
+                      className="dx-th-sticky"
+                      style={{
+                        ...headerCellStyle,
+                        width: 220,
+                        minWidth: 220,
+                        maxWidth: 220,
+                      }}
+                    >
+                      Description
+                    </th>
                   </tr>
                 </thead>
 
                 <tbody>
-                  {metrics.map((m) => (
-                    <tr key={m.metric_ID} style={{ borderBottom: "1px solid rgba(255,255,255,0.08)" }}>
-                      <td className="dx-sticky-left" style={{ left: 0 }}>
-                        <div style={{ display: "flex", gap: 6 }}>
-                          <button className="dx-btn dx-btn-outline" onClick={() => openEditModal(m)}>
-                            Edit
-                          </button>
-                          <button
-                            className="dx-btn dx-btn-outline"
-                            style={{ borderColor: "var(--danger)", color: "var(--danger)" }}
-                            onClick={() => deleteMetric(m.metric_ID)}
+                  {metrics.map((m, index) => {
+                    const rowBg =
+                      index % 2 === 0
+                        ? "rgba(255,255,255,0.01)"
+                        : "rgba(255,255,255,0.025)";
+
+                    const stickyBg =
+                      index % 2 === 0
+                        ? "rgba(15,18,30,0.98)"
+                        : "rgba(18,22,34,0.98)";
+
+                    return (
+                      <tr
+                        key={m.metric_ID}
+                        style={{
+                          borderBottom: "1px solid rgba(255,255,255,0.08)",
+                          background: rowBg,
+                        }}
+                      >
+                        <td
+                          className="dx-sticky-left"
+                          style={{
+                            ...cellBaseStyle,
+                            left: 0,
+                            width: 160,
+                            minWidth: 160,
+                            maxWidth: 160,
+                            background: stickyBg,
+                            zIndex: 2,
+                          }}
+                        >
+                          <div style={{ display: "flex", gap: 6, flexWrap: "wrap" }}>
+                            <button className="dx-btn dx-btn-outline" onClick={() => openEditModal(m)}>
+                              Edit
+                            </button>
+                            <button
+                              className="dx-btn dx-btn-outline"
+                              style={{ borderColor: "var(--danger)", color: "var(--danger)" }}
+                              onClick={() => deleteMetric(m.metric_ID)}
+                            >
+                              Delete
+                            </button>
+                          </div>
+                        </td>
+
+                        <td
+                          className="dx-sticky-left"
+                          style={{
+                            ...cellBaseStyle,
+                            left: offset,
+                            width: 180,
+                            minWidth: 180,
+                            maxWidth: 180,
+                            background: stickyBg,
+                            zIndex: 1,
+                            fontWeight: 700,
+                            fontSize: 14.5,
+                            lineHeight: 1.35,
+                          }}
+                          title={m.metric_name}
+                        >
+                          <div style={clamp2Style}>{m.metric_name}</div>
+                        </td>
+
+                        <td
+                          style={metricCellStyle}
+                          title={m.value_type}
+                        >
+                          <div style={clamp2Style}>{m.value_type}</div>
+                        </td>
+
+                        <td
+                          style={metricCellStyle}
+                          title={displayInputCategory(m)}
+                        >
+                          <div style={clamp3Style}>{displayInputCategory(m)}</div>
+                        </td>
+
+                        <td
+                          style={metricCellStyle}
+                          title={displayRulePreview(m)}
+                        >
+                          <code
+                            style={{
+                              display: "-webkit-box",
+                              WebkitLineClamp: 4,
+                              WebkitBoxOrient: "vertical",
+                              overflow: "hidden",
+                              whiteSpace: "pre-wrap",
+                              overflowWrap: "anywhere",
+                              color: "inherit",
+                              fontSize: 12.5,
+                              lineHeight: 1.35,
+                            }}
                           >
-                            Delete
-                          </button>
-                        </div>
-                      </td>
+                            {displayRulePreview(m)}
+                          </code>
+                        </td>
 
-                      <td
-                        className="dx-sticky-left"
-                        style={{
-                          left: offset,
-                          minWidth: 120,
-                          maxWidth: 180,
-                          whiteSpace: "normal",
-                          overflowWrap: "anywhere",
-                          wordBreak: "break-word",
-                        }}
-                      >
-                        {m.metric_name}
-                      </td>
+                        <td
+                          style={metricCellStyle}
+                          title={m.category || "—"}
+                        >
+                          <div style={clamp3Style}>{m.category || "—"}</div>
+                        </td>
 
-                      <td
-                        style={{
-                          minWidth: 60,
-                          maxWidth: 90,
-                          whiteSpace: "normal",
-                          overflowWrap: "anywhere",
-                          wordBreak: "break-word",
-                        }}
-                      >
-                        {m.value_type}
-                      </td>
-
-                      <td
-                        style={{
-                          minWidth: 120,
-                          maxWidth: 220,
-                          whiteSpace: "normal",
-                          overflowWrap: "anywhere",
-                          wordBreak: "break-word",
-                        }}
-                      >
-                        {displayInputCategory(m)}
-                      </td>
-
-                      <td
-                        style={{
-                          minWidth: 160,
-                          maxWidth: 320,
-                          whiteSpace: "normal",
-                          overflowWrap: "anywhere",
-                          wordBreak: "break-word",
-                        }}
-                      >
-                        <code style={{ display: "block", whiteSpace: "pre-wrap", overflowWrap: "anywhere" }}>
-                          {displayRulePreview(m)}
-                        </code>
-                      </td>
-
-                      <td
-                        style={{
-                          minWidth: 120,
-                          maxWidth: 220,
-                          whiteSpace: "normal",
-                          overflowWrap: "anywhere",
-                          wordBreak: "break-word",
-                        }}
-                      >
-                        {m.category || "—"}
-                      </td>
-
-                      <td
-                        style={{
-                          minWidth: 160,
-                          maxWidth: 280,
-                          whiteSpace: "normal",
-                          overflowWrap: "anywhere",
-                          wordBreak: "break-word",
-                        }}
-                      >
-                        {m.description || "—"}
-                      </td>
-                    </tr>
-                  ))}
+                        <td
+                          style={metricCellStyle}
+                          title={m.description || "—"}
+                        >
+                          <div style={clamp3Style}>{m.description || "—"}</div>
+                        </td>
+                      </tr>
+                    );
+                  })}
                 </tbody>
               </table>
 
@@ -680,6 +828,8 @@ const MetricsPage: React.FC = () => {
                   alignItems: "center",
                   justifyContent: "space-between",
                   marginBottom: 14,
+                  gap: 12,
+                  minWidth: 0,
                 }}
               >
                 <div style={{ fontSize: "1.15rem", fontWeight: 700, color: "var(--accent)" }}>
@@ -980,7 +1130,7 @@ const MetricsPage: React.FC = () => {
                 </div>
               </div>
 
-              <div style={{ display: "flex", justifyContent: "flex-end", gap: 10, marginTop: 16 }}>
+              <div style={{ display: "flex", justifyContent: "flex-end", gap: 10, marginTop: 16, flexWrap: "wrap" }}>
                 <button className="dx-btn dx-btn-outline" onClick={closeModal}>
                   Cancel
                 </button>
