@@ -87,11 +87,13 @@ def analyze_domain_libraries(request, domain_id):
         try:
             result = enqueue_library_analysis(lib)
             if result:
-                queued.append({
-                    "library_id": str(lib.library_ID),
-                    "analysis_task_id": result.get("analysis_task_id"),
-                    "gitstats_task_id": result.get("gitstats_task_id"),
-                })
+                queued.append(
+                    {
+                        "library_id": str(lib.library_ID),
+                        "analysis_task_id": result.get("analysis_task_id"),
+                        "gitstats_task_id": result.get("gitstats_task_id"),
+                    }
+                )
             else:
                 failed.append({"library_id": str(lib.library_ID), "error": lib.analysis_error})
         except Exception as e:
@@ -125,7 +127,7 @@ def domain_comparison(request, domain_id):
         row = {
             "library_ID": str(lib.library_ID),
             "library_name": lib.library_name,
-            "url": lib.url,
+            "github_url": lib.github_url,
             "programming_language": lib.programming_language,
             "analysis_status": lib.analysis_status,
             "analysis_task_id": lib.analysis_task_id,
@@ -146,9 +148,7 @@ def domain_comparison(request, domain_id):
         by_lib[row["library_ID"]] = row
 
     values = (
-        LibraryMetricValue.objects
-        .filter(library__in=libraries)
-        .select_related("library", "metric")
+        LibraryMetricValue.objects.filter(library__in=libraries).select_related("library", "metric")
     )
 
     for val in values:
@@ -175,6 +175,7 @@ def domain_comparison(request, domain_id):
         },
         status=status.HTTP_200_OK,
     )
+
 
 class LibraryMetricValueUpdateView(APIView):
     def post(self, request, library_id):
@@ -256,7 +257,10 @@ class MetricValueBulkUpdateView(APIView):
             )
 
         except Exception as e:
-            return Response({"error": f"Bulk update failed: {str(e)}"}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+            return Response(
+                {"error": f"Bulk update failed: {str(e)}"},
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            )
 
 
 class AHPCalculations(APIView):
@@ -304,7 +308,9 @@ class AHPCalculations(APIView):
                 library_scores[lib.library_name] = total_score if total_score > 0 else 0.0001
 
             if library_scores:
-                category_ahp.append(ahpy.Compare(name=category_name, comparisons=library_scores, precision=4))
+                category_ahp.append(
+                    ahpy.Compare(name=category_name, comparisons=library_scores, precision=4)
+                )
 
         active_cat_names = [c.name for c in category_ahp]
         raw_weights = {cat: domain.category_weights.get(cat, 1.0) for cat in active_cat_names}
@@ -325,7 +331,10 @@ class AHPCalculations(APIView):
 
             global_rank[lib_name] = round(overall_score, 4)
 
-            lib.ahp_results = {"category_scores": lib_cat_scores, "overall_score": global_rank[lib_name]}
+            lib.ahp_results = {
+                "category_scores": lib_cat_scores,
+                "overall_score": global_rank[lib_name],
+            }
             lib.save(update_fields=["ahp_results"])
 
         return Response(
