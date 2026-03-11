@@ -33,6 +33,7 @@ def test_defaults_and_blank_fields():
 
     assert lib.programming_language is None
     assert lib.github_url is None
+    assert lib.url is None
     assert lib.gitstats_report_path is None
 
     assert lib.gitstats_status == Library.GITSTATS_PENDING
@@ -117,7 +118,57 @@ def test_same_github_url_allowed_in_different_domains():
 
 
 @pytest.mark.django_db
-def test_null_github_url_does_not_break_basic_creation():
+def test_unique_url_per_domain_constraint():
     domain = Domain.objects.create(domain_name="D8", description="desc")
-    lib = Library.objects.create(domain=domain, library_name="LibNoUrl", github_url=None)
+
+    Library.objects.create(
+        domain=domain,
+        library_name="Lib1",
+        url="https://pytorch.org/projects/pytorch/",
+    )
+    with pytest.raises(IntegrityError):
+        Library.objects.create(
+            domain=domain,
+            library_name="Lib2",
+            url="https://pytorch.org/projects/pytorch/",
+        )
+
+
+@pytest.mark.django_db
+def test_same_url_allowed_in_different_domains():
+    d1 = Domain.objects.create(domain_name="D9A", description="desc")
+    d2 = Domain.objects.create(domain_name="D9B", description="desc")
+
+    Library.objects.create(
+        domain=d1,
+        library_name="Lib1",
+        url="https://pytorch.org/projects/pytorch/",
+    )
+    Library.objects.create(
+        domain=d2,
+        library_name="Lib2",
+        url="https://pytorch.org/projects/pytorch/",
+    )
+
+    assert (
+        Library.objects.filter(domain=d1, url="https://pytorch.org/projects/pytorch/").count()
+        == 1
+    )
+    assert (
+        Library.objects.filter(domain=d2, url="https://pytorch.org/projects/pytorch/").count()
+        == 1
+    )
+
+
+@pytest.mark.django_db
+def test_null_github_url_does_not_break_basic_creation():
+    domain = Domain.objects.create(domain_name="D10", description="desc")
+    lib = Library.objects.create(domain=domain, library_name="LibNoGithubUrl", github_url=None)
     assert lib.github_url is None
+
+
+@pytest.mark.django_db
+def test_null_url_does_not_break_basic_creation():
+    domain = Domain.objects.create(domain_name="D11", description="desc")
+    lib = Library.objects.create(domain=domain, library_name="LibNoUrl", url=None)
+    assert lib.url is None
