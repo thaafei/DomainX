@@ -19,6 +19,7 @@ interface EditableRow {
   library_ID: string;
   library_name: string;
   github_url: string | null;
+  url: string | null;
   programming_language: string;
   metrics: { [metricName: string]: string | number | null };
   isEditing: boolean;
@@ -356,6 +357,23 @@ const EditMetricValuesModal: React.FC<{
             </div>
             <div style={{ wordBreak: "break-word", color: "rgba(255,255,255,0.92)" }}>
               {row.github_url || "—"}
+            </div>
+          </div>
+
+          <div
+            style={{
+              padding: "10px 12px",
+              borderRadius: 10,
+              background: "rgba(255,255,255,0.04)",
+              border: "1px solid rgba(255,255,255,0.08)",
+              color: "white",
+            }}
+          >
+            <div style={{ opacity: 0.75, fontSize: 13, marginBottom: 4, color: "rgba(255,255,255,0.72)" }}>
+              URL
+            </div>
+            <div style={{ wordBreak: "break-word", color: "rgba(255,255,255,0.92)" }}>
+              {row.url || "—"}
             </div>
           </div>
 
@@ -1066,6 +1084,7 @@ const EditValuesPage: React.FC = () => {
                     Name
                   </th>
                   <th className="dx-th-sticky">GitHub URL</th>
+                  <th className="dx-th-sticky">URL</th>
                   <th className="dx-th-sticky">Language</th>
                   {metricList.map((m) => (
                     <th key={m.metric_ID} className="dx-th-sticky">
@@ -1127,6 +1146,10 @@ const EditValuesPage: React.FC = () => {
 
                       <td>
                         <div>{row.github_url || "—"}</div>
+                      </td>
+
+                      <td>
+                        <div>{row.url || "—"}</div>
                       </td>
 
                       <td>

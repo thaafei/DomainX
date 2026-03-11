@@ -8,6 +8,7 @@ interface Library {
   library_ID: string;
   library_name: string;
   github_url: string | null;
+  url: string | null;
   programming_language: string;
 }
 
@@ -53,6 +54,7 @@ const AddLibraryPage: React.FC = () => {
   const [formError, setFormError] = useState<string>("");
   const [name, setName] = useState("");
   const [githubUrl, setGithubUrl] = useState("");
+  const [url, setUrl] = useState("");
   const [language, setLanguage] = useState("");
 
   const [editingId, setEditingId] = useState<string | null>(null);
@@ -93,6 +95,10 @@ const AddLibraryPage: React.FC = () => {
         : data.github_url;
     }
 
+    if (data.url) {
+      return Array.isArray(data.url) ? data.url[0] : data.url;
+    }
+
     if (data.domain) {
       return Array.isArray(data.domain) ? data.domain[0] : data.domain;
     }
@@ -118,6 +124,7 @@ const AddLibraryPage: React.FC = () => {
     setFormError("");
     setName("");
     setGithubUrl("");
+    setUrl("");
     setLanguage("");
     setEditingId(null);
   };
@@ -126,6 +133,7 @@ const AddLibraryPage: React.FC = () => {
     setFormError("");
     setName("");
     setGithubUrl("");
+    setUrl("");
     setLanguage("");
     setEditingId(null);
     setModalOpen(true);
@@ -135,6 +143,7 @@ const AddLibraryPage: React.FC = () => {
     setFormError("");
     setName(lib.library_name || "");
     setGithubUrl(lib.github_url || "");
+    setUrl(lib.url || "");
     setLanguage(lib.programming_language || "");
     setEditingId(lib.library_ID);
     setModalOpen(true);
@@ -165,6 +174,7 @@ const AddLibraryPage: React.FC = () => {
       setFormError("Library name is required.");
       return false;
     }
+
     if (!githubUrl.trim()) {
       setFormError("GitHub URL is required.");
       return false;
@@ -175,9 +185,18 @@ const AddLibraryPage: React.FC = () => {
 
     if (!githubRepoRegex.test(githubUrl.trim())) {
       setFormError(
-        "URL must be a valid GitHub repository (e.g., https://github.com/user/repo)."
+        "GitHub URL must be a valid GitHub repository (e.g., https://github.com/user/repo)."
       );
       return false;
+    }
+
+    if (url.trim()) {
+      try {
+        new URL(url.trim());
+      } catch {
+        setFormError("URL must be a valid website link.");
+        return false;
+      }
     }
 
     return true;
@@ -189,6 +208,7 @@ const AddLibraryPage: React.FC = () => {
     const payload = {
       library_name: name.trim(),
       github_url: githubUrl.trim() || null,
+      url: url.trim() || null,
       programming_language: language.trim(),
       domain: DOMAIN_ID,
     };
@@ -238,6 +258,7 @@ const AddLibraryPage: React.FC = () => {
     const payload = {
       library_name: name.trim(),
       github_url: githubUrl.trim() || null,
+      url: url.trim() || null,
       programming_language: language.trim(),
       domain: DOMAIN_ID,
     };
@@ -409,15 +430,26 @@ const AddLibraryPage: React.FC = () => {
                 <tr>
                   <th
                     className="dx-th-sticky"
-                    style={{ textAlign: "left", width: 280 }}
+                    style={{ textAlign: "left", width: 220 }}
                   >
                     Name
                   </th>
                   <th
                     className="dx-th-sticky"
-                    style={{ textAlign: "left", width: 180 }}
+                    style={{ textAlign: "left", width: 160 }}
                   >
                     Language
+                  </th>
+                  <th
+                    className="dx-th-sticky"
+                    style={{
+                      textAlign: "left",
+                      width: 260,
+                      whiteSpace: "normal",
+                      wordBreak: "break-word",
+                    }}
+                  >
+                    GitHub URL
                   </th>
                   <th
                     className="dx-th-sticky"
@@ -427,7 +459,7 @@ const AddLibraryPage: React.FC = () => {
                       wordBreak: "break-word",
                     }}
                   >
-                    GitHub URL
+                    URL
                   </th>
                   <th className="dx-th-sticky" style={{ width: 220 }} />
                 </tr>
@@ -473,6 +505,18 @@ const AddLibraryPage: React.FC = () => {
                       title={lib.github_url || ""}
                     >
                       {lib.github_url || "—"}
+                    </td>
+
+                    <td
+                      style={{
+                        padding: 10,
+                        whiteSpace: "normal",
+                        wordBreak: "break-word",
+                        verticalAlign: "top",
+                      }}
+                      title={lib.url || ""}
+                    >
+                      {lib.url || "—"}
                     </td>
 
                     <td style={{ padding: 10, verticalAlign: "top" }}>
@@ -653,6 +697,33 @@ const AddLibraryPage: React.FC = () => {
                       if (formError) setFormError("");
                     }}
                     placeholder="https://github.com/..."
+                    style={{
+                      color: "white",
+                      background: "rgba(255,255,255,0.06)",
+                      border: "1px solid rgba(255,255,255,0.18)",
+                    }}
+                  />
+                </div>
+
+                <div
+                  style={{
+                    gridColumn: "1 / -1",
+                    display: "flex",
+                    flexDirection: "column",
+                    gap: 6,
+                  }}
+                >
+                  <label style={{ fontSize: "0.9rem", color: "var(--text-dim)" }}>
+                    URL
+                  </label>
+                  <input
+                    className="dx-input"
+                    value={url}
+                    onChange={(e) => {
+                      setUrl(e.target.value);
+                      if (formError) setFormError("");
+                    }}
+                    placeholder="https://pytorch.org/projects/pytorch/"
                     style={{
                       color: "white",
                       background: "rgba(255,255,255,0.06)",
