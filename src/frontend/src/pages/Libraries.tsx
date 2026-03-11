@@ -2,12 +2,12 @@ import React, { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { apiUrl } from "../config/api";
 import SuccessNotification from "../components/SuccessNotification";
-import {ArrowLeft} from "lucide-react";
+import { ArrowLeft } from "lucide-react";
 
 interface Library {
   library_ID: string;
   library_name: string;
-  url: string | null;
+  github_url: string | null;
   programming_language: string;
 }
 
@@ -52,7 +52,7 @@ const AddLibraryPage: React.FC = () => {
   const [modalOpen, setModalOpen] = useState(false);
   const [formError, setFormError] = useState<string>("");
   const [name, setName] = useState("");
-  const [url, setUrl] = useState("");
+  const [githubUrl, setGithubUrl] = useState("");
   const [language, setLanguage] = useState("");
 
   const [editingId, setEditingId] = useState<string | null>(null);
@@ -84,7 +84,7 @@ const AddLibraryPage: React.FC = () => {
     setModalOpen(false);
     setFormError("");
     setName("");
-    setUrl("");
+    setGithubUrl("");
     setLanguage("");
     setEditingId(null);
   };
@@ -92,7 +92,7 @@ const AddLibraryPage: React.FC = () => {
   const openCreateModal = () => {
     setFormError("");
     setName("");
-    setUrl("");
+    setGithubUrl("");
     setLanguage("");
     setEditingId(null);
     setModalOpen(true);
@@ -101,7 +101,7 @@ const AddLibraryPage: React.FC = () => {
   const openEditModal = (lib: Library) => {
     setFormError("");
     setName(lib.library_name || "");
-    setUrl(lib.url || "");
+    setGithubUrl(lib.github_url || "");
     setLanguage(lib.programming_language || "");
     setEditingId(lib.library_ID);
     setModalOpen(true);
@@ -132,15 +132,15 @@ const AddLibraryPage: React.FC = () => {
       setFormError("Library name is required.");
       return false;
     }
-    if (!url.trim()) {
-      setFormError("Github URL is required.");
+    if (!githubUrl.trim()) {
+      setFormError("GitHub URL is required.");
       return false;
     }
 
     const githubRepoRegex =
       /^(https?:\/\/)?(www\.)?github\.com\/[A-Za-z0-9_.-]+\/[A-Za-z0-9_.-]+\/?$/;
 
-    if (!githubRepoRegex.test(url.trim())) {
+    if (!githubRepoRegex.test(githubUrl.trim())) {
       setFormError(
         "URL must be a valid GitHub repository (e.g., https://github.com/user/repo)."
       );
@@ -155,7 +155,7 @@ const AddLibraryPage: React.FC = () => {
 
     const payload = {
       library_name: name.trim(),
-      url: url.trim() || null,
+      github_url: githubUrl.trim() || null,
       programming_language: language.trim(),
       domain: DOMAIN_ID,
     };
@@ -204,7 +204,7 @@ const AddLibraryPage: React.FC = () => {
 
     const payload = {
       library_name: name.trim(),
-      url: url.trim() || null,
+      github_url: githubUrl.trim() || null,
       programming_language: language.trim(),
       domain: DOMAIN_ID,
     };
@@ -394,7 +394,7 @@ const AddLibraryPage: React.FC = () => {
                       wordBreak: "break-word",
                     }}
                   >
-                    URL
+                    GitHub URL
                   </th>
                   <th className="dx-th-sticky" style={{ width: 220 }} />
                 </tr>
@@ -437,9 +437,9 @@ const AddLibraryPage: React.FC = () => {
                         wordBreak: "break-word",
                         verticalAlign: "top",
                       }}
-                      title={lib.url || ""}
+                      title={lib.github_url || ""}
                     >
-                      {lib.url || "—"}
+                      {lib.github_url || "—"}
                     </td>
 
                     <td style={{ padding: 10, verticalAlign: "top" }}>
@@ -610,13 +610,13 @@ const AddLibraryPage: React.FC = () => {
                   }}
                 >
                   <label style={{ fontSize: "0.9rem", color: "var(--text-dim)" }}>
-                    Repository URL
+                    GitHub Repository URL
                   </label>
                   <input
                     className="dx-input"
-                    value={url}
+                    value={githubUrl}
                     onChange={(e) => {
-                      setUrl(e.target.value);
+                      setGithubUrl(e.target.value);
                       if (formError) setFormError("");
                     }}
                     placeholder="https://github.com/..."

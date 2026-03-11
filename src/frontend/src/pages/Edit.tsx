@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useRef, useLayoutEffect, useMemo } from "react";
+import React, { useEffect, useState, useRef, useLayoutEffect } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { apiUrl } from "../config/api";
 import SuccessNotification from "../components/SuccessNotification";
@@ -18,7 +18,7 @@ type AnalysisStatus = "pending" | "running" | "success" | "failed" | string;
 interface EditableRow {
   library_ID: string;
   library_name: string;
-  url: string | null;
+  github_url: string | null;
   programming_language: string;
   metrics: { [metricName: string]: string | number | null };
   isEditing: boolean;
@@ -352,10 +352,10 @@ const EditMetricValuesModal: React.FC<{
             }}
           >
             <div style={{ opacity: 0.75, fontSize: 13, marginBottom: 4, color: "rgba(255,255,255,0.72)" }}>
-              URL
+              GitHub URL
             </div>
             <div style={{ wordBreak: "break-word", color: "rgba(255,255,255,0.92)" }}>
-              {row.url || "—"}
+              {row.github_url || "—"}
             </div>
           </div>
 
@@ -724,22 +724,6 @@ const EditValuesPage: React.FC = () => {
     }
   };
 
-  const updateMetricValue = (
-    libId: string,
-    metric: string,
-    value: any,
-    isEvidence: boolean = false
-  ) => {
-    const key = isEvidence ? `${metric}_evidence` : metric;
-    setRows((prev) =>
-      prev.map((r) =>
-        r.library_ID === libId
-          ? { ...r, metrics: { ...r.metrics, [key]: value } }
-          : r
-      )
-    );
-  };
-
   const updateEditDraftValue = (metric: string, value: any, isEvidence: boolean = false) => {
     const key = isEvidence ? `${metric}_evidence` : metric;
 
@@ -1081,7 +1065,7 @@ const EditValuesPage: React.FC = () => {
                   <th className="dx-th-sticky dx-sticky-left" style={{ left: offset }}>
                     Name
                   </th>
-                  <th className="dx-th-sticky">URL</th>
+                  <th className="dx-th-sticky">GitHub URL</th>
                   <th className="dx-th-sticky">Language</th>
                   {metricList.map((m) => (
                     <th key={m.metric_ID} className="dx-th-sticky">
@@ -1142,7 +1126,7 @@ const EditValuesPage: React.FC = () => {
                       </td>
 
                       <td>
-                        <div>{row.url || "—"}</div>
+                        <div>{row.github_url || "—"}</div>
                       </td>
 
                       <td>
