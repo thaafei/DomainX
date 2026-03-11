@@ -25,6 +25,45 @@ interface LibraryMetricRow {
   metrics: { [metricName: string]: string | number | null };
 }
 
+const clamp2Style: React.CSSProperties = {
+  display: "-webkit-box",
+  WebkitLineClamp: 2,
+  WebkitBoxOrient: "vertical",
+  overflow: "hidden",
+};
+
+const clamp3Style: React.CSSProperties = {
+  display: "-webkit-box",
+  WebkitLineClamp: 3,
+  WebkitBoxOrient: "vertical",
+  overflow: "hidden",
+};
+
+const cellBaseStyle: React.CSSProperties = {
+  padding: "9px 10px",
+  verticalAlign: "top",
+  fontSize: 13.5,
+  lineHeight: 1.4,
+  overflowWrap: "anywhere",
+};
+
+const metricCellStyle: React.CSSProperties = {
+  ...cellBaseStyle,
+  color: "rgba(255,255,255,0.9)",
+};
+
+const headerCellStyle: React.CSSProperties = {
+  textAlign: "left",
+  padding: "10px 10px",
+  fontSize: 13,
+  lineHeight: 1.3,
+  fontWeight: 700,
+  color: "rgba(255,255,255,0.92)",
+  background: "rgba(20, 24, 38, 0.96)",
+  borderBottom: "1px solid rgba(255,255,255,0.08)",
+  overflowWrap: "anywhere",
+};
+
 const ComparisonToolPage: React.FC = () => {
   const { domainId } = useParams<{ domainId: string }>();
   const navigate = useNavigate();
@@ -172,7 +211,7 @@ const ComparisonToolPage: React.FC = () => {
       <div
         style={{
           flex: 1,
-          padding: "40px 60px",
+          padding: "28px 32px",
           position: "relative",
           color: "white",
           overflow: "hidden",
@@ -198,7 +237,15 @@ const ComparisonToolPage: React.FC = () => {
             flexDirection: "column",
           }}
         >
-          <div style={{ marginBottom: 8, display: "flex", gap: 10, alignItems: "center" }}>
+          <div
+            style={{
+              marginBottom: 12,
+              display: "flex",
+              gap: 10,
+              alignItems: "center",
+              flexWrap: "wrap",
+            }}
+          >
             <button
               className="dx-btn dx-btn-primary"
               onClick={() => navigate(`/libraries/${DOMAIN_ID}`)}
@@ -241,12 +288,27 @@ const ComparisonToolPage: React.FC = () => {
           </div>
 
           <div className="dx-table-wrap dx-table-scroll" style={{ flex: 1, minHeight: 0 }}>
-            <table className="dx-table" style={{ tableLayout: "fixed", width: "100%" }}>
+            <table
+              className="dx-table"
+              style={{
+                tableLayout: "fixed",
+                width: "100%",
+                borderCollapse: "separate",
+                borderSpacing: 0,
+              }}
+            >
               <thead>
                 <tr>
                   <th
                     className="dx-th-sticky dx-sticky-left"
-                    style={{ textAlign: "left", width: 320, left: 0 }}
+                    style={{
+                      ...headerCellStyle,
+                      width: 300,
+                      minWidth: 300,
+                      maxWidth: 300,
+                      left: 0,
+                      zIndex: 3,
+                    }}
                   >
                     Library
                   </th>
@@ -256,39 +318,57 @@ const ComparisonToolPage: React.FC = () => {
                       key={m.metric_ID}
                       className="dx-th-sticky"
                       style={{
-                        textAlign: "left",
-                        width: 160,
-                        whiteSpace: "normal",
-                        wordBreak: "break-word",
+                        ...headerCellStyle,
+                        width: 170,
+                        minWidth: 170,
+                        maxWidth: 170,
                       }}
                       title={m.metric_name}
                     >
-                      {m.metric_name}
+                      <div style={clamp2Style}>{m.metric_name}</div>
                     </th>
                   ))}
                 </tr>
               </thead>
 
               <tbody>
-                {tableRows.map((row) => (
+                {tableRows.map((row, rowIndex) => (
                   <tr
                     key={row.library_ID}
-                    style={{ borderBottom: "1px solid rgba(255,255,255,0.08)" }}
+                    style={{
+                      borderBottom: "1px solid rgba(255,255,255,0.08)",
+                      background:
+                        rowIndex % 2 === 0
+                          ? "rgba(255,255,255,0.01)"
+                          : "rgba(255,255,255,0.025)",
+                    }}
                   >
                     <td
                       className="dx-sticky-left"
                       style={{
-                        padding: 10,
+                        ...cellBaseStyle,
                         fontWeight: 600,
-                        whiteSpace: "normal",
-                        wordBreak: "break-word",
-                        verticalAlign: "top",
                         left: 0,
+                        background:
+                          rowIndex % 2 === 0
+                            ? "rgba(15,18,30,0.98)"
+                            : "rgba(18,22,34,0.98)",
+                        zIndex: 2,
+                        width: 300,
+                        minWidth: 300,
+                        maxWidth: 300,
                       }}
                       title={row.library_name}
                     >
-                      <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
-                        <div>
+                      <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
+                        <div
+                          style={{
+                            ...clamp2Style,
+                            fontWeight: 700,
+                            fontSize: 14.5,
+                            lineHeight: 1.35,
+                          }}
+                        >
                           {row.url ? (
                             <a
                               href={row.url}
@@ -311,11 +391,12 @@ const ComparisonToolPage: React.FC = () => {
                         <div
                           style={{
                             display: "flex",
-                            gap: 12,
+                            gap: 10,
                             flexWrap: "wrap",
                             alignItems: "center",
                             fontWeight: 400,
-                            fontSize: 12.5,
+                            fontSize: 12,
+                            lineHeight: 1.2,
                           }}
                         >
                           {row.url && (
@@ -327,12 +408,12 @@ const ComparisonToolPage: React.FC = () => {
                               style={{
                                 display: "inline-flex",
                                 alignItems: "center",
-                                gap: 5,
-                                color: "rgba(255,255,255,0.78)",
+                                gap: 4,
+                                color: "rgba(255,255,255,0.72)",
                                 textDecoration: "none",
                               }}
                             >
-                              <Globe size={14} />
+                              <Globe size={13} />
                               Website
                             </a>
                           )}
@@ -346,12 +427,12 @@ const ComparisonToolPage: React.FC = () => {
                               style={{
                                 display: "inline-flex",
                                 alignItems: "center",
-                                gap: 5,
-                                color: "rgba(255,255,255,0.78)",
+                                gap: 4,
+                                color: "rgba(255,255,255,0.72)",
                                 textDecoration: "none",
                               }}
                             >
-                              <Github size={14} />
+                              <Github size={13} />
                               GitHub
                             </a>
                           )}
@@ -367,26 +448,23 @@ const ComparisonToolPage: React.FC = () => {
                         return (
                           <td
                             key={m.metric_ID}
-                            style={{
-                              padding: 10,
-                              whiteSpace: "normal",
-                              wordBreak: "break-word",
-                              verticalAlign: "top",
-                            }}
+                            style={metricCellStyle}
                             title={url || "—"}
                           >
-                            {url ? (
-                              <a
-                                href={url}
-                                target="_blank"
-                                rel="noreferrer"
-                                style={{ color: "var(--accent)" }}
-                              >
-                                View report
-                              </a>
-                            ) : (
-                              "—"
-                            )}
+                            <div style={clamp2Style}>
+                              {url ? (
+                                <a
+                                  href={url}
+                                  target="_blank"
+                                  rel="noreferrer"
+                                  style={{ color: "var(--accent)", textDecoration: "none" }}
+                                >
+                                  View report
+                                </a>
+                              ) : (
+                                "—"
+                              )}
+                            </div>
                           </td>
                         );
                       }
@@ -394,15 +472,10 @@ const ComparisonToolPage: React.FC = () => {
                       return (
                         <td
                           key={m.metric_ID}
-                          style={{
-                            padding: 10,
-                            whiteSpace: "normal",
-                            wordBreak: "break-word",
-                            verticalAlign: "top",
-                          }}
+                          style={metricCellStyle}
                           title={cellVal != null ? String(cellVal) : "—"}
                         >
-                          {cellVal ?? "—"}
+                          <div style={clamp3Style}>{cellVal ?? "—"}</div>
                         </td>
                       );
                     })}

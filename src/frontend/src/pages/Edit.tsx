@@ -32,6 +32,45 @@ interface EditableRow {
   gitstats_report_url?: string | null;
 }
 
+const clamp2Style: React.CSSProperties = {
+  display: "-webkit-box",
+  WebkitLineClamp: 2,
+  WebkitBoxOrient: "vertical",
+  overflow: "hidden",
+};
+
+const clamp3Style: React.CSSProperties = {
+  display: "-webkit-box",
+  WebkitLineClamp: 3,
+  WebkitBoxOrient: "vertical",
+  overflow: "hidden",
+};
+
+const cellBaseStyle: React.CSSProperties = {
+  padding: "9px 10px",
+  verticalAlign: "top",
+  fontSize: 13.5,
+  lineHeight: 1.4,
+  overflowWrap: "anywhere",
+};
+
+const metricCellStyle: React.CSSProperties = {
+  ...cellBaseStyle,
+  color: "rgba(255,255,255,0.9)",
+};
+
+const headerCellStyle: React.CSSProperties = {
+  textAlign: "left",
+  padding: "10px 10px",
+  fontSize: 13,
+  lineHeight: 1.3,
+  fontWeight: 700,
+  color: "rgba(255,255,255,0.92)",
+  background: "rgba(20, 24, 38, 0.96)",
+  borderBottom: "1px solid rgba(255,255,255,0.08)",
+  overflowWrap: "anywhere",
+};
+
 const normalizeStatus = (
   s?: AnalysisStatus
 ): "pending" | "running" | "success" | "failed" | "unknown" => {
@@ -315,11 +354,18 @@ const EditMetricValuesModal: React.FC<{
             gap: 12,
           }}
         >
-          <div style={{ display: "flex", flexDirection: "column", gap: 4 }}>
+          <div style={{ display: "flex", flexDirection: "column", gap: 4, minWidth: 0 }}>
             <div style={{ fontSize: "1.15rem", fontWeight: 700, color: "var(--accent)" }}>
               Edit Metric Values
             </div>
-            <div style={{ color: "rgba(255,255,255,0.82)", fontSize: 14 }}>
+            <div
+              style={{
+                color: "rgba(255,255,255,0.82)",
+                fontSize: 14,
+                ...clamp2Style,
+              }}
+              title={row.library_name}
+            >
               {row.library_name}
             </div>
           </div>
@@ -350,12 +396,20 @@ const EditMetricValuesModal: React.FC<{
               background: "rgba(255,255,255,0.04)",
               border: "1px solid rgba(255,255,255,0.08)",
               color: "white",
+              minWidth: 0,
             }}
           >
             <div style={{ opacity: 0.75, fontSize: 13, marginBottom: 4, color: "rgba(255,255,255,0.72)" }}>
               GitHub URL
             </div>
-            <div style={{ wordBreak: "break-word", color: "rgba(255,255,255,0.92)" }}>
+            <div
+              style={{
+                color: "rgba(255,255,255,0.92)",
+                overflowWrap: "anywhere",
+                ...clamp3Style,
+              }}
+              title={row.github_url || "—"}
+            >
               {row.github_url || "—"}
             </div>
           </div>
@@ -367,12 +421,20 @@ const EditMetricValuesModal: React.FC<{
               background: "rgba(255,255,255,0.04)",
               border: "1px solid rgba(255,255,255,0.08)",
               color: "white",
+              minWidth: 0,
             }}
           >
             <div style={{ opacity: 0.75, fontSize: 13, marginBottom: 4, color: "rgba(255,255,255,0.72)" }}>
               URL
             </div>
-            <div style={{ wordBreak: "break-word", color: "rgba(255,255,255,0.92)" }}>
+            <div
+              style={{
+                color: "rgba(255,255,255,0.92)",
+                overflowWrap: "anywhere",
+                ...clamp3Style,
+              }}
+              title={row.url || "—"}
+            >
               {row.url || "—"}
             </div>
           </div>
@@ -458,8 +520,10 @@ const EditMetricValuesModal: React.FC<{
                   style={{
                     color: "rgba(255,255,255,0.85)",
                     fontSize: 13,
-                    wordBreak: "break-word",
+                    overflowWrap: "anywhere",
+                    ...clamp2Style,
                   }}
+                  title={m.metric_name}
                 >
                   {m.metric_name}
                 </label>
@@ -1018,7 +1082,7 @@ const EditValuesPage: React.FC = () => {
       <div
         style={{
           flex: 1,
-          padding: "40px 60px",
+          padding: "28px 32px",
           color: "white",
           overflow: "hidden",
           display: "flex",
@@ -1043,7 +1107,15 @@ const EditValuesPage: React.FC = () => {
             flexDirection: "column",
           }}
         >
-          <div style={{ marginBottom: 8, display: "flex", gap: 10, alignItems: "center" }}>
+          <div
+            style={{
+              marginBottom: 12,
+              display: "flex",
+              gap: 10,
+              alignItems: "center",
+              flexWrap: "wrap",
+            }}
+          >
             <button
               className="dx-btn dx-btn-outline dx-btn-inline"
               onClick={openConfirmAll}
@@ -1074,28 +1146,97 @@ const EditValuesPage: React.FC = () => {
           </div>
 
           <div className="dx-table-wrap dx-table-scroll" style={{ flex: 1, minHeight: 0 }}>
-            <table className="dx-table">
+            <table
+              className="dx-table"
+              style={{
+                tableLayout: "fixed",
+                width: "100%",
+                borderCollapse: "separate",
+                borderSpacing: 0,
+              }}
+            >
               <thead>
                 <tr>
-                  <th ref={firstColRef} className="dx-th-sticky dx-sticky-left" style={{ left: 0 }}>
+                  <th
+                    ref={firstColRef}
+                    className="dx-th-sticky dx-sticky-left"
+                    style={{
+                      ...headerCellStyle,
+                      left: 0,
+                      width: 210,
+                      minWidth: 210,
+                      maxWidth: 210,
+                      zIndex: 4,
+                    }}
+                  >
                     Actions
                   </th>
-                  <th className="dx-th-sticky dx-sticky-left" style={{ left: offset }}>
+                  <th
+                    className="dx-th-sticky dx-sticky-left"
+                    style={{
+                      ...headerCellStyle,
+                      left: offset,
+                      width: 220,
+                      minWidth: 220,
+                      maxWidth: 220,
+                      zIndex: 3,
+                    }}
+                  >
                     Name
                   </th>
-                  <th className="dx-th-sticky">GitHub URL</th>
-                  <th className="dx-th-sticky">URL</th>
-                  <th className="dx-th-sticky">Language</th>
+                  <th
+                    className="dx-th-sticky"
+                    style={{
+                      ...headerCellStyle,
+                      width: 220,
+                      minWidth: 220,
+                      maxWidth: 220,
+                    }}
+                  >
+                    GitHub URL
+                  </th>
+                  <th
+                    className="dx-th-sticky"
+                    style={{
+                      ...headerCellStyle,
+                      width: 220,
+                      minWidth: 220,
+                      maxWidth: 220,
+                    }}
+                  >
+                    URL
+                  </th>
+                  <th
+                    className="dx-th-sticky"
+                    style={{
+                      ...headerCellStyle,
+                      width: 120,
+                      minWidth: 120,
+                      maxWidth: 120,
+                    }}
+                  >
+                    Language
+                  </th>
                   {metricList.map((m) => (
-                    <th key={m.metric_ID} className="dx-th-sticky">
-                      {m.metric_name}
+                    <th
+                      key={m.metric_ID}
+                      className="dx-th-sticky"
+                      style={{
+                        ...headerCellStyle,
+                        width: 170,
+                        minWidth: 170,
+                        maxWidth: 170,
+                      }}
+                      title={m.metric_name}
+                    >
+                      <div style={clamp2Style}>{m.metric_name}</div>
                     </th>
                   ))}
                 </tr>
               </thead>
 
               <tbody>
-                {rows.map((row) => {
+                {rows.map((row, rowIndex) => {
                   const rowUpdating = updatingLibId === row.library_ID;
 
                   const apiStatus = normalizeStatus(row.analysis_status);
@@ -1104,10 +1245,37 @@ const EditValuesPage: React.FC = () => {
                   const apiDots = apiStatus === "running" ? "..." : "";
                   const gsDots = gsStatus === "running" ? "..." : "";
 
+                  const rowBg =
+                    rowIndex % 2 === 0
+                      ? "rgba(255,255,255,0.01)"
+                      : "rgba(255,255,255,0.025)";
+
+                  const stickyBg =
+                    rowIndex % 2 === 0
+                      ? "rgba(15,18,30,0.98)"
+                      : "rgba(18,22,34,0.98)";
+
                   return (
-                    <tr key={row.library_ID}>
-                      <td className="dx-sticky-left" style={{ left: 0 }}>
-                        <div style={{ display: "flex", gap: 6, alignItems: "center" }}>
+                    <tr
+                      key={row.library_ID}
+                      style={{
+                        borderBottom: "1px solid rgba(255,255,255,0.08)",
+                        background: rowBg,
+                      }}
+                    >
+                      <td
+                        className="dx-sticky-left"
+                        style={{
+                          ...cellBaseStyle,
+                          left: 0,
+                          width: 210,
+                          minWidth: 210,
+                          maxWidth: 210,
+                          background: stickyBg,
+                          zIndex: 2,
+                        }}
+                      >
+                        <div style={{ display: "flex", gap: 6, alignItems: "center", flexWrap: "wrap" }}>
                           <button
                             className="dx-btn dx-btn-outline dx-btn-inline"
                             onClick={() => openConfirmLibrary(row)}
@@ -1128,32 +1296,45 @@ const EditValuesPage: React.FC = () => {
                         </div>
 
                         <div style={{ marginTop: 6, fontSize: 12, lineHeight: 1.3 }}>
-                          <div style={{ color: statusColor(row.analysis_status) }}>
+                          <div style={{ color: statusColor(row.analysis_status), ...clamp2Style }}>
                             API+SCC: {statusLabel(row.analysis_status)}
                             {apiDots}
                           </div>
 
-                          <div style={{ color: statusColor(row.gitstats_status) }}>
+                          <div style={{ color: statusColor(row.gitstats_status), ...clamp2Style }}>
                             GitStats: {statusLabel(row.gitstats_status)}
                             {gsDots}
                           </div>
                         </div>
                       </td>
 
-                      <td className="dx-sticky-left" style={{ left: offset }}>
-                        <div>{row.library_name}</div>
+                      <td
+                        className="dx-sticky-left"
+                        style={{
+                          ...cellBaseStyle,
+                          left: offset,
+                          width: 220,
+                          minWidth: 220,
+                          maxWidth: 220,
+                          background: stickyBg,
+                          zIndex: 1,
+                          fontWeight: 600,
+                        }}
+                        title={row.library_name}
+                      >
+                        <div style={clamp2Style}>{row.library_name}</div>
                       </td>
 
-                      <td>
-                        <div>{row.github_url || "—"}</div>
+                      <td style={metricCellStyle} title={row.github_url || "—"}>
+                        <div style={clamp3Style}>{row.github_url || "—"}</div>
                       </td>
 
-                      <td>
-                        <div>{row.url || "—"}</div>
+                      <td style={metricCellStyle} title={row.url || "—"}>
+                        <div style={clamp3Style}>{row.url || "—"}</div>
                       </td>
 
-                      <td>
-                        <div>{row.programming_language || "—"}</div>
+                      <td style={metricCellStyle} title={row.programming_language || "—"}>
+                        <div style={clamp2Style}>{row.programming_language || "—"}</div>
                       </td>
 
                       {metricList.map((m) => {
@@ -1161,24 +1342,38 @@ const EditValuesPage: React.FC = () => {
                         if (m.metric_key === "gitstats_report") {
                           const url = cellVal ? String(cellVal) : null;
                           return (
-                            <td key={m.metric_ID}>
-                              {url ? (
-                                <a
-                                  href={url}
-                                  target="_blank"
-                                  rel="noreferrer"
-                                  style={{ color: "var(--accent)" }}
-                                >
-                                  View report
-                                </a>
-                              ) : (
-                                "—"
-                              )}
+                            <td
+                              key={m.metric_ID}
+                              style={metricCellStyle}
+                              title={url || "—"}
+                            >
+                              <div style={clamp2Style}>
+                                {url ? (
+                                  <a
+                                    href={url}
+                                    target="_blank"
+                                    rel="noreferrer"
+                                    style={{ color: "var(--accent)", textDecoration: "none" }}
+                                  >
+                                    View report
+                                  </a>
+                                ) : (
+                                  "—"
+                                )}
+                              </div>
                             </td>
                           );
                         }
 
-                        return <td key={m.metric_ID}>{cellVal ?? "—"}</td>;
+                        return (
+                          <td
+                            key={m.metric_ID}
+                            style={metricCellStyle}
+                            title={cellVal != null ? String(cellVal) : "—"}
+                          >
+                            <div style={clamp3Style}>{cellVal ?? "—"}</div>
+                          </td>
+                        );
                       })}
                     </tr>
                   );
@@ -1187,7 +1382,7 @@ const EditValuesPage: React.FC = () => {
             </table>
           </div>
 
-          <div style={{ marginBottom: 10, fontSize: 13, opacity: 0.85 }}>
+          <div style={{ marginBottom: 10, marginTop: 10, fontSize: 13, opacity: 0.85 }}>
             <div>
               API+SCC: running {apiScc.running}, success {apiScc.success}, failed{" "}
               {apiScc.failed}
