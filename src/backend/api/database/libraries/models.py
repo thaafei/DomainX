@@ -15,7 +15,7 @@ class Library(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
 
     github_url = models.URLField(max_length=500, blank=True, null=True)
-
+    url = models.URLField(max_length=500, blank=True, null=True)
     gitstats_report_path = models.CharField(max_length=1000, blank=True, null=True)
 
     GITSTATS_PENDING = "pending"
@@ -71,6 +71,10 @@ class Library(models.Model):
             models.UniqueConstraint(
                 fields=["domain", "github_url"],
                 name="uniq_github_url_per_domain",
+            ),
+            models.UniqueConstraint(
+                fields=["domain", "url"],
+                name="uniq_url_per_domain",
             ),
         ]
 
