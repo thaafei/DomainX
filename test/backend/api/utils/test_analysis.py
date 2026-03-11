@@ -13,7 +13,7 @@ def domain():
 
 
 @pytest.mark.django_db
-def test_library_analysis_missing_url(monkeypatch, domain):
+def test_library_analysis_missing_github_url(monkeypatch, domain):
     fake_analyze = Mock()
     fake_analyze.delay = Mock()
     monkeypatch.setattr(analysis_module, "analyze_repo_task", fake_analyze)
@@ -22,14 +22,14 @@ def test_library_analysis_missing_url(monkeypatch, domain):
     fake_gitstats.apply_async = Mock()
     monkeypatch.setattr(analysis_module, "analyze_repo_gitstats_task", fake_gitstats)
 
-    lib = Library.objects.create(domain=domain, library_name="Repo", url=None)
+    lib = Library.objects.create(domain=domain, library_name="Repo", github_url=None)
 
     result = enqueue_library_analysis(lib)
     assert result is None
 
     lib.refresh_from_db()
     assert lib.analysis_status == Library.ANALYSIS_FAILED
-    assert lib.analysis_error == "Library URL is missing."
+    assert lib.analysis_error == "Library GitHub URL is missing."
     assert lib.analysis_task_id is None
     assert lib.gitstats_task_id is None
 
@@ -38,7 +38,7 @@ def test_library_analysis_missing_url(monkeypatch, domain):
 
 
 @pytest.mark.django_db
-def test_library_analysis_with_url_queues_both_tasks_and_sets_ids(monkeypatch, domain):
+def test_library_analysis_with_github_url_queues_both_tasks_and_sets_ids(monkeypatch, domain):
     fake_analyze = Mock()
     fake_analyze.delay = Mock(return_value=Mock(id="task-123"))
     monkeypatch.setattr(analysis_module, "analyze_repo_task", fake_analyze)
@@ -47,15 +47,19 @@ def test_library_analysis_with_url_queues_both_tasks_and_sets_ids(monkeypatch, d
     fake_gitstats.apply_async = Mock(return_value=Mock(id="git-456"))
     monkeypatch.setattr(analysis_module, "analyze_repo_gitstats_task", fake_gitstats)
 
-    lib = Library.objects.create(domain=domain, library_name="Repo", url="https://github.com/org/repo")
+    lib = Library.objects.create(
+        domain=domain,
+        library_name="Repo",
+        github_url="https://github.com/org/repo",
+    )
 
     result = enqueue_library_analysis(lib)
     assert result == {"analysis_task_id": "task-123", "gitstats_task_id": "git-456"}
 
-    fake_analyze.delay.assert_called_once_with(str(lib.library_ID), lib.url)
+    fake_analyze.delay.assert_called_once_with(str(lib.library_ID), lib.github_url)
     fake_gitstats.apply_async.assert_called_once()
     _, kwargs = fake_gitstats.apply_async.call_args
-    assert kwargs["args"] == [str(lib.library_ID), lib.url]
+    assert kwargs["args"] == [str(lib.library_ID), lib.github_url]
     assert kwargs["queue"] == "gitstats"
 
     lib.refresh_from_db()
