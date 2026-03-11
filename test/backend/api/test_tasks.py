@@ -19,7 +19,7 @@ def library(domain):
     return Library.objects.create(
         domain=domain,
         library_name="RepoA",
-        url="https://github.com/org/repoA",
+        github_url="https://github.com/org/repoA",
         programming_language="Python",
     )
 
@@ -49,7 +49,7 @@ def test_analyze_repo_task_success_updates_metrics_and_marks_success(monkeypatch
     monkeypatch.setattr(tasks_module, "RepoAnalyzer", lambda github_url: fake_analyzer)
 
     result = tasks_module.analyze_repo_task.apply(
-        args=[str(library.library_ID), library.url],
+        args=[str(library.library_ID), library.github_url],
         task_id="celery-task-1",
     ).get(propagate=True)
 
@@ -95,7 +95,7 @@ def test_analyze_repo_task_skips_value_that_cannot_be_converted(monkeypatch, lib
     monkeypatch.setattr(tasks_module, "RepoAnalyzer", lambda github_url: fake_analyzer)
 
     result = tasks_module.analyze_repo_task.apply(
-        args=[str(library.library_ID), library.url],
+        args=[str(library.library_ID), library.github_url],
         task_id="celery-task-1",
     ).get(propagate=True)
 
@@ -138,7 +138,7 @@ def test_analyze_repo_task_converts_float_bool_and_text_values(monkeypatch, libr
     monkeypatch.setattr(tasks_module, "RepoAnalyzer", lambda github_url: fake_analyzer)
 
     result = tasks_module.analyze_repo_task.apply(
-        args=[str(library.library_ID), library.url],
+        args=[str(library.library_ID), library.github_url],
         task_id="celery-task-1",
     ).get(propagate=True)
 
@@ -191,7 +191,7 @@ def test_analyze_repo_task_sets_running_status_early(monkeypatch, library):
     monkeypatch.setattr(tasks_module.transaction, "atomic", atomic_wrapper)
 
     tasks_module.analyze_repo_task.apply(
-        args=[str(library.library_ID), library.url],
+        args=[str(library.library_ID), library.github_url],
         task_id="celery-task-1",
     ).get(propagate=True)
 
@@ -206,7 +206,7 @@ def test_analyze_repo_task_exception_marks_failed_and_raises(monkeypatch, librar
 
     with pytest.raises(RuntimeError):
         tasks_module.analyze_repo_task.apply(
-            args=[str(library.library_ID), library.url],
+            args=[str(library.library_ID), library.github_url],
             task_id="celery-task-1",
         ).get(propagate=True)
 
@@ -233,7 +233,7 @@ def test_analyze_repo_gitstats_task_success_sets_report_and_metric(monkeypatch, 
     monkeypatch.setattr(tasks_module.os.path, "exists", lambda path: False)
 
     result = tasks_module.analyze_repo_gitstats_task.apply(
-        args=[str(library.library_ID), library.url],
+        args=[str(library.library_ID), library.github_url],
         task_id="celery-task-1",
     ).get(propagate=True)
 
@@ -273,7 +273,7 @@ def test_analyze_repo_gitstats_task_existing_report_skips_generation(monkeypatch
     monkeypatch.setattr(tasks_module.os.path, "exists", lambda path: True)
 
     result = tasks_module.analyze_repo_gitstats_task.apply(
-        args=[str(library.library_ID), library.url],
+        args=[str(library.library_ID), library.github_url],
         task_id="celery-task-1",
     ).get(propagate=True)
 
@@ -300,7 +300,7 @@ def test_analyze_repo_gitstats_task_success_without_metric_still_succeeds(monkey
     monkeypatch.setattr(tasks_module.os.path, "exists", lambda path: False)
 
     result = tasks_module.analyze_repo_gitstats_task.apply(
-        args=[str(library.library_ID), library.url],
+        args=[str(library.library_ID), library.github_url],
         task_id="celery-task-1",
     ).get(propagate=True)
 
@@ -320,7 +320,7 @@ def test_analyze_repo_gitstats_task_soft_time_limit_marks_failed_and_raises(monk
 
     with pytest.raises(SoftTimeLimitExceeded):
         tasks_module.analyze_repo_gitstats_task.apply(
-            args=[str(library.library_ID), library.url],
+            args=[str(library.library_ID), library.github_url],
             task_id="celery-task-1",
         ).get(propagate=True)
 
@@ -342,7 +342,7 @@ def test_analyze_repo_gitstats_task_exception_marks_failed_and_raises(monkeypatc
 
     with pytest.raises(RuntimeError):
         tasks_module.analyze_repo_gitstats_task.apply(
-            args=[str(library.library_ID), library.url],
+            args=[str(library.library_ID), library.github_url],
             task_id="celery-task-1",
         ).get(propagate=True)
 

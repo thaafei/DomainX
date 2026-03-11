@@ -18,7 +18,7 @@ def library(domain):
     return Library.objects.create(
         domain=domain,
         library_name="RepoA",
-        url="https://github.com/org/repoA",
+        github_url="https://github.com/org/repoA",
         programming_language="Python",
     )
 
@@ -74,7 +74,7 @@ def test_last_modified_updates_on_save(library, metric):
 
 @pytest.mark.django_db
 def test_cascade_delete_when_library_deleted(domain, metric):
-    lib = Library.objects.create(domain=domain, library_name="ToDelete", url="https://x")
+    lib = Library.objects.create(domain=domain, library_name="ToDelete", github_url="https://x")
     lmv = LibraryMetricValue.objects.create(library=lib, metric=metric, value=1)
 
     lib.delete()

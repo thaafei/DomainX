@@ -32,7 +32,7 @@ def lib_a(domain):
     return Library.objects.create(
         domain=domain,
         library_name="A",
-        url="https://a",
+        github_url="https://a",
         programming_language="Python",
     )
 
@@ -42,7 +42,7 @@ def lib_b(domain):
     return Library.objects.create(
         domain=domain,
         library_name="B",
-        url="https://b",
+        github_url="https://b",
         programming_language="JS",
     )
 
@@ -52,7 +52,7 @@ def lib_c(domain2):
     return Library.objects.create(
         domain=domain2,
         library_name="C",
-        url="https://c",
+        github_url="https://c",
         programming_language="Go",
     )
 
