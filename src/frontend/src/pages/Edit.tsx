@@ -2,7 +2,7 @@ import React, { useEffect, useState, useRef, useLayoutEffect } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { apiUrl } from "../config/api";
 import SuccessNotification from "../components/SuccessNotification";
-import {ArrowLeft } from "lucide-react";
+import { ArrowLeft } from "lucide-react";
 
 interface Metric {
   metric_ID: string;
@@ -255,6 +255,256 @@ const ErrorNotification: React.FC<{ show: boolean; message: string }> = ({
   );
 };
 
+const EditMetricValuesModal: React.FC<{
+  open: boolean;
+  row: EditableRow | null;
+  metricList: Metric[];
+  pageLoading: boolean;
+  onClose: () => void;
+  onChangeValue: (metricName: string, value: any) => void;
+  onSave: () => void;
+}> = ({ open, row, metricList, pageLoading, onClose, onChangeValue, onSave }) => {
+  if (!open || !row) return null;
+
+  return (
+    <div
+      role="dialog"
+      aria-modal="true"
+      onMouseDown={(e) => {
+        if (e.target === e.currentTarget && !pageLoading) onClose();
+      }}
+      style={{
+        position: "fixed",
+        inset: 0,
+        background: "rgba(0,0,0,0.72)",
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
+        zIndex: 9999,
+        padding: 18,
+        backdropFilter: "blur(4px)",
+      }}
+    >
+      <div
+        onMouseDown={(e) => e.stopPropagation()}
+        className="dx-card"
+        style={{
+          width: "min(980px, 96vw)",
+          maxHeight: "88vh",
+          overflow: "auto",
+          padding: 18,
+          position: "relative",
+          background: "rgba(18, 20, 28, 0.96)",
+          border: "1px solid rgba(255,255,255,0.08)",
+          borderRadius: 16,
+          boxShadow: "0 18px 60px rgba(0,0,0,0.55)",
+        }}
+      >
+        <div
+          style={{
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "space-between",
+            marginBottom: 14,
+            gap: 12,
+          }}
+        >
+          <div style={{ display: "flex", flexDirection: "column", gap: 4 }}>
+            <div style={{ fontSize: "1.15rem", fontWeight: 700, color: "var(--accent)" }}>
+              Edit Metric Values
+            </div>
+            <div style={{ color: "rgba(255,255,255,0.82)", fontSize: 14 }}>
+              {row.library_name}
+            </div>
+          </div>
+
+          <button
+            className="dx-btn dx-btn-outline"
+            onClick={onClose}
+            disabled={pageLoading}
+            aria-label="Close"
+            style={{ padding: "6px 10px", opacity: pageLoading ? 0.7 : 1 }}
+          >
+            ✕
+          </button>
+        </div>
+
+        <div
+          style={{
+            display: "grid",
+            gridTemplateColumns: "repeat(2, minmax(0, 1fr))",
+            gap: 12,
+            marginBottom: 14,
+          }}
+        >
+          <div
+            style={{
+              padding: "10px 12px",
+              borderRadius: 10,
+              background: "rgba(255,255,255,0.04)",
+              border: "1px solid rgba(255,255,255,0.08)",
+              color: "white",
+            }}
+          >
+            <div style={{ opacity: 0.75, fontSize: 13, marginBottom: 4, color: "rgba(255,255,255,0.72)" }}>
+              URL
+            </div>
+            <div style={{ wordBreak: "break-word", color: "rgba(255,255,255,0.92)" }}>
+              {row.url || "—"}
+            </div>
+          </div>
+
+          <div
+            style={{
+              padding: "10px 12px",
+              borderRadius: 10,
+              background: "rgba(255,255,255,0.04)",
+              border: "1px solid rgba(255,255,255,0.08)",
+              color: "white",
+            }}
+          >
+            <div style={{ opacity: 0.75, fontSize: 13, marginBottom: 4, color: "rgba(255,255,255,0.72)" }}>
+              Language
+            </div>
+            <div style={{ color: "rgba(255,255,255,0.92)" }}>
+              {row.programming_language || "—"}
+            </div>
+          </div>
+
+          <div
+            style={{
+              padding: "10px 12px",
+              borderRadius: 10,
+              background: "rgba(255,255,255,0.04)",
+              border: "1px solid rgba(255,255,255,0.08)",
+              color: "white",
+            }}
+          >
+            <div style={{ opacity: 0.75, fontSize: 13, marginBottom: 4, color: "rgba(255,255,255,0.72)" }}>
+              API+SCC Status
+            </div>
+            <div style={{ color: statusColor(row.analysis_status) }}>
+              {statusLabel(row.analysis_status)}
+            </div>
+          </div>
+
+          <div
+            style={{
+              padding: "10px 12px",
+              borderRadius: 10,
+              background: "rgba(255,255,255,0.04)",
+              border: "1px solid rgba(255,255,255,0.08)",
+              color: "white",
+            }}
+          >
+            <div style={{ opacity: 0.75, fontSize: 13, marginBottom: 4, color: "rgba(255,255,255,0.72)" }}>
+              GitStats Status
+            </div>
+            <div style={{ color: statusColor(row.gitstats_status) }}>
+              {statusLabel(row.gitstats_status)}
+            </div>
+          </div>
+        </div>
+
+        <div
+          style={{
+            display: "grid",
+            gridTemplateColumns: "repeat(2, minmax(0, 1fr))",
+            gap: 14,
+          }}
+        >
+          {metricList.map((m) => {
+            const cellVal = row.metrics[m.metric_name];
+
+            return (
+              <div
+                key={m.metric_ID}
+                style={{
+                  display: "flex",
+                  flexDirection: "column",
+                  gap: 6,
+                  padding: "10px 12px",
+                  borderRadius: 10,
+                  background: "rgba(255,255,255,0.03)",
+                  border: "1px solid rgba(255,255,255,0.08)",
+                  minWidth: 0,
+                }}
+              >
+                <label
+                  style={{
+                    color: "rgba(255,255,255,0.85)",
+                    fontSize: 13,
+                    wordBreak: "break-word",
+                  }}
+                >
+                  {m.metric_name}
+                </label>
+
+                {m.metric_key === "gitstats_report" ? (
+                  cellVal ? (
+                    <a
+                      href={String(cellVal)}
+                      target="_blank"
+                      rel="noreferrer"
+                      style={{ color: "var(--accent)", lineHeight: 2.2 }}
+                    >
+                      View report
+                    </a>
+                  ) : (
+                    <div style={{ lineHeight: 2.2, opacity: 0.7, color: "rgba(255,255,255,0.72)" }}>—</div>
+                  )
+                ) : m.scoring_dict && Object.keys(m.scoring_dict).length > 0 ? (
+                  <select
+                    className="dx-input"
+                    value={cellVal ?? ""}
+                    onChange={(e) => onChangeValue(m.metric_name, e.target.value)}
+                    disabled={pageLoading}
+                  >
+                    <option value="" className="dx-input-select">
+                      -- Select --
+                    </option>
+                    {Object.keys(m.scoring_dict).map((key) => (
+                      <option key={key} value={key} className="dx-input-select">
+                        {key}
+                      </option>
+                    ))}
+                  </select>
+                ) : (
+                  <input
+                    className="dx-input"
+                    value={cellVal ?? ""}
+                    onChange={(e) => onChangeValue(m.metric_name, e.target.value)}
+                    disabled={pageLoading}
+                  />
+                )}
+              </div>
+            );
+          })}
+        </div>
+
+        <div style={{ display: "flex", justifyContent: "flex-end", gap: 10, marginTop: 18 }}>
+          <button
+            className="dx-btn dx-btn-outline"
+            onClick={onClose}
+            disabled={pageLoading}
+            style={{ opacity: pageLoading ? 0.7 : 1 }}
+          >
+            Cancel
+          </button>
+          <button
+            className="dx-btn dx-btn-primary"
+            onClick={onSave}
+            disabled={pageLoading}
+            style={{ opacity: pageLoading ? 0.7 : 1 }}
+          >
+            Save
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+};
+
 const EditValuesPage: React.FC = () => {
   const { domainId } = useParams<{ domainId: string }>();
   const DOMAIN_ID = domainId;
@@ -279,15 +529,17 @@ const EditValuesPage: React.FC = () => {
   const [fail, setFail] = useState(false);
   const [failMessage, setFailMessage] = useState("");
 
+  const [editModalOpen, setEditModalOpen] = useState(false);
+  const [editDraft, setEditDraft] = useState<EditableRow | null>(null);
+
   const firstColRef = useRef<HTMLTableCellElement>(null);
   const [offset, setOffset] = useState(0);
 
   const showSuccess = (msg: string) => {
-  setSuccessMessage(msg);
-  setSuccess(true);
-  setTimeout(() => setSuccess(false), 1700);
-};
-
+    setSuccessMessage(msg);
+    setSuccess(true);
+    setTimeout(() => setSuccess(false), 1700);
+  };
 
   const showFail = (msg: string) => {
     setFailMessage(msg);
@@ -303,15 +555,17 @@ const EditValuesPage: React.FC = () => {
   }, [rows]);
 
   useEffect(() => {
-      document.title = "DomainX – Edit";
+    document.title = "DomainX – Edit";
     const onKeyDown = (e: KeyboardEvent) => {
       if (e.key === "Escape" && confirm && !confirmBusy) setConfirm(null);
+      if (e.key === "Escape" && editModalOpen && !pageLoading) {
+        setEditModalOpen(false);
+        setEditDraft(null);
+      }
     };
     window.addEventListener("keydown", onKeyDown);
     return () => window.removeEventListener("keydown", onKeyDown);
-  }, [confirm, confirmBusy]);
-
-
+  }, [confirm, confirmBusy, editModalOpen, pageLoading]);
 
   useEffect(() => {
     (async () => {
@@ -366,9 +620,21 @@ const EditValuesPage: React.FC = () => {
   };
 
   const startEdit = (id: string) => {
-    setRows((prev) =>
-      prev.map((r) => (r.library_ID === id ? { ...r, isEditing: true } : r))
-    );
+    const row = rows.find((r) => r.library_ID === id);
+    if (!row) return;
+
+    setEditDraft({
+      ...row,
+      metrics: { ...row.metrics },
+      isEditing: true,
+    });
+    setEditModalOpen(true);
+  };
+
+  const closeEditModal = () => {
+    if (pageLoading) return;
+    setEditModalOpen(false);
+    setEditDraft(null);
   };
 
   const cancelEdit = async () => {
@@ -378,6 +644,8 @@ const EditValuesPage: React.FC = () => {
       setErrorMsg(null);
       await loadData();
       setInfoMsg(null);
+      setEditModalOpen(false);
+      setEditDraft(null);
     } catch (e: any) {
       const msg = e?.message || "Failed to refresh.";
       setErrorMsg(msg);
@@ -400,6 +668,21 @@ const EditValuesPage: React.FC = () => {
           ? { ...r, metrics: { ...r.metrics, [key]: value } }
           : r
       )
+    );
+  };
+
+  const updateEditDraftValue = (metric: string, value: any, isEvidence: boolean = false) => {
+    const key = isEvidence ? `${metric}_evidence` : metric;
+    setEditDraft((prev) =>
+      prev
+        ? {
+            ...prev,
+            metrics: {
+              ...prev.metrics,
+              [key]: value,
+            },
+          }
+        : prev
     );
   };
 
@@ -432,6 +715,8 @@ const EditValuesPage: React.FC = () => {
       setInfoMsg("Saved.");
       showSuccess("Metric values saved successfully!");
       setTimeout(() => setInfoMsg(null), 1500);
+      setEditModalOpen(false);
+      setEditDraft(null);
     } catch (e: any) {
       const msg = e?.message || "Save failed.";
       setErrorMsg(msg);
@@ -470,6 +755,12 @@ const EditValuesPage: React.FC = () => {
             ? { ...r, analysis_status: "running", gitstats_status: "running" }
             : r
         )
+      );
+
+      setEditDraft((prev) =>
+        prev && prev.library_ID === libraryId
+          ? { ...prev, analysis_status: "running", gitstats_status: "running" }
+          : prev
       );
     } catch (e: any) {
       const msg = e?.message || "Failed to start analysis.";
@@ -597,6 +888,18 @@ const EditValuesPage: React.FC = () => {
         onConfirm={confirmRun}
       />
 
+      <EditMetricValuesModal
+        open={editModalOpen}
+        row={editDraft}
+        metricList={metricList}
+        pageLoading={pageLoading}
+        onClose={closeEditModal}
+        onChangeValue={updateEditDraftValue}
+        onSave={() => {
+          if (editDraft) saveRow(editDraft);
+        }}
+      />
+
       <SuccessNotification show={success} message={successMessage} />
       <ErrorNotification show={fail} message={failMessage} />
 
@@ -711,46 +1014,25 @@ const EditValuesPage: React.FC = () => {
                   return (
                     <tr key={row.library_ID}>
                       <td className="dx-sticky-left" style={{ left: 0 }}>
-                        {row.isEditing ? (
-                          <div style={{ display: "flex", gap: 6 }}>
-                            <button
-                              className="dx-btn dx-btn-primary"
-                              onClick={() => saveRow(row)}
-                              disabled={pageLoading}
-                              style={{ opacity: pageLoading ? 0.7 : 1 }}
-                            >
-                              Save
-                            </button>
-                            <button
-                              className="dx-btn dx-btn-outline"
-                              onClick={cancelEdit}
-                              disabled={pageLoading}
-                              style={{ opacity: pageLoading ? 0.7 : 1 }}
-                            >
-                              Cancel
-                            </button>
-                          </div>
-                        ) : (
-                          <div style={{ display: "flex", gap: 6, alignItems: "center" }}>
-                            <button
-                              className="dx-btn dx-btn-outline dx-btn-inline"
-                              onClick={() => openConfirmLibrary(row)}
-                              disabled={pageLoading || rowUpdating}
-                              style={{ opacity: pageLoading || rowUpdating ? 0.7 : 1 }}
-                            >
-                              {rowUpdating ? "Updating..." : "Update"}
-                            </button>
+                        <div style={{ display: "flex", gap: 6, alignItems: "center" }}>
+                          <button
+                            className="dx-btn dx-btn-outline dx-btn-inline"
+                            onClick={() => openConfirmLibrary(row)}
+                            disabled={pageLoading || rowUpdating}
+                            style={{ opacity: pageLoading || rowUpdating ? 0.7 : 1 }}
+                          >
+                            {rowUpdating ? "Updating..." : "Update"}
+                          </button>
 
-                            <button
-                              className="dx-btn dx-btn-outline"
-                              onClick={() => startEdit(row.library_ID)}
-                              disabled={pageLoading}
-                              style={{ opacity: pageLoading ? 0.7 : 1 }}
-                            >
-                              Edit
-                            </button>
-                          </div>
-                        )}
+                          <button
+                            className="dx-btn dx-btn-outline"
+                            onClick={() => startEdit(row.library_ID)}
+                            disabled={pageLoading}
+                            style={{ opacity: pageLoading ? 0.7 : 1 }}
+                          >
+                            Edit
+                          </button>
+                        </div>
 
                         <div style={{ marginTop: 6, fontSize: 12, lineHeight: 1.3 }}>
                           <div style={{ color: statusColor(row.analysis_status) }}>
@@ -766,26 +1048,20 @@ const EditValuesPage: React.FC = () => {
                       </td>
 
                       <td className="dx-sticky-left" style={{ left: offset }}>
-                        <div style={{ opacity: row.isEditing ? 0.75 : 1 }}>
-                          {row.library_name}
-                        </div>
+                        <div>{row.library_name}</div>
                       </td>
 
                       <td>
-                        <div style={{ opacity: row.isEditing ? 0.75 : 1 }}>
-                          {row.url || "—"}
-                        </div>
+                        <div>{row.url || "—"}</div>
                       </td>
 
                       <td>
-                        <div style={{ opacity: row.isEditing ? 0.75 : 1 }}>
-                          {row.programming_language || "—"}
-                        </div>
+                        <div>{row.programming_language || "—"}</div>
                       </td>
 
                       {metricList.map((m) => {
                         const cellVal = row.metrics[m.metric_name];
-                        if (!row.isEditing && m.metric_key === "gitstats_report") {
+                        if (m.metric_key === "gitstats_report") {
                           const url = cellVal ? String(cellVal) : null;
                           return (
                             <td key={m.metric_ID}>
@@ -805,40 +1081,7 @@ const EditValuesPage: React.FC = () => {
                           );
                         }
 
-                        return (
-                          <td key={m.metric_ID}>
-                            {row.isEditing ? (
-                              m.scoring_dict && Object.keys(m.scoring_dict).length > 0 ? (
-                                <select
-                                  className="dx-input"
-                                  value={cellVal ?? ""}
-                                  onChange={(e) =>
-                                    updateMetricValue(row.library_ID, m.metric_name, e.target.value)
-                                  }
-                                  disabled={pageLoading}
-                                >
-                                  <option value="" className="dx-input-select">-- Select --</option>
-                                  {Object.keys(m.scoring_dict).map((key) => (
-                                    <option key={key} value={key} className="dx-input-select">
-                                      {key}
-                                    </option>
-                                  ))}
-                                </select>
-                              ) : (
-                                <input
-                                  className="dx-input"
-                                  value={cellVal ?? ""}
-                                  onChange={(e) =>
-                                    updateMetricValue(row.library_ID, m.metric_name, e.target.value)
-                                  }
-                                  disabled={pageLoading}
-                                />
-                              )
-                            ) : (
-                              cellVal ?? "—"
-                            )}
-                          </td>
-                        );
+                        return <td key={m.metric_ID}>{cellVal ?? "—"}</td>;
                       })}
                     </tr>
                   );
