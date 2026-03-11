@@ -171,7 +171,8 @@ Use this when backend code includes **model changes / migrations**.
 ``` 
 git pull
 
-docker compose up -d --force-recreate backend
+docker compose build backend
+docker compose up -d backend
 
 docker compose exec backend python manage.py migrate
 ```
