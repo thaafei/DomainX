@@ -17,6 +17,40 @@ from ..metrics.models import Metric
 from .models import LibraryMetricValue
 from ...utils.analysis import enqueue_library_analysis
 
+
+def validate_metric_value(metric, value):
+    if value in ("", None):
+        return None, None
+
+    if metric.metric_key == "gitstats_report":
+        return "This metric is read-only and cannot be edited manually.", None
+
+    if metric.scoring_dict and isinstance(metric.scoring_dict, dict):
+        allowed_values = [str(k) for k in metric.scoring_dict.keys()]
+        if str(value) not in allowed_values:
+            return f"{metric.metric_name} must be one of: {', '.join(allowed_values)}.", None
+        return None, value
+
+    if metric.value_type == "int":
+        try:
+            parsed = int(str(value).strip())
+            return None, parsed
+        except (TypeError, ValueError):
+            return f"{metric.metric_name} must be a whole number.", None
+
+    if metric.value_type == "float":
+        try:
+            parsed = float(str(value).strip())
+            return None, parsed
+        except (TypeError, ValueError):
+            return f"{metric.metric_name} must be a valid number.", None
+
+    if metric.value_type == "text":
+        return None, value
+
+    return None, value
+
+
 @api_view(["POST"])
 def analyze_library(request, library_id):
     lib = get_object_or_404(Library, pk=library_id)
@@ -53,11 +87,13 @@ def analyze_domain_libraries(request, domain_id):
         try:
             result = enqueue_library_analysis(lib)
             if result:
-                queued.append({
-                    "library_id": str(lib.library_ID),
-                    "analysis_task_id": result.get("analysis_task_id"),
-                    "gitstats_task_id": result.get("gitstats_task_id"),
-                })
+                queued.append(
+                    {
+                        "library_id": str(lib.library_ID),
+                        "analysis_task_id": result.get("analysis_task_id"),
+                        "gitstats_task_id": result.get("gitstats_task_id"),
+                    }
+                )
             else:
                 failed.append({"library_id": str(lib.library_ID), "error": lib.analysis_error})
         except Exception as e:
@@ -91,6 +127,7 @@ def domain_comparison(request, domain_id):
         row = {
             "library_ID": str(lib.library_ID),
             "library_name": lib.library_name,
+            "github_url": lib.github_url,
             "url": lib.url,
             "programming_language": lib.programming_language,
             "analysis_status": lib.analysis_status,
@@ -112,9 +149,7 @@ def domain_comparison(request, domain_id):
         by_lib[row["library_ID"]] = row
 
     values = (
-        LibraryMetricValue.objects
-        .filter(library__in=libraries)
-        .select_related("library", "metric")
+        LibraryMetricValue.objects.filter(library__in=libraries).select_related("library", "metric")
     )
 
     for val in values:
@@ -126,7 +161,18 @@ def domain_comparison(request, domain_id):
 
     return Response(
         {
-            "metrics": [{"metric_ID": str(m.metric_ID), "metric_name": m.metric_name, "scoring_dict": m.scoring_dict} for m in metrics],
+            "metrics": [
+                {
+                    "metric_ID": str(m.metric_ID),
+                    "metric_name": m.metric_name,
+                    "description": m.description,
+                    "metric_key": m.metric_key,
+                    "value_type": m.value_type,
+                    "source_type": m.source_type,
+                    "scoring_dict": m.scoring_dict,
+                }
+                for m in metrics
+            ],
             "libraries": table,
         },
         status=status.HTTP_200_OK,
@@ -152,8 +198,14 @@ class LibraryMetricValueUpdateView(APIView):
             value_to_store = None if value in ("", None) else value
 
             metric = Metric.objects.filter(metric_name=metric_name).first()
-            if not metric:
+            if not metric or metric.metric_key == "gitstats_report":
                 continue
+
+            if field_to_update == "value":
+                error_message, validated_value = validate_metric_value(metric, value_to_store)
+                if error_message:
+                    return Response({"error": error_message}, status=status.HTTP_400_BAD_REQUEST)
+                value_to_store = validated_value
 
             LibraryMetricValue.objects.update_or_create(
                 library=library,
@@ -188,10 +240,17 @@ class MetricValueBulkUpdateView(APIView):
                     library = get_object_or_404(Library, pk=library_id)
                     metric = get_object_or_404(Metric, pk=metric_id)
 
+                    if metric.metric_key == "gitstats_report":
+                        continue
+
+                    error_message, validated_value = validate_metric_value(metric, value_to_store)
+                    if error_message:
+                        return Response({"error": error_message}, status=status.HTTP_400_BAD_REQUEST)
+
                     LibraryMetricValue.objects.update_or_create(
                         library=library,
                         metric=metric,
-                        defaults={"value": value_to_store},
+                        defaults={"value": validated_value},
                     )
 
             return Response(
@@ -200,7 +259,10 @@ class MetricValueBulkUpdateView(APIView):
             )
 
         except Exception as e:
-            return Response({"error": f"Bulk update failed: {str(e)}"}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+            return Response(
+                {"error": f"Bulk update failed: {str(e)}"},
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            )
 
 
 class AHPCalculations(APIView):
@@ -248,7 +310,9 @@ class AHPCalculations(APIView):
                 library_scores[lib.library_name] = total_score if total_score > 0 else 0.0001
 
             if library_scores:
-                category_ahp.append(ahpy.Compare(name=category_name, comparisons=library_scores, precision=4))
+                category_ahp.append(
+                    ahpy.Compare(name=category_name, comparisons=library_scores, precision=4)
+                )
 
         active_cat_names = [c.name for c in category_ahp]
         raw_weights = {cat: domain.category_weights.get(cat, 1.0) for cat in active_cat_names}
@@ -269,7 +333,10 @@ class AHPCalculations(APIView):
 
             global_rank[lib_name] = round(overall_score, 4)
 
-            lib.ahp_results = {"category_scores": lib_cat_scores, "overall_score": global_rank[lib_name]}
+            lib.ahp_results = {
+                "category_scores": lib_cat_scores,
+                "overall_score": global_rank[lib_name],
+            }
             lib.save(update_fields=["ahp_results"])
 
         return Response(

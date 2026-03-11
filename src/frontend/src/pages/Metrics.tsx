@@ -8,6 +8,8 @@ interface Metric {
   metric_ID: string;
   metric_name: string;
   value_type: string;
+  source_type?: string;
+  metric_key?: string | null;
   option_category?: string | null;
   rule?: string | null;
   category?: string | null;
@@ -16,7 +18,223 @@ interface Metric {
   scoring_dict?: Record<string, number> | null;
 }
 
+interface AutoMetricOption {
+  key: string;
+  label: string;
+  description: string;
+  value_type: string;
+}
+
+interface AutoMetricOptionsResponse {
+  github_api?: AutoMetricOption[];
+  scc?: AutoMetricOption[];
+  gitstats?: AutoMetricOption[];
+}
+
 type ModalMode = "create" | "edit" | null;
+
+const clamp2Style: React.CSSProperties = {
+  display: "-webkit-box",
+  WebkitLineClamp: 2,
+  WebkitBoxOrient: "vertical",
+  overflow: "hidden",
+};
+
+const clamp3Style: React.CSSProperties = {
+  display: "-webkit-box",
+  WebkitLineClamp: 3,
+  WebkitBoxOrient: "vertical",
+  overflow: "hidden",
+};
+
+const clamp4Style: React.CSSProperties = {
+  display: "-webkit-box",
+  WebkitLineClamp: 4,
+  WebkitBoxOrient: "vertical",
+  overflow: "hidden",
+};
+
+const cellBaseStyle: React.CSSProperties = {
+  padding: "7px 8px",
+  verticalAlign: "top",
+  fontSize: 13,
+  lineHeight: 1.32,
+  overflowWrap: "anywhere",
+};
+
+const metricCellStyle: React.CSSProperties = {
+  ...cellBaseStyle,
+  color: "rgba(255,255,255,0.9)",
+};
+
+const headerCellStyle: React.CSSProperties = {
+  textAlign: "left",
+  padding: "8px 8px",
+  fontSize: 12.5,
+  lineHeight: 1.25,
+  fontWeight: 700,
+  color: "rgba(255,255,255,0.92)",
+  background: "rgba(20, 24, 38, 0.96)",
+  borderBottom: "1px solid rgba(255,255,255,0.08)",
+  overflowWrap: "anywhere",
+};
+
+const compactButtonStyle: React.CSSProperties = {
+  border: "none",
+  background: "transparent",
+  color: "var(--accent)",
+  cursor: "pointer",
+  padding: 0,
+  marginTop: 4,
+  fontSize: 11.5,
+  lineHeight: 1.2,
+  alignSelf: "flex-start",
+};
+
+const overlayCardStyle: React.CSSProperties = {
+  position: "absolute",
+  top: "100%",
+  left: 0,
+  marginTop: 6,
+  minWidth: 260,
+  maxWidth: 560,
+  maxHeight: 280,
+  overflow: "auto",
+  padding: "10px 12px",
+  borderRadius: 12,
+  background: "rgba(20, 24, 38, 0.98)",
+  border: "1px solid rgba(255,255,255,0.12)",
+  boxShadow: "0 12px 32px rgba(0,0,0,0.45)",
+  zIndex: 10020,
+  color: "rgba(255,255,255,0.92)",
+  whiteSpace: "pre-wrap",
+  overflowWrap: "anywhere",
+  userSelect: "text",
+};
+
+const ExpandableText: React.FC<{
+  text: string;
+  lines?: 2 | 3 | 4;
+  emptyText?: string;
+  textStyle?: React.CSSProperties;
+  preserveWhitespace?: boolean;
+}> = ({ text, lines = 2, emptyText = "—", textStyle, preserveWhitespace = false }) => {
+  const [open, setOpen] = useState(false);
+  const [truncated, setTruncated] = useState(false);
+  const textRef = useRef<HTMLDivElement>(null);
+  const wrapRef = useRef<HTMLDivElement>(null);
+
+  useLayoutEffect(() => {
+    const el = textRef.current;
+    if (!el) return;
+
+    const check = () => {
+      setTruncated(
+        el.scrollHeight > el.clientHeight + 1 ||
+          el.scrollWidth > el.clientWidth + 1
+      );
+    };
+
+    check();
+    window.addEventListener("resize", check);
+    return () => window.removeEventListener("resize", check);
+  }, [text, lines]);
+
+  useEffect(() => {
+    if (!open) return;
+
+    const onDocClick = (e: MouseEvent) => {
+      if (!wrapRef.current) return;
+      if (!wrapRef.current.contains(e.target as Node)) setOpen(false);
+    };
+
+    const onEsc = (e: KeyboardEvent) => {
+      if (e.key === "Escape") setOpen(false);
+    };
+
+    document.addEventListener("mousedown", onDocClick);
+    document.addEventListener("keydown", onEsc);
+
+    return () => {
+      document.removeEventListener("mousedown", onDocClick);
+      document.removeEventListener("keydown", onEsc);
+    };
+  }, [open]);
+
+  if (!text) {
+    return <div style={textStyle}>{emptyText}</div>;
+  }
+
+  const clampStyle =
+    lines === 4 ? clamp4Style : lines === 3 ? clamp3Style : clamp2Style;
+
+  return (
+    <div
+      ref={wrapRef}
+      style={{
+        position: "relative",
+        display: "flex",
+        flexDirection: "column",
+        alignItems: "flex-start",
+        minWidth: 0,
+        width: "100%",
+      }}
+    >
+      <div
+        ref={textRef}
+        style={{
+          ...clampStyle,
+          ...textStyle,
+          width: "100%",
+          overflowWrap: "anywhere",
+          whiteSpace: preserveWhitespace ? "pre-wrap" : undefined,
+        }}
+        title={open ? "" : text}
+      >
+        {text}
+      </div>
+
+      {truncated && (
+        <button
+          type="button"
+          onClick={() => setOpen((v) => !v)}
+          style={compactButtonStyle}
+        >
+          {open ? "less" : "more"}
+        </button>
+      )}
+
+      {open && (
+        <div
+          style={{
+            ...overlayCardStyle,
+            whiteSpace: preserveWhitespace ? "pre-wrap" : "pre-wrap",
+            fontFamily: preserveWhitespace
+              ? 'ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace'
+              : undefined,
+            fontSize: preserveWhitespace ? 12.5 : undefined,
+            lineHeight: preserveWhitespace ? 1.35 : undefined,
+          }}
+        >
+          <div style={{ marginBottom: 8 }}>{text}</div>
+
+          <button
+            type="button"
+            className="dx-btn dx-btn-outline"
+            style={{ padding: "5px 8px", fontSize: 12 }}
+            onClick={async () => {
+              try {
+                await navigator.clipboard.writeText(text);
+              } catch {}
+            }}
+          >
+            Copy
+          </button>
+        </div>
+      )}
+    </div>
+  );
+};
 
 const MetricsPage: React.FC = () => {
   const navigate = useNavigate();
@@ -25,12 +243,15 @@ const MetricsPage: React.FC = () => {
 
   const [rulesData, setRulesData] = useState<any>(null);
   const [categories, setCategories] = useState<string[]>([]);
+  const [autoMetricOptions, setAutoMetricOptions] = useState<AutoMetricOptionsResponse>({});
 
   const [modalMode, setModalMode] = useState<ModalMode>(null);
   const isModalOpen = modalMode !== null;
 
   const [newName, setNewName] = useState("");
   const [newType, setNewType] = useState("float");
+  const [newSourceType, setNewSourceType] = useState("manual");
+  const [newMetricKey, setNewMetricKey] = useState("");
   const [newCategory, setNewCategory] = useState("");
   const [newDesc, setNewDesc] = useState("");
   const [selectedOptionCategory, setSelectedOptionCategory] = useState("");
@@ -39,10 +260,14 @@ const MetricsPage: React.FC = () => {
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editName, setEditName] = useState("");
   const [editType, setEditType] = useState("float");
+  const [editSourceType, setEditSourceType] = useState("manual");
+  const [editMetricKey, setEditMetricKey] = useState("");
   const [editCategory, setEditCategory] = useState("");
   const [editDesc, setEditDesc] = useState("");
   const [editOptionCategory, setEditOptionCategory] = useState("");
   const [editTemplate, setEditTemplate] = useState("");
+
+  const [formError, setFormError] = useState("");
 
   const firstColRef = useRef<HTMLTableCellElement>(null);
   const [offset, setOffset] = useState(0);
@@ -64,7 +289,7 @@ const MetricsPage: React.FC = () => {
   }, [metrics]);
 
   useEffect(() => {
-      document.title = "DomainX – Metrics";
+    document.title = "DomainX – Metrics";
     const fetchRules = async () => {
       try {
         const response = await fetch(apiUrl("/metrics/rules/"));
@@ -88,6 +313,21 @@ const MetricsPage: React.FC = () => {
       }
     };
     fetchCategories();
+  }, []);
+
+  useEffect(() => {
+    const fetchAutoMetricOptions = async () => {
+      try {
+        const response = await fetch(apiUrl("/metrics/auto-options/"), {
+          credentials: "include",
+        });
+        const data = await response.json();
+        setAutoMetricOptions(data || {});
+      } catch (error) {
+        console.error("Error fetching auto metric options:", error);
+      }
+    };
+    fetchAutoMetricOptions();
   }, []);
 
   const loadMetrics = async () => {
@@ -137,10 +377,13 @@ const MetricsPage: React.FC = () => {
     setModalMode("create");
     setNewName("");
     setNewType("float");
+    setNewSourceType("manual");
+    setNewMetricKey("");
     setNewCategory("");
     setNewDesc("");
     setSelectedOptionCategory("");
     setSelectedTemplate("");
+    setFormError("");
   };
 
   const openEditModal = (m: Metric) => {
@@ -148,25 +391,104 @@ const MetricsPage: React.FC = () => {
     setEditingId(m.metric_ID);
     setEditName(m.metric_name || "");
     setEditType(m.value_type || "float");
+    setEditSourceType(m.source_type || "manual");
+    setEditMetricKey(m.metric_key || "");
     setEditCategory(m.category || "");
     setEditDesc(m.description || "");
     setEditOptionCategory(m.option_category || "");
     setEditTemplate(m.rule || "");
+    setFormError("");
   };
 
   const closeModal = () => {
     setModalMode(null);
     setEditingId(null);
+    setFormError("");
+  };
+
+  const modalSourceType = modalMode === "create" ? newSourceType : editSourceType;
+  const modalMetricKey = modalMode === "create" ? newMetricKey : editMetricKey;
+  const modalAutoOptions = autoMetricOptions[modalSourceType as keyof AutoMetricOptionsResponse] || [];
+
+  const getReadableErrorMessage = (err: unknown) => {
+    const fallback = "Could not save metric. Please check the form and try again.";
+
+    if (!(err instanceof Error) || !err.message) return fallback;
+
+    const msg = err.message;
+
+    const apiPrefix = "API Error";
+    const apiIndex = msg.indexOf(": ");
+    const raw = msg.startsWith(apiPrefix) && apiIndex !== -1 ? msg.slice(apiIndex + 2) : msg;
+
+    try {
+      const parsed = JSON.parse(raw);
+
+      if (typeof parsed === "string") return parsed;
+
+      if (parsed.metric_name) {
+        const metricNameError = Array.isArray(parsed.metric_name)
+          ? parsed.metric_name[0]
+          : parsed.metric_name;
+        if (String(metricNameError).toLowerCase().includes("already exists")) {
+          return "A metric with this name already exists. Please choose a different name.";
+        }
+        return `Metric name: ${metricNameError}`;
+      }
+
+      if (parsed.metric_key) {
+        const metricKeyError = Array.isArray(parsed.metric_key)
+          ? parsed.metric_key[0]
+          : parsed.metric_key;
+        return `System metric: ${metricKeyError}`;
+      }
+
+      if (parsed.non_field_errors) {
+        return Array.isArray(parsed.non_field_errors)
+          ? parsed.non_field_errors[0]
+          : parsed.non_field_errors;
+      }
+
+      const firstValue = Object.values(parsed)[0];
+      if (Array.isArray(firstValue) && firstValue.length > 0) return String(firstValue[0]);
+      if (typeof firstValue === "string") return firstValue;
+
+      return fallback;
+    } catch {
+      return raw || fallback;
+    }
   };
 
   const addMetric = async (): Promise<boolean> => {
-    if (!newName.trim()) return false;
+    if (!newName.trim()) {
+      setFormError("Metric name is required.");
+      return false;
+    }
 
+    if (newSourceType !== "manual" && !newMetricKey) {
+      setFormError("Please select a system metric.");
+      return false;
+    }
+
+    if (newSourceType === "manual" && isRuleType(newType)) {
+      if (!selectedOptionCategory) {
+        setFormError("Please select an input category.");
+        return false;
+      }
+      if (!selectedTemplate) {
+        setFormError("Please select a scoring rule.");
+        return false;
+      }
+    }
+
+    setFormError("");
     const scoringDict = modalPreview;
 
     const payload: any = {
       metric_name: newName.trim(),
       value_type: newType,
+      source_type: newSourceType,
+      metric_key: newSourceType === "manual" ? null : newMetricKey || null,
       category: newCategory.trim() || null,
       description: newDesc.trim() || null,
       option_category: selectedOptionCategory || null,
@@ -204,33 +526,54 @@ const MetricsPage: React.FC = () => {
       return true;
     } catch (err) {
       console.error(err);
+      setFormError(getReadableErrorMessage(err));
       return false;
     }
   };
 
   const saveEdit = async (): Promise<boolean> => {
     if (!editingId) return false;
-    if (!editName.trim()) return false;
 
+    if (!editName.trim()) {
+      setFormError("Metric name is required.");
+      return false;
+    }
+
+    if (editSourceType !== "manual" && !editMetricKey) {
+      setFormError("Please select a system metric.");
+      return false;
+    }
+
+    if (editSourceType === "manual" && isRuleType(editType)) {
+      if (!editOptionCategory) {
+        setFormError("Please select an input category.");
+        return false;
+      }
+      if (!editTemplate) {
+        setFormError("Please select a scoring rule.");
+        return false;
+      }
+    }
+
+    setFormError("");
     const payload: any = {
       metric_name: editName.trim(),
       value_type: editType,
+      source_type: editSourceType,
+      metric_key: editSourceType === "manual" ? null : editMetricKey || null,
       category: editCategory.trim() || null,
       description: editDesc.trim() || null,
     };
 
-    if (isRuleType(editType)) {
-      if (!editOptionCategory) return false;
-      if (!editTemplate) return false;
+    if (editSourceType === "manual" && isRuleType(editType)) {
       payload.option_category = editOptionCategory;
       payload.rule = editTemplate;
       const scoringDict = modalPreview;
-      payload.scoring_dict= scoringDict;
-
+      payload.scoring_dict = scoringDict;
     } else {
       payload.option_category = null;
       payload.rule = null;
-      payload.scoring_dict= null;
+      payload.scoring_dict = null;
     }
 
     try {
@@ -263,6 +606,7 @@ const MetricsPage: React.FC = () => {
       return true;
     } catch (err) {
       console.error(err);
+      setFormError(getReadableErrorMessage(err));
       return false;
     }
   };
@@ -353,7 +697,7 @@ const MetricsPage: React.FC = () => {
       <div
         style={{
           flex: 1,
-          padding: "40px 60px",
+          padding: "28px 32px",
           color: "white",
           overflow: "hidden",
           display: "flex",
@@ -377,125 +721,236 @@ const MetricsPage: React.FC = () => {
               flexDirection: "column",
             }}
           >
-            <div style={{ display: "flex", justifyContent: "flex-start", marginBottom: 6 }}>
+            <div
+              style={{
+                display: "flex",
+                justifyContent: "flex-start",
+                marginBottom: 10,
+                flexWrap: "wrap",
+                gap: 10,
+              }}
+            >
               <button className="dx-btn dx-btn-primary" onClick={openCreateModal}>
-                Add New Metric
+                + Add New Metric
               </button>
             </div>
 
             <div className="dx-table-wrap dx-table-scroll" style={{ flex: 1, minHeight: 0 }}>
-              <table className="dx-table">
+              <table
+                className="dx-table"
+                style={{
+                  tableLayout: "fixed",
+                  width: "100%",
+                  borderCollapse: "separate",
+                  borderSpacing: 0,
+                }}
+              >
                 <thead>
                   <tr>
-                    <th ref={firstColRef} className="dx-th-sticky dx-sticky-left" style={{ left: 0 }}>
+                    <th
+                      ref={firstColRef}
+                      className="dx-th-sticky dx-sticky-left"
+                      style={{
+                        ...headerCellStyle,
+                        left: 0,
+                        width: 160,
+                        minWidth: 160,
+                        maxWidth: 160,
+                        zIndex: 4,
+                      }}
+                    >
                       Actions
                     </th>
-                    <th className="dx-th-sticky dx-sticky-left" style={{ left: offset }}>
+                    <th
+                      className="dx-th-sticky dx-sticky-left"
+                      style={{
+                        ...headerCellStyle,
+                        left: offset,
+                        width: 180,
+                        minWidth: 180,
+                        maxWidth: 180,
+                        zIndex: 3,
+                      }}
+                    >
                       Name
                     </th>
-                    <th className="dx-th-sticky">Type</th>
-                    <th className="dx-th-sticky">Input Category</th>
-                    <th className="dx-th-sticky">Scoring Rule</th>
-                    <th className="dx-th-sticky">Category</th>
-                    <th className="dx-th-sticky">Description</th>
+                    <th
+                      className="dx-th-sticky"
+                      style={{
+                        ...headerCellStyle,
+                        width: 100,
+                        minWidth: 100,
+                        maxWidth: 100,
+                      }}
+                    >
+                      Type
+                    </th>
+                    <th
+                      className="dx-th-sticky"
+                      style={{
+                        ...headerCellStyle,
+                        width: 170,
+                        minWidth: 170,
+                        maxWidth: 170,
+                      }}
+                    >
+                      Input Category
+                    </th>
+                    <th
+                      className="dx-th-sticky"
+                      style={{
+                        ...headerCellStyle,
+                        width: 260,
+                        minWidth: 260,
+                        maxWidth: 260,
+                      }}
+                    >
+                      Scoring Rule
+                    </th>
+                    <th
+                      className="dx-th-sticky"
+                      style={{
+                        ...headerCellStyle,
+                        width: 170,
+                        minWidth: 170,
+                        maxWidth: 170,
+                      }}
+                    >
+                      Category
+                    </th>
+                    <th
+                      className="dx-th-sticky"
+                      style={{
+                        ...headerCellStyle,
+                        width: 220,
+                        minWidth: 220,
+                        maxWidth: 220,
+                      }}
+                    >
+                      Description
+                    </th>
                   </tr>
                 </thead>
 
                 <tbody>
-                  {metrics.map((m) => (
-                    <tr key={m.metric_ID} style={{ borderBottom: "1px solid rgba(255,255,255,0.08)" }}>
-                      <td className="dx-sticky-left" style={{ left: 0 }}>
-                        <div style={{ display: "flex", gap: 6 }}>
-                          <button className="dx-btn dx-btn-outline" onClick={() => openEditModal(m)}>
-                            Edit
-                          </button>
-                          <button
-                            className="dx-btn dx-btn-outline"
-                            style={{ borderColor: "var(--danger)", color: "var(--danger)" }}
-                            onClick={() => deleteMetric(m.metric_ID)}
-                          >
-                            Delete
-                          </button>
-                        </div>
-                      </td>
+                  {metrics.map((m, index) => {
+                    const rowBg =
+                      index % 2 === 0
+                        ? "rgba(255,255,255,0.01)"
+                        : "rgba(255,255,255,0.025)";
 
-                      <td
-                        className="dx-sticky-left"
+                    const stickyBg =
+                      index % 2 === 0
+                        ? "rgba(15,18,30,0.98)"
+                        : "rgba(18,22,34,0.98)";
+
+                    return (
+                      <tr
+                        key={m.metric_ID}
                         style={{
-                          left: offset,
-                          minWidth: 120,
-                          maxWidth: 180,
-                          whiteSpace: "normal",
-                          overflowWrap: "anywhere",
-                          wordBreak: "break-word",
+                          borderBottom: "1px solid rgba(255,255,255,0.08)",
+                          background: rowBg,
                         }}
                       >
-                        {m.metric_name}
-                      </td>
+                        <td
+                          className="dx-sticky-left"
+                          style={{
+                            ...cellBaseStyle,
+                            left: 0,
+                            width: 160,
+                            minWidth: 160,
+                            maxWidth: 160,
+                            background: stickyBg,
+                            zIndex: 2,
+                          }}
+                        >
+                          <div style={{ display: "flex", gap: 6, flexWrap: "wrap" }}>
+                            <button className="dx-btn dx-btn-outline" onClick={() => openEditModal(m)}>
+                              Edit
+                            </button>
+                            <button
+                              className="dx-btn dx-btn-outline"
+                              style={{ borderColor: "var(--danger)", color: "var(--danger)" }}
+                              onClick={() => deleteMetric(m.metric_ID)}
+                            >
+                              Delete
+                            </button>
+                          </div>
+                        </td>
 
-                      <td
-                        style={{
-                          minWidth: 60,
-                          maxWidth: 90,
-                          whiteSpace: "normal",
-                          overflowWrap: "anywhere",
-                          wordBreak: "break-word",
-                        }}
-                      >
-                        {m.value_type}
-                      </td>
+                        <td
+                          className="dx-sticky-left"
+                          style={{
+                            ...cellBaseStyle,
+                            left: offset,
+                            width: 180,
+                            minWidth: 180,
+                            maxWidth: 180,
+                            background: stickyBg,
+                            zIndex: 1,
+                            fontWeight: 700,
+                            fontSize: 14.5,
+                            lineHeight: 1.35,
+                          }}
+                          title={m.metric_name}
+                        >
+                          <ExpandableText
+                            text={m.metric_name || ""}
+                            lines={2}
+                            textStyle={{ fontWeight: 700, fontSize: 14.5, lineHeight: 1.35 }}
+                          />
+                        </td>
 
-                      <td
-                        style={{
-                          minWidth: 120,
-                          maxWidth: 220,
-                          whiteSpace: "normal",
-                          overflowWrap: "anywhere",
-                          wordBreak: "break-word",
-                        }}
-                      >
-                        {displayInputCategory(m)}
-                      </td>
+                        <td style={metricCellStyle} title={m.value_type}>
+                          <ExpandableText
+                            text={m.value_type || ""}
+                            lines={2}
+                            emptyText="—"
+                          />
+                        </td>
 
-                      <td
-                        style={{
-                          minWidth: 160,
-                          maxWidth: 320,
-                          whiteSpace: "normal",
-                          overflowWrap: "anywhere",
-                          wordBreak: "break-word",
-                        }}
-                      >
-                        <code style={{ display: "block", whiteSpace: "pre-wrap", overflowWrap: "anywhere" }}>
-                          {displayRulePreview(m)}
-                        </code>
-                      </td>
+                        <td style={metricCellStyle} title={displayInputCategory(m)}>
+                          <ExpandableText
+                            text={displayInputCategory(m)}
+                            lines={3}
+                            emptyText="—"
+                          />
+                        </td>
 
-                      <td
-                        style={{
-                          minWidth: 120,
-                          maxWidth: 220,
-                          whiteSpace: "normal",
-                          overflowWrap: "anywhere",
-                          wordBreak: "break-word",
-                        }}
-                      >
-                        {m.category || "—"}
-                      </td>
+                        <td style={metricCellStyle} title={displayRulePreview(m)}>
+                          <ExpandableText
+                            text={displayRulePreview(m)}
+                            lines={4}
+                            emptyText="—"
+                            preserveWhitespace
+                            textStyle={{
+                              fontFamily:
+                                'ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace',
+                              fontSize: 12.5,
+                              lineHeight: 1.35,
+                              color: "inherit",
+                            }}
+                          />
+                        </td>
 
-                      <td
-                        style={{
-                          minWidth: 160,
-                          maxWidth: 280,
-                          whiteSpace: "normal",
-                          overflowWrap: "anywhere",
-                          wordBreak: "break-word",
-                        }}
-                      >
-                        {m.description || "—"}
-                      </td>
-                    </tr>
-                  ))}
+                        <td style={metricCellStyle} title={m.category || "—"}>
+                          <ExpandableText
+                            text={m.category || ""}
+                            lines={3}
+                            emptyText="—"
+                          />
+                        </td>
+
+                        <td style={metricCellStyle} title={m.description || "—"}>
+                          <ExpandableText
+                            text={m.description || ""}
+                            lines={3}
+                            emptyText="—"
+                          />
+                        </td>
+                      </tr>
+                    );
+                  })}
                 </tbody>
               </table>
 
@@ -541,6 +996,8 @@ const MetricsPage: React.FC = () => {
                   alignItems: "center",
                   justifyContent: "space-between",
                   marginBottom: 14,
+                  gap: 12,
+                  minWidth: 0,
                 }}
               >
                 <div style={{ fontSize: "1.15rem", fontWeight: 700, color: "var(--accent)" }}>
@@ -557,11 +1014,27 @@ const MetricsPage: React.FC = () => {
                 </button>
               </div>
 
+              {formError && (
+                <div
+                  style={{
+                    marginBottom: 12,
+                    padding: "10px 12px",
+                    borderRadius: 10,
+                    border: "1px solid rgba(255, 99, 99, 0.45)",
+                    background: "rgba(255, 99, 99, 0.10)",
+                    color: "#ffb3b3",
+                    fontSize: "0.95rem",
+                  }}
+                >
+                  {formError}
+                </div>
+              )}
+
               <div
                 style={{
                   display: "grid",
                   gridTemplateColumns: "repeat(2, minmax(0, 1fr))",
-                  gap: 12,
+                  gap: 10,
                 }}
               >
                 <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
@@ -569,13 +1042,99 @@ const MetricsPage: React.FC = () => {
                   <input
                     className="dx-input"
                     value={modalMode === "create" ? newName : editName}
-                    onChange={(e) =>
-                      modalMode === "create" ? setNewName(e.target.value) : setEditName(e.target.value)
-                    }
+                    onChange={(e) => {
+                      setFormError("");
+                      modalMode === "create" ? setNewName(e.target.value) : setEditName(e.target.value);
+                    }}
                     maxLength={100}
                     placeholder="e.g. Commits (Last 5 Years)"
                   />
                 </div>
+
+                <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
+                  <label style={{ opacity: 0.85 }}>Source Type</label>
+                  <select
+                    className="dx-input"
+                    value={modalMode === "create" ? newSourceType : editSourceType}
+                    onChange={(e) => {
+                      const val = e.target.value;
+                      setFormError("");
+
+                      if (modalMode === "create") {
+                        setNewSourceType(val);
+                        setNewMetricKey("");
+                        setSelectedOptionCategory("");
+                        setSelectedTemplate("");
+                        if (val === "manual") {
+                          setNewType("float");
+                          setNewDesc("");
+                        }
+                      } else {
+                        setEditSourceType(val);
+                        setEditMetricKey("");
+                        setEditOptionCategory("");
+                        setEditTemplate("");
+                        if (val === "manual") {
+                          setEditType("float");
+                          setEditDesc("");
+                        }
+                      }
+                    }}
+                  >
+                    <option value="manual" className="dx-input-select">
+                      Manual
+                    </option>
+                    <option value="github_api" className="dx-input-select">
+                      GitHub API
+                    </option>
+                    <option value="scc" className="dx-input-select">
+                      SCC
+                    </option>
+                    <option value="gitstats" className="dx-input-select">
+                      GitStats
+                    </option>
+                  </select>
+                </div>
+
+                {modalSourceType !== "manual" && (
+                  <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
+                    <label style={{ opacity: 0.85 }}>System Metric</label>
+                    <select
+                      className="dx-input"
+                      value={modalMetricKey}
+                      onChange={(e) => {
+                        const selectedKey = e.target.value;
+                        const selectedOption = modalAutoOptions.find((x) => x.key === selectedKey);
+                        setFormError("");
+
+                        if (modalMode === "create") {
+                          setNewMetricKey(selectedKey);
+                          setSelectedOptionCategory("");
+                          setSelectedTemplate("");
+                          if (selectedOption) {
+                            setNewType(selectedOption.value_type);
+                            setNewDesc(selectedOption.description || "");
+                          }
+                        } else {
+                          setEditMetricKey(selectedKey);
+                          setEditOptionCategory("");
+                          setEditTemplate("");
+                          if (selectedOption) {
+                            setEditType(selectedOption.value_type);
+                            setEditDesc(selectedOption.description || "");
+                          }
+                        }
+                      }}
+                    >
+                      <option value="">-- Select System Metric --</option>
+                      {modalAutoOptions.map((opt) => (
+                        <option key={opt.key} value={opt.key} className="dx-input-select">
+                          {opt.label}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+                )}
 
                 <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
                   <label style={{ opacity: 0.85 }}>Type</label>
@@ -584,9 +1143,12 @@ const MetricsPage: React.FC = () => {
                     value={modalMode === "create" ? newType : editType}
                     onChange={(e) => {
                       const val = e.target.value;
+                      setFormError("");
+                      if (modalSourceType !== "manual") return;
                       if (modalMode === "create") setNewType(val);
                       else onEditTypeChange(val);
                     }}
+                    disabled={modalSourceType !== "manual"}
                   >
                     <option value="float" className="dx-input-select">
                       Float
@@ -611,9 +1173,10 @@ const MetricsPage: React.FC = () => {
                   <select
                     className="dx-input"
                     value={modalMode === "create" ? newCategory : editCategory}
-                    onChange={(e) =>
-                      modalMode === "create" ? setNewCategory(e.target.value) : setEditCategory(e.target.value)
-                    }
+                    onChange={(e) => {
+                      setFormError("");
+                      modalMode === "create" ? setNewCategory(e.target.value) : setEditCategory(e.target.value);
+                    }}
                     style={{ borderColor: "var(--accent)" }}
                   >
                     <option className="dx-input-select" value="">
@@ -629,13 +1192,13 @@ const MetricsPage: React.FC = () => {
 
                 <div />
 
-                {isRuleType(modalType) && (
+                {modalSourceType === "manual" && isRuleType(modalType) && (
                   <div
                     style={{
                       gridColumn: "1 / -1",
                       display: "grid",
                       gridTemplateColumns: "repeat(2, minmax(0, 1fr))",
-                      gap: 12,
+                      gap: 10,
                     }}
                   >
                     <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
@@ -645,6 +1208,7 @@ const MetricsPage: React.FC = () => {
                         value={modalMode === "create" ? selectedOptionCategory : editOptionCategory}
                         onChange={(e) => {
                           const v = e.target.value;
+                          setFormError("");
                           if (modalMode === "create") {
                             setSelectedOptionCategory(v);
                             setSelectedTemplate("");
@@ -669,9 +1233,10 @@ const MetricsPage: React.FC = () => {
                       <select
                         className="dx-input"
                         value={modalMode === "create" ? selectedTemplate : editTemplate}
-                        onChange={(e) =>
-                          modalMode === "create" ? setSelectedTemplate(e.target.value) : setEditTemplate(e.target.value)
-                        }
+                        onChange={(e) => {
+                          setFormError("");
+                          modalMode === "create" ? setSelectedTemplate(e.target.value) : setEditTemplate(e.target.value);
+                        }}
                         disabled={!modalOptionCategory}
                         style={{ backgroundColor: "rgba(var(--accent-rgb), 0.1)" }}
                       >
@@ -715,7 +1280,10 @@ const MetricsPage: React.FC = () => {
                   <textarea
                     className="dx-input"
                     value={modalMode === "create" ? newDesc : editDesc}
-                    onChange={(e) => (modalMode === "create" ? setNewDesc(e.target.value) : setEditDesc(e.target.value))}
+                    onChange={(e) => {
+                      setFormError("");
+                      modalMode === "create" ? setNewDesc(e.target.value) : setEditDesc(e.target.value);
+                    }}
                     placeholder="Description…"
                     rows={4}
                     style={{
@@ -730,7 +1298,7 @@ const MetricsPage: React.FC = () => {
                 </div>
               </div>
 
-              <div style={{ display: "flex", justifyContent: "flex-end", gap: 10, marginTop: 16 }}>
+              <div style={{ display: "flex", justifyContent: "flex-end", gap: 10, marginTop: 16, flexWrap: "wrap" }}>
                 <button className="dx-btn dx-btn-outline" onClick={closeModal}>
                   Cancel
                 </button>

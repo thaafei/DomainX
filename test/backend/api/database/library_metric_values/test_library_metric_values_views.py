@@ -2,7 +2,6 @@ import json
 from unittest.mock import Mock
 
 import pytest
-from django.utils import timezone
 from rest_framework import status
 from rest_framework.test import APIRequestFactory
 
@@ -30,27 +29,159 @@ def domain2():
 
 @pytest.fixture()
 def lib_a(domain):
-    return Library.objects.create(domain=domain, library_name="A", url="https://a", programming_language="Python")
+    return Library.objects.create(
+        domain=domain,
+        library_name="A",
+        github_url="https://a",
+        programming_language="Python",
+    )
 
 
 @pytest.fixture()
 def lib_b(domain):
-    return Library.objects.create(domain=domain, library_name="B", url="https://b", programming_language="JS")
+    return Library.objects.create(
+        domain=domain,
+        library_name="B",
+        github_url="https://b",
+        programming_language="JS",
+    )
 
 
 @pytest.fixture()
 def lib_c(domain2):
-    return Library.objects.create(domain=domain2, library_name="C", url="https://c", programming_language="Go")
+    return Library.objects.create(
+        domain=domain2,
+        library_name="C",
+        github_url="https://c",
+        programming_language="Go",
+    )
 
 
 @pytest.fixture()
 def metric_stars():
-    return Metric.objects.create(metric_name="Stars Count")
+    return Metric.objects.create(
+        metric_name="Stars Count",
+        metric_key="stars_count",
+        value_type="int",
+        scoring_dict={},
+    )
 
 
 @pytest.fixture()
 def metric_forks():
-    return Metric.objects.create(metric_name="Forks Count")
+    return Metric.objects.create(
+        metric_name="Forks Count",
+        metric_key="forks_count",
+        value_type="int",
+        scoring_dict={},
+    )
+
+
+@pytest.fixture()
+def metric_float():
+    return Metric.objects.create(
+        metric_name="Coverage",
+        metric_key="coverage",
+        value_type="float",
+        scoring_dict={},
+    )
+
+
+@pytest.fixture()
+def metric_text():
+    return Metric.objects.create(
+        metric_name="Notes",
+        metric_key="notes",
+        value_type="text",
+        scoring_dict={},
+    )
+
+
+@pytest.fixture()
+def metric_scored():
+    return Metric.objects.create(
+        metric_name="License Type",
+        metric_key="license_type",
+        value_type="text",
+        scoring_dict={"MIT": 5, "Apache-2.0": 4},
+    )
+
+
+@pytest.fixture()
+def metric_gitstats_report():
+    return Metric.objects.create(
+        metric_name="GitStats Report",
+        metric_key="gitstats_report",
+        value_type="text",
+        scoring_dict={},
+    )
+
+
+@pytest.mark.django_db
+def test_validate_metric_value_blank_returns_none(metric_stars):
+    error, value = views_module.validate_metric_value(metric_stars, "")
+    assert error is None
+    assert value is None
+
+    error, value = views_module.validate_metric_value(metric_stars, None)
+    assert error is None
+    assert value is None
+
+
+@pytest.mark.django_db
+def test_validate_metric_value_rejects_gitstats_report(metric_gitstats_report):
+    error, value = views_module.validate_metric_value(metric_gitstats_report, "abc")
+    assert error == "This metric is read-only and cannot be edited manually."
+    assert value is None
+
+
+@pytest.mark.django_db
+def test_validate_metric_value_scoring_dict_accepts_allowed_value(metric_scored):
+    error, value = views_module.validate_metric_value(metric_scored, "MIT")
+    assert error is None
+    assert value == "MIT"
+
+
+@pytest.mark.django_db
+def test_validate_metric_value_scoring_dict_rejects_invalid_value(metric_scored):
+    error, value = views_module.validate_metric_value(metric_scored, "GPL")
+    assert error == "License Type must be one of: MIT, Apache-2.0."
+    assert value is None
+
+
+@pytest.mark.django_db
+def test_validate_metric_value_parses_int(metric_stars):
+    error, value = views_module.validate_metric_value(metric_stars, "42")
+    assert error is None
+    assert value == 42
+
+
+@pytest.mark.django_db
+def test_validate_metric_value_rejects_invalid_int(metric_stars):
+    error, value = views_module.validate_metric_value(metric_stars, "4.2")
+    assert error == "Stars Count must be a whole number."
+    assert value is None
+
+
+@pytest.mark.django_db
+def test_validate_metric_value_parses_float(metric_float):
+    error, value = views_module.validate_metric_value(metric_float, "91.7")
+    assert error is None
+    assert value == 91.7
+
+
+@pytest.mark.django_db
+def test_validate_metric_value_rejects_invalid_float(metric_float):
+    error, value = views_module.validate_metric_value(metric_float, "abc")
+    assert error == "Coverage must be a valid number."
+    assert value is None
+
+
+@pytest.mark.django_db
+def test_validate_metric_value_text_passthrough(metric_text):
+    error, value = views_module.validate_metric_value(metric_text, "hello")
+    assert error is None
+    assert value == "hello"
 
 
 @pytest.mark.django_db
@@ -243,7 +374,63 @@ def test_library_metric_value_update_creates_value_and_evidence(rf, lib_a, metri
     assert forks.value is None
     assert forks.evidence is None
 
-    assert LibraryMetricValue.objects.filter(library=lib_a, metric__metric_name="Unknown Metric").count() == 0
+    assert LibraryMetricValue.objects.filter(
+        library=lib_a,
+        metric__metric_name="Unknown Metric",
+    ).count() == 0
+
+
+@pytest.mark.django_db
+def test_library_metric_value_update_rejects_invalid_int(rf, lib_a, metric_stars):
+    view = views_module.LibraryMetricValueUpdateView.as_view()
+
+    req = rf.post(
+        "/x",
+        {"metrics": {"Stars Count": "not-an-int"}},
+        format="json",
+    )
+    resp = view(req, library_id=str(lib_a.library_ID))
+
+    assert resp.status_code == status.HTTP_400_BAD_REQUEST
+    assert resp.data["error"] == "Stars Count must be a whole number."
+    assert LibraryMetricValue.objects.filter(library=lib_a, metric=metric_stars).count() == 0
+
+
+@pytest.mark.django_db
+def test_library_metric_value_update_rejects_invalid_scored_value(rf, lib_a, metric_scored):
+    view = views_module.LibraryMetricValueUpdateView.as_view()
+
+    req = rf.post(
+        "/x",
+        {"metrics": {"License Type": "GPL"}},
+        format="json",
+    )
+    resp = view(req, library_id=str(lib_a.library_ID))
+
+    assert resp.status_code == status.HTTP_400_BAD_REQUEST
+    assert resp.data["error"] == "License Type must be one of: MIT, Apache-2.0."
+    assert LibraryMetricValue.objects.filter(library=lib_a, metric=metric_scored).count() == 0
+
+
+@pytest.mark.django_db
+def test_library_metric_value_update_skips_gitstats_report_metric(rf, lib_a, metric_gitstats_report):
+    view = views_module.LibraryMetricValueUpdateView.as_view()
+
+    req = rf.post(
+        "/x",
+        {
+            "metrics": {
+                "GitStats Report": "manual value",
+                "GitStats Report_evidence": "manual evidence",
+            }
+        },
+        format="json",
+    )
+    resp = view(req, library_id=str(lib_a.library_ID))
+
+    assert resp.status_code == status.HTTP_200_OK
+    assert resp.data["success"] is True
+    assert LibraryMetricValue.objects.filter(library=lib_a, metric=metric_gitstats_report).count() == 0
 
 
 @pytest.mark.django_db
@@ -290,6 +477,42 @@ def test_metric_value_bulk_update_success(rf, lib_a, metric_stars, metric_forks)
 
 
 @pytest.mark.django_db
+def test_metric_value_bulk_update_rejects_invalid_int(rf, lib_a, metric_stars):
+    view = views_module.MetricValueBulkUpdateView.as_view()
+
+    updates = [
+        {"library_id": str(lib_a.library_ID), "metric_id": str(metric_stars.metric_ID), "value": "abc"},
+    ]
+
+    req = rf.post("/x", updates, format="json")
+    resp = view(req)
+
+    assert resp.status_code == status.HTTP_400_BAD_REQUEST
+    assert resp.data["error"] == "Stars Count must be a whole number."
+    assert LibraryMetricValue.objects.filter(library=lib_a, metric=metric_stars).count() == 0
+
+
+@pytest.mark.django_db
+def test_metric_value_bulk_update_skips_gitstats_report_metric(rf, lib_a, metric_gitstats_report):
+    view = views_module.MetricValueBulkUpdateView.as_view()
+
+    updates = [
+        {
+            "library_id": str(lib_a.library_ID),
+            "metric_id": str(metric_gitstats_report.metric_ID),
+            "value": "manual value",
+        },
+    ]
+
+    req = rf.post("/x", updates, format="json")
+    resp = view(req)
+
+    assert resp.status_code == status.HTTP_200_OK
+    assert resp.data["status"] == "Successfully updated 1 metric values."
+    assert LibraryMetricValue.objects.filter(library=lib_a, metric=metric_gitstats_report).count() == 0
+
+
+@pytest.mark.django_db
 def test_ahp_calculations_basic(rf, domain, lib_a, lib_b, monkeypatch, tmp_path):
     rules = {"range": {}, "bool": {}, "options": {}}
     categories = {"Categories": ["Quality"]}
@@ -300,7 +523,15 @@ def test_ahp_calculations_basic(rf, domain, lib_a, lib_b, monkeypatch, tmp_path)
 
     monkeypatch.setattr(views_module.settings, "BASE_DIR", str(tmp_path))
 
-    m = Metric.objects.create(metric_name="Score", category="Quality", option_category=None, value_type="range", rule="")
+    m = Metric.objects.create(
+        metric_name="Score",
+        metric_key="score",
+        category="Quality",
+        option_category=None,
+        value_type="range",
+        rule="",
+        scoring_dict={},
+    )
 
     LibraryMetricValue.objects.create(library=lib_a, metric=m, value=10)
     LibraryMetricValue.objects.create(library=lib_b, metric=m, value=5)

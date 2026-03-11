@@ -2,12 +2,44 @@ from rest_framework import generics, status
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
 from rest_framework.views import APIView
-
 from django.conf import settings
 import json, os
-
 from .models import Metric
 from .serializers import MetricSerializer, FlatMetricSerializer
+
+
+def load_auto_metric_definitions():
+    path = os.path.join(settings.BASE_DIR, "api", "database", "auto_metrics.json")
+    with open(path, "r") as f:
+        return json.load(f)
+
+class AutoMetricOptionsView(APIView):
+    def get(self, request):
+        try:
+            data = load_auto_metric_definitions()
+
+            grouped = {}
+            for key, item in data.items():
+                source = item.get("source_type")
+                grouped.setdefault(source, []).append({
+                    "key": key,
+                    "label": item.get("label"),
+                    "description": item.get("description"),
+                    "value_type": item.get("value_type"),
+                })
+
+            return Response(grouped, status=status.HTTP_200_OK)
+
+        except FileNotFoundError:
+            return Response(
+                {"error": "auto_metrics.json not found"},
+                status=status.HTTP_404_NOT_FOUND
+            )
+        except json.JSONDecodeError:
+            return Response(
+                {"error": "Error decoding auto_metrics.json"},
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR
+            )
 
 class MetricRulesView(APIView):
     def get(self, request):

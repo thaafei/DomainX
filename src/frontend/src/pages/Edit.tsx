@@ -2,12 +2,15 @@ import React, { useEffect, useState, useRef, useLayoutEffect } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { apiUrl } from "../config/api";
 import SuccessNotification from "../components/SuccessNotification";
-import {ArrowLeft } from "lucide-react";
+import { ArrowLeft } from "lucide-react";
 
 interface Metric {
   metric_ID: string;
   metric_name: string;
+  description?: string | null;
   value_type: string;
+  source_type?: string;
+  metric_key?: string | null;
   scoring_dict?: Record<string, number> | null;
 }
 
@@ -16,6 +19,7 @@ type AnalysisStatus = "pending" | "running" | "success" | "failed" | string;
 interface EditableRow {
   library_ID: string;
   library_name: string;
+  github_url: string | null;
   url: string | null;
   programming_language: string;
   metrics: { [metricName: string]: string | number | null };
@@ -28,6 +32,78 @@ interface EditableRow {
   gitstats_error?: string | null;
   gitstats_report_url?: string | null;
 }
+
+const clamp2Style: React.CSSProperties = {
+  display: "-webkit-box",
+  WebkitLineClamp: 2,
+  WebkitBoxOrient: "vertical",
+  overflow: "hidden",
+};
+
+const clamp3Style: React.CSSProperties = {
+  display: "-webkit-box",
+  WebkitLineClamp: 3,
+  WebkitBoxOrient: "vertical",
+  overflow: "hidden",
+};
+
+const cellBaseStyle: React.CSSProperties = {
+  padding: "7px 8px",
+  verticalAlign: "top",
+  fontSize: 13,
+  lineHeight: 1.32,
+  overflowWrap: "anywhere",
+};
+
+const metricCellStyle: React.CSSProperties = {
+  ...cellBaseStyle,
+  color: "rgba(255,255,255,0.9)",
+};
+
+const headerCellStyle: React.CSSProperties = {
+  textAlign: "left",
+  padding: "8px 8px",
+  fontSize: 12.5,
+  lineHeight: 1.25,
+  fontWeight: 700,
+  color: "rgba(255,255,255,0.92)",
+  background: "rgba(20, 24, 38, 0.96)",
+  borderBottom: "1px solid rgba(255,255,255,0.08)",
+  overflowWrap: "anywhere",
+};
+
+const compactButtonStyle: React.CSSProperties = {
+  border: "none",
+  background: "transparent",
+  color: "var(--accent)",
+  cursor: "pointer",
+  padding: 0,
+  marginTop: 4,
+  fontSize: 11.5,
+  lineHeight: 1.2,
+  alignSelf: "flex-start",
+};
+
+const overlayCardStyle: React.CSSProperties = {
+  position: "absolute",
+  top: "100%",
+  left: 0,
+  marginTop: 6,
+  minWidth: 260,
+  maxWidth: 520,
+  maxHeight: 260,
+  overflow: "auto",
+  padding: "10px 12px",
+  borderRadius: 12,
+  background: "rgba(20, 24, 38, 0.98)",
+  border: "1px solid rgba(255,255,255,0.12)",
+  boxShadow: "0 12px 32px rgba(0,0,0,0.45)",
+  zIndex: 10020,
+  color: "rgba(255,255,255,0.92)",
+  whiteSpace: "pre-wrap",
+  overflowWrap: "anywhere",
+  userSelect: "text",
+};
 
 const normalizeStatus = (
   s?: AnalysisStatus
@@ -49,8 +125,13 @@ const statusLabel = (s?: AnalysisStatus) => {
 const statusColor = (s?: AnalysisStatus) => {
   const v = normalizeStatus(s);
   if (v === "failed") return "rgba(255, 143, 143, 0.95)";
+  if (v === "success") return "rgba(130, 255, 170, 0.92)";
+  if (v === "running") return "rgba(255, 220, 120, 0.92)";
   return "rgba(255,255,255,0.65)";
 };
+
+const isAffectedMetric = (m: Metric) =>
+  String(m.source_type || "").toLowerCase().trim() !== "manual";
 
 type ConfirmState =
   | null
@@ -62,6 +143,118 @@ type ConfirmState =
   | {
       type: "all";
     };
+
+const ExpandableText: React.FC<{
+  text: string;
+  lines?: 2 | 3;
+  emptyText?: string;
+  textStyle?: React.CSSProperties;
+}> = ({ text, lines = 2, emptyText = "—", textStyle }) => {
+  const [open, setOpen] = useState(false);
+  const [truncated, setTruncated] = useState(false);
+  const textRef = useRef<HTMLDivElement>(null);
+  const wrapRef = useRef<HTMLDivElement>(null);
+
+  useLayoutEffect(() => {
+    const el = textRef.current;
+    if (!el) return;
+
+    const check = () => {
+      setTruncated(
+        el.scrollHeight > el.clientHeight + 1 ||
+          el.scrollWidth > el.clientWidth + 1
+      );
+    };
+
+    check();
+    window.addEventListener("resize", check);
+    return () => window.removeEventListener("resize", check);
+  }, [text, lines]);
+
+  useEffect(() => {
+    if (!open) return;
+
+    const onDocClick = (e: MouseEvent) => {
+      if (!wrapRef.current) return;
+      if (!wrapRef.current.contains(e.target as Node)) {
+        setOpen(false);
+      }
+    };
+
+    const onEsc = (e: KeyboardEvent) => {
+      if (e.key === "Escape") setOpen(false);
+    };
+
+    document.addEventListener("mousedown", onDocClick);
+    document.addEventListener("keydown", onEsc);
+    return () => {
+      document.removeEventListener("mousedown", onDocClick);
+      document.removeEventListener("keydown", onEsc);
+    };
+  }, [open]);
+
+  if (!text) {
+    return <div style={textStyle}>{emptyText}</div>;
+  }
+
+  const clampStyle = lines === 3 ? clamp3Style : clamp2Style;
+
+  return (
+    <div
+      ref={wrapRef}
+      style={{
+        position: "relative",
+        display: "flex",
+        flexDirection: "column",
+        alignItems: "flex-start",
+        minWidth: 0,
+        width: "100%",
+      }}
+    >
+      <div
+        ref={textRef}
+        style={{
+          ...clampStyle,
+          ...textStyle,
+          width: "100%",
+          overflowWrap: "anywhere",
+        }}
+        title={open ? "" : text}
+      >
+        {text}
+      </div>
+
+      {truncated && (
+        <button
+          type="button"
+          onClick={() => setOpen((v) => !v)}
+          style={compactButtonStyle}
+        >
+          {open ? "less" : "more"}
+        </button>
+      )}
+
+      {open && (
+        <div style={overlayCardStyle}>
+          <div style={{ marginBottom: 8 }}>{text}</div>
+
+          <button
+            type="button"
+            className="dx-btn dx-btn-outline"
+            style={{ padding: "5px 8px", fontSize: 12 }}
+            onClick={async () => {
+              try {
+                await navigator.clipboard.writeText(text);
+              } catch {}
+            }}
+          >
+            Copy
+          </button>
+        </div>
+      )}
+    </div>
+  );
+};
 
 const ConfirmModal: React.FC<{
   open: boolean;
@@ -106,7 +299,7 @@ const ConfirmModal: React.FC<{
       <div
         onMouseDown={(e) => e.stopPropagation()}
         style={{
-          width: "min(620px, 100%)",
+          width: "min(700px, 100%)",
           borderRadius: 18,
           overflow: "hidden",
           border: "1px solid rgba(255,255,255,0.14)",
@@ -253,6 +446,410 @@ const ErrorNotification: React.FC<{ show: boolean; message: string }> = ({
   );
 };
 
+const EditMetricValuesModal: React.FC<{
+  open: boolean;
+  row: EditableRow | null;
+  metricList: Metric[];
+  pageLoading: boolean;
+  fieldErrors: Record<string, string>;
+  onClose: () => void;
+  onChangeValue: (metricName: string, value: any) => void;
+  onSave: () => void;
+}> = ({
+  open,
+  row,
+  metricList,
+  pageLoading,
+  fieldErrors,
+  onClose,
+  onChangeValue,
+  onSave,
+}) => {
+  if (!open || !row) return null;
+
+  const hasValidationErrors = Object.keys(fieldErrors).length > 0;
+
+  return (
+    <div
+      role="dialog"
+      aria-modal="true"
+      onMouseDown={(e) => {
+        if (e.target === e.currentTarget && !pageLoading) onClose();
+      }}
+      style={{
+        position: "fixed",
+        inset: 0,
+        background: "rgba(0,0,0,0.72)",
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
+        zIndex: 9999,
+        padding: 18,
+        backdropFilter: "blur(4px)",
+      }}
+    >
+      <div
+        onMouseDown={(e) => e.stopPropagation()}
+        className="dx-card"
+        style={{
+          width: "min(980px, 96vw)",
+          maxHeight: "88vh",
+          overflow: "auto",
+          padding: 18,
+          position: "relative",
+          background: "rgba(18, 20, 28, 0.96)",
+          border: "1px solid rgba(255,255,255,0.08)",
+          borderRadius: 16,
+          boxShadow: "0 18px 60px rgba(0,0,0,0.55)",
+        }}
+      >
+        <div
+          style={{
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "space-between",
+            marginBottom: 14,
+            gap: 12,
+          }}
+        >
+          <div
+            style={{
+              display: "flex",
+              flexDirection: "column",
+              gap: 4,
+              minWidth: 0,
+            }}
+          >
+            <div
+              style={{
+                fontSize: "1.15rem",
+                fontWeight: 700,
+                color: "var(--accent)",
+              }}
+            >
+              Edit Metric Values
+            </div>
+            <div
+              style={{
+                color: "rgba(255,255,255,0.82)",
+                fontSize: 14,
+                ...clamp2Style,
+              }}
+              title={row.library_name}
+            >
+              {row.library_name}
+            </div>
+          </div>
+
+          <button
+            className="dx-btn dx-btn-outline"
+            onClick={onClose}
+            disabled={pageLoading}
+            aria-label="Close"
+            style={{ padding: "6px 10px", opacity: pageLoading ? 0.7 : 1 }}
+          >
+            ✕
+          </button>
+        </div>
+
+        <div
+          style={{
+            display: "grid",
+            gridTemplateColumns: "repeat(2, minmax(0, 1fr))",
+            gap: 10,
+            marginBottom: 14,
+          }}
+        >
+          <div
+            style={{
+              padding: "10px 12px",
+              borderRadius: 10,
+              background: "rgba(255,255,255,0.04)",
+              border: "1px solid rgba(255,255,255,0.08)",
+              color: "white",
+              minWidth: 0,
+            }}
+          >
+            <div
+              style={{
+                opacity: 0.75,
+                fontSize: 13,
+                marginBottom: 4,
+                color: "rgba(255,255,255,0.72)",
+              }}
+            >
+              GitHub URL
+            </div>
+            <ExpandableText
+              text={row.github_url || ""}
+              lines={3}
+              emptyText="—"
+              textStyle={{ color: "rgba(255,255,255,0.92)" }}
+            />
+          </div>
+
+          <div
+            style={{
+              padding: "10px 12px",
+              borderRadius: 10,
+              background: "rgba(255,255,255,0.04)",
+              border: "1px solid rgba(255,255,255,0.08)",
+              color: "white",
+              minWidth: 0,
+            }}
+          >
+            <div
+              style={{
+                opacity: 0.75,
+                fontSize: 13,
+                marginBottom: 4,
+                color: "rgba(255,255,255,0.72)",
+              }}
+            >
+              URL
+            </div>
+            <ExpandableText
+              text={row.url || ""}
+              lines={3}
+              emptyText="—"
+              textStyle={{ color: "rgba(255,255,255,0.92)" }}
+            />
+          </div>
+
+          <div
+            style={{
+              padding: "10px 12px",
+              borderRadius: 10,
+              background: "rgba(255,255,255,0.04)",
+              border: "1px solid rgba(255,255,255,0.08)",
+              color: "white",
+            }}
+          >
+            <div
+              style={{
+                opacity: 0.75,
+                fontSize: 13,
+                marginBottom: 4,
+                color: "rgba(255,255,255,0.72)",
+              }}
+            >
+              Language
+            </div>
+            <div style={{ color: "rgba(255,255,255,0.92)" }}>
+              {row.programming_language || "—"}
+            </div>
+          </div>
+
+          <div
+            style={{
+              padding: "10px 12px",
+              borderRadius: 10,
+              background: "rgba(255,255,255,0.04)",
+              border: "1px solid rgba(255,255,255,0.08)",
+              color: "white",
+            }}
+          >
+            <div
+              style={{
+                opacity: 0.75,
+                fontSize: 13,
+                marginBottom: 4,
+                color: "rgba(255,255,255,0.72)",
+              }}
+            >
+              API+SCC Status
+            </div>
+            <div style={{ color: statusColor(row.analysis_status) }}>
+              {statusLabel(row.analysis_status)}
+            </div>
+          </div>
+
+          <div
+            style={{
+              padding: "10px 12px",
+              borderRadius: 10,
+              background: "rgba(255,255,255,0.04)",
+              border: "1px solid rgba(255,255,255,0.08)",
+              color: "white",
+            }}
+          >
+            <div
+              style={{
+                opacity: 0.75,
+                fontSize: 13,
+                marginBottom: 4,
+                color: "rgba(255,255,255,0.72)",
+              }}
+            >
+              GitStats Status
+            </div>
+            <div style={{ color: statusColor(row.gitstats_status) }}>
+              {statusLabel(row.gitstats_status)}
+            </div>
+          </div>
+        </div>
+
+        <div
+          style={{
+            display: "grid",
+            gridTemplateColumns: "repeat(2, minmax(0, 1fr))",
+            gap: 10,
+          }}
+        >
+          {metricList.map((m) => {
+            const cellVal = row.metrics[m.metric_name];
+            const fieldError = fieldErrors[m.metric_name];
+            const desc = (m.description || "").trim();
+
+            return (
+              <div
+                key={m.metric_ID}
+                style={{
+                  display: "flex",
+                  flexDirection: "column",
+                  gap: 4,
+                  padding: "8px 10px",
+                  borderRadius: 10,
+                  background: "rgba(255,255,255,0.03)",
+                  border: "1px solid rgba(255,255,255,0.08)",
+                  minWidth: 0,
+                }}
+              >
+                <div
+                  style={{
+                    display: "flex",
+                    flexDirection: "column",
+                    gap: 4,
+                    minHeight: 42,
+                  }}
+                >
+                  <label
+                    style={{
+                      color: "rgba(255,255,255,0.88)",
+                      fontSize: 13,
+                      fontWeight: 600,
+                      overflowWrap: "anywhere",
+                      ...clamp2Style,
+                    }}
+                    title={m.metric_name}
+                  >
+                    {m.metric_name}
+                  </label>
+
+                  <div
+                    style={{
+                      fontSize: 11.5,
+                      color: "rgba(255,255,255,0.52)",
+                      minHeight: 28,
+                      lineHeight: 1.25,
+                      overflowWrap: "anywhere",
+                    }}
+                    title={desc || ""}
+                  >
+                    {desc ? (
+                      <span style={clamp2Style}>({desc})</span>
+                    ) : (
+                      <span>&nbsp;</span>
+                    )}
+                  </div>
+                </div>
+
+                {m.metric_key === "gitstats_report" ? (
+                  cellVal ? (
+                    <a
+                      href={String(cellVal)}
+                      target="_blank"
+                      rel="noreferrer"
+                      style={{ color: "var(--accent)", lineHeight: 2.2 }}
+                    >
+                      View report
+                    </a>
+                  ) : (
+                    <div
+                      style={{
+                        lineHeight: 2.2,
+                        opacity: 0.7,
+                        color: "rgba(255,255,255,0.72)",
+                      }}
+                    >
+                      —
+                    </div>
+                  )
+                ) : m.scoring_dict && Object.keys(m.scoring_dict).length > 0 ? (
+                  <select
+                    className="dx-input"
+                    value={cellVal ?? ""}
+                    onChange={(e) => onChangeValue(m.metric_name, e.target.value)}
+                    disabled={pageLoading}
+                    style={{
+                      borderColor: fieldError
+                        ? "rgba(255, 99, 99, 0.75)"
+                        : undefined,
+                    }}
+                  >
+                    <option value="" className="dx-input-select">
+                      -- Select --
+                    </option>
+                    {Object.keys(m.scoring_dict).map((key) => (
+                      <option key={key} value={key} className="dx-input-select">
+                        {key}
+                      </option>
+                    ))}
+                  </select>
+                ) : (
+                  <input
+                    className="dx-input"
+                    value={cellVal ?? ""}
+                    onChange={(e) => onChangeValue(m.metric_name, e.target.value)}
+                    disabled={pageLoading}
+                    style={{
+                      borderColor: fieldError
+                        ? "rgba(255, 99, 99, 0.75)"
+                        : undefined,
+                    }}
+                  />
+                )}
+
+                {fieldError && (
+                  <div style={{ color: "#ff9b9b", fontSize: 12, marginTop: 2 }}>
+                    {fieldError}
+                  </div>
+                )}
+              </div>
+            );
+          })}
+        </div>
+
+        <div
+          style={{
+            display: "flex",
+            justifyContent: "flex-end",
+            gap: 10,
+            marginTop: 18,
+          }}
+        >
+          <button
+            className="dx-btn dx-btn-outline"
+            onClick={onClose}
+            disabled={pageLoading}
+            style={{ opacity: pageLoading ? 0.7 : 1 }}
+          >
+            Cancel
+          </button>
+          <button
+            className="dx-btn dx-btn-primary"
+            onClick={onSave}
+            disabled={pageLoading || hasValidationErrors}
+            style={{ opacity: pageLoading || hasValidationErrors ? 0.7 : 1 }}
+          >
+            Save
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+};
+
 const EditValuesPage: React.FC = () => {
   const { domainId } = useParams<{ domainId: string }>();
   const DOMAIN_ID = domainId;
@@ -277,15 +874,20 @@ const EditValuesPage: React.FC = () => {
   const [fail, setFail] = useState(false);
   const [failMessage, setFailMessage] = useState("");
 
+  const [editModalOpen, setEditModalOpen] = useState(false);
+  const [editDraft, setEditDraft] = useState<EditableRow | null>(null);
+  const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
+
   const firstColRef = useRef<HTMLTableCellElement>(null);
   const [offset, setOffset] = useState(0);
 
-  const showSuccess = (msg: string) => {
-  setSuccessMessage(msg);
-  setSuccess(true);
-  setTimeout(() => setSuccess(false), 1700);
-};
+  const affectedMetrics = metricList.filter(isAffectedMetric);
 
+  const showSuccess = (msg: string) => {
+    setSuccessMessage(msg);
+    setSuccess(true);
+    setTimeout(() => setSuccess(false), 1700);
+  };
 
   const showFail = (msg: string) => {
     setFailMessage(msg);
@@ -301,15 +903,18 @@ const EditValuesPage: React.FC = () => {
   }, [rows]);
 
   useEffect(() => {
-      document.title = "DomainX – Edit";
+    document.title = "DomainX – Edit";
     const onKeyDown = (e: KeyboardEvent) => {
       if (e.key === "Escape" && confirm && !confirmBusy) setConfirm(null);
+      if (e.key === "Escape" && editModalOpen && !pageLoading) {
+        setEditModalOpen(false);
+        setEditDraft(null);
+        setFieldErrors({});
+      }
     };
     window.addEventListener("keydown", onKeyDown);
     return () => window.removeEventListener("keydown", onKeyDown);
-  }, [confirm, confirmBusy]);
-
-
+  }, [confirm, confirmBusy, editModalOpen, pageLoading]);
 
   useEffect(() => {
     (async () => {
@@ -363,10 +968,70 @@ const EditValuesPage: React.FC = () => {
     setRows(editableRows);
   };
 
+  const validateMetricValue = (metric: Metric, value: any): string => {
+    const raw = value == null ? "" : String(value).trim();
+
+    if (raw === "") return "";
+
+    if (metric.scoring_dict && Object.keys(metric.scoring_dict).length > 0) {
+      return "";
+    }
+
+    if (metric.metric_key === "gitstats_report") {
+      return "";
+    }
+
+    if (metric.value_type === "int") {
+      return /^-?\d+$/.test(raw) ? "" : "Please enter a whole number.";
+    }
+
+    if (metric.value_type === "float") {
+      return /^-?\d+(\.\d+)?$/.test(raw) ? "" : "Please enter a valid number.";
+    }
+
+    if (metric.value_type === "text") {
+      return "";
+    }
+
+    return "";
+  };
+
+  const validateDraft = (draft: EditableRow | null, metrics: Metric[]) => {
+    if (!draft) return {};
+
+    const errors: Record<string, string> = {};
+
+    metrics.forEach((metric) => {
+      const value = draft.metrics[metric.metric_name];
+      const error = validateMetricValue(metric, value);
+      if (error) {
+        errors[metric.metric_name] = error;
+      }
+    });
+
+    return errors;
+  };
+
   const startEdit = (id: string) => {
-    setRows((prev) =>
-      prev.map((r) => (r.library_ID === id ? { ...r, isEditing: true } : r))
-    );
+    const row = rows.find((r) => r.library_ID === id);
+    if (!row) return;
+
+    const draft = {
+      ...row,
+      metrics: { ...row.metrics },
+      isEditing: true,
+    };
+
+    setEditDraft(draft);
+    setFieldErrors(validateDraft(draft, metricList));
+    setEditModalOpen(true);
+  };
+
+  const closeEditModal = () => {
+    if (pageLoading) return;
+    setEditModalOpen(false);
+    setEditDraft(null);
+    setFieldErrors({});
   };
 
   const cancelEdit = async () => {
@@ -376,6 +1041,9 @@ const EditValuesPage: React.FC = () => {
       setErrorMsg(null);
       await loadData();
       setInfoMsg(null);
+      setEditModalOpen(false);
+      setEditDraft(null);
+      setFieldErrors({});
     } catch (e: any) {
       const msg = e?.message || "Failed to refresh.";
       setErrorMsg(msg);
@@ -385,32 +1053,52 @@ const EditValuesPage: React.FC = () => {
     }
   };
 
-  const updateMetricValue = (
-    libId: string,
+  const updateEditDraftValue = (
     metric: string,
     value: any,
     isEvidence: boolean = false
   ) => {
     const key = isEvidence ? `${metric}_evidence` : metric;
-    setRows((prev) =>
-      prev.map((r) =>
-        r.library_ID === libId
-          ? { ...r, metrics: { ...r.metrics, [key]: value } }
-          : r
-      )
+
+    setEditDraft((prev) =>
+      prev
+        ? {
+            ...prev,
+            metrics: {
+              ...prev.metrics,
+              [key]: value,
+            },
+          }
+        : prev
     );
+
+    const metricObj = metricList.find((m) => m.metric_name === metric);
+    if (metricObj) {
+      const error = validateMetricValue(metricObj, value);
+      setFieldErrors((prev) => {
+        const next = { ...prev };
+        if (error) next[metric] = error;
+        else delete next[metric];
+        return next;
+      });
+    }
   };
 
   const saveRow = async (row: EditableRow) => {
+    const validationErrors = validateDraft(row, metricList);
+    if (Object.keys(validationErrors).length > 0) {
+      setFieldErrors(validationErrors);
+      showFail("Please fix the invalid values before saving.");
+      return;
+    }
+
     try {
       setPageLoading(true);
       setInfoMsg("Saving…");
       setErrorMsg(null);
 
       const res = await fetch(
-        apiUrl(
-          `/library_metric_values/libraries/${row.library_ID}/update-values/`
-        ),
+        apiUrl(`/library_metric_values/libraries/${row.library_ID}/update-values/`),
         {
           method: "POST",
           headers: { "Content-Type": "application/json" },
@@ -430,6 +1118,9 @@ const EditValuesPage: React.FC = () => {
       setInfoMsg("Saved.");
       showSuccess("Metric values saved successfully!");
       setTimeout(() => setInfoMsg(null), 1500);
+      setEditModalOpen(false);
+      setEditDraft(null);
+      setFieldErrors({});
     } catch (e: any) {
       const msg = e?.message || "Save failed.";
       setErrorMsg(msg);
@@ -468,6 +1159,12 @@ const EditValuesPage: React.FC = () => {
             ? { ...r, analysis_status: "running", gitstats_status: "running" }
             : r
         )
+      );
+
+      setEditDraft((prev) =>
+        prev && prev.library_ID === libraryId
+          ? { ...prev, analysis_status: "running", gitstats_status: "running" }
+          : prev
       );
     } catch (e: any) {
       const msg = e?.message || "Failed to start analysis.";
@@ -545,10 +1242,18 @@ const EditValuesPage: React.FC = () => {
   };
 
   const countStatus = (key: "analysis_status" | "gitstats_status") => {
-    const pending = rows.filter((r) => normalizeStatus(r[key]) === "pending").length;
-    const running = rows.filter((r) => normalizeStatus(r[key]) === "running").length;
-    const success = rows.filter((r) => normalizeStatus(r[key]) === "success").length;
-    const failed = rows.filter((r) => normalizeStatus(r[key]) === "failed").length;
+    const pending = rows.filter(
+      (r) => normalizeStatus(r[key]) === "pending"
+    ).length;
+    const running = rows.filter(
+      (r) => normalizeStatus(r[key]) === "running"
+    ).length;
+    const success = rows.filter(
+      (r) => normalizeStatus(r[key]) === "success"
+    ).length;
+    const failed = rows.filter(
+      (r) => normalizeStatus(r[key]) === "failed"
+    ).length;
     return { pending, running, success, failed };
   };
 
@@ -567,10 +1272,13 @@ const EditValuesPage: React.FC = () => {
         message={
           confirm?.type === "library" ? (
             <div>
-              This will run <b>GitHub API</b>, <b>SCC</b>, and <b>GitStats</b> for:
+              <div style={{ marginBottom: 10 }}>
+                This will run <b>GitHub API</b>, <b>SCC</b>, and <b>GitStats</b> for:
+              </div>
+
               <div
                 style={{
-                  marginTop: 10,
+                  marginBottom: 12,
                   padding: "10px 12px",
                   border: "1px solid rgba(255,255,255,0.12)",
                   borderRadius: 10,
@@ -578,11 +1286,77 @@ const EditValuesPage: React.FC = () => {
               >
                 <b>{confirm.library_name}</b>
               </div>
+
+              <div style={{ marginBottom: 8 }}>
+                The following columns will be affected:
+              </div>
+
+              <div
+                style={{
+                  display: "flex",
+                  flexWrap: "wrap",
+                  gap: 8,
+                }}
+              >
+                {affectedMetrics.length > 0 ? (
+                  affectedMetrics.map((m) => (
+                    <span
+                      key={m.metric_ID}
+                      style={{
+                        padding: "5px 9px",
+                        borderRadius: 999,
+                        background: "rgba(255,255,255,0.06)",
+                        border: "1px solid rgba(255,255,255,0.10)",
+                        fontSize: 12.5,
+                        color: "rgba(235,238,245,0.92)",
+                      }}
+                    >
+                      {m.metric_name}
+                    </span>
+                  ))
+                ) : (
+                  <span style={{ opacity: 0.75 }}>No non-manual metrics found.</span>
+                )}
+              </div>
             </div>
           ) : confirm?.type === "all" ? (
             <div>
-              This will run <b>GitHub API</b>, <b>SCC</b>, and <b>GitStats</b> for{" "}
-              <b>all libraries</b> in this domain.
+              <div style={{ marginBottom: 10 }}>
+                This will run <b>GitHub API</b>, <b>SCC</b>, and <b>GitStats</b> for{" "}
+                <b>all libraries</b> in this domain.
+              </div>
+
+              <div style={{ marginBottom: 8 }}>
+                The following columns will be affected:
+              </div>
+
+              <div
+                style={{
+                  display: "flex",
+                  flexWrap: "wrap",
+                  gap: 8,
+                }}
+              >
+                {affectedMetrics.length > 0 ? (
+                  affectedMetrics.map((m) => (
+                    <span
+                      key={m.metric_ID}
+                      style={{
+                        padding: "5px 9px",
+                        borderRadius: 999,
+                        background: "rgba(255,255,255,0.06)",
+                        border: "1px solid rgba(255,255,255,0.10)",
+                        fontSize: 12.5,
+                        color: "rgba(235,238,245,0.92)",
+                      }}
+                    >
+                      {m.metric_name}
+                    </span>
+                  ))
+                ) : (
+                  <span style={{ opacity: 0.75 }}>No non-manual metrics found.</span>
+                )}
+              </div>
             </div>
           ) : null
         }
@@ -593,6 +1367,19 @@ const EditValuesPage: React.FC = () => {
           if (!confirmBusy) setConfirm(null);
         }}
         onConfirm={confirmRun}
+      />
+
+      <EditMetricValuesModal
+        open={editModalOpen}
+        row={editDraft}
+        metricList={metricList}
+        pageLoading={pageLoading}
+        fieldErrors={fieldErrors}
+        onClose={closeEditModal}
+        onChangeValue={updateEditDraftValue}
+        onSave={() => {
+          if (editDraft) saveRow(editDraft);
+        }}
       />
 
       <SuccessNotification show={success} message={successMessage} />
@@ -621,7 +1408,7 @@ const EditValuesPage: React.FC = () => {
       <div
         style={{
           flex: 1,
-          padding: "40px 60px",
+          padding: "28px 32px",
           color: "white",
           overflow: "hidden",
           display: "flex",
@@ -646,7 +1433,15 @@ const EditValuesPage: React.FC = () => {
             flexDirection: "column",
           }}
         >
-          <div style={{ marginBottom: 8, display: "flex", gap: 10, alignItems: "center" }}>
+          <div
+            style={{
+              marginBottom: 12,
+              display: "flex",
+              gap: 10,
+              alignItems: "center",
+              flexWrap: "wrap",
+            }}
+          >
             <button
               className="dx-btn dx-btn-outline dx-btn-inline"
               onClick={openConfirmAll}
@@ -667,37 +1462,100 @@ const EditValuesPage: React.FC = () => {
             </button>
           </div>
 
-          {infoMsg && <div style={{ marginBottom: 10, opacity: 0.9, fontSize: 14 }}>{infoMsg}</div>}
-          {errorMsg && <div style={{ marginBottom: 10, color: "#ff8f8f", fontSize: 14 }}>{errorMsg}</div>}
+          {infoMsg && (
+            <div style={{ marginBottom: 10, opacity: 0.9, fontSize: 14 }}>
+              {infoMsg}
+            </div>
+          )}
+          {errorMsg && (
+            <div style={{ marginBottom: 10, color: "#ff8f8f", fontSize: 14 }}>
+              {errorMsg}
+            </div>
+          )}
 
           <div style={{ marginBottom: 10, fontSize: 13, opacity: 0.85 }}>
             <div style={{ marginTop: 6, opacity: 0.8 }}>
-              Auto-reload is disabled for comfortable editing. When you want updated results, click <b>Reload</b> (or refresh the page).
+              Auto-reload is disabled for comfortable editing. When you want
+              updated results, click <b>Reload</b> (or refresh the page).
             </div>
           </div>
 
           <div className="dx-table-wrap dx-table-scroll" style={{ flex: 1, minHeight: 0 }}>
-            <table className="dx-table">
+            <table
+              className="dx-table"
+              style={{
+                tableLayout: "fixed",
+                width: "100%",
+              }}
+            >
               <thead>
                 <tr>
-                  <th ref={firstColRef} className="dx-th-sticky dx-sticky-left" style={{ left: 0 }}>
+                  <th
+                    ref={firstColRef}
+                    className="dx-th-sticky dx-sticky-left"
+                    style={{
+                      ...headerCellStyle,
+                      left: 0,
+                      width: 190,
+                    }}
+                  >
                     Actions
                   </th>
-                  <th className="dx-th-sticky dx-sticky-left" style={{ left: offset }}>
+                  <th
+                    className="dx-th-sticky dx-sticky-left"
+                    style={{
+                      ...headerCellStyle,
+                      left: offset,
+                      width: 190,
+                    }}
+                  >
                     Name
                   </th>
-                  <th className="dx-th-sticky">URL</th>
-                  <th className="dx-th-sticky">Language</th>
+                  <th
+                    className="dx-th-sticky"
+                    style={{
+                      ...headerCellStyle,
+                      width: 220,
+                    }}
+                  >
+                    GitHub URL
+                  </th>
+                  <th
+                    className="dx-th-sticky"
+                    style={{
+                      ...headerCellStyle,
+                      width: 220,
+                    }}
+                  >
+                    URL
+                  </th>
+                  <th
+                    className="dx-th-sticky"
+                    style={{
+                      ...headerCellStyle,
+                      width: 120,
+                    }}
+                  >
+                    Language
+                  </th>
                   {metricList.map((m) => (
-                    <th key={m.metric_ID} className="dx-th-sticky">
-                      {m.metric_name}
+                    <th
+                      key={m.metric_ID}
+                      className="dx-th-sticky"
+                      style={{
+                        ...headerCellStyle,
+                        width: 170,
+                      }}
+                      title={m.metric_name}
+                    >
+                      <div style={clamp2Style}>{m.metric_name}</div>
                     </th>
                   ))}
                 </tr>
               </thead>
 
               <tbody>
-                {rows.map((row) => {
+                {rows.map((row, rowIndex) => {
                   const rowUpdating = updatingLibId === row.library_ID;
 
                   const apiStatus = normalizeStatus(row.analysis_status);
@@ -707,134 +1565,198 @@ const EditValuesPage: React.FC = () => {
                   const gsDots = gsStatus === "running" ? "..." : "";
 
                   return (
-                    <tr key={row.library_ID}>
-                      <td className="dx-sticky-left" style={{ left: 0 }}>
-                        {row.isEditing ? (
-                          <div style={{ display: "flex", gap: 6 }}>
-                            <button
-                              className="dx-btn dx-btn-primary"
-                              onClick={() => saveRow(row)}
-                              disabled={pageLoading}
-                              style={{ opacity: pageLoading ? 0.7 : 1 }}
-                            >
-                              Save
-                            </button>
-                            <button
-                              className="dx-btn dx-btn-outline"
-                              onClick={cancelEdit}
-                              disabled={pageLoading}
-                              style={{ opacity: pageLoading ? 0.7 : 1 }}
-                            >
-                              Cancel
-                            </button>
-                          </div>
-                        ) : (
-                          <div style={{ display: "flex", gap: 6, alignItems: "center" }}>
-                            <button
+                    <tr
+                      key={row.library_ID}
+                      style={{
+                        borderBottom: "1px solid rgba(255,255,255,0.08)",
+                        background:
+                          rowIndex % 2 === 0
+                            ? "rgba(255,255,255,0.01)"
+                            : "rgba(255,255,255,0.025)",
+                      }}
+                    >
+                      <td
+                          className="dx-sticky-left"
+                          style={{
+                            padding: "8px 8px",
+                            verticalAlign: "top",
+                            left: 0,
+                            whiteSpace: "normal",
+                            wordBreak: "break-word",
+                            fontSize: 12.5,
+                          }}
+                        >
+                        <div
+                          style={{
+                            display: "flex",
+                            gap: 6,
+                            alignItems: "center",
+                            flexWrap: "wrap",
+                          }}
+                        >
+                          <button
                               className="dx-btn dx-btn-outline dx-btn-inline"
                               onClick={() => openConfirmLibrary(row)}
                               disabled={pageLoading || rowUpdating}
-                              style={{ opacity: pageLoading || rowUpdating ? 0.7 : 1 }}
+                              style={{
+                                opacity: pageLoading || rowUpdating ? 0.7 : 1,
+                                padding: "5px 8px",
+                                fontSize: 14,
+                                lineHeight: 1.4,
+                              }}
                             >
-                              {rowUpdating ? "Updating..." : "Update"}
-                            </button>
+                            {rowUpdating ? "Updating..." : "Update"}
+                          </button>
 
-                            <button
+                          <button
                               className="dx-btn dx-btn-outline"
                               onClick={() => startEdit(row.library_ID)}
                               disabled={pageLoading}
-                              style={{ opacity: pageLoading ? 0.7 : 1 }}
+                              style={{
+                                opacity: pageLoading ? 0.7 : 1,
+                                padding: "5px 8px",
+                                fontSize: 14,
+                                lineHeight: 1.4,
+                              }}
                             >
-                              Edit
-                            </button>
-                          </div>
-                        )}
+                            Edit
+                          </button>
+                        </div>
 
-                        <div style={{ marginTop: 6, fontSize: 12, lineHeight: 1.3 }}>
-                          <div style={{ color: statusColor(row.analysis_status) }}>
+                        <div style={{ marginTop: 5, fontSize: 11.5, lineHeight: 1.22 }}>
+                          <div style={{ color: statusColor(row.analysis_status), ...clamp2Style }}>
                             API+SCC: {statusLabel(row.analysis_status)}
                             {apiDots}
                           </div>
 
-                          <div style={{ color: statusColor(row.gitstats_status) }}>
+                          <div style={{ color: statusColor(row.gitstats_status), ...clamp2Style }}>
                             GitStats: {statusLabel(row.gitstats_status)}
                             {gsDots}
                           </div>
                         </div>
                       </td>
 
-                      <td className="dx-sticky-left" style={{ left: offset }}>
-                        <div style={{ opacity: row.isEditing ? 0.75 : 1 }}>
-                          {row.library_name}
-                        </div>
+                     <td
+                          className="dx-sticky-left"
+                          style={{
+                            padding: "8px 8px",
+                            verticalAlign: "top",
+                            left: offset,
+                            fontWeight: 600,
+                            whiteSpace: "normal",
+                            wordBreak: "break-word",
+                            fontSize: 14,
+                            lineHeight: 1.4,
+                          }}
+                          title={row.library_name}
+                        >
+                        <ExpandableText
+                          text={row.library_name || ""}
+                          lines={2}
+                          textStyle={{
+                            fontWeight: 600,
+                            fontSize: 12.75,
+                            lineHeight: 1.28,
+                          }}
+                        />
                       </td>
 
-                      <td>
-                        <div style={{ opacity: row.isEditing ? 0.75 : 1 }}>
-                          {row.url || "—"}
-                        </div>
+                      <td
+                        style={{
+                          ...metricCellStyle,
+                          whiteSpace: "normal",
+                          wordBreak: "break-word",
+                        }}
+                        title={row.github_url || "—"}
+                      >
+                        <ExpandableText
+                          text={row.github_url || ""}
+                          lines={3}
+                          emptyText="—"
+                        />
                       </td>
 
-                      <td>
-                        <div style={{ opacity: row.isEditing ? 0.75 : 1 }}>
-                          {row.programming_language || "—"}
-                        </div>
+                      <td
+                        style={{
+                          ...metricCellStyle,
+                          whiteSpace: "normal",
+                          wordBreak: "break-word",
+                        }}
+                        title={row.url || "—"}
+                      >
+                        <ExpandableText
+                          text={row.url || ""}
+                          lines={3}
+                          emptyText="—"
+                        />
+                      </td>
+
+                      <td
+                        style={{
+                          ...metricCellStyle,
+                          whiteSpace: "normal",
+                          wordBreak: "break-word",
+                        }}
+                        title={row.programming_language || "—"}
+                      >
+                        <ExpandableText
+                          text={row.programming_language || ""}
+                          lines={2}
+                          emptyText="—"
+                        />
                       </td>
 
                       {metricList.map((m) => {
                         const cellVal = row.metrics[m.metric_name];
-                        if (!row.isEditing && m.metric_name === "GitStats Report") {
+
+                        if (m.metric_key === "gitstats_report") {
                           const url = cellVal ? String(cellVal) : null;
                           return (
-                            <td key={m.metric_ID}>
-                              {url ? (
-                                <a
-                                  href={url}
-                                  target="_blank"
-                                  rel="noreferrer"
-                                  style={{ color: "var(--accent)" }}
-                                >
-                                  View report
-                                </a>
-                              ) : (
-                                "—"
-                              )}
+                            <td
+                              key={m.metric_ID}
+                              style={{
+                                ...metricCellStyle,
+                                whiteSpace: "normal",
+                                wordBreak: "break-word",
+                              }}
+                              title={url || "—"}
+                            >
+                              <div style={clamp2Style}>
+                                {url ? (
+                                  <a
+                                    href={url}
+                                    target="_blank"
+                                    rel="noreferrer"
+                                    style={{
+                                      color: "var(--accent)",
+                                      textDecoration: "none",
+                                    }}
+                                  >
+                                    View report
+                                  </a>
+                                ) : (
+                                  "—"
+                                )}
+                              </div>
                             </td>
                           );
                         }
 
                         return (
-                          <td key={m.metric_ID}>
-                            {row.isEditing ? (
-                              m.scoring_dict && Object.keys(m.scoring_dict).length > 0 ? (
-                                <select
-                                  className="dx-input"
-                                  value={cellVal ?? ""}
-                                  onChange={(e) =>
-                                    updateMetricValue(row.library_ID, m.metric_name, e.target.value)
-                                  }
-                                  disabled={pageLoading}
-                                >
-                                  <option value="" className="dx-input-select">-- Select --</option>
-                                  {Object.keys(m.scoring_dict).map((key) => (
-                                    <option key={key} value={key} className="dx-input-select">
-                                      {key}
-                                    </option>
-                                  ))}
-                                </select>
-                              ) : (
-                                <input
-                                  className="dx-input"
-                                  value={cellVal ?? ""}
-                                  onChange={(e) =>
-                                    updateMetricValue(row.library_ID, m.metric_name, e.target.value)
-                                  }
-                                  disabled={pageLoading}
-                                />
-                              )
-                            ) : (
-                              cellVal ?? "—"
-                            )}
+                          <td
+                            key={m.metric_ID}
+                            style={{
+                              ...metricCellStyle,
+                              whiteSpace: "normal",
+                              wordBreak: "break-word",
+                            }}
+                            title={cellVal != null ? String(cellVal) : "—"}
+                          >
+                            <ExpandableText
+                              text={cellVal != null ? String(cellVal) : ""}
+                              lines={3}
+                              emptyText="—"
+                            />
                           </td>
                         );
                       })}
@@ -845,7 +1767,7 @@ const EditValuesPage: React.FC = () => {
             </table>
           </div>
 
-          <div style={{ marginBottom: 10, fontSize: 13, opacity: 0.85 }}>
+          <div style={{ marginBottom: 10, marginTop: 10, fontSize: 13, opacity: 0.85 }}>
             <div>
               API+SCC: running {apiScc.running}, success {apiScc.success}, failed{" "}
               {apiScc.failed}
