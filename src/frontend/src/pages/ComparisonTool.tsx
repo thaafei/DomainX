@@ -102,107 +102,74 @@ const ExpandableText: React.FC<{
   lines?: 2 | 3;
   emptyText?: string;
   textStyle?: React.CSSProperties;
-}> = ({ text, lines = 2, emptyText = "—", textStyle }) => {
+  description?: string;
+}> = ({ text, lines = 2, emptyText = "—", textStyle, description }) => {
   const [open, setOpen] = useState(false);
   const [truncated, setTruncated] = useState(false);
-  const textRef = React.useRef<HTMLDivElement>(null);
+  
   const wrapRef = React.useRef<HTMLDivElement>(null);
+  const textRef = React.useRef<HTMLDivElement>(null);
 
-  React.useLayoutEffect(() => {
-    const el = textRef.current;
-    if (!el) return;
+  const clampStyle = lines === 2 ? clamp2Style : clamp3Style;
 
-    const check = () => {
-      setTruncated(
-        el.scrollHeight > el.clientHeight + 1 ||
-          el.scrollWidth > el.clientWidth + 1
-      );
-    };
+  useEffect(() => {
+    if (textRef.current) {
+      const isOverflowing = textRef.current.scrollHeight > textRef.current.clientHeight;
+      setTruncated(isOverflowing);
+    }
+  }, [text]);
 
-    check();
-    window.addEventListener("resize", check);
-    return () => window.removeEventListener("resize", check);
-  }, [text, lines]);
-
-  React.useEffect(() => {
+  useEffect(() => {
     if (!open) return;
-
-    const onDocClick = (e: MouseEvent) => {
-      if (!wrapRef.current) return;
-      if (!wrapRef.current.contains(e.target as Node)) {
+    const handleClick = (e: MouseEvent) => {
+      if (wrapRef.current && !wrapRef.current.contains(e.target as Node)) {
         setOpen(false);
       }
     };
-
-    const onEsc = (e: KeyboardEvent) => {
-      if (e.key === "Escape") setOpen(false);
-    };
-
-    document.addEventListener("mousedown", onDocClick);
-    document.addEventListener("keydown", onEsc);
-    return () => {
-      document.removeEventListener("mousedown", onDocClick);
-      document.removeEventListener("keydown", onEsc);
-    };
+    window.addEventListener("mousedown", handleClick);
+    return () => window.removeEventListener("mousedown", handleClick);
   }, [open]);
 
-  if (!text) {
+  const showMoreButton = truncated || !!description;
+
+  if (!text && !description) {
     return <div style={textStyle}>{emptyText}</div>;
   }
 
-  const clampStyle = lines === 3 ? clamp3Style : clamp2Style;
-
   return (
-    <div
-      ref={wrapRef}
-      style={{
-        position: "relative",
-        display: "flex",
-        flexDirection: "column",
-        alignItems: "flex-start",
-        minWidth: 0,
-        width: "100%",
-      }}
-    >
-      <div
-        ref={textRef}
-        style={{
-          ...clampStyle,
-          ...textStyle,
-          width: "100%",
-          overflowWrap: "anywhere",
-        }}
-        title={open ? "" : text}
-      >
-        {text}
+    <div ref={wrapRef} style={{ position: "relative" }}>
+      <div ref={textRef} style={{ ...clampStyle, ...textStyle }}>
+        {text || "—"}
       </div>
 
-      {truncated && (
+      {showMoreButton && (
         <button
-          type="button"
-          onClick={() => setOpen((v) => !v)}
           style={compactButtonStyle}
+          onClick={(e) => {
+            e.stopPropagation();
+            setOpen(!open);
+          }}
         >
-          {open ? "less" : "more"}
+          {open ? "Less" : "More..."}
         </button>
       )}
 
       {open && (
         <div style={overlayCardStyle}>
-          <div style={{ marginBottom: 8 }}>{text}</div>
-
-          <button
-            type="button"
-            className="dx-btn dx-btn-outline"
-            style={{ padding: "5px 8px", fontSize: 12 }}
-            onClick={async () => {
-              try {
-                await navigator.clipboard.writeText(text);
-              } catch {}
-            }}
-          >
-            Copy
-          </button>
+          {description ? (
+            <>
+              <div style={{ fontWeight: 700, marginBottom: 4, color: "var(--accent)" }}>
+                Value:
+              </div>
+              <div style={{ marginBottom: 12 }}>{text || "—"}</div>
+              <div style={{ fontWeight: 700, marginBottom: 4, color: "var(--accent)" }}>
+                Description:
+              </div>
+              <div>{description}</div>
+            </>
+          ) : (
+            text
+          )}
         </div>
       )}
     </div>
@@ -597,56 +564,59 @@ const ComparisonToolPage: React.FC = () => {
                     </td>
 
                     {metricList.map((m) => {
-                      const cellVal = row.metrics[m.metric_name];
+  const cellVal = row.metrics[m.metric_name];
+  const cellDesc = row.metrics[`${m.metric_name}_description`];
 
-                      if (m.metric_key === "gitstats_report") {
-                        const url = cellVal ? String(cellVal) : null;
-                        return (
-                          <td
-                            key={m.metric_ID}
-                            style={{
-                              ...metricCellStyle,
-                              whiteSpace: "normal",
-                              wordBreak: "break-word",
-                            }}
-                            title={url || "—"}
-                          >
-                            <div style={clamp2Style}>
-                              {url ? (
-                                <a
-                                  href={url}
-                                  target="_blank"
-                                  rel="noreferrer"
-                                  style={{ color: "var(--accent)", textDecoration: "none" }}
-                                >
-                                  View report
-                                </a>
-                              ) : (
-                                "—"
-                              )}
-                            </div>
-                          </td>
-                        );
-                      }
+  if (m.metric_key === "gitstats_report") {
+    const url = cellVal ? String(cellVal) : null;
+    return (
+      <td
+        key={m.metric_ID}
+        style={{
+          ...metricCellStyle,
+          whiteSpace: "normal",
+          wordBreak: "break-word",
+        }}
+        title={url || "—"}
+      >
+        <div style={clamp2Style}>
+          {url ? (
+            <a
+              href={url}
+              target="_blank"
+              rel="noreferrer"
+              style={{ color: "var(--accent)", textDecoration: "none" }}
+            >
+              View report
+            </a>
+          ) : (
+            "—"
+          )}
+        </div>
+      </td>
+    );
+  }
 
-                      return (
-                        <td
-                          key={m.metric_ID}
-                          style={{
-                            ...metricCellStyle,
-                            whiteSpace: "normal",
-                            wordBreak: "break-word",
-                          }}
-                          title={cellVal != null ? String(cellVal) : "—"}
-                        >
-                          <ExpandableText
-                            text={cellVal != null ? String(cellVal) : ""}
-                            lines={3}
-                            emptyText="—"
-                          />
-                        </td>
-                      );
-                    })}
+  return (
+    <td
+      key={m.metric_ID}
+      style={{
+        ...metricCellStyle,
+        whiteSpace: "normal",
+        wordBreak: "break-word",
+        position: "relative",
+      }}
+      title={cellDesc ? `Value: ${cellVal}\n\nDescription: ${cellDesc}` : String(cellVal || "—")}
+    >
+      <ExpandableText
+        text={cellVal != null ? String(cellVal) : ""}
+        lines={3}
+        emptyText="—"
+        description={cellDesc ? String(cellDesc) : undefined} 
+      />
+    </td>
+  );
+})}
                   </tr>
                 ))}
               </tbody>

@@ -158,6 +158,7 @@ def domain_comparison(request, domain_id):
         if lib_id in by_lib:
             by_lib[lib_id]["metrics"][metric_name] = val.value
             by_lib[lib_id]["metrics"][f"{metric_name}_evidence"] = val.evidence
+            by_lib[lib_id]["metrics"][f"{metric_name}_description"] = val.description
 
     return Response(
         {
@@ -191,6 +192,9 @@ class LibraryMetricValueUpdateView(APIView):
             if key.endswith("_evidence"):
                 metric_name = key.replace("_evidence", "")
                 field_to_update = "evidence"
+            elif key.endswith("_description"):
+                metric_name = key.replace("_description", "")
+                field_to_update = "description"
             else:
                 metric_name = key
                 field_to_update = "value"
@@ -204,7 +208,7 @@ class LibraryMetricValueUpdateView(APIView):
             if field_to_update == "value":
                 error_message, validated_value = validate_metric_value(metric, value_to_store)
                 if error_message:
-                    return Response({"error": error_message}, status=status.HTTP_400_BAD_REQUEST)
+                    return Response({"error": f"{metric_name}: {error_message}"}, status=status.HTTP_400_BAD_REQUEST)
                 value_to_store = validated_value
 
             LibraryMetricValue.objects.update_or_create(
