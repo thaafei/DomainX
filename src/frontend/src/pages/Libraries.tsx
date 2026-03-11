@@ -74,6 +74,39 @@ const AddLibraryPage: React.FC = () => {
     setTimeout(() => setFail(false), 2200);
   };
 
+  const getErrorMessage = (data: any, fallback: string) => {
+    if (!data) return fallback;
+
+    if (typeof data === "string") return data;
+    if (data.detail) return data.detail;
+    if (data.error) return data.error;
+
+    if (data.library_name) {
+      return Array.isArray(data.library_name)
+        ? data.library_name[0]
+        : data.library_name;
+    }
+
+    if (data.github_url) {
+      return Array.isArray(data.github_url)
+        ? data.github_url[0]
+        : data.github_url;
+    }
+
+    if (data.domain) {
+      return Array.isArray(data.domain) ? data.domain[0] : data.domain;
+    }
+
+    const firstKey = Object.keys(data)[0];
+    if (firstKey) {
+      const value = data[firstKey];
+      if (Array.isArray(value)) return value[0];
+      if (typeof value === "string") return value;
+    }
+
+    return fallback;
+  };
+
   useEffect(() => {
     if (!DOMAIN_ID) return;
     document.title = "DomainX – Libraries";
@@ -177,7 +210,7 @@ const AddLibraryPage: React.FC = () => {
       } catch {}
 
       if (!res.ok) {
-        const msg = data?.detail || data?.error || "Create failed.";
+        const msg = getErrorMessage(data, "Create failed.");
         setFormError(msg);
         return;
       }
@@ -226,7 +259,7 @@ const AddLibraryPage: React.FC = () => {
       } catch {}
 
       if (!res.ok) {
-        const msg = data?.detail || data?.error || "Update failed.";
+        const msg = getErrorMessage(data, "Update failed.");
         setFormError(msg);
         return;
       }
