@@ -5,7 +5,7 @@ import Home from './pages/Home';
 import Login from './pages/Login';
 import Visualize from './pages/Visualize';
 import Main from "./pages/Main";
-import Signup from "./pages/Signup";
+import AcceptInvite from "./pages/AcceptInvite";
 import Metrics from "./pages/Metrics";
 import ComparisonTool from "./pages/ComparisonTool";
 import Edit from "./pages/Edit";
@@ -26,7 +26,7 @@ const App: React.FC = () => {
       <Routes>
         <Route path="/" element={<Home />} />
         <Route path="/login" element={<Login />} />
-        <Route path="/signup" element={<Signup />} />
+        <Route path="/accept-invite" element={<AcceptInvite />} />
         <Route path="/metrics" element={<Metrics />} />
         {/* <Route path="/comparison-tool" element={<ComparisonTool />} /> */}
         <Route path="/comparison-tool/:domainId" element={<ComparisonTool />} />
