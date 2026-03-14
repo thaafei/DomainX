@@ -1,0 +1,77 @@
+name: Regenerate Database Schema Diagram
+
+run-name: 📊 Schema Update by ${{ github.actor }} on ${{ github.head_ref }}
+
+on:
+  workflow_dispatch:
+
+jobs:
+  regenerate-schema:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.12'
+          cache: 'pip'
+
+      - name: Install GraphViz
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y graphviz
+
+      - name: Install dependencies
+        working-directory: src/backend
+        env:
+          DJANGO_SECRET_KEY: ${{ secrets.DJANGO_SECRET_KEY }}
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+
+      - name: Check for new migrations
+        id: check_migrations
+        working-directory: src/backend
+        run: |
+          # Check if there are uncommitted migration files
+          if git diff --name-only --cached | grep -q "migrations/"; then
+            echo "has_migrations=true" >> $GITHUB_OUTPUT
+          elif git diff --name-only HEAD~1 HEAD | grep -q "migrations/"; then
+            echo "has_migrations=true" >> $GITHUB_OUTPUT
+          else
+            echo "has_migrations=false" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Generate database schema diagram
+        if: steps.check_migrations.outputs.has_migrations == 'true'
+        env:
+          DJANGO_SECRET_KEY: ${{ secrets.DJANGO_SECRET_KEY }}
+          DEBUG: 'False'
+        run: |
+          # Run Django management command to generate schema
+          python src/backend/manage.py graph_models -a -o src/backend/DatabaseSchema.png
+          echo "✅ Database schema diagram regenerated"
+
+      - name: Commit schema diagrams
+        if: steps.check_migrations.outputs.has_migrations == 'true'
+        working-directory: src/backend
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add DatabaseSchema.png
+          git commit -m "chore: regenerate database schema diagram [ci skip]"
+
+      - name: Push changes
+        if: steps.check_migrations.outputs.has_migrations == 'true'
+        run: |
+          git push origin HEAD:${{ github.ref }}
+
+      - name: Summarize results
+        if: steps.check_migrations.outputs.has_migrations == 'true'
+        run: |
+          echo "✅ Schema diagram regenerated and committed to ${{ github.ref }}"

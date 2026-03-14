@@ -7,7 +7,7 @@ class LibraryMetricValueSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = LibraryMetricValue
-        fields = ['value_ID', 'library', 'metric', 'library_name', 'metric_name', 'value', 'evidence', 'collected_by', 'last_modified']
+        fields = "__all__"
 
 class FlatMetricValueSerializer(serializers.ModelSerializer):
     """Used for generating the cell values in the pivot table."""

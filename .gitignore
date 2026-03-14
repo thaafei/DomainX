@@ -1,3 +1,6 @@
+# React build
+build/
+
 ## Core latex/pdflatex auxiliary files:
 .idea/
 venv/
@@ -288,3 +291,10 @@ node_modules/
 __pycache__/
 *.pyc
 db.sqlite3
+
+# coverage generated files
+.coverage
+# Redis
+*.rdb
+dump.rdb
+*venv
