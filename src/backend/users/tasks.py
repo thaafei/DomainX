@@ -3,7 +3,7 @@ from django.conf import settings
 from django.core.mail import send_mail
 
 
-@shared_task
+@shared_task(queue="email")
 def send_invite_email_task(to_email, subject, body):
     send_mail(
         subject=subject,
