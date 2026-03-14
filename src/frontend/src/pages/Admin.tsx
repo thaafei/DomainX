@@ -18,6 +18,7 @@ interface User {
   first_name: string;
   last_name: string;
   full_name: string | null;
+  is_active: boolean;
   domains?: Domain[];
 }
 
@@ -333,6 +334,7 @@ const AdminPage: React.FC = () => {
                     <th className="dx-th-sticky">Last Name</th>
                     <th className="dx-th-sticky">Role</th>
                     <th className="dx-th-sticky">Associated Domains</th>
+                    <th className="dx-th-sticky">Status</th>
                   </tr>
                 </thead>
 
@@ -425,6 +427,22 @@ const AdminPage: React.FC = () => {
                           ) : (
                             <span style={{ color: "var(--text-dim)", fontSize: "0.9rem" }}>N/A</span>
                           )}
+                        </td>
+                        <td style={{ minWidth: 120, whiteSpace: "normal", wordWrap: "break-word" }}>
+                          <span
+                            style={{
+                              padding: "4px 12px",
+                              borderRadius: "8px",
+                              fontSize: "0.85rem",
+                              fontWeight: "500",
+                              backgroundColor: u.is_active
+                                ? "rgba(34, 197, 94, 0.2)"
+                                : "rgba(251, 191, 36, 0.2)",
+                              color: u.is_active ? "#22c55e" : "#fbbf24",
+                            }}
+                          >
+                            {u.is_active ? "Active" : "Pending Invite"}
+                          </span>
                         </td>
                       </tr>
                     ))
