@@ -25,6 +25,7 @@ interface User {
 const AdminPage: React.FC = () => {
   const navigate = useNavigate();
   const { user } = useAuthStore();
+
   const [users, setUsers] = useState<User[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -50,6 +51,10 @@ const AdminPage: React.FC = () => {
     domain_ids: [] as string[],
   });
 
+  const [isDeactivateModalOpen, setIsDeactivateModalOpen] = useState(false);
+  const [userToDeactivate, setUserToDeactivate] = useState<User | null>(null);
+  const [deactivateLoading, setDeactivateLoading] = useState(false);
+
   const [allDomains, setAllDomains] = useState<Domain[]>([]);
   const [updateLoading, setUpdateLoading] = useState(false);
   const [updateError, setUpdateError] = useState<string | null>(null);
@@ -74,15 +79,14 @@ const AdminPage: React.FC = () => {
   }, [showInviteSuccess]);
 
   useEffect(() => {
-    if (user === undefined) {
-      return;
-    }
+    if (user === undefined) return;
+
     if (!user || user.role !== "superadmin") {
       navigate("/main");
       return;
     }
-    document.title = "DomainX – Admin";
 
+    document.title = "DomainX – Admin";
     fetchUsers();
     fetchAllDomains();
   }, [user, navigate]);
@@ -164,6 +168,17 @@ const AdminPage: React.FC = () => {
     setInviteError(null);
   };
 
+  const openDeactivateModal = (u: User) => {
+    setUserToDeactivate(u);
+    setIsDeactivateModalOpen(true);
+  };
+
+  const closeDeactivateModal = () => {
+    if (deactivateLoading) return;
+    setUserToDeactivate(null);
+    setIsDeactivateModalOpen(false);
+  };
+
   const handleUpdateUser = async () => {
     if (!editingUser) return;
 
@@ -228,13 +243,44 @@ const AdminPage: React.FC = () => {
         );
       }
 
-      await fetchUsers();
       setShowInviteSuccess(true);
       closeInviteModal();
+      void fetchUsers();
     } catch (err) {
       setInviteError(err instanceof Error ? err.message : "An error occurred");
     } finally {
       setInviteLoading(false);
+    }
+  };
+
+  const handleDeactivateUser = async () => {
+    if (!userToDeactivate) return;
+
+    try {
+      setDeactivateLoading(true);
+      setError(null);
+
+      const response = await fetch(
+        apiUrl(`/users/${userToDeactivate.id}/deactivate/`),
+        {
+          method: "PATCH",
+          credentials: "include",
+        }
+      );
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.error || "Failed to deactivate user");
+      }
+
+      await fetchUsers();
+      setShowUpdateSuccess(true);
+      closeDeactivateModal();
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "An error occurred");
+    } finally {
+      setDeactivateLoading(false);
     }
   };
 
@@ -260,7 +306,9 @@ const AdminPage: React.FC = () => {
     return (
       <div className="dx-bg" style={{ display: "flex", height: "100vh" }}>
         <div className="stars"></div>
-        <div style={{ margin: "auto", color: "white", fontSize: "1.5rem" }}>Loading...</div>
+        <div style={{ margin: "auto", color: "white", fontSize: "1.5rem" }}>
+          Loading...
+        </div>
       </div>
     );
   }
@@ -269,9 +317,19 @@ const AdminPage: React.FC = () => {
     return (
       <div className="dx-bg" style={{ display: "flex", height: "100vh" }}>
         <div className="stars"></div>
-        <div style={{ margin: "auto", color: "var(--danger)", fontSize: "1.5rem" }}>
+        <div
+          style={{
+            margin: "auto",
+            color: "var(--danger)",
+            fontSize: "1.5rem",
+          }}
+        >
           Error: {error}
-          <button className="dx-btn dx-btn-primary" onClick={fetchUsers} style={{ marginLeft: "20px" }}>
+          <button
+            className="dx-btn dx-btn-primary"
+            onClick={fetchUsers}
+            style={{ marginLeft: "20px" }}
+          >
             Retry
           </button>
         </div>
@@ -280,7 +338,10 @@ const AdminPage: React.FC = () => {
   }
 
   return (
-    <div className="dx-bg" style={{ display: "flex", height: "100vh", minWidth: "450px" }}>
+    <div
+      className="dx-bg"
+      style={{ display: "flex", height: "100vh", minWidth: "450px" }}
+    >
       <div
         style={{
           flex: 1,
@@ -295,7 +356,15 @@ const AdminPage: React.FC = () => {
       >
         <div className="stars"></div>
 
-        <div style={{ color: "white", display: "flex", flexDirection: "column", flex: 1, minHeight: 0 }}>
+        <div
+          style={{
+            color: "white",
+            display: "flex",
+            flexDirection: "column",
+            flex: 1,
+            minHeight: 0,
+          }}
+        >
           <button
             className="dx-btn dx-btn-outline"
             style={{ width: "fit-content", fontSize: "1rem", marginBottom: 20 }}
@@ -304,8 +373,9 @@ const AdminPage: React.FC = () => {
             <ArrowLeft size={18} /> Back
           </button>
 
-          <h1 style={{ color: "var(--accent)", marginBottom: 10 }}>Manage Users</h1>
-
+          <h1 style={{ color: "var(--accent)", marginBottom: 10 }}>
+            Manage Users
+          </h1>
 
           <div
             className="dx-card"
@@ -317,12 +387,12 @@ const AdminPage: React.FC = () => {
               flexDirection: "column",
             }}
           >
+            <div style={{ marginBottom: 10 }}>
+              <button className="dx-btn dx-btn-primary" onClick={openInviteModal}>
+                + Invite New User
+              </button>
+            </div>
 
-          <div style={{ marginBottom: 10 }}>
-            <button className="dx-btn dx-btn-primary" onClick={openInviteModal}>
-              + Invite New User
-            </button>
-          </div>
             <div className="dx-table-wrap dx-table-scroll" style={{ flex: 1, minHeight: 0 }}>
               <table className="dx-table" style={{ tableLayout: "auto" }}>
                 <thead>
@@ -341,111 +411,214 @@ const AdminPage: React.FC = () => {
                 <tbody>
                   {users.length === 0 ? (
                     <tr>
-                      <td colSpan={6} style={{ textAlign: "center", padding: "40px", color: "var(--text-dim)" }}>
+                      <td
+                        colSpan={8}
+                        style={{
+                          textAlign: "center",
+                          padding: "40px",
+                          color: "var(--text-dim)",
+                        }}
+                      >
                         No users found
                       </td>
                     </tr>
                   ) : (
-                    users.map((u) => (
-                      <tr key={u.id} style={{ borderBottom: "1px solid rgba(255,255,255,0.08)" }}>
-                        <td style={{ minWidth: 80, whiteSpace: "normal", wordWrap: "break-word" }}>
-                          <button
-                            className="dx-btn dx-btn-outline"
-                            onClick={() => openEditModal(u)}
-                            style={{ fontSize: "0.85rem", padding: "6px 15px", justifySelf: "center" }}
-                          >
-                            Edit
-                          </button>
-                        </td>
-                        <td
-                          style={{
-                            minWidth: 200,
-                            maxWidth: 300,
-                            whiteSpace: "normal",
-                            wordWrap: "break-word",
-                            overflowWrap: "anywhere",
-                          }}
+                    users.map((u) => {
+                      const canDeactivate =
+                        !!user &&
+                        u.is_active &&
+                        u.id !== user.id;
+
+                      return (
+                        <tr
+                          key={u.id}
+                          style={{ borderBottom: "1px solid rgba(255,255,255,0.08)" }}
                         >
-                          {u.email}
-                        </td>
-                        <td style={{ minWidth: 120, maxWidth: 200, whiteSpace: "normal", wordWrap: "break-word" }}>
-                          {u.username}
-                        </td>
-                        <td style={{ minWidth: 100, maxWidth: 150, whiteSpace: "normal", wordWrap: "break-word" }}>
-                          {u.first_name || "—"}
-                        </td>
-                        <td style={{ minWidth: 100, maxWidth: 150, whiteSpace: "normal", wordWrap: "break-word" }}>
-                          {u.last_name || "—"}
-                        </td>
-                        <td style={{ minWidth: 120, whiteSpace: "normal", wordWrap: "break-word" }}>
-                          <span
+                          <td style={{ minWidth: 170 }}>
+                            <div
+                              style={{
+                                display: "flex",
+                                alignItems: "center",
+                                gap: 8,
+                                flexWrap: "wrap",
+                              }}
+                            >
+                              <button
+                                className="dx-btn dx-btn-outline"
+                                onClick={() => openEditModal(u)}
+                                style={{
+                                  fontSize: "0.85rem",
+                                  padding: "6px 16px",
+                                  borderRadius: 999,
+                                  minWidth: 72,
+                                }}
+                              >
+                                Edit
+                              </button>
+
+                              {canDeactivate && (
+                                <button
+                                  type="button"
+                                  onClick={() => openDeactivateModal(u)}
+                                  style={{
+                                    background: "rgba(239, 68, 68, 0.12)",
+                                    color: "#f87171",
+                                    border: "1px solid rgba(239, 68, 68, 0.35)",
+                                    borderRadius: 999,
+                                    fontSize: "0.82rem",
+                                    padding: "6px 12px",
+                                    cursor: "pointer",
+                                    lineHeight: 1.2,
+                                  }}
+                                >
+                                  Deactivate
+                                </button>
+                              )}
+                            </div>
+                          </td>
+
+                          <td
                             style={{
-                              padding: "4px 12px",
-                              borderRadius: "8px",
-                              fontSize: "0.85rem",
-                              fontWeight: "500",
-                              backgroundColor:
-                                u.role === "superadmin"
-                                  ? "rgba(251, 191, 36, 0.2)"
-                                  : u.role === "admin"
-                                  ? "rgba(96, 165, 250, 0.2)"
-                                  : "rgba(156, 163, 175, 0.2)",
-                              color:
-                                u.role === "superadmin"
-                                  ? "#fbbf24"
-                                  : u.role === "admin"
-                                  ? "#60a5fa"
-                                  : "#9ca3af",
+                              minWidth: 200,
+                              maxWidth: 300,
+                              whiteSpace: "normal",
+                              wordWrap: "break-word",
+                              overflowWrap: "anywhere",
                             }}
                           >
-                            {u.role}
-                          </span>
-                        </td>
-                        <td style={{ minWidth: 200, maxWidth: 300, whiteSpace: "normal", wordWrap: "break-word" }}>
-                          {u.role === "admin" || u.role === "superadmin" ? (
-                            u.domains && u.domains.length > 0 ? (
-                              <div style={{ display: "flex", flexWrap: "wrap", gap: "6px" }}>
-                                {u.domains.map((domain) => (
-                                  <span
-                                    key={domain.domain_ID}
-                                    style={{
-                                      padding: "4px 10px",
-                                      backgroundColor: "rgba(139, 92, 246, 0.2)",
-                                      color: "#a78bfa",
-                                      borderRadius: "6px",
-                                      fontSize: "0.8rem",
-                                      fontWeight: "500",
-                                    }}
-                                  >
-                                    {domain.domain_name}
-                                  </span>
-                                ))}
-                              </div>
+                            {u.email}
+                          </td>
+
+                          <td
+                            style={{
+                              minWidth: 120,
+                              maxWidth: 200,
+                              whiteSpace: "normal",
+                              wordWrap: "break-word",
+                            }}
+                          >
+                            {u.username}
+                          </td>
+
+                          <td
+                            style={{
+                              minWidth: 100,
+                              maxWidth: 150,
+                              whiteSpace: "normal",
+                              wordWrap: "break-word",
+                            }}
+                          >
+                            {u.first_name || "—"}
+                          </td>
+
+                          <td
+                            style={{
+                              minWidth: 100,
+                              maxWidth: 150,
+                              whiteSpace: "normal",
+                              wordWrap: "break-word",
+                            }}
+                          >
+                            {u.last_name || "—"}
+                          </td>
+
+                          <td
+                            style={{
+                              minWidth: 120,
+                              whiteSpace: "normal",
+                              wordWrap: "break-word",
+                            }}
+                          >
+                            <span
+                              style={{
+                                padding: "4px 12px",
+                                borderRadius: "8px",
+                                fontSize: "0.85rem",
+                                fontWeight: "500",
+                                backgroundColor:
+                                  u.role === "superadmin"
+                                    ? "rgba(251, 191, 36, 0.2)"
+                                    : u.role === "admin"
+                                    ? "rgba(96, 165, 250, 0.2)"
+                                    : "rgba(156, 163, 175, 0.2)",
+                                color:
+                                  u.role === "superadmin"
+                                    ? "#fbbf24"
+                                    : u.role === "admin"
+                                    ? "#60a5fa"
+                                    : "#9ca3af",
+                              }}
+                            >
+                              {u.role}
+                            </span>
+                          </td>
+
+                          <td
+                            style={{
+                              minWidth: 200,
+                              maxWidth: 300,
+                              whiteSpace: "normal",
+                              wordWrap: "break-word",
+                            }}
+                          >
+                            {u.role === "admin" || u.role === "superadmin" ? (
+                              u.domains && u.domains.length > 0 ? (
+                                <div style={{ display: "flex", flexWrap: "wrap", gap: "6px" }}>
+                                  {u.domains.map((domain) => (
+                                    <span
+                                      key={domain.domain_ID}
+                                      style={{
+                                        padding: "4px 10px",
+                                        backgroundColor: "rgba(139, 92, 246, 0.2)",
+                                        color: "#a78bfa",
+                                        borderRadius: "6px",
+                                        fontSize: "0.8rem",
+                                        fontWeight: "500",
+                                      }}
+                                    >
+                                      {domain.domain_name}
+                                    </span>
+                                  ))}
+                                </div>
+                              ) : (
+                                <span
+                                  style={{ color: "var(--text-dim)", fontSize: "0.9rem" }}
+                                >
+                                  No domains
+                                </span>
+                              )
                             ) : (
-                              <span style={{ color: "var(--text-dim)", fontSize: "0.9rem" }}>No domains</span>
-                            )
-                          ) : (
-                            <span style={{ color: "var(--text-dim)", fontSize: "0.9rem" }}>N/A</span>
-                          )}
-                        </td>
-                        <td style={{ minWidth: 120, whiteSpace: "normal", wordWrap: "break-word" }}>
-                          <span
+                              <span style={{ color: "var(--text-dim)", fontSize: "0.9rem" }}>
+                                N/A
+                              </span>
+                            )}
+                          </td>
+
+                          <td
                             style={{
-                              padding: "4px 12px",
-                              borderRadius: "8px",
-                              fontSize: "0.85rem",
-                              fontWeight: "500",
-                              backgroundColor: u.is_active
-                                ? "rgba(34, 197, 94, 0.2)"
-                                : "rgba(251, 191, 36, 0.2)",
-                              color: u.is_active ? "#22c55e" : "#fbbf24",
+                              minWidth: 120,
+                              whiteSpace: "normal",
+                              wordWrap: "break-word",
                             }}
                           >
-                            {u.is_active ? "Active" : "Pending Invite"}
-                          </span>
-                        </td>
-                      </tr>
-                    ))
+                            <span
+                              style={{
+                                padding: "4px 12px",
+                                borderRadius: "8px",
+                                fontSize: "0.85rem",
+                                fontWeight: "500",
+                                backgroundColor: u.is_active
+                                  ? "rgba(34, 197, 94, 0.2)"
+                                  : "rgba(251, 191, 36, 0.2)",
+                                color: u.is_active ? "#22c55e" : "#fbbf24",
+                              }}
+                            >
+                              {u.is_active ? "Active" : "Pending Invite"}
+                            </span>
+                          </td>
+                        </tr>
+                      );
+                    })
                   )}
                 </tbody>
               </table>
@@ -463,7 +636,9 @@ const AdminPage: React.FC = () => {
               <div style={{ display: "flex", gap: 24 }}>
                 <span>Total Users: {users.length}</span>
                 <span>Admins: {users.filter((u) => u.role === "admin").length}</span>
-                <span>Superadmins: {users.filter((u) => u.role === "superadmin").length}</span>
+                <span>
+                  Superadmins: {users.filter((u) => u.role === "superadmin").length}
+                </span>
               </div>
             </div>
           </div>
@@ -484,7 +659,6 @@ const AdminPage: React.FC = () => {
             justifyContent: "center",
             zIndex: 1000,
           }}
-
         >
           <div
             className="dx-card"
@@ -501,7 +675,7 @@ const AdminPage: React.FC = () => {
             }}
             onClick={(e) => e.stopPropagation()}
           >
-          <button
+            <button
               onClick={closeEditModal}
               style={{
                 position: "absolute",
@@ -511,11 +685,12 @@ const AdminPage: React.FC = () => {
                 border: "none",
                 color: "white",
                 fontSize: "20px",
-                cursor: "pointer"
+                cursor: "pointer",
               }}
             >
               ×
             </button>
+
             <h2 style={{ color: "var(--accent)", marginBottom: 20 }}>
               Edit User: {editingUser.email}
             </h2>
@@ -693,21 +868,20 @@ const AdminPage: React.FC = () => {
       )}
 
       {isInviteModalOpen && (
-      <div
-        style={{
-          position: "fixed",
-          top: 0,
-          left: 0,
-          right: 0,
-          bottom: 0,
-          backgroundColor: "rgba(0, 0, 0, 0.7)",
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "center",
-          zIndex: 1000,
-        }}
-
-      >
+        <div
+          style={{
+            position: "fixed",
+            top: 0,
+            left: 0,
+            right: 0,
+            bottom: 0,
+            backgroundColor: "rgba(0, 0, 0, 0.7)",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            zIndex: 1000,
+          }}
+        >
           <div
             className="dx-card"
             style={{
@@ -733,7 +907,7 @@ const AdminPage: React.FC = () => {
                 border: "none",
                 color: "white",
                 fontSize: "20px",
-                cursor: "pointer"
+                cursor: "pointer",
               }}
             >
               ×
@@ -910,6 +1084,110 @@ const AdminPage: React.FC = () => {
                   Cancel
                 </button>
               </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {isDeactivateModalOpen && userToDeactivate && (
+        <div
+          style={{
+            position: "fixed",
+            top: 0,
+            left: 0,
+            right: 0,
+            bottom: 0,
+            backgroundColor: "rgba(0, 0, 0, 0.7)",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            zIndex: 1100,
+          }}
+        >
+          <div
+            className="dx-card"
+            style={{
+              width: "min(520px, 92vw)",
+              padding: 22,
+              position: "relative",
+              background: "rgba(18, 18, 26, 0.98)",
+              border: "1px solid rgba(255,255,255,0.08)",
+              borderRadius: 16,
+              boxShadow: "0px 10px 25px rgba(0, 0, 0, 0.2)",
+            }}
+            onClick={(e) => e.stopPropagation()}
+          >
+            <button
+              onClick={closeDeactivateModal}
+              disabled={deactivateLoading}
+              style={{
+                position: "absolute",
+                top: 10,
+                right: 14,
+                background: "transparent",
+                border: "none",
+                color: "white",
+                fontSize: "20px",
+                cursor: deactivateLoading ? "default" : "pointer",
+                opacity: deactivateLoading ? 0.5 : 1,
+              }}
+            >
+              ×
+            </button>
+
+            <h2 style={{ color: "#f87171", marginBottom: 14 }}>
+              Deactivate User
+            </h2>
+
+            <div
+              style={{
+                color: "var(--text-main)",
+                lineHeight: 1.6,
+                marginBottom: 20,
+              }}
+            >
+              Are you sure you want to deactivate:
+              <div
+                style={{
+                  marginTop: 8,
+                  padding: "10px 12px",
+                  borderRadius: 10,
+                  background: "rgba(255,255,255,0.04)",
+                  wordBreak: "break-word",
+                  color: "white",
+                  fontWeight: 600,
+                }}
+              >
+                {userToDeactivate.email}
+              </div>
+              <div style={{ marginTop: 10, color: "var(--text-dim)", fontSize: "0.92rem" }}>
+                This user will be removed from the active admin list.
+              </div>
+            </div>
+
+            <div style={{ display: "flex", gap: 12 }}>
+              <button
+                className="dx-btn dx-btn-outline"
+                onClick={closeDeactivateModal}
+                disabled={deactivateLoading}
+                style={{ flex: 1 }}
+              >
+                Cancel
+              </button>
+
+              <button
+                className="dx-btn"
+                onClick={handleDeactivateUser}
+                disabled={deactivateLoading}
+                style={{
+                  flex: 1,
+                  background: "rgba(239, 68, 68, 0.16)",
+                  color: "#f87171",
+                  border: "1px solid rgba(239, 68, 68, 0.4)",
+                }}
+              >
+                {deactivateLoading ? "Deactivating..." : "Deactivate"}
+              </button>
             </div>
           </div>
         </div>
