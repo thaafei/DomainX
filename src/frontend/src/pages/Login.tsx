@@ -79,12 +79,12 @@ const Login: React.FC = () => {
                 {loading ? "Signing in..." : "Sign in"}
               </button>
               <div style={{ marginTop: 10, textAlign: "center" }}>
-                Don’t have an account?{" "}
+                ForgotPassword?{" "}
                 <span
                   style={{ color: "var(--accent)", cursor: "pointer" }}
                   onClick={() => navigate("/signup")}
                 >
-                  Sign up
+                  Change Password
                 </span>
               </div>
 
