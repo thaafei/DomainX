@@ -14,7 +14,8 @@ from .views.auth_views import (
     DeactivateUserView,
     ForgotPasswordView,
     ResetPasswordView,
-    ValidateResetPasswordView
+    ValidateResetPasswordView,
+    ResendInviteView
 
 )
 urlpatterns = [
@@ -22,6 +23,7 @@ urlpatterns = [
     path("logout/", LogoutView.as_view(), name="logout"),
     path("me/", MeView.as_view(), name="me"),
     path("users/invite/", InviteUserView.as_view(), name="invite-user"),
+    path("users/<int:user_id>/resend-invite/", ResendInviteView.as_view(), name="resend-invite"),
     path("validate-invite/", ValidateInviteView.as_view()),
     path("auth/accept-invite/", AcceptInviteView.as_view(), name="accept-invite"),
     path("profile/", ProfileView.as_view(), name="profile"),

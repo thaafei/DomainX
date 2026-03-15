@@ -23,6 +23,30 @@ from ..serializers import (
 )
 
 
+def send_invitation_for_user(user, invited_by):
+    invite, raw_token = UserInvite.create_for_user(
+        user=user,
+        invited_by=invited_by,
+        hours_valid=24 * 7,
+    )
+
+    invite_url = f"{settings.FRONTEND_URL}/accept-invite?token={raw_token}"
+
+    subject = "You're invited to DomainX"
+    body = (
+        f"Hi {user.first_name or user.username},\n\n"
+        f"You've been invited to join DomainX.\n\n"
+        f"To activate your account, please set your password using the link below:\n\n"
+        f"{invite_url}\n\n"
+        f"This invitation link will expire in 7 days.\n"
+        f"If it expires before you use it, please contact your administrator to request a new invitation.\n\n"
+        f"Welcome to DomainX,\n"
+        f"The DomainX Team"
+    )
+
+    send_email_task.delay(user.email, subject, body)
+
+
 class LoginView(APIView):
     permission_classes = [AllowAny]
 
@@ -33,7 +57,6 @@ class LoginView(APIView):
         user = authenticate(request, username=login_value, password=password)
         if not user:
             return Response({"error": "Invalid credentials"}, status=status.HTTP_401_UNAUTHORIZED)
-
 
         refresh = RefreshToken.for_user(user)
 
@@ -121,32 +144,35 @@ class InviteUserView(APIView):
             else:
                 user.created_domains.clear()
 
-            invite, raw_token = UserInvite.create_for_user(
-                user=user,
-                invited_by=request.user,
-                hours_valid=24 * 7,
-            )
-
-        invite_url = f"{settings.FRONTEND_URL}/accept-invite?token={raw_token}"
-
-        subject = "You're invited to DomainX"
-        body = (
-            f"Hi {user.first_name or user.username},\n\n"
-            f"You've been invited to join DomainX.\n\n"
-            f"To activate your account, please set your password using the link below:\n\n"
-            f"{invite_url}\n\n"
-            f"This invitation link will expire in 7 days.\n"
-            f"If it expires before you use it, please contact your administrator to request a new invitation.\n\n"
-            f"Welcome to DomainX,\n"
-            f"The DomainX Team"
-        )
-
-        send_email_task.delay(user.email, subject, body)
+            send_invitation_for_user(user=user, invited_by=request.user)
 
         return Response(
             {"message": "Invitation sent successfully."},
             status=status.HTTP_201_CREATED
         )
+
+
+class ResendInviteView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request, user_id):
+        if request.user.role != "superadmin":
+            return Response(
+                {"error": "You do not have permission to resend invites."},
+                status=status.HTTP_403_FORBIDDEN
+            )
+
+        try:
+            user = CustomUser.objects.get(id=user_id, is_deleted=False)
+        except CustomUser.DoesNotExist:
+            return Response({"error": "User not found."}, status=status.HTTP_404_NOT_FOUND)
+
+        if user.is_active:
+            return Response({"error": "User is already active."}, status=status.HTTP_400_BAD_REQUEST)
+
+        send_invitation_for_user(user=user, invited_by=request.user)
+
+        return Response({"message": "Invitation resent successfully."}, status=status.HTTP_200_OK)
 
 
 class AcceptInviteView(APIView):
@@ -172,10 +198,10 @@ class AcceptInviteView(APIView):
 
         if invite.user.is_active:
             return Response({"error": "Account already activated."}, status=400)
+
         if invite.is_expired():
             return Response(
-                {
-                    "error": "This invite link has expired. Please contact your administrator to request a new invitation."},
+                {"error": "This invite link has expired. Please contact your administrator to request a new invitation."},
                 status=status.HTTP_400_BAD_REQUEST
             )
 
@@ -192,7 +218,6 @@ class AcceptInviteView(APIView):
         invite.used_at = timezone.now()
         invite.save(update_fields=["used_at"])
 
-
         return Response({"message": "Account activated successfully."}, status=status.HTTP_200_OK)
 
 
@@ -200,23 +225,23 @@ class UserListView(APIView):
     permission_classes = [IsAuthenticated]
 
     def get(self, request):
-        if request.user.role != 'superadmin':
+        if request.user.role != "superadmin":
             return Response(
                 {"error": "You do not have permission to access this resource."},
                 status=status.HTTP_403_FORBIDDEN
             )
 
-        role = request.query_params.get('role', None)
-        include_domains = request.query_params.get('include_domains', 'false').lower() == 'true'
+        role = request.query_params.get("role", None)
+        include_domains = request.query_params.get("include_domains", "false").lower() == "true"
 
         users = CustomUser.objects.filter(is_deleted=False)
 
         if role:
-            roles = [r.strip() for r in role.split(',')]
+            roles = [r.strip() for r in role.split(",")]
             users = users.filter(role__in=roles)
 
         if include_domains:
-            users = users.prefetch_related('created_domains')
+            users = users.prefetch_related("created_domains")
             return Response(UserWithDomainsSerializer(users, many=True).data)
 
         return Response(UserProfileSerializer(users, many=True).data)
@@ -227,8 +252,8 @@ class UserUpdateView(APIView):
 
     def patch(self, request, user_id):
         is_self = str(request.user.id) == str(user_id)
-        is_admin = request.user.role == 'admin'
-        is_super = request.user.role == 'superadmin'
+        is_admin = request.user.role == "admin"
+        is_super = request.user.role == "superadmin"
 
         if not is_self and not (is_admin or is_super):
             return Response({"error": "Forbidden"}, status=403)
@@ -239,23 +264,23 @@ class UserUpdateView(APIView):
             return Response({"error": "User not found."}, status=404)
 
         if is_self or is_super:
-            fields = ['first_name', 'last_name', 'username', 'email']
+            fields = ["first_name", "last_name", "username", "email"]
             for field in fields:
-                val = request.data.get(field if field != 'username' else 'user_name')
+                val = request.data.get(field if field != "username" else "user_name")
                 if val is not None:
                     if field in ["email", "username"] and isinstance(val, str):
                         val = val.lower()
                     setattr(user_to_update, field, val)
 
         if is_super:
-            role = request.data.get('role')
-            if role in ['admin', 'superadmin']:
+            role = request.data.get("role")
+            if role in ["admin", "superadmin"]:
                 user_to_update.role = role
 
-        domain_ids = request.data.get('domain_ids')
+        domain_ids = request.data.get("domain_ids")
         if domain_ids is not None and (is_admin or is_super):
             if is_admin:
-                my_domains = set(request.user.created_domains.values_list('domain_ID', flat=True))
+                my_domains = set(request.user.created_domains.values_list("domain_ID", flat=True))
                 valid_ids = [d_id for d_id in domain_ids if d_id in my_domains]
             else:
                 valid_ids = domain_ids
@@ -267,11 +292,13 @@ class UserUpdateView(APIView):
                     user_to_update.created_domains.add(domain)
                 except Domain.DoesNotExist:
                     continue
+
         if CustomUser.objects.exclude(id=user_to_update.id).filter(email__iexact=user_to_update.email).exists():
             return Response({"error": "A user with this email already exists."}, status=400)
 
         if CustomUser.objects.exclude(id=user_to_update.id).filter(username__iexact=user_to_update.username).exists():
             return Response({"error": "A user with this username already exists."}, status=400)
+
         user_to_update.save()
         return Response({"message": "Profile updated successfully"}, status=200)
 
@@ -281,7 +308,7 @@ class ChangePasswordView(APIView):
 
     def post(self, request, user_id):
         is_owner = request.user.id == int(user_id)
-        is_superadmin = request.user.role == 'superadmin'
+        is_superadmin = request.user.role == "superadmin"
 
         if not is_owner and not is_superadmin:
             return Response(
@@ -320,13 +347,14 @@ class UserDomainListView(APIView):
     def get(self, request, user_id):
         try:
             user = CustomUser.objects.get(id=user_id)
-            if user.role in ['admin', 'superadmin']:
+            if user.role in ["admin", "superadmin"]:
                 domains = user.created_domains.all()
-                data = [{'domain_ID': str(d.domain_ID), 'domain_name': d.domain_name} for d in domains]
+                data = [{"domain_ID": str(d.domain_ID), "domain_name": d.domain_name} for d in domains]
                 return Response(data, status=200)
             return Response([], status=200)
         except CustomUser.DoesNotExist:
             return Response({"error": "User not found"}, status=404)
+
 
 class ValidateInviteView(APIView):
     permission_classes = [AllowAny]
@@ -352,11 +380,11 @@ class ValidateInviteView(APIView):
 
         return Response({"valid": True}, status=200)
 
+
 class DeactivateUserView(APIView):
     permission_classes = [IsAuthenticated]
 
     def patch(self, request, user_id):
-
         if request.user.role != "superadmin":
             return Response(
                 {"error": "You do not have permission to deactivate users."},
@@ -391,6 +419,7 @@ class DeactivateUserView(APIView):
         target_user.save(update_fields=["is_active", "is_deleted"])
 
         return Response({"message": "User deactivated successfully."}, status=200)
+
 
 class ForgotPasswordView(APIView):
     permission_classes = [AllowAny]
@@ -465,6 +494,7 @@ class ResetPasswordView(APIView):
         reset.save(update_fields=["used_at"])
 
         return Response({"message": "Password reset successfully."}, status=status.HTTP_200_OK)
+
 
 class ValidateResetPasswordView(APIView):
     permission_classes = [AllowAny]
