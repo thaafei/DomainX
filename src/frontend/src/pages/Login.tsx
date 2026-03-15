@@ -82,7 +82,7 @@ const Login: React.FC = () => {
                 ForgotPassword?{" "}
                 <span
                   style={{ color: "var(--accent)", cursor: "pointer" }}
-                  onClick={() => navigate("/signup")}
+                  onClick={() => navigate("/")}
                 >
                   Change Password
                 </span>
