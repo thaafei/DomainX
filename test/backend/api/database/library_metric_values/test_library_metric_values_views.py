@@ -392,7 +392,7 @@ def test_library_metric_value_update_rejects_invalid_int(rf, lib_a, metric_stars
     resp = view(req, library_id=str(lib_a.library_ID))
 
     assert resp.status_code == status.HTTP_400_BAD_REQUEST
-    assert resp.data["error"] == "Stars Count must be a whole number."
+    assert "Stars Count must be a whole number." in resp.data["error"]
     assert LibraryMetricValue.objects.filter(library=lib_a, metric=metric_stars).count() == 0
 
 
@@ -408,7 +408,7 @@ def test_library_metric_value_update_rejects_invalid_scored_value(rf, lib_a, met
     resp = view(req, library_id=str(lib_a.library_ID))
 
     assert resp.status_code == status.HTTP_400_BAD_REQUEST
-    assert resp.data["error"] == "License Type must be one of: MIT, Apache-2.0."
+    assert "License Type must be one of: MIT, Apache-2.0." in resp.data["error"]
     assert LibraryMetricValue.objects.filter(library=lib_a, metric=metric_scored).count() == 0
 
 

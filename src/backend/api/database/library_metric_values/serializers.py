@@ -14,4 +14,4 @@ class FlatMetricValueSerializer(serializers.ModelSerializer):
     # Note: These fields directly reference the ForeignKey IDs
     class Meta:
         model = LibraryMetricValue
-        fields = ('library', 'metric', 'value')
+        fields = ('library', 'metric', 'value', 'description')

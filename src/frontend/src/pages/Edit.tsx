@@ -698,8 +698,9 @@ const EditMetricValuesModal: React.FC<{
         >
           {metricList.map((m) => {
             const cellVal = row.metrics[m.metric_name];
+            const descVal = row.metrics[m.metric_name + "_description"] || ""; 
             const fieldError = fieldErrors[m.metric_name];
-            const desc = (m.description || "").trim();
+            const staticDesc = (m.description || "").trim();
 
             return (
               <div
@@ -738,80 +739,72 @@ const EditMetricValuesModal: React.FC<{
 
                   <div
                     style={{
-                      fontSize: 11.5,
-                      color: "rgba(255,255,255,0.52)",
-                      minHeight: 28,
+                      fontSize: 11,
+                      color: "rgba(255,255,255,0.45)",
                       lineHeight: 1.25,
                       overflowWrap: "anywhere",
                     }}
-                    title={desc || ""}
                   >
-                    {desc ? (
-                      <span style={clamp2Style}>({desc})</span>
-                    ) : (
-                      <span>&nbsp;</span>
-                    )}
+                    {staticDesc ? `(${staticDesc})` : <span>&nbsp;</span>}
                   </div>
                 </div>
 
-                {m.metric_key === "gitstats_report" ? (
-                  cellVal ? (
-                    <a
-                      href={String(cellVal)}
-                      target="_blank"
-                      rel="noreferrer"
-                      style={{ color: "var(--accent)", lineHeight: 2.2 }}
+                <div style={{ display: "flex", flexDirection: "column", gap: 4 }}>
+                  {m.metric_key === "gitstats_report" ? (
+                    cellVal ? (
+                      <a href={String(cellVal)} target="_blank" rel="noreferrer" style={{ color: "var(--accent)", fontSize: 13 }}>
+                        View report
+                      </a>
+                    ) : (
+                      <div style={{ fontSize: 13, color: "rgba(255,255,255,0.4)" }}>—</div>
+                    )
+                  ) : m.scoring_dict && Object.keys(m.scoring_dict).length > 0 ? (
+                    <select
+                      className="dx-input"
+                      value={cellVal ?? ""}
+                      onChange={(e) => onChangeValue(m.metric_name, e.target.value)}
+                      disabled={pageLoading}
+                      style={{ borderColor: fieldError ? "rgba(255, 99, 99, 0.75)" : undefined }}
                     >
-                      View report
-                    </a>
+                      <option value="">-- Select --</option>
+                      {Object.keys(m.scoring_dict).map((key) => (
+                        <option key={key} value={key}>{key}</option>
+                      ))}
+                    </select>
                   ) : (
-                    <div
-                      style={{
-                        lineHeight: 2.2,
-                        opacity: 0.7,
-                        color: "rgba(255,255,255,0.72)",
-                      }}
-                    >
-                      —
-                    </div>
-                  )
-                ) : m.scoring_dict && Object.keys(m.scoring_dict).length > 0 ? (
-                  <select
+                    <input
+                      className="dx-input"
+                      placeholder="Enter value..."
+                      value={cellVal ?? ""}
+                      onChange={(e) => onChangeValue(m.metric_name, e.target.value)}
+                      disabled={pageLoading}
+                      style={{ borderColor: fieldError ? "rgba(255, 99, 99, 0.75)" : undefined }}
+                    />
+                  )}
+                </div>
+
+                <div style={{ display: "flex", flexDirection: "column", gap: 4 }}>
+                  <div style={{ fontSize: 11, color: "rgba(255,255,255,0.5)", fontWeight: 500 }}>
+                    Notes / Comments
+                  </div>
+                  <textarea
                     className="dx-input"
-                    value={cellVal ?? ""}
-                    onChange={(e) => onChangeValue(m.metric_name, e.target.value)}
+                    placeholder="Add description..."
+                    rows={2}
+                    value={row.metrics[`${m.metric_name}_description`] || ""}
+                    onChange={(e) => onChangeValue(m.metric_name + "_description", e.target.value)}
                     disabled={pageLoading}
                     style={{
-                      borderColor: fieldError
-                        ? "rgba(255, 99, 99, 0.75)"
-                        : undefined,
-                    }}
-                  >
-                    <option value="" className="dx-input-select">
-                      -- Select --
-                    </option>
-                    {Object.keys(m.scoring_dict).map((key) => (
-                      <option key={key} value={key} className="dx-input-select">
-                        {key}
-                      </option>
-                    ))}
-                  </select>
-                ) : (
-                  <input
-                    className="dx-input"
-                    value={cellVal ?? ""}
-                    onChange={(e) => onChangeValue(m.metric_name, e.target.value)}
-                    disabled={pageLoading}
-                    style={{
-                      borderColor: fieldError
-                        ? "rgba(255, 99, 99, 0.75)"
-                        : undefined,
+                      fontSize: 12,
+                      resize: "none",
+                      minHeight: 50,
+                      background: "rgba(0,0,0,0.2)",
                     }}
                   />
-                )}
+                </div>
 
                 {fieldError && (
-                  <div style={{ color: "#ff9b9b", fontSize: 12, marginTop: 2 }}>
+                  <div style={{ color: "#ff9b9b", fontSize: 11, marginTop: 2 }}>
                     {fieldError}
                   </div>
                 )}
@@ -1072,8 +1065,10 @@ const EditValuesPage: React.FC = () => {
         : prev
     );
 
+    const isDescription = metric.endsWith("_description");
     const metricObj = metricList.find((m) => m.metric_name === metric);
-    if (metricObj) {
+    
+    if (metricObj && !isDescription && !isEvidence) {
       const error = validateMetricValue(metricObj, value);
       setFieldErrors((prev) => {
         const next = { ...prev };
@@ -1104,7 +1099,7 @@ const EditValuesPage: React.FC = () => {
           headers: { "Content-Type": "application/json" },
           credentials: "include",
           body: JSON.stringify({
-            metrics: row.metrics,
+            metrics: row.metrics, 
           }),
         }
       );
@@ -1545,10 +1540,40 @@ const EditValuesPage: React.FC = () => {
                       style={{
                         ...headerCellStyle,
                         width: 170,
+                        position: "relative",
                       }}
-                      title={m.metric_name}
                     >
-                      <div style={clamp2Style}>{m.metric_name}</div>
+                      <div style={{ ...clamp2Style, paddingRight: "18px" }}>
+                        {m.metric_name}
+                      </div>
+
+                      {m.description && (
+                        <span
+                          title={m.description}
+                          style={{
+                            position: "absolute",
+                            top: "8px",
+                            right: "6px",
+                            cursor: "help",
+                            fontSize: "10px",
+                            background: "rgba(255, 255, 255, 0.1)",
+                            color: "var(--accent)",
+                            width: "14px",
+                            height: "14px",
+                            display: "flex",
+                            alignItems: "center",
+                            justifyContent: "center",
+                            borderRadius: "50%",
+                            border: "1px solid rgba(255, 255, 255, 0.2)",
+                            opacity: 0.6,
+                            transition: "opacity 0.2s",
+                          }}
+                          onMouseEnter={(e) => (e.currentTarget.style.opacity = "1")}
+                          onMouseLeave={(e) => (e.currentTarget.style.opacity = "0.6")}
+                        >
+                          ?
+                        </span>
+                      )}
                     </th>
                   ))}
                 </tr>
@@ -1708,7 +1733,7 @@ const EditValuesPage: React.FC = () => {
 
                       {metricList.map((m) => {
                         const cellVal = row.metrics[m.metric_name];
-
+                        const cellDesc = row.metrics[`${m.metric_name}_description`];
                         if (m.metric_key === "gitstats_report") {
                           const url = cellVal ? String(cellVal) : null;
                           return (
@@ -1743,23 +1768,49 @@ const EditValuesPage: React.FC = () => {
                         }
 
                         return (
-                          <td
-                            key={m.metric_ID}
-                            style={{
-                              ...metricCellStyle,
-                              whiteSpace: "normal",
-                              wordBreak: "break-word",
-                            }}
-                            title={cellVal != null ? String(cellVal) : "—"}
-                          >
-                            <ExpandableText
-                              text={cellVal != null ? String(cellVal) : ""}
-                              lines={3}
-                              emptyText="—"
-                            />
-                          </td>
-                        );
-                      })}
+    <td
+      key={m.metric_ID}
+      style={{
+        ...metricCellStyle,
+        position: "relative",
+        paddingRight: cellDesc ? "24px" : "8px",
+      }}
+      title={cellVal != null ? String(cellVal) : "—"}
+    >
+      <ExpandableText
+        text={cellVal != null ? String(cellVal) : ""}
+        lines={3}
+        emptyText="—"
+      />
+
+      {cellDesc && (
+        <span
+          title={`${cellDesc}`}
+          style={{
+            position: "absolute",
+            top: "6px",
+            right: "6px",
+            cursor: "help",
+            fontSize: "10px",
+            fontWeight: "bold",
+            color: "var(--accent)",
+            background: "rgba(0, 255, 136, 0.12)",
+            border: "1px solid rgba(0, 255, 136, 0.25)",
+            width: "15px",
+            height: "15px",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            borderRadius: "4px",
+            opacity: 0.8,
+          }}
+        >
+          i
+        </span>
+      )}
+    </td>
+  );
+})}
                     </tr>
                   );
                 })}
