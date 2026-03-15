@@ -220,6 +220,7 @@ def test_analyze_library_success_202(rf, lib_a, monkeypatch):
 
 @pytest.mark.django_db
 def test_analyze_library_enqueue_returns_none_400(rf, lib_a, monkeypatch):
+    user = user_factory("test@example.com", "testuser")
     lib_a.analysis_error = "bad"
     lib_a.save(update_fields=["analysis_error"])
 
@@ -227,6 +228,7 @@ def test_analyze_library_enqueue_returns_none_400(rf, lib_a, monkeypatch):
     monkeypatch.setattr(views_module, "enqueue_library_analysis", fake_enqueue)
 
     req = rf.post("/x", {}, format="json")
+    req.user = user
     resp = views_module.analyze_library(req, library_id=str(lib_a.library_ID))
 
     assert resp.status_code == status.HTTP_400_BAD_REQUEST
@@ -236,10 +238,12 @@ def test_analyze_library_enqueue_returns_none_400(rf, lib_a, monkeypatch):
 
 @pytest.mark.django_db
 def test_analyze_library_enqueue_raises_500_and_marks_failed(rf, lib_a, monkeypatch):
+    user = user_factory("test@example.com", "testuser")
     fake_enqueue = Mock(side_effect=RuntimeError("boom"))
     monkeypatch.setattr(views_module, "enqueue_library_analysis", fake_enqueue)
 
     req = rf.post("/x", {}, format="json")
+    req.user = user
     resp = views_module.analyze_library(req, library_id=str(lib_a.library_ID))
 
     assert resp.status_code == status.HTTP_500_INTERNAL_SERVER_ERROR
@@ -252,6 +256,7 @@ def test_analyze_library_enqueue_raises_500_and_marks_failed(rf, lib_a, monkeypa
 
 @pytest.mark.django_db
 def test_analyze_domain_libraries_mixed_results(rf, domain, lib_a, lib_b, monkeypatch):
+    user = user_factory("test@example.com", "testuser")
     def fake_enqueue(lib):
         if lib.library_name == "A":
             return {"analysis_task_id": "tA", "gitstats_task_id": "gA"}
@@ -264,6 +269,7 @@ def test_analyze_domain_libraries_mixed_results(rf, domain, lib_a, lib_b, monkey
     monkeypatch.setattr(views_module, "enqueue_library_analysis", fake_enqueue)
 
     req = rf.post("/x", {}, format="json")
+    req.user = user
     resp = views_module.analyze_domain_libraries(req, domain_id=str(domain.domain_ID))
 
     assert resp.status_code == status.HTTP_202_ACCEPTED
@@ -290,10 +296,11 @@ def test_analyze_domain_libraries_exception_marks_failed(rf, domain, lib_a, lib_
         if lib.library_name == "A":
             raise RuntimeError("explode")
         return {"analysis_task_id": "tB", "gitstats_task_id": "gB"}
-
+    user = user_factory("test@example.com", "testuser")
     monkeypatch.setattr(views_module, "enqueue_library_analysis", fake_enqueue)
 
     req = rf.post("/x", {}, format="json")
+    req.user = user
     resp = views_module.analyze_domain_libraries(req, domain_id=str(domain.domain_ID))
 
     assert resp.status_code == status.HTTP_202_ACCEPTED
@@ -321,8 +328,9 @@ def test_domain_comparison_returns_metrics_and_rows_with_values_and_evidence(
 
     lib_a.gitstats_status = Library.GITSTATS_SUCCESS
     lib_a.save(update_fields=["gitstats_status"])
-
+    user = user_factory("test@example.com", "testuser")
     req = rf.get("/x")
+    req.user = user
     resp = views_module.domain_comparison(req, domain_id=str(domain.domain_ID))
 
     assert resp.status_code == status.HTTP_200_OK
@@ -354,7 +362,9 @@ def test_domain_comparison_returns_metrics_and_rows_with_values_and_evidence(
 @pytest.mark.django_db
 def test_library_metric_value_update_requires_metrics_dict(rf, lib_a):
     view = views_module.LibraryMetricValueUpdateView.as_view()
+    user = user_factory("test@example.com", "testuser")
     req = rf.post("/x", {"metrics": ["bad"]}, format="json")
+    req.user = user
     resp = view(req, library_id=str(lib_a.library_ID))
 
     assert resp.status_code == status.HTTP_400_BAD_REQUEST
@@ -363,6 +373,7 @@ def test_library_metric_value_update_requires_metrics_dict(rf, lib_a):
 
 @pytest.mark.django_db
 def test_library_metric_value_update_creates_value_and_evidence(rf, lib_a, metric_stars, metric_forks):
+    user = user_factory("test@example.com", "testuser")
     view = views_module.LibraryMetricValueUpdateView.as_view()
 
     req = rf.post(
@@ -378,6 +389,7 @@ def test_library_metric_value_update_creates_value_and_evidence(rf, lib_a, metri
         },
         format="json",
     )
+    req.user = user
     resp = view(req, library_id=str(lib_a.library_ID))
 
     assert resp.status_code == status.HTTP_200_OK
@@ -400,12 +412,13 @@ def test_library_metric_value_update_creates_value_and_evidence(rf, lib_a, metri
 @pytest.mark.django_db
 def test_library_metric_value_update_rejects_invalid_int(rf, lib_a, metric_stars):
     view = views_module.LibraryMetricValueUpdateView.as_view()
-
+    user = user_factory("test@example.com", "testuser")
     req = rf.post(
         "/x",
         {"metrics": {"Stars Count": "not-an-int"}},
         format="json",
     )
+    req.user = user
     resp = view(req, library_id=str(lib_a.library_ID))
 
     assert resp.status_code == status.HTTP_400_BAD_REQUEST
@@ -416,12 +429,13 @@ def test_library_metric_value_update_rejects_invalid_int(rf, lib_a, metric_stars
 @pytest.mark.django_db
 def test_library_metric_value_update_rejects_invalid_scored_value(rf, lib_a, metric_scored):
     view = views_module.LibraryMetricValueUpdateView.as_view()
-
+    user = user_factory("test@example.com", "testuser")
     req = rf.post(
         "/x",
         {"metrics": {"License Type": "GPL"}},
         format="json",
     )
+    req.user = user
     resp = view(req, library_id=str(lib_a.library_ID))
 
     assert resp.status_code == status.HTTP_400_BAD_REQUEST
@@ -432,7 +446,7 @@ def test_library_metric_value_update_rejects_invalid_scored_value(rf, lib_a, met
 @pytest.mark.django_db
 def test_library_metric_value_update_skips_gitstats_report_metric(rf, lib_a, metric_gitstats_report):
     view = views_module.LibraryMetricValueUpdateView.as_view()
-
+    user = user_factory("test@example.com", "testuser")
     req = rf.post(
         "/x",
         {
@@ -443,6 +457,7 @@ def test_library_metric_value_update_skips_gitstats_report_metric(rf, lib_a, met
         },
         format="json",
     )
+    req.user = user
     resp = view(req, library_id=str(lib_a.library_ID))
 
     assert resp.status_code == status.HTTP_200_OK
@@ -453,7 +468,9 @@ def test_library_metric_value_update_skips_gitstats_report_metric(rf, lib_a, met
 @pytest.mark.django_db
 def test_metric_value_bulk_update_rejects_non_list(rf):
     view = views_module.MetricValueBulkUpdateView.as_view()
+    user = user_factory("test@example.com", "testuser")
     req = rf.post("/x", {"a": 1}, format="json")
+    req.user = user
     resp = view(req)
 
     assert resp.status_code == status.HTTP_400_BAD_REQUEST
@@ -463,7 +480,9 @@ def test_metric_value_bulk_update_rejects_non_list(rf):
 @pytest.mark.django_db
 def test_metric_value_bulk_update_empty_list_returns_200(rf):
     view = views_module.MetricValueBulkUpdateView.as_view()
+    user = user_factory("test@example.com", "testuser")
     req = rf.post("/x", [], format="json")
+    req.user = user
     resp = view(req)
 
     assert resp.status_code == status.HTTP_200_OK
@@ -479,8 +498,9 @@ def test_metric_value_bulk_update_success(rf, lib_a, metric_stars, metric_forks)
         {"library_id": str(lib_a.library_ID), "metric_id": str(metric_forks.metric_ID), "value": ""},
         {"library_id": None, "metric_id": str(metric_forks.metric_ID), "value": 1},
     ]
-
+    user = user_factory("test@example.com", "testuser")
     req = rf.post("/x", updates, format="json")
+    req.user = user
     resp = view(req)
 
     assert resp.status_code == status.HTTP_200_OK
@@ -500,8 +520,9 @@ def test_metric_value_bulk_update_rejects_invalid_int(rf, lib_a, metric_stars):
     updates = [
         {"library_id": str(lib_a.library_ID), "metric_id": str(metric_stars.metric_ID), "value": "abc"},
     ]
-
+    user = user_factory("test@example.com", "testuser")
     req = rf.post("/x", updates, format="json")
+    req.user = user
     resp = view(req)
 
     assert resp.status_code == status.HTTP_400_BAD_REQUEST
@@ -520,8 +541,9 @@ def test_metric_value_bulk_update_skips_gitstats_report_metric(rf, lib_a, metric
             "value": "manual value",
         },
     ]
-
+    user = user_factory("test@example.com", "testuser")
     req = rf.post("/x", updates, format="json")
+    req.user = user
     resp = view(req)
 
     assert resp.status_code == status.HTTP_200_OK
@@ -554,7 +576,9 @@ def test_ahp_calculations_basic(rf, domain, lib_a, lib_b, monkeypatch, tmp_path)
     LibraryMetricValue.objects.create(library=lib_b, metric=m, value=5)
 
     view = views_module.AHPCalculations.as_view()
+    user = user_factory("test@example.com", "testuser")
     req = rf.get("/x")
+    req.user = user
     resp = view(req, domain_id=str(domain.domain_ID))
 
     assert resp.status_code == status.HTTP_200_OK

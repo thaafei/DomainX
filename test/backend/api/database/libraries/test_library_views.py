@@ -33,6 +33,8 @@ def domain():
 
 @pytest.mark.django_db
 def test_list_libraries_returns_only_domain_libraries(api_client, domain):
+    user = user_factory("test@example.com", "testuser")
+    api_client.force_authenticate(user=user)
     other = Domain.objects.create(domain_name="Other", description="x")
 
     Library.objects.create(
@@ -69,6 +71,8 @@ def test_list_libraries_returns_only_domain_libraries(api_client, domain):
 
 @pytest.mark.django_db
 def test_create_library_requires_domain(api_client):
+    user = user_factory("test@example.com", "testuser")
+    api_client.force_authenticate(user=user)
     resp = api_client.post("/api/libraries/", {}, format="json")
     assert resp.status_code == status.HTTP_400_BAD_REQUEST
 
@@ -79,6 +83,8 @@ def test_create_library_requires_domain(api_client):
 
 @pytest.mark.django_db
 def test_create_library_invalid_domain(api_client):
+    user = user_factory("test@example.com", "testuser")
+    api_client.force_authenticate(user=user)
     payload = {
         "domain": "00000000-0000-0000-0000-000000000000",
         "library_name": "X",
@@ -139,6 +145,8 @@ def test_create_library_success_sets_pending_and_returns_task_ids(api_client, do
 
 @pytest.mark.django_db
 def test_create_library_enqueue_raises_marks_failed_and_task_ids_none(api_client, domain, monkeypatch):
+    user = user_factory("test@example.com", "testuser")
+    api_client.force_authenticate(user=user)
     fake_enqueue = Mock(side_effect=RuntimeError("boom"))
     monkeypatch.setattr(library_views_module, "enqueue_library_analysis", fake_enqueue)
 
@@ -168,6 +176,8 @@ def test_create_library_enqueue_raises_marks_failed_and_task_ids_none(api_client
 
 @pytest.mark.django_db
 def test_patch_library_success(api_client, domain):
+    user = user_factory("test@example.com", "testuser")
+    api_client.force_authenticate(user=user)
     lib = Library.objects.create(
         domain=domain,
         library_name="OldName",
@@ -195,6 +205,8 @@ def test_patch_library_success(api_client, domain):
 
 @pytest.mark.django_db
 def test_put_library_success(api_client, domain):
+    user = user_factory("test@example.com", "testuser")
+    api_client.force_authenticate(user=user)
     lib = Library.objects.create(
         domain=domain,
         library_name="Name1",
@@ -230,6 +242,8 @@ def test_put_library_success(api_client, domain):
 
 @pytest.mark.django_db
 def test_put_library_rejects_non_github_url(api_client, domain):
+    user = user_factory("test@example.com", "testuser")
+    api_client.force_authenticate(user=user)
     lib = Library.objects.create(
         domain=domain,
         library_name="Name1",
@@ -255,6 +269,8 @@ def test_put_library_rejects_non_github_url(api_client, domain):
 
 @pytest.mark.django_db
 def test_create_library_duplicate_name_returns_validation_error(api_client, domain):
+    user = user_factory("test@example.com", "testuser")
+    api_client.force_authenticate(user=user)
     Library.objects.create(
         domain=domain,
         library_name="SameName",
@@ -279,6 +295,8 @@ def test_create_library_duplicate_name_returns_validation_error(api_client, doma
 
 @pytest.mark.django_db
 def test_put_library_duplicate_name_returns_validation_error(api_client, domain):
+    user = user_factory("test@example.com", "testuser")
+    api_client.force_authenticate(user=user)
     Library.objects.create(
         domain=domain,
         library_name="ExistingName",
@@ -309,12 +327,16 @@ def test_put_library_duplicate_name_returns_validation_error(api_client, domain)
 
 @pytest.mark.django_db
 def test_delete_library_not_found(api_client):
+    user = user_factory("test@example.com", "testuser")
+    api_client.force_authenticate(user=user)
     resp = api_client.delete("/api/libraries/00000000-0000-0000-0000-000000000000/")
     assert resp.status_code == status.HTTP_404_NOT_FOUND
 
 
 @pytest.mark.django_db
 def test_delete_library_success(api_client, domain):
+    user = user_factory("test@example.com", "testuser")
+    api_client.force_authenticate(user=user)
     lib = Library.objects.create(
         domain=domain,
         library_name="Temp",
