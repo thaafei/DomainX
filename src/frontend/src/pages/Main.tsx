@@ -481,6 +481,11 @@ const Main: React.FC = () => {
   if (loading) return <div>Loading...</div>;
 
   const handleLogout = async () => {
+    if (!user) {
+      navigate("/login");
+      return;
+    }
+
     try {
       await fetch(apiUrl("/logout/"), {
         method: "POST",
@@ -569,6 +574,8 @@ const Main: React.FC = () => {
         updateLoading={updateLoading}
         updateError={updateError}
         showSuccess={showSuccess}
+        isLoggedIn={!!user}
+        isAdmin={user?.role === 'admin' || user?.role === 'superadmin'}
       />
 
       <div style={{ flex: 1, display: "flex", flexDirection: "column", alignItems: "center", position: "relative", overflow: "hidden" }}>
