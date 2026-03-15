@@ -1,21 +1,10 @@
 import { test, expect } from '@playwright/test';
 
-test('User can register', async ({ page }) => {
-  // See all the requested URLs for mocking backend 
+test('User can log in', async ({ page }) => {
+  // See all the requested URLs for mocking backend
   // page.on('request', request => {
   //   console.log('Request URL:', request.url());
   // });
-
-  await page.route('http://localhost:3000/api/signup/', async route => {
-    await route.fulfill({
-      status: 201,
-      contentType: 'application/json',
-      body: JSON.stringify({
-        user: { id: 1, username: 'test123', email: 'test@gmail.com' },
-        message: 'User registered successfully',
-      }),
-    });
-  });
 
   await page.route('http://localhost:3000/api/login/', async route => {
     await route.fulfill({
@@ -23,17 +12,7 @@ test('User can register', async ({ page }) => {
       contentType: 'application/json',
       body: JSON.stringify({
         token: 'fake-jwt-token',
-        user: { id: 1, username: 'test123', email: 'test@gmail.com', role: 'user', first_name: '', last_name: '' },
-      }),
-    });
-  });
-
-  await page.route('http://localhost:3000/api/me/', async route => {
-    await route.fulfill({
-      status: 200,
-      contentType: 'application/json',
-      body: JSON.stringify({
-        user: { id: 1, username: 'test123', email: 'test@gmail.com', role: 'user', first_name: '', last_name: '' },
+        user: { id: 1, username: 'test123', email: 'test@gmail.com' },
       }),
     });
   });
@@ -116,22 +95,10 @@ test('User can register', async ({ page }) => {
     });
   });
 
-  await page.goto("http://localhost:3000/login");
-  await page.getByText('Sign up').click();
+  await page.goto('http://localhost:3000/login');
 
-  await page.getByRole('textbox', { name: 'Email' }).click();
-  await page.getByRole('textbox', { name: 'Email' }).fill('test@gmail.com');
-  await page.getByRole('textbox', { name: 'Email' }).press('Tab');
-
-  await page.getByRole('textbox', { name: 'Username' }).fill('test123');
-  await page.getByRole('textbox', { name: 'Username' }).press('Tab');
-  await page.getByRole('textbox', { name: 'Password' }).fill('test123');
-  await page.getByRole('button', { name: 'Sign up' }).click();
-
-  await page.getByRole('textbox', { name: 'Username or Email' }).click();
-  await page.getByRole('textbox', { name: 'Username or Email' }).fill('test@gmail.com');
-  await page.getByRole('textbox', { name: 'Username or Email' }).press('Tab');
-  await page.getByRole('textbox', { name: 'Password' }).fill('test123');
+  await page.getByLabel('Username or Email').fill('test@gmail.com');
+  await page.getByLabel('Password').fill('test123');
   await page.getByRole('button', { name: 'Sign in' }).click();
 
   await expect(page.getByRole('button', { name: 'GRAPH VIEW' })).toBeVisible();
