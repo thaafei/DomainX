@@ -15,6 +15,7 @@ interface Metric {
   metric_ID: string;
   metric_name: string;
   metric_key?: string | null;
+  description?: string | null;
 }
 
 interface LibraryMetricRow {
@@ -432,7 +433,37 @@ const ComparisonToolPage: React.FC = () => {
                       }}
                       title={m.metric_name}
                     >
-                      <div style={clamp2Style}>{m.metric_name}</div>
+                      <div style={{ display: "flex", alignItems: "flex-start", gap: "6px" }}>
+                        <div style={clamp2Style}>{m.metric_name}</div>
+                        
+                        {/* Added Help Icon Badge */}
+                        {m.description && (
+                          <span
+                            title={m.description}
+                            style={{
+                              cursor: "help",
+                              fontSize: "10px",
+                              background: "rgba(255, 255, 255, 0.1)",
+                              color: "var(--accent)",
+                              width: "14px",
+                              height: "14px",
+                              display: "inline-flex",
+                              alignItems: "center",
+                              justifyContent: "center",
+                              borderRadius: "50%",
+                              border: "1px solid rgba(255, 255, 255, 0.2)",
+                              opacity: 0.6,
+                              transition: "opacity 0.2s",
+                              flexShrink: 0,
+                              marginTop: "2px"
+                            }}
+                            onMouseEnter={(e) => (e.currentTarget.style.opacity = "1")}
+                            onMouseLeave={(e) => (e.currentTarget.style.opacity = "0.6")}
+                          >
+                            ?
+                          </span>
+                        )}
+                      </div>
                     </th>
                   ))}
                 </tr>
