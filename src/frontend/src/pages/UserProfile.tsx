@@ -33,7 +33,6 @@ const validatePassword = (password: string) => {
 const UserProfilePage: React.FC = () => {
   const navigate = useNavigate();
   const { user, logout } = useAuthStore();
-  const [sidebarOpen, setSidebarOpen] = useState(true);
   const [activeTab, setActiveTab] = useState<"details" | "password">("details");
   const [isModalOpen, setIsModalOpen] = useState(false);
 
@@ -328,27 +327,30 @@ const UserProfilePage: React.FC = () => {
       <div
         className="dx-card"
         style={{
-          width: sidebarOpen ? 260 : 60,
-          transition: "0.28s",
-          padding: sidebarOpen ? "16px" : "16px 6px",
+          width: 220,
+          padding: "22px 14px",
           display: "flex",
           flexDirection: "column",
-          gap: 14,
+          gap: 18,
           color: "var(--text-main)",
           zIndex: 10,
+          borderRight: "1px solid rgba(255,255,255,0.08)",
         }}
       >
-        <div
+        <button
+          className="dx-btn dx-btn-outline"
+          onClick={() => navigate("/")}
           style={{
-            cursor: "pointer",
-            fontSize: 24,
-            color: "var(--accent)",
-            textAlign: sidebarOpen ? "left" : "center",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "flex-start",
+            gap: 8,
+            width: "100%",
           }}
-          onClick={() => setSidebarOpen(!sidebarOpen)}
         >
-          {sidebarOpen ? "⟨" : "⟩"}
-        </div>
+          <ArrowLeft size={18} />
+          Back
+        </button>
 
         <div
           style={{
@@ -367,14 +369,10 @@ const UserProfilePage: React.FC = () => {
             }}
             style={getSidebarItemStyle(activeTab === "details")}
           >
-            {sidebarOpen ? (
-              <>
-                <span style={{ fontSize: "1.1rem" }}>👤</span>
-                <span>Account Details</span>
-              </>
-            ) : (
-              <div style={{ width: "100%", textAlign: "center" }}>👤</div>
-            )}
+            <>
+              <span style={{ fontSize: "1.1rem" }}>👤</span>
+              <span>Account Details</span>
+            </>
           </div>
 
           <div
@@ -385,40 +383,20 @@ const UserProfilePage: React.FC = () => {
             }}
             style={getSidebarItemStyle(activeTab === "password")}
           >
-            {sidebarOpen ? (
-              <>
-                <span style={{ fontSize: "1.1rem" }}>🔑</span>
-                <span>Change Password</span>
-              </>
-            ) : (
-              <div style={{ width: "100%", textAlign: "center" }}>🔑</div>
-            )}
+            <>
+              <span style={{ fontSize: "1.1rem" }}>🔑</span>
+              <span>Change Password</span>
+            </>
           </div>
         </div>
 
         <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
           <button
             className="dx-btn dx-btn-outline"
-            onClick={() => navigate("/main")}
-            style={{ justifyContent: sidebarOpen ? "flex-start" : "center" }}
-          >
-            <span style={{ display: "flex", alignItems: "center", gap: 6 }}>
-              {sidebarOpen ? (
-                <>
-                  <ArrowLeft size={16} />
-                  Dashboard
-                </>
-              ) : (
-                "🏠"
-              )}
-            </span>
-          </button>
-          <button
-            className="dx-btn dx-btn-outline"
             onClick={handleLogout}
-            style={{ justifyContent: sidebarOpen ? "flex-start" : "center", color: "#ff7b72" }}
+            style={{ justifyContent: "flex-start", color: "#ff7b72" }}
           >
-            <span>{sidebarOpen ? "Logout" : "🚪"}</span>
+            <span>Logout</span>
           </button>
         </div>
       </div>
