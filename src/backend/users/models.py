@@ -73,3 +73,33 @@ class UserInvite(models.Model):
             expires_at=timezone.now() + timedelta(hours=hours_valid),
         )
         return invite, raw_token
+
+class PasswordResetToken(models.Model):
+    reset_ID = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    user = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        related_name="password_reset_tokens"
+    )
+    token_hash = models.CharField(max_length=64, unique=True)
+    expires_at = models.DateTimeField()
+    used_at = models.DateTimeField(null=True, blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def is_expired(self):
+        return timezone.now() > self.expires_at
+
+    def is_used(self):
+        return self.used_at is not None
+
+    @classmethod
+    def create_for_user(cls, user, hours_valid=1):
+        raw_token = secrets.token_urlsafe(32)
+        token_hash = hashlib.sha256(raw_token.encode()).hexdigest()
+
+        reset = cls.objects.create(
+            user=user,
+            token_hash=token_hash,
+            expires_at=timezone.now() + timedelta(hours=hours_valid),
+        )
+        return reset, raw_token
