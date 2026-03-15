@@ -2,6 +2,7 @@ import pytest
 from unittest.mock import Mock
 from rest_framework import status
 from rest_framework.test import APIClient
+from django.contrib.auth import get_user_model
 
 from api.database.domain.models import Domain
 from api.database.libraries.models import Library
@@ -11,6 +12,18 @@ import api.database.libraries.views as library_views_module
 @pytest.fixture()
 def api_client():
     return APIClient()
+@pytest.fixture()
+def user_factory():
+    def _factory(email: str, username: str, role: str = "admin"):
+        User = get_user_model()
+        return User.objects.create_user(
+            username=username,
+            email=email,
+            password="password123",
+            role=role,
+        )
+
+    return _factory
 
 
 @pytest.fixture()
@@ -84,6 +97,8 @@ def test_create_library_invalid_domain(api_client):
 
 @pytest.mark.django_db
 def test_create_library_success_sets_pending_and_returns_task_ids(api_client, domain, monkeypatch):
+    user = user_factory("test@example.com", "testuser")
+    api_client.force_authenticate(user=user)
     fake_enqueue = Mock(
         return_value={
             "analysis_task_id": "task-123",

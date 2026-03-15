@@ -28,7 +28,7 @@ def user_factory():
 @pytest.mark.django_db
 def test_create_domain_success(api_client, user_factory):
     creator = user_factory("alice@example.com", "alice", role="admin")
-
+    api_client.force_authenticate(user=creator)
     payload = {
         "domain_name": "Test Domain",
         "description": "A description",

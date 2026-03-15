@@ -4,6 +4,7 @@ from unittest.mock import Mock
 import pytest
 from rest_framework import status
 from rest_framework.test import APIRequestFactory
+from django.contrib.auth import get_user_model
 
 from api.database.domain.models import Domain
 from api.database.libraries.models import Library
@@ -15,6 +16,19 @@ import api.database.library_metric_values.views as views_module
 @pytest.fixture()
 def rf():
     return APIRequestFactory()
+
+@pytest.fixture()
+def user_factory():
+    def _factory(email: str, username: str, role: str = "admin"):
+        User = get_user_model()
+        return User.objects.create_user(
+            username=username,
+            email=email,
+            password="password123",
+            role=role,
+        )
+
+    return _factory
 
 
 @pytest.fixture()
@@ -186,10 +200,13 @@ def test_validate_metric_value_text_passthrough(metric_text):
 
 @pytest.mark.django_db
 def test_analyze_library_success_202(rf, lib_a, monkeypatch):
+    user = user_factory("test@example.com", "testuser")
+
     fake_enqueue = Mock(return_value={"analysis_task_id": "t1", "gitstats_task_id": "g1"})
     monkeypatch.setattr(views_module, "enqueue_library_analysis", fake_enqueue)
 
     req = rf.post("/x", {}, format="json")
+    req.user = user
     resp = views_module.analyze_library(req, library_id=str(lib_a.library_ID))
 
     assert resp.status_code == status.HTTP_202_ACCEPTED
