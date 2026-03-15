@@ -52,7 +52,7 @@ def test_load_auto_metric_definitions_reads_json(monkeypatch, tmp_path):
 
 
 @pytest.mark.django_db
-def test_auto_metric_options_view_returns_grouped_options(rf, monkeypatch, tmp_path):
+def test_auto_metric_options_view_returns_grouped_options(rf, monkeypatch, tmp_path, user_factory):
     data = {
         "stars_count": {
             "label": "Stars Count",
@@ -104,7 +104,7 @@ def test_auto_metric_options_view_returns_grouped_options(rf, monkeypatch, tmp_p
 
 
 @pytest.mark.django_db
-def test_auto_metric_options_view_returns_404_when_file_missing(rf, monkeypatch, tmp_path):
+def test_auto_metric_options_view_returns_404_when_file_missing(rf, monkeypatch, tmp_path, user_factory):
     monkeypatch.setattr(views_module.settings, "BASE_DIR", str(tmp_path))
 
     view = views_module.AutoMetricOptionsView.as_view()
@@ -118,7 +118,7 @@ def test_auto_metric_options_view_returns_404_when_file_missing(rf, monkeypatch,
 
 
 @pytest.mark.django_db
-def test_auto_metric_options_view_returns_500_for_invalid_json(rf, monkeypatch, tmp_path):
+def test_auto_metric_options_view_returns_500_for_invalid_json(rf, monkeypatch, tmp_path, user_factory):
     (tmp_path / "api" / "database").mkdir(parents=True, exist_ok=True)
     (tmp_path / "api" / "database" / "auto_metrics.json").write_text("{bad json")
     monkeypatch.setattr(views_module.settings, "BASE_DIR", str(tmp_path))
@@ -134,7 +134,7 @@ def test_auto_metric_options_view_returns_500_for_invalid_json(rf, monkeypatch, 
 
 
 @pytest.mark.django_db
-def test_metric_rules_view_returns_json_data(rf, monkeypatch, tmp_path):
+def test_metric_rules_view_returns_json_data(rf, monkeypatch, tmp_path, user_factory):
     rules_data = {
         "range": {
             "repository_activity": {
@@ -160,7 +160,7 @@ def test_metric_rules_view_returns_json_data(rf, monkeypatch, tmp_path):
 
 
 @pytest.mark.django_db
-def test_metric_rules_view_returns_404_when_file_missing(rf, monkeypatch, tmp_path):
+def test_metric_rules_view_returns_404_when_file_missing(rf, monkeypatch, tmp_path, user_factory):
     monkeypatch.setattr(views_module.settings, "BASE_DIR", str(tmp_path))
 
     view = views_module.MetricRulesView.as_view()
@@ -174,7 +174,7 @@ def test_metric_rules_view_returns_404_when_file_missing(rf, monkeypatch, tmp_pa
 
 
 @pytest.mark.django_db
-def test_metric_rules_view_returns_500_for_invalid_json(rf, monkeypatch, tmp_path):
+def test_metric_rules_view_returns_500_for_invalid_json(rf, monkeypatch, tmp_path, user_factory):
     (tmp_path / "api" / "database").mkdir(parents=True, exist_ok=True)
     (tmp_path / "api" / "database" / "rules.json").write_text("{bad json")
     monkeypatch.setattr(views_module.settings, "BASE_DIR", str(tmp_path))
@@ -190,7 +190,7 @@ def test_metric_rules_view_returns_500_for_invalid_json(rf, monkeypatch, tmp_pat
 
 
 @pytest.mark.django_db
-def test_metric_category_view_returns_json_data(rf, monkeypatch, tmp_path):
+def test_metric_category_view_returns_json_data(rf, monkeypatch, tmp_path, user_factory):
     categories_data = {
         "Categories": ["Quality", "Popularity", "Maintenance"]
     }
@@ -210,7 +210,7 @@ def test_metric_category_view_returns_json_data(rf, monkeypatch, tmp_path):
 
 
 @pytest.mark.django_db
-def test_metric_category_view_returns_404_when_file_missing(rf, monkeypatch, tmp_path):
+def test_metric_category_view_returns_404_when_file_missing(rf, monkeypatch, tmp_path, user_factory):
     monkeypatch.setattr(views_module.settings, "BASE_DIR", str(tmp_path))
 
     view = views_module.MetricCategoryView.as_view()
@@ -224,7 +224,7 @@ def test_metric_category_view_returns_404_when_file_missing(rf, monkeypatch, tmp
 
 
 @pytest.mark.django_db
-def test_metric_category_view_returns_500_for_invalid_json(rf, monkeypatch, tmp_path):
+def test_metric_category_view_returns_500_for_invalid_json(rf, monkeypatch, tmp_path, user_factory):
     (tmp_path / "api" / "database").mkdir(parents=True, exist_ok=True)
     (tmp_path / "api" / "database" / "categories.json").write_text("{bad json")
     monkeypatch.setattr(views_module.settings, "BASE_DIR", str(tmp_path))
@@ -240,7 +240,7 @@ def test_metric_category_view_returns_500_for_invalid_json(rf, monkeypatch, tmp_
 
 
 @pytest.mark.django_db
-def test_metric_list_create_view_lists_metrics_ordered_by_name(rf):
+def test_metric_list_create_view_lists_metrics_ordered_by_name(rf, user_factory):
     Metric.objects.create(metric_name="Repository Forks", value_type="int")
     Metric.objects.create(metric_name="Commit Activity", value_type="int")
     Metric.objects.create(metric_name="Branch Coverage", value_type="float")
@@ -257,7 +257,7 @@ def test_metric_list_create_view_lists_metrics_ordered_by_name(rf):
 
 
 @pytest.mark.django_db
-def test_metric_list_create_view_creates_manual_metric_and_clears_metric_key(rf):
+def test_metric_list_create_view_creates_manual_metric_and_clears_metric_key(rf, user_factory):
     view = views_module.MetricListCreateView.as_view()
     user = user_factory("test@example.com", "testuser")
     req = rf.post(
@@ -290,7 +290,7 @@ def test_metric_list_create_view_creates_manual_metric_and_clears_metric_key(rf)
 
 
 @pytest.mark.django_db
-def test_metric_list_create_view_creates_automatic_metric_from_definition(rf, monkeypatch, tmp_path):
+def test_metric_list_create_view_creates_automatic_metric_from_definition(rf, monkeypatch, tmp_path, user_factory):
     auto_metrics = {
         "stars_count": {
             "label": "Stars Count",
@@ -332,7 +332,7 @@ def test_metric_list_create_view_creates_automatic_metric_from_definition(rf, mo
 
 
 @pytest.mark.django_db
-def test_metric_list_create_view_rejects_automatic_metric_without_metric_key(rf, monkeypatch, tmp_path):
+def test_metric_list_create_view_rejects_automatic_metric_without_metric_key(rf, monkeypatch, tmp_path, user_factory):
     auto_metrics = {
         "stars_count": {
             "label": "Stars Count",
@@ -365,7 +365,7 @@ def test_metric_list_create_view_rejects_automatic_metric_without_metric_key(rf,
 
 
 @pytest.mark.django_db
-def test_metric_list_create_view_rejects_invalid_metric_key(rf, monkeypatch, tmp_path):
+def test_metric_list_create_view_rejects_invalid_metric_key(rf, monkeypatch, tmp_path, user_factory):
     auto_metrics = {
         "stars_count": {
             "label": "Stars Count",
@@ -399,7 +399,7 @@ def test_metric_list_create_view_rejects_invalid_metric_key(rf, monkeypatch, tmp
 
 
 @pytest.mark.django_db
-def test_metric_list_create_view_rejects_metric_key_with_wrong_source_type(rf, monkeypatch, tmp_path):
+def test_metric_list_create_view_rejects_metric_key_with_wrong_source_type(rf, monkeypatch, tmp_path, user_factory):
     auto_metrics = {
         "stars_count": {
             "label": "Stars Count",
@@ -434,7 +434,7 @@ def test_metric_list_create_view_rejects_metric_key_with_wrong_source_type(rf, m
 
 @pytest.mark.django_db
 def test_metric_list_create_view_returns_error_when_auto_metrics_file_missing_for_automatic_metric(
-    rf, monkeypatch, tmp_path
+    rf, monkeypatch, tmp_path, user_factory
 ):
     monkeypatch.setattr(views_module.settings, "BASE_DIR", str(tmp_path))
 
@@ -459,7 +459,7 @@ def test_metric_list_create_view_returns_error_when_auto_metrics_file_missing_fo
 
 @pytest.mark.django_db
 def test_metric_list_create_view_returns_error_when_auto_metrics_file_invalid_for_automatic_metric(
-    rf, monkeypatch, tmp_path
+    rf, monkeypatch, tmp_path, user_factory
 ):
     (tmp_path / "api" / "database").mkdir(parents=True, exist_ok=True)
     (tmp_path / "api" / "database" / "auto_metrics.json").write_text("{bad json")
@@ -485,7 +485,7 @@ def test_metric_list_create_view_returns_error_when_auto_metrics_file_invalid_fo
 
 
 @pytest.mark.django_db
-def test_metric_retrieve_update_destroy_view_retrieves_metric(rf):
+def test_metric_retrieve_update_destroy_view_retrieves_metric(rf, user_factory):
     metric = Metric.objects.create(
         metric_name="Issue Resolution Time",
         description="Average time to resolve issues",
@@ -505,7 +505,7 @@ def test_metric_retrieve_update_destroy_view_retrieves_metric(rf):
 
 
 @pytest.mark.django_db
-def test_metric_retrieve_update_destroy_view_updates_manual_metric_and_clears_metric_key(rf):
+def test_metric_retrieve_update_destroy_view_updates_manual_metric_and_clears_metric_key(rf, user_factory):
     metric = Metric.objects.create(
         metric_name="Repository Size",
         description="Initial description",
@@ -538,7 +538,7 @@ def test_metric_retrieve_update_destroy_view_updates_manual_metric_and_clears_me
 
 @pytest.mark.django_db
 def test_metric_retrieve_update_destroy_view_updates_automatic_metric_value_type_from_definition(
-    rf, monkeypatch, tmp_path
+    rf, monkeypatch, tmp_path, user_factory
 ):
     auto_metrics = {
         "forks_count": {
@@ -582,7 +582,7 @@ def test_metric_retrieve_update_destroy_view_updates_automatic_metric_value_type
 
 @pytest.mark.django_db
 def test_metric_retrieve_update_destroy_view_rejects_invalid_metric_key_on_update(
-    rf, monkeypatch, tmp_path
+    rf, monkeypatch, tmp_path, user_factory
 ):
     auto_metrics = {
         "forks_count": {
@@ -621,7 +621,7 @@ def test_metric_retrieve_update_destroy_view_rejects_invalid_metric_key_on_updat
 
 
 @pytest.mark.django_db
-def test_metric_retrieve_update_destroy_view_deletes_metric(rf):
+def test_metric_retrieve_update_destroy_view_deletes_metric(rf, user_factory):
     metric = Metric.objects.create(metric_name="Open Pull Requests")
 
     view = views_module.MetricRetrieveUpdateDestroyView.as_view()
@@ -635,7 +635,7 @@ def test_metric_retrieve_update_destroy_view_deletes_metric(rf):
 
 
 @pytest.mark.django_db
-def test_metric_update_weight_view_updates_weight(rf):
+def test_metric_update_weight_view_updates_weight(rf, user_factory):
     metric = Metric.objects.create(
         metric_name="Documentation Completeness",
         weight=1.0,
@@ -657,7 +657,7 @@ def test_metric_update_weight_view_updates_weight(rf):
 
 
 @pytest.mark.django_db
-def test_metric_update_weight_view_returns_400_when_weight_missing(rf):
+def test_metric_update_weight_view_returns_400_when_weight_missing(rf, user_factory):
     metric = Metric.objects.create(metric_name="Repository Tags", weight=1.0)
 
     view = views_module.MetricUpdateWeightView.as_view()
@@ -671,7 +671,7 @@ def test_metric_update_weight_view_returns_400_when_weight_missing(rf):
 
 
 @pytest.mark.django_db
-def test_metric_update_weight_view_returns_404_when_metric_missing(rf):
+def test_metric_update_weight_view_returns_404_when_metric_missing(rf, user_factory):
     view = views_module.MetricUpdateWeightView.as_view()
     user = user_factory("test@example.com", "testuser")
     req = rf.patch("/x", {"weight": 2.0}, format="json")
@@ -683,7 +683,7 @@ def test_metric_update_weight_view_returns_404_when_metric_missing(rf):
 
 
 @pytest.mark.django_db
-def test_metric_list_flat_view_lists_metrics_ordered_by_name_and_returns_flat_fields_only(rf):
+def test_metric_list_flat_view_lists_metrics_ordered_by_name_and_returns_flat_fields_only(rf, user_factory):
     metric_a = Metric.objects.create(
         metric_name="Repository Forks",
         value_type="int",

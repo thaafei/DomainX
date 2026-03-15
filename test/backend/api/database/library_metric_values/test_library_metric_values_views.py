@@ -199,7 +199,7 @@ def test_validate_metric_value_text_passthrough(metric_text):
 
 
 @pytest.mark.django_db
-def test_analyze_library_success_202(rf, lib_a, monkeypatch):
+def test_analyze_library_success_202(rf, lib_a, monkeypatch, user_factory):
     user = user_factory("test@example.com", "testuser")
 
     fake_enqueue = Mock(return_value={"analysis_task_id": "t1", "gitstats_task_id": "g1"})
@@ -219,7 +219,7 @@ def test_analyze_library_success_202(rf, lib_a, monkeypatch):
 
 
 @pytest.mark.django_db
-def test_analyze_library_enqueue_returns_none_400(rf, lib_a, monkeypatch):
+def test_analyze_library_enqueue_returns_none_400(rf, lib_a, monkeypatch, user_factory):
     user = user_factory("test@example.com", "testuser")
     lib_a.analysis_error = "bad"
     lib_a.save(update_fields=["analysis_error"])
@@ -237,7 +237,7 @@ def test_analyze_library_enqueue_returns_none_400(rf, lib_a, monkeypatch):
 
 
 @pytest.mark.django_db
-def test_analyze_library_enqueue_raises_500_and_marks_failed(rf, lib_a, monkeypatch):
+def test_analyze_library_enqueue_raises_500_and_marks_failed(rf, lib_a, monkeypatch, user_factory):
     user = user_factory("test@example.com", "testuser")
     fake_enqueue = Mock(side_effect=RuntimeError("boom"))
     monkeypatch.setattr(views_module, "enqueue_library_analysis", fake_enqueue)
@@ -255,7 +255,7 @@ def test_analyze_library_enqueue_raises_500_and_marks_failed(rf, lib_a, monkeypa
 
 
 @pytest.mark.django_db
-def test_analyze_domain_libraries_mixed_results(rf, domain, lib_a, lib_b, monkeypatch):
+def test_analyze_domain_libraries_mixed_results(rf, domain, lib_a, lib_b, monkeypatch, user_factory):
     user = user_factory("test@example.com", "testuser")
     def fake_enqueue(lib):
         if lib.library_name == "A":
@@ -291,7 +291,7 @@ def test_analyze_domain_libraries_mixed_results(rf, domain, lib_a, lib_b, monkey
 
 
 @pytest.mark.django_db
-def test_analyze_domain_libraries_exception_marks_failed(rf, domain, lib_a, lib_b, monkeypatch):
+def test_analyze_domain_libraries_exception_marks_failed(rf, domain, lib_a, lib_b, monkeypatch, user_factory):
     def fake_enqueue(lib):
         if lib.library_name == "A":
             raise RuntimeError("explode")
@@ -320,7 +320,7 @@ def test_analyze_domain_libraries_exception_marks_failed(rf, domain, lib_a, lib_
 
 @pytest.mark.django_db
 def test_domain_comparison_returns_metrics_and_rows_with_values_and_evidence(
-    rf, domain, lib_a, lib_b, metric_stars, metric_forks
+    rf, domain, lib_a, lib_b, metric_stars, metric_forks, user_factory
 ):
     LibraryMetricValue.objects.create(library=lib_a, metric=metric_stars, value=10, evidence="srcA")
     LibraryMetricValue.objects.create(library=lib_a, metric=metric_forks, value=2, evidence="srcB")
@@ -360,7 +360,7 @@ def test_domain_comparison_returns_metrics_and_rows_with_values_and_evidence(
 
 
 @pytest.mark.django_db
-def test_library_metric_value_update_requires_metrics_dict(rf, lib_a):
+def test_library_metric_value_update_requires_metrics_dict(rf, lib_a, user_factory):
     view = views_module.LibraryMetricValueUpdateView.as_view()
     user = user_factory("test@example.com", "testuser")
     req = rf.post("/x", {"metrics": ["bad"]}, format="json")
@@ -372,7 +372,7 @@ def test_library_metric_value_update_requires_metrics_dict(rf, lib_a):
 
 
 @pytest.mark.django_db
-def test_library_metric_value_update_creates_value_and_evidence(rf, lib_a, metric_stars, metric_forks):
+def test_library_metric_value_update_creates_value_and_evidence(rf, lib_a, metric_stars, metric_forks, user_factory):
     user = user_factory("test@example.com", "testuser")
     view = views_module.LibraryMetricValueUpdateView.as_view()
 
@@ -410,7 +410,7 @@ def test_library_metric_value_update_creates_value_and_evidence(rf, lib_a, metri
 
 
 @pytest.mark.django_db
-def test_library_metric_value_update_rejects_invalid_int(rf, lib_a, metric_stars):
+def test_library_metric_value_update_rejects_invalid_int(rf, lib_a, metric_stars, user_factory):
     view = views_module.LibraryMetricValueUpdateView.as_view()
     user = user_factory("test@example.com", "testuser")
     req = rf.post(
@@ -427,7 +427,7 @@ def test_library_metric_value_update_rejects_invalid_int(rf, lib_a, metric_stars
 
 
 @pytest.mark.django_db
-def test_library_metric_value_update_rejects_invalid_scored_value(rf, lib_a, metric_scored):
+def test_library_metric_value_update_rejects_invalid_scored_value(rf, lib_a, metric_scored, user_factory):
     view = views_module.LibraryMetricValueUpdateView.as_view()
     user = user_factory("test@example.com", "testuser")
     req = rf.post(
@@ -444,7 +444,7 @@ def test_library_metric_value_update_rejects_invalid_scored_value(rf, lib_a, met
 
 
 @pytest.mark.django_db
-def test_library_metric_value_update_skips_gitstats_report_metric(rf, lib_a, metric_gitstats_report):
+def test_library_metric_value_update_skips_gitstats_report_metric(rf, lib_a, metric_gitstats_report, user_factory):
     view = views_module.LibraryMetricValueUpdateView.as_view()
     user = user_factory("test@example.com", "testuser")
     req = rf.post(
@@ -466,7 +466,7 @@ def test_library_metric_value_update_skips_gitstats_report_metric(rf, lib_a, met
 
 
 @pytest.mark.django_db
-def test_metric_value_bulk_update_rejects_non_list(rf):
+def test_metric_value_bulk_update_rejects_non_list(rf, user_factory):
     view = views_module.MetricValueBulkUpdateView.as_view()
     user = user_factory("test@example.com", "testuser")
     req = rf.post("/x", {"a": 1}, format="json")
@@ -478,7 +478,7 @@ def test_metric_value_bulk_update_rejects_non_list(rf):
 
 
 @pytest.mark.django_db
-def test_metric_value_bulk_update_empty_list_returns_200(rf):
+def test_metric_value_bulk_update_empty_list_returns_200(rf, user_factory):
     view = views_module.MetricValueBulkUpdateView.as_view()
     user = user_factory("test@example.com", "testuser")
     req = rf.post("/x", [], format="json")
@@ -490,7 +490,7 @@ def test_metric_value_bulk_update_empty_list_returns_200(rf):
 
 
 @pytest.mark.django_db
-def test_metric_value_bulk_update_success(rf, lib_a, metric_stars, metric_forks):
+def test_metric_value_bulk_update_success(rf, lib_a, metric_stars, metric_forks, user_factory):
     view = views_module.MetricValueBulkUpdateView.as_view()
 
     updates = [
@@ -514,7 +514,7 @@ def test_metric_value_bulk_update_success(rf, lib_a, metric_stars, metric_forks)
 
 
 @pytest.mark.django_db
-def test_metric_value_bulk_update_rejects_invalid_int(rf, lib_a, metric_stars):
+def test_metric_value_bulk_update_rejects_invalid_int(rf, lib_a, metric_stars, user_factory):
     view = views_module.MetricValueBulkUpdateView.as_view()
 
     updates = [
@@ -531,7 +531,7 @@ def test_metric_value_bulk_update_rejects_invalid_int(rf, lib_a, metric_stars):
 
 
 @pytest.mark.django_db
-def test_metric_value_bulk_update_skips_gitstats_report_metric(rf, lib_a, metric_gitstats_report):
+def test_metric_value_bulk_update_skips_gitstats_report_metric(rf, lib_a, metric_gitstats_report, user_factory):
     view = views_module.MetricValueBulkUpdateView.as_view()
 
     updates = [
@@ -552,7 +552,7 @@ def test_metric_value_bulk_update_skips_gitstats_report_metric(rf, lib_a, metric
 
 
 @pytest.mark.django_db
-def test_ahp_calculations_basic(rf, domain, lib_a, lib_b, monkeypatch, tmp_path):
+def test_ahp_calculations_basic(rf, domain, lib_a, lib_b, monkeypatch, tmp_path, user_factory):
     rules = {"range": {}, "bool": {}, "options": {}}
     categories = {"Categories": ["Quality"]}
 
