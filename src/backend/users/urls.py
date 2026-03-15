@@ -11,7 +11,11 @@ from .views.auth_views import (
     ChangePasswordView,
     UserDomainListView,
     ValidateInviteView,
-    DeactivateUserView
+    DeactivateUserView,
+    ForgotPasswordView,
+    ResetPasswordView,
+    ValidateResetPasswordView
+
 )
 urlpatterns = [
     path("login/", LoginView.as_view(), name="login"),
