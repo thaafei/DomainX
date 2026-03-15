@@ -10,6 +10,7 @@ import {
   Globe,
   Github,
 } from "lucide-react";
+import { useAuthStore } from "../store/useAuthStore";
 
 interface Metric {
   metric_ID: string;
@@ -181,6 +182,7 @@ const ComparisonToolPage: React.FC = () => {
   const { domainId } = useParams<{ domainId: string }>();
   const navigate = useNavigate();
   const DOMAIN_ID = domainId;
+  const { user } = useAuthStore();
 
   const [domainName, setDomainName] = useState("");
   const [metricList, setMetricList] = useState<Metric[]>([]);
@@ -363,23 +365,27 @@ const ComparisonToolPage: React.FC = () => {
               flexWrap: "wrap",
             }}
           >
-            <button
-              className="dx-btn dx-btn-primary"
-              onClick={() => navigate(`/libraries/${DOMAIN_ID}`)}
-              style={{ display: "flex", alignItems: "center", gap: 6 }}
-            >
-              <Plus size={18} />
-              Add Library
-            </button>
+            {user && (
+              <button
+                className="dx-btn dx-btn-primary"
+                onClick={() => navigate(`/libraries/${DOMAIN_ID}`)}
+                style={{ display: "flex", alignItems: "center", gap: 6 }}
+              >
+                <Plus size={18} />
+                Add Library
+              </button>
+            )}
+            {user && (
+              <button
+                className="dx-btn dx-btn-outline"
+                onClick={() => navigate(`/edit/${DOMAIN_ID}`)}
+                style={{ display: "flex", alignItems: "center", gap: 6 }}
+              >
+                <Pencil size={18} />
+                Edit Metric Values
+              </button>
+            )}
 
-            <button
-              className="dx-btn dx-btn-outline"
-              onClick={() => navigate(`/edit/${DOMAIN_ID}`)}
-              style={{ display: "flex", alignItems: "center", gap: 6 }}
-            >
-              <Pencil size={18} />
-              Edit Metric Values
-            </button>
 
             <div style={{ flexGrow: 1 }} />
 
