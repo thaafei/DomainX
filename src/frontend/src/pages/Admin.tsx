@@ -64,6 +64,8 @@ const AdminPage: React.FC = () => {
   const [inviteError, setInviteError] = useState<string | null>(null);
   const [showInviteSuccess, setShowInviteSuccess] = useState(false);
 
+  const [resendLoadingUserId, setResendLoadingUserId] = useState<number | null>(null);
+
   useEffect(() => {
     if (showUpdateSuccess) {
       const timer = setTimeout(() => setShowUpdateSuccess(false), 3000);
@@ -253,6 +255,31 @@ const AdminPage: React.FC = () => {
     }
   };
 
+  const handleResendInvite = async (u: User) => {
+    try {
+      setResendLoadingUserId(u.id);
+      setError(null);
+
+      const response = await fetch(apiUrl(`/users/${u.id}/resend-invite/`), {
+        method: "POST",
+        credentials: "include",
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.error || "Failed to resend invite");
+      }
+
+      setShowInviteSuccess(true);
+      await fetchUsers();
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "An error occurred");
+    } finally {
+      setResendLoadingUserId(null);
+    }
+  };
+
   const handleDeactivateUser = async () => {
     if (!userToDeactivate) return;
 
@@ -424,17 +451,15 @@ const AdminPage: React.FC = () => {
                     </tr>
                   ) : (
                     users.map((u) => {
-                      const canDeactivate =
-                        !!user &&
-                        u.is_active &&
-                        u.id !== user.id;
+                      const canDeactivate = !!user && u.is_active && u.id !== user.id;
+                      const canResendInvite = !u.is_active;
 
                       return (
                         <tr
                           key={u.id}
                           style={{ borderBottom: "1px solid rgba(255,255,255,0.08)" }}
                         >
-                          <td style={{ minWidth: 170 }}>
+                          <td style={{ minWidth: 270 }}>
                             <div
                               style={{
                                 display: "flex",
@@ -455,6 +480,26 @@ const AdminPage: React.FC = () => {
                               >
                                 Edit
                               </button>
+
+                              {canResendInvite && (
+                                <button
+                                  type="button"
+                                  className="dx-btn dx-btn-outline"
+                                  onClick={() => handleResendInvite(u)}
+                                  disabled={resendLoadingUserId === u.id}
+                                  style={{
+                                    fontSize: "0.85rem",
+                                    padding: "6px 16px",
+                                    borderRadius: 999,
+                                    minWidth: 122,
+                                    borderColor: "rgba(167, 139, 250, 0.55)",
+                                    color: "#a78bfa",
+                                    opacity: resendLoadingUserId === u.id ? 0.7 : 1,
+                                  }}
+                                >
+                                  {resendLoadingUserId === u.id ? "Sending..." : "Resend Invite"}
+                                </button>
+                              )}
 
                               {canDeactivate && (
                                 <button
