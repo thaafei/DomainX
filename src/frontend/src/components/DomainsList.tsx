@@ -120,7 +120,11 @@ const DomainsList: React.FC<DomainsListProps> = ({
       )}
 
       <div style={{ flex: 1, overflowY: "auto" }}>
-        {domains.map((d) => (
+        {domains
+          .filter((d) => {
+            return isLoggedIn ? true : d.published === true;
+          })
+          .map((d) => (
           <div
             key={d.domain_ID} 
             className="dx-side-item"

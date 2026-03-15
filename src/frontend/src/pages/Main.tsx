@@ -391,21 +391,39 @@ const Main: React.FC = () => {
 
       if (response.ok) {
         const data = await response.json();
+        
+        // 1. Always set the full list to state so the UI has them
         setDomains(data);
 
         if (data.length > 0) {
           const savedId = localStorage.getItem("dx:lastDomainId");
-          const domainToSelect = savedId
-            ? data.find((d: any) => String(d.domain_ID) === String(savedId)) || data[0]
-            : data[0];
+          
+          // 2. Logic for Logged In vs Guest
+          let domainToSelect;
+
+          if (user) {
+            // LOGGED IN: Use saved ID or just the first one in the list
+            domainToSelect = data.find((d: any) => String(d.domain_ID) === String(savedId)) || data[0];
+          } else {
+            // GUEST: Only look at published domains
+            const publishedDomains = data.filter((d: any) => d.is_published);
+            
+            if (publishedDomains.length > 0) {
+              domainToSelect = publishedDomains[0];
+            } else {
+              domainToSelect = null;
+            }
+          }
 
           setSelectedDomain(domainToSelect);
 
-          await getAHPRanking(domainToSelect.domain_ID);
+          if (domainToSelect) {
+            await getAHPRanking(domainToSelect.domain_ID);
+          }
         }
       }
     } catch (error) {
-      console.log("Error fetching domains:", error);
+      console.error("Error fetching domains:", error);
     } finally {
       setLoading(false);
     }
@@ -679,7 +697,7 @@ const Main: React.FC = () => {
                 ))
               ) : (
                 <div style={{ textAlign: "center", padding: "60px", color: "#8b949e", border: "2px dashed #30363d", borderRadius: "12px" }}>
-                  Select categories above to visualize rankings.
+                  Select domain
                 </div>
               )}
             </div>
