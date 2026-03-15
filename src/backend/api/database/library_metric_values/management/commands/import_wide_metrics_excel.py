@@ -28,7 +28,6 @@ def canon_metric(s: str) -> str:
     s = re.sub(r"\*.*$", "", s)
     s = re.sub(r"[^\w\s]", " ", s)
     s = re.sub(r"\s+", " ", s)
-
     return s.strip()
 
 
@@ -39,6 +38,7 @@ def clean_cell(v):
     s = str(v).strip()
     if not s or s.lower() == "nan":
         return None
+
     while len(s) >= 2 and (
         (s[0] == '"' and s[-1] == '"') or
         (s[0] == "'" and s[-1] == "'")
@@ -70,12 +70,12 @@ def pick_first_choice(model_cls, field_name: str) -> str:
     return choices[0][0]
 
 
-@transaction.atomic
 class Command(BaseCommand):
     help = (
         "Import a wide Excel sheet: metrics in rows, libraries in columns.\n"
         "Creates or reuses libraries from rows: Software name?, Source code URL?, Programming language(s)?\n"
-        "Upserts metric values for all other rows by matching metrics flexibly."
+        "Upserts manual metric values for all other rows by matching metrics flexibly.\n"
+        "Existing library URLs/languages are preserved unless blank."
     )
 
     def add_arguments(self, parser):
@@ -84,6 +84,7 @@ class Command(BaseCommand):
         parser.add_argument("--domain-id", type=str, required=True, help="Domain_ID (char32)")
         parser.add_argument("--dry-run", action="store_true", help="Print actions but do not write DB")
 
+    @transaction.atomic
     def handle(self, *args, **opts):
         xlsx = Path(opts["xlsx_path"]).expanduser()
         if not xlsx.exists():
@@ -145,6 +146,7 @@ class Command(BaseCommand):
         existing_libs = 0
         upserted_values = 0
         skipped_values_no_match = 0
+        skipped_non_manual_metrics = 0
 
         for col in lib_cols:
             lib_name = clean_cell(df.at[idx_name, col])
@@ -161,18 +163,37 @@ class Command(BaseCommand):
 
             if library:
                 existing_libs += 1
+
                 if not opts["dry_run"]:
-                    library.url = repo_url
-                    library.programming_language = langs
-                    library.save(update_fields=["url", "programming_language"])
+                    update_fields = []
+
+                    # Preserve existing github_url/url/programming_language unless blank
+                    if repo_url:
+                        if not library.github_url:
+                            library.github_url = repo_url
+                            update_fields.append("github_url")
+                        if not library.url:
+                            library.url = repo_url
+                            update_fields.append("url")
+
+                    if langs and not library.programming_language:
+                        library.programming_language = langs
+                        update_fields.append("programming_language")
+
+                    if update_fields:
+                        library.save(update_fields=update_fields)
+
             else:
                 if opts["dry_run"]:
-                    self.stdout.write(f"[DRY] create library: {lib_name} | github={repo_url} | langs={langs}")
+                    self.stdout.write(
+                        f"[DRY] create library: {lib_name} | github_url={repo_url} | url={repo_url} | langs={langs}"
+                    )
                     created_libs += 1
                     continue
 
                 library = Library.objects.create(
                     library_name=lib_name,
+                    github_url=repo_url,
                     url=repo_url,
                     programming_language=langs,
                     domain_id=domain.domain_ID,
@@ -196,6 +217,7 @@ class Command(BaseCommand):
 
                 metric_key = canon_metric(raw_metric_name)
                 metric_obj = metrics_by_key.get(metric_key)
+
                 if not metric_obj:
                     for key, m in metrics_by_key.items():
                         if metric_key in key or key in metric_key:
@@ -204,6 +226,11 @@ class Command(BaseCommand):
 
                 if not metric_obj:
                     skipped_values_no_match += 1
+                    continue
+
+                # Only import manual metrics from spreadsheet
+                if metric_obj.source_type != "manual":
+                    skipped_non_manual_metrics += 1
                     continue
 
                 cell_val = clean_cell(df.at[i, col])
@@ -224,5 +251,7 @@ class Command(BaseCommand):
 
         self.stdout.write(self.style.SUCCESS(
             f"Done. created_libs={created_libs}, existing_libs={existing_libs}, "
-            f"upserted_values={upserted_values}, skipped_metric_rows_no_match={skipped_values_no_match}"
+            f"upserted_values={upserted_values}, "
+            f"skipped_metric_rows_no_match={skipped_values_no_match}, "
+            f"skipped_non_manual_metrics={skipped_non_manual_metrics}"
         ))

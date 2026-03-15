@@ -2,18 +2,22 @@ from django.db import models
 from ..domain.models import Domain
 import uuid
 
+
 class Library(models.Model):
     """
     Represents a GitHub repository or library (e.g. an open-source neural network).
     """
     library_ID = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
-    domain = models.ForeignKey(Domain, on_delete=models.CASCADE, related_name='libraries')
+    domain = models.ForeignKey(Domain, on_delete=models.CASCADE, related_name="libraries")
     library_name = models.CharField(max_length=100)
     ahp_results = models.JSONField(default=dict, blank=True)
-    programming_language = models.CharField(max_length=50, blank=True, null=True)
+    programming_language = models.CharField(max_length=255, blank=True, null=True)
     created_at = models.DateTimeField(auto_now_add=True)
-    url = models.CharField(max_length=500, blank=True, null=True)
+
+    github_url = models.URLField(max_length=500, blank=True, null=True)
+    url = models.URLField(max_length=500, blank=True, null=True)
     gitstats_report_path = models.CharField(max_length=1000, blank=True, null=True)
+
     GITSTATS_PENDING = "pending"
     GITSTATS_RUNNING = "running"
     GITSTATS_SUCCESS = "success"
@@ -35,6 +39,7 @@ class Library(models.Model):
     gitstats_error = models.TextField(blank=True, null=True)
     gitstats_started_at = models.DateTimeField(blank=True, null=True)
     gitstats_finished_at = models.DateTimeField(blank=True, null=True)
+
     ANALYSIS_PENDING = "pending"
     ANALYSIS_RUNNING = "running"
     ANALYSIS_SUCCESS = "success"
@@ -59,16 +64,22 @@ class Library(models.Model):
 
     class Meta:
         constraints = [
-            models.UniqueConstraint(fields=["domain", "library_name"], name="uniq_library_name_per_domain"),
-            models.UniqueConstraint(fields=["domain", "url"], name="uniq_url_per_domain")
+            models.UniqueConstraint(
+                fields=["domain", "library_name"],
+                name="uniq_library_name_per_domain",
+            ),
+            models.UniqueConstraint(
+                fields=["domain", "github_url"],
+                name="uniq_github_url_per_domain",
+            ),
+            models.UniqueConstraint(
+                fields=["domain", "url"],
+                name="uniq_url_per_domain",
+            ),
         ]
-
 
     def __str__(self):
         return self.library_name
-    
+
     def get_library_id(self):
         return str(self.library_ID)
-
-
-
