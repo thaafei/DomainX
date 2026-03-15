@@ -4,6 +4,7 @@ import pytest
 from rest_framework import status
 from rest_framework.test import APIRequestFactory
 from django.contrib.auth import get_user_model
+from rest_framework.test import force_authenticate
 
 from api.database.metrics.models import Metric
 import api.database.metrics.views as views_module
@@ -81,7 +82,7 @@ def test_auto_metric_options_view_returns_grouped_options(rf, monkeypatch, tmp_p
     view = views_module.AutoMetricOptionsView.as_view()
     user = user_factory("test@example.com", "testuser")
     req = rf.get("/x")
-    req.user = user
+    force_authenticate(req, user=user)
     resp = view(req)
 
     assert resp.status_code == status.HTTP_200_OK
@@ -110,7 +111,7 @@ def test_auto_metric_options_view_returns_404_when_file_missing(rf, monkeypatch,
     view = views_module.AutoMetricOptionsView.as_view()
     user = user_factory("test@example.com", "testuser")
     req = rf.get("/x")
-    req.user = user
+    force_authenticate(req, user=user)
     resp = view(req)
 
     assert resp.status_code == status.HTTP_404_NOT_FOUND
@@ -126,7 +127,7 @@ def test_auto_metric_options_view_returns_500_for_invalid_json(rf, monkeypatch, 
     view = views_module.AutoMetricOptionsView.as_view()
     user = user_factory("test@example.com", "testuser")
     req = rf.get("/x")
-    req.user = user
+    force_authenticate(req, user=user)
     resp = view(req)
 
     assert resp.status_code == status.HTTP_500_INTERNAL_SERVER_ERROR
@@ -152,7 +153,7 @@ def test_metric_rules_view_returns_json_data(rf, monkeypatch, tmp_path, user_fac
     view = views_module.MetricRulesView.as_view()
     user = user_factory("test@example.com", "testuser")
     req = rf.get("/x")
-    req.user = user
+    force_authenticate(req, user=user)
     resp = view(req)
 
     assert resp.status_code == status.HTTP_200_OK
@@ -166,7 +167,7 @@ def test_metric_rules_view_returns_404_when_file_missing(rf, monkeypatch, tmp_pa
     view = views_module.MetricRulesView.as_view()
     user = user_factory("test@example.com", "testuser")
     req = rf.get("/x")
-    req.user = user
+    force_authenticate(req, user=user)
     resp = view(req)
 
     assert resp.status_code == status.HTTP_404_NOT_FOUND
@@ -182,7 +183,7 @@ def test_metric_rules_view_returns_500_for_invalid_json(rf, monkeypatch, tmp_pat
     view = views_module.MetricRulesView.as_view()
     user = user_factory("test@example.com", "testuser")
     req = rf.get("/x")
-    req.user = user
+    force_authenticate(req, user=user)
     resp = view(req)
 
     assert resp.status_code == status.HTTP_500_INTERNAL_SERVER_ERROR
@@ -202,7 +203,7 @@ def test_metric_category_view_returns_json_data(rf, monkeypatch, tmp_path, user_
     view = views_module.MetricCategoryView.as_view()
     user = user_factory("test@example.com", "testuser")
     req = rf.get("/x")
-    req.user = user
+    force_authenticate(req, user=user)
     resp = view(req)
 
     assert resp.status_code == status.HTTP_200_OK
@@ -216,7 +217,7 @@ def test_metric_category_view_returns_404_when_file_missing(rf, monkeypatch, tmp
     view = views_module.MetricCategoryView.as_view()
     user = user_factory("test@example.com", "testuser")
     req = rf.get("/x")
-    req.user = user
+    force_authenticate(req, user=user)
     resp = view(req)
 
     assert resp.status_code == status.HTTP_404_NOT_FOUND
@@ -232,7 +233,7 @@ def test_metric_category_view_returns_500_for_invalid_json(rf, monkeypatch, tmp_
     view = views_module.MetricCategoryView.as_view()
     user = user_factory("test@example.com", "testuser")
     req = rf.get("/x")
-    req.user = user
+    force_authenticate(req, user=user)
     resp = view(req)
 
     assert resp.status_code == status.HTTP_500_INTERNAL_SERVER_ERROR
@@ -248,7 +249,7 @@ def test_metric_list_create_view_lists_metrics_ordered_by_name(rf, user_factory)
     view = views_module.MetricListCreateView.as_view()
     user = user_factory("test@example.com", "testuser")
     req = rf.get("/x")
-    req.user = user
+    force_authenticate(req, user=user)
     resp = view(req)
 
     assert resp.status_code == status.HTTP_200_OK
@@ -274,7 +275,7 @@ def test_metric_list_create_view_creates_manual_metric_and_clears_metric_key(rf,
         },
         format="json",
     )
-    req.user = user
+    force_authenticate(req, user=user)
     resp = view(req)
 
     assert resp.status_code == status.HTTP_201_CREATED
@@ -320,7 +321,7 @@ def test_metric_list_create_view_creates_automatic_metric_from_definition(rf, mo
         },
         format="json",
     )
-    req.user = user
+    force_authenticate(req, user=user)
     resp = view(req)
 
     assert resp.status_code == status.HTTP_201_CREATED
@@ -357,7 +358,7 @@ def test_metric_list_create_view_rejects_automatic_metric_without_metric_key(rf,
         },
         format="json",
     )
-    req.user = user
+    force_authenticate(req, user=user)
     resp = view(req)
 
     assert resp.status_code == status.HTTP_400_BAD_REQUEST
@@ -391,7 +392,7 @@ def test_metric_list_create_view_rejects_invalid_metric_key(rf, monkeypatch, tmp
         },
         format="json",
     )
-    req.user = user
+    force_authenticate(req, user=user)
     resp = view(req)
 
     assert resp.status_code == status.HTTP_400_BAD_REQUEST
@@ -425,7 +426,7 @@ def test_metric_list_create_view_rejects_metric_key_with_wrong_source_type(rf, m
         },
         format="json",
     )
-    req.user = user
+    force_authenticate(req, user=user)
     resp = view(req)
 
     assert resp.status_code == status.HTTP_400_BAD_REQUEST
@@ -450,7 +451,7 @@ def test_metric_list_create_view_returns_error_when_auto_metrics_file_missing_fo
         },
         format="json",
     )
-    req.user = user
+    force_authenticate(req, user=user)
     resp = view(req)
 
     assert resp.status_code == status.HTTP_400_BAD_REQUEST
@@ -477,7 +478,7 @@ def test_metric_list_create_view_returns_error_when_auto_metrics_file_invalid_fo
         },
         format="json",
     )
-    req.user = user
+    force_authenticate(req, user=user)
     resp = view(req)
 
     assert resp.status_code == status.HTTP_400_BAD_REQUEST
@@ -496,7 +497,7 @@ def test_metric_retrieve_update_destroy_view_retrieves_metric(rf, user_factory):
     view = views_module.MetricRetrieveUpdateDestroyView.as_view()
     user = user_factory("test@example.com", "testuser")
     req = rf.get("/x")
-    req.user = user
+    force_authenticate(req, user=user)
     resp = view(req, metric_id=str(metric.metric_ID))
 
     assert resp.status_code == status.HTTP_200_OK
@@ -525,7 +526,7 @@ def test_metric_retrieve_update_destroy_view_updates_manual_metric_and_clears_me
         },
         format="json",
     )
-    req.user = user
+    force_authenticate(req, user=user)
     resp = view(req, metric_id=str(metric.metric_ID))
 
     assert resp.status_code == status.HTTP_200_OK
@@ -570,7 +571,7 @@ def test_metric_retrieve_update_destroy_view_updates_automatic_metric_value_type
         },
         format="json",
     )
-    req.user = user
+    force_authenticate(req, user=user)
     resp = view(req, metric_id=str(metric.metric_ID))
 
     assert resp.status_code == status.HTTP_200_OK
@@ -613,7 +614,7 @@ def test_metric_retrieve_update_destroy_view_rejects_invalid_metric_key_on_updat
         },
         format="json",
     )
-    req.user = user
+    force_authenticate(req, user=user)
     resp = view(req, metric_id=str(metric.metric_ID))
 
     assert resp.status_code == status.HTTP_400_BAD_REQUEST
@@ -627,7 +628,7 @@ def test_metric_retrieve_update_destroy_view_deletes_metric(rf, user_factory):
     view = views_module.MetricRetrieveUpdateDestroyView.as_view()
     user = user_factory("test@example.com", "testuser")
     req = rf.delete("/x")
-    req.user = user
+    force_authenticate(req, user=user)
     resp = view(req, metric_id=str(metric.metric_ID))
 
     assert resp.status_code == status.HTTP_204_NO_CONTENT
@@ -644,7 +645,7 @@ def test_metric_update_weight_view_updates_weight(rf, user_factory):
     view = views_module.MetricUpdateWeightView.as_view()
     user = user_factory("test@example.com", "testuser")
     req = rf.patch("/x", {"weight": 4.25}, format="json")
-    req.user = user
+    force_authenticate(req, user=user)
     resp = view(req, metric_id=str(metric.metric_ID))
 
     assert resp.status_code == status.HTTP_200_OK
@@ -663,7 +664,7 @@ def test_metric_update_weight_view_returns_400_when_weight_missing(rf, user_fact
     view = views_module.MetricUpdateWeightView.as_view()
     user = user_factory("test@example.com", "testuser")
     req = rf.patch("/x", {}, format="json")
-    req.user = user
+    force_authenticate(req, user=user)
     resp = view(req, metric_id=str(metric.metric_ID))
 
     assert resp.status_code == status.HTTP_400_BAD_REQUEST
@@ -675,7 +676,7 @@ def test_metric_update_weight_view_returns_404_when_metric_missing(rf, user_fact
     view = views_module.MetricUpdateWeightView.as_view()
     user = user_factory("test@example.com", "testuser")
     req = rf.patch("/x", {"weight": 2.0}, format="json")
-    req.user = user
+    force_authenticate(req, user=user)
     resp = view(req, metric_id="3c3d9e13-91fd-4fd2-8d97-4d04d42a0001")
 
     assert resp.status_code == status.HTTP_404_NOT_FOUND
@@ -703,7 +704,7 @@ def test_metric_list_flat_view_lists_metrics_ordered_by_name_and_returns_flat_fi
     view = views_module.MetricListFlatView.as_view()
     user = user_factory("test@example.com", "testuser")
     req = rf.get("/x")
-    req.user = user
+    force_authenticate(req, user=user)
     resp = view(req)
 
     assert resp.status_code == status.HTTP_200_OK

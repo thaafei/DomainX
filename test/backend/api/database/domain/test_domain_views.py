@@ -46,7 +46,7 @@ def test_create_domain_success(api_client, user_factory):
 
 
 @pytest.mark.django_db
-def test_create_domain_missing_fields(api_client):
+def test_create_domain_missing_fields(api_client, user_factory):
     user = user_factory("test@example.com", "testuser")
     api_client.force_authenticate(user=user)
     response = api_client.post("/api/domain/", {}, format="json")
@@ -96,7 +96,7 @@ def test_update_domain_sets_creators(api_client, user_factory):
 
 
 @pytest.mark.django_db
-def test_delete_domain(api_client):
+def test_delete_domain(api_client, user_factory):
     domain = Domain.objects.create(domain_name="Temp", description="temp")
     user = user_factory("test@example.com", "testuser")
     api_client.force_authenticate(user=user)

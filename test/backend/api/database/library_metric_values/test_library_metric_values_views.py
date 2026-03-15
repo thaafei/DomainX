@@ -5,6 +5,7 @@ import pytest
 from rest_framework import status
 from rest_framework.test import APIRequestFactory
 from django.contrib.auth import get_user_model
+from rest_framework.test import force_authenticate
 
 from api.database.domain.models import Domain
 from api.database.libraries.models import Library
@@ -206,7 +207,7 @@ def test_analyze_library_success_202(rf, lib_a, monkeypatch, user_factory):
     monkeypatch.setattr(views_module, "enqueue_library_analysis", fake_enqueue)
 
     req = rf.post("/x", {}, format="json")
-    req.user = user
+    force_authenticate(req, user=user)
     resp = views_module.analyze_library(req, library_id=str(lib_a.library_ID))
 
     assert resp.status_code == status.HTTP_202_ACCEPTED
@@ -228,7 +229,7 @@ def test_analyze_library_enqueue_returns_none_400(rf, lib_a, monkeypatch, user_f
     monkeypatch.setattr(views_module, "enqueue_library_analysis", fake_enqueue)
 
     req = rf.post("/x", {}, format="json")
-    req.user = user
+    force_authenticate(req, user=user)
     resp = views_module.analyze_library(req, library_id=str(lib_a.library_ID))
 
     assert resp.status_code == status.HTTP_400_BAD_REQUEST
@@ -243,7 +244,7 @@ def test_analyze_library_enqueue_raises_500_and_marks_failed(rf, lib_a, monkeypa
     monkeypatch.setattr(views_module, "enqueue_library_analysis", fake_enqueue)
 
     req = rf.post("/x", {}, format="json")
-    req.user = user
+    force_authenticate(req, user=user)
     resp = views_module.analyze_library(req, library_id=str(lib_a.library_ID))
 
     assert resp.status_code == status.HTTP_500_INTERNAL_SERVER_ERROR
@@ -269,7 +270,7 @@ def test_analyze_domain_libraries_mixed_results(rf, domain, lib_a, lib_b, monkey
     monkeypatch.setattr(views_module, "enqueue_library_analysis", fake_enqueue)
 
     req = rf.post("/x", {}, format="json")
-    req.user = user
+    force_authenticate(req, user=user)
     resp = views_module.analyze_domain_libraries(req, domain_id=str(domain.domain_ID))
 
     assert resp.status_code == status.HTTP_202_ACCEPTED
@@ -300,7 +301,7 @@ def test_analyze_domain_libraries_exception_marks_failed(rf, domain, lib_a, lib_
     monkeypatch.setattr(views_module, "enqueue_library_analysis", fake_enqueue)
 
     req = rf.post("/x", {}, format="json")
-    req.user = user
+    force_authenticate(req, user=user)
     resp = views_module.analyze_domain_libraries(req, domain_id=str(domain.domain_ID))
 
     assert resp.status_code == status.HTTP_202_ACCEPTED
@@ -330,7 +331,7 @@ def test_domain_comparison_returns_metrics_and_rows_with_values_and_evidence(
     lib_a.save(update_fields=["gitstats_status"])
     user = user_factory("test@example.com", "testuser")
     req = rf.get("/x")
-    req.user = user
+    force_authenticate(req, user=user)
     resp = views_module.domain_comparison(req, domain_id=str(domain.domain_ID))
 
     assert resp.status_code == status.HTTP_200_OK
@@ -364,7 +365,7 @@ def test_library_metric_value_update_requires_metrics_dict(rf, lib_a, user_facto
     view = views_module.LibraryMetricValueUpdateView.as_view()
     user = user_factory("test@example.com", "testuser")
     req = rf.post("/x", {"metrics": ["bad"]}, format="json")
-    req.user = user
+    force_authenticate(req, user=user)
     resp = view(req, library_id=str(lib_a.library_ID))
 
     assert resp.status_code == status.HTTP_400_BAD_REQUEST
@@ -389,7 +390,7 @@ def test_library_metric_value_update_creates_value_and_evidence(rf, lib_a, metri
         },
         format="json",
     )
-    req.user = user
+    force_authenticate(req, user=user)
     resp = view(req, library_id=str(lib_a.library_ID))
 
     assert resp.status_code == status.HTTP_200_OK
@@ -418,7 +419,7 @@ def test_library_metric_value_update_rejects_invalid_int(rf, lib_a, metric_stars
         {"metrics": {"Stars Count": "not-an-int"}},
         format="json",
     )
-    req.user = user
+    force_authenticate(req, user=user)
     resp = view(req, library_id=str(lib_a.library_ID))
 
     assert resp.status_code == status.HTTP_400_BAD_REQUEST
@@ -435,7 +436,7 @@ def test_library_metric_value_update_rejects_invalid_scored_value(rf, lib_a, met
         {"metrics": {"License Type": "GPL"}},
         format="json",
     )
-    req.user = user
+    force_authenticate(req, user=user)
     resp = view(req, library_id=str(lib_a.library_ID))
 
     assert resp.status_code == status.HTTP_400_BAD_REQUEST
@@ -457,7 +458,7 @@ def test_library_metric_value_update_skips_gitstats_report_metric(rf, lib_a, met
         },
         format="json",
     )
-    req.user = user
+    force_authenticate(req, user=user)
     resp = view(req, library_id=str(lib_a.library_ID))
 
     assert resp.status_code == status.HTTP_200_OK
@@ -470,7 +471,7 @@ def test_metric_value_bulk_update_rejects_non_list(rf, user_factory):
     view = views_module.MetricValueBulkUpdateView.as_view()
     user = user_factory("test@example.com", "testuser")
     req = rf.post("/x", {"a": 1}, format="json")
-    req.user = user
+    force_authenticate(req, user=user)
     resp = view(req)
 
     assert resp.status_code == status.HTTP_400_BAD_REQUEST
@@ -482,7 +483,7 @@ def test_metric_value_bulk_update_empty_list_returns_200(rf, user_factory):
     view = views_module.MetricValueBulkUpdateView.as_view()
     user = user_factory("test@example.com", "testuser")
     req = rf.post("/x", [], format="json")
-    req.user = user
+    force_authenticate(req, user=user)
     resp = view(req)
 
     assert resp.status_code == status.HTTP_200_OK
@@ -500,7 +501,7 @@ def test_metric_value_bulk_update_success(rf, lib_a, metric_stars, metric_forks,
     ]
     user = user_factory("test@example.com", "testuser")
     req = rf.post("/x", updates, format="json")
-    req.user = user
+    force_authenticate(req, user=user)
     resp = view(req)
 
     assert resp.status_code == status.HTTP_200_OK
@@ -522,7 +523,7 @@ def test_metric_value_bulk_update_rejects_invalid_int(rf, lib_a, metric_stars, u
     ]
     user = user_factory("test@example.com", "testuser")
     req = rf.post("/x", updates, format="json")
-    req.user = user
+    force_authenticate(req, user=user)
     resp = view(req)
 
     assert resp.status_code == status.HTTP_400_BAD_REQUEST
@@ -543,7 +544,7 @@ def test_metric_value_bulk_update_skips_gitstats_report_metric(rf, lib_a, metric
     ]
     user = user_factory("test@example.com", "testuser")
     req = rf.post("/x", updates, format="json")
-    req.user = user
+    force_authenticate(req, user=user)
     resp = view(req)
 
     assert resp.status_code == status.HTTP_200_OK
@@ -578,7 +579,7 @@ def test_ahp_calculations_basic(rf, domain, lib_a, lib_b, monkeypatch, tmp_path,
     view = views_module.AHPCalculations.as_view()
     user = user_factory("test@example.com", "testuser")
     req = rf.get("/x")
-    req.user = user
+    force_authenticate(req, user=user)
     resp = view(req, domain_id=str(domain.domain_ID))
 
     assert resp.status_code == status.HTTP_200_OK
