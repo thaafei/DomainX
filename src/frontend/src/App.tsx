@@ -19,29 +19,80 @@ import "./styles/auth.css";
 import "./styles/components.css";
 import "./styles/visualize.css";
 import UserProfilePage from './pages/UserProfile';
+import ProtectedRoute from './components/ProtectedRoute'; // Add this import
 
 const App: React.FC = () => {
   return (
     <Router>
       <Routes>
+        {/* Public routes - accessible to everyone */}
         <Route path="/" element={<Home />} />
         <Route path="/login" element={<Login />} />
         <Route path="/signup" element={<Signup />} />
-        <Route path="/metrics" element={<Metrics />} />
-        {/* <Route path="/comparison-tool" element={<ComparisonTool />} /> */}
+        
+        {/* Protected routes - require authentication */}
+        <Route 
+          path="/metrics" 
+          element={
+            <ProtectedRoute>
+              <Metrics />
+            </ProtectedRoute>
+          } 
+        />
         <Route path="/comparison-tool/:domainId" element={<ComparisonTool />} />
-        <Route path="/comparison-tool" element={<Navigate to="/" replace />} />
-        <Route path="/edit/:domainId" element={<Edit />} />
-        <Route path="/edit" element={<Navigate to="/" replace />} />
-        <Route path="/edit-domain/:domain_id" element={<EditDomain />} />
-        <Route path="/libraries/:domainId" element={<Libraries />} />
-        <Route path="/libraries" element={<Navigate to="/" replace />} />
-        <Route path="/visualize/:domainId" element={<Visualize />} />
-        <Route path="/edit-weights/:domainId" element={<EditCategoryWeights />} />
-        <Route path="/libraries" element={<Navigate to="/" replace />} />
+        <Route 
+          path="/edit/:domainId" 
+          element={
+            <ProtectedRoute>
+              <Edit />
+            </ProtectedRoute>
+          } 
+        />
+        <Route 
+          path="/libraries/:domainId" 
+          element={
+            <ProtectedRoute>
+              <Libraries />
+            </ProtectedRoute>
+          } 
+        />
+        <Route 
+          path="/edit-domain/:domain_id" 
+          element={
+            <ProtectedRoute>
+              <EditDomain />
+            </ProtectedRoute>
+          } 
+        />
+        <Route 
+          path="/edit-weights/:domainId" 
+          element={
+            <ProtectedRoute>
+              <EditCategoryWeights />
+            </ProtectedRoute>
+          } 
+        />
         <Route path="/main" element={<Main />} />
-        <Route path="/admin" element={<Admin />} />
-        <Route path="/user" element={<UserProfilePage />} />
+        <Route 
+          path="/admin" 
+          element={
+            <ProtectedRoute>
+              <Admin />
+            </ProtectedRoute>
+          } 
+        />
+        <Route 
+          path="/user" 
+          element={
+            <ProtectedRoute>
+              <UserProfilePage />
+            </ProtectedRoute>
+          } 
+        />
+        <Route path="/visualize/:domainId" element={<Visualize />} />
+        <Route path="/comparison-tool" element={<Navigate to="/" replace />} />
+        <Route path="/edit" element={<Navigate to="/" replace />} />
+        <Route path="/libraries" element={<Navigate to="/" replace />} />
       </Routes>
     </Router>
   );
