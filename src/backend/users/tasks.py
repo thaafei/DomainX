@@ -4,7 +4,7 @@ from django.core.mail import send_mail
 
 
 @shared_task(queue="email")
-def send_invite_email_task(to_email, subject, body):
+def send_email_task(to_email, subject, body):
     send_mail(
         subject=subject,
         message=body,

@@ -76,3 +76,14 @@ class UserWithDomainsSerializer(serializers.ModelSerializer):
                 for d in domains
             ]
         return []
+
+class ForgotPasswordSerializer(serializers.Serializer):
+    email = serializers.EmailField()
+
+    def validate_email(self, value):
+        return value.lower()
+
+
+class ResetPasswordSerializer(serializers.Serializer):
+    token = serializers.CharField(required=True)
+    password = serializers.CharField(write_only=True, min_length=8)

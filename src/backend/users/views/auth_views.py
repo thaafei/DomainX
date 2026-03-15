@@ -1,7 +1,6 @@
 import hashlib
 from django.conf import settings
 from django.contrib.auth import authenticate
-from django.core.mail import send_mail
 from django.db import transaction
 from django.utils import timezone
 from rest_framework.views import APIView
@@ -9,16 +8,18 @@ from rest_framework.response import Response
 from rest_framework import status
 from rest_framework.permissions import IsAuthenticated, AllowAny
 from rest_framework_simplejwt.tokens import RefreshToken
-from ..models import CustomUser, UserInvite
+from ..models import CustomUser, UserInvite, PasswordResetToken
 from api.database.domain.models import Domain
 from django.contrib.auth.password_validation import validate_password
 from django.core.exceptions import ValidationError
-from ..tasks import send_invite_email_task
+from ..tasks import send_email_task
 from ..serializers import (
     InviteUserSerializer,
     AcceptInviteSerializer,
     UserProfileSerializer,
     UserWithDomainsSerializer,
+    ForgotPasswordSerializer,
+    ResetPasswordSerializer,
 )
 
 
@@ -140,7 +141,7 @@ class InviteUserView(APIView):
             f"The DomainX Team"
         )
 
-        send_invite_email_task.delay(user.email, subject, body)
+        send_email_task.delay(user.email, subject, body)
 
         return Response(
             {"message": "Invitation sent successfully."},
@@ -390,3 +391,98 @@ class DeactivateUserView(APIView):
         target_user.save(update_fields=["is_active", "is_deleted"])
 
         return Response({"message": "User deactivated successfully."}, status=200)
+
+class ForgotPasswordView(APIView):
+    permission_classes = [AllowAny]
+
+    def post(self, request):
+        serializer = ForgotPasswordSerializer(data=request.data)
+        if not serializer.is_valid():
+            return Response({"errors": serializer.errors}, status=status.HTTP_400_BAD_REQUEST)
+
+        email = serializer.validated_data["email"]
+
+        user = CustomUser.objects.filter(email__iexact=email, is_deleted=False).first()
+
+        if user and user.is_active:
+            reset, raw_token = PasswordResetToken.create_for_user(user=user, hours_valid=1)
+
+            reset_url = f"{settings.FRONTEND_URL}/reset-password?token={raw_token}"
+
+            subject = "Reset your DomainX password"
+            body = (
+                f"Hi {user.first_name or user.username},\n\n"
+                f"We received a request to reset your DomainX password.\n\n"
+                f"Use the link below to set a new password:\n\n"
+                f"{reset_url}\n\n"
+                f"This link will expire in 1 hour.\n"
+                f"If you did not request this, you can ignore this email.\n\n"
+                f"The DomainX Team"
+            )
+
+            send_email_task.delay(user.email, subject, body)
+
+        return Response(
+            {"message": "If an account with that email exists, a password reset link has been sent."},
+            status=status.HTTP_200_OK
+        )
+
+
+class ResetPasswordView(APIView):
+    permission_classes = [AllowAny]
+
+    def post(self, request):
+        serializer = ResetPasswordSerializer(data=request.data)
+        if not serializer.is_valid():
+            return Response({"errors": serializer.errors}, status=status.HTTP_400_BAD_REQUEST)
+
+        token = serializer.validated_data["token"]
+        password = serializer.validated_data["password"]
+
+        token_hash = hashlib.sha256(token.encode()).hexdigest()
+
+        try:
+            reset = PasswordResetToken.objects.select_related("user").get(token_hash=token_hash)
+        except PasswordResetToken.DoesNotExist:
+            return Response({"error": "Invalid reset link."}, status=status.HTTP_400_BAD_REQUEST)
+
+        if reset.is_used():
+            return Response({"error": "This reset link has already been used."}, status=status.HTTP_400_BAD_REQUEST)
+
+        if reset.is_expired():
+            return Response({"error": "This reset link has expired."}, status=status.HTTP_400_BAD_REQUEST)
+
+        try:
+            validate_password(password, user=reset.user)
+        except ValidationError as e:
+            return Response({"errors": {"password": e.messages}}, status=status.HTTP_400_BAD_REQUEST)
+
+        user = reset.user
+        user.set_password(password)
+        user.save()
+
+        reset.used_at = timezone.now()
+        reset.save(update_fields=["used_at"])
+
+        return Response({"message": "Password reset successfully."}, status=status.HTTP_200_OK)
+
+class ValidateResetPasswordView(APIView):
+    permission_classes = [AllowAny]
+
+    def get(self, request):
+        token = request.query_params.get("token")
+
+        if not token:
+            return Response({"valid": False}, status=200)
+
+        token_hash = hashlib.sha256(token.encode()).hexdigest()
+
+        try:
+            reset = PasswordResetToken.objects.select_related("user").get(token_hash=token_hash)
+        except PasswordResetToken.DoesNotExist:
+            return Response({"valid": False}, status=200)
+
+        if reset.is_used() or reset.is_expired():
+            return Response({"valid": False}, status=200)
+
+        return Response({"valid": True}, status=200)
