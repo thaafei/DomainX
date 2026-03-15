@@ -132,7 +132,7 @@ const EditCategoryWeights: React.FC = () => {
 
       if (res.ok) {
         setSaveStatus("Saved!");
-        setTimeout(() => navigate(`/main`), 1000);
+        setTimeout(() => navigate(`/`), 1000);
       }
     } catch (err) { 
       setSaveStatus("Error.");
@@ -161,7 +161,7 @@ const EditCategoryWeights: React.FC = () => {
       <div style={{ maxWidth: "1300px", margin: "0 auto", marginBottom: "20px" }}>
         <button 
           className="dx-btn dx-btn-outline" 
-          onClick={() => navigate("/main")}
+          onClick={() => navigate("/")}
         >
           ← Back
         </button>

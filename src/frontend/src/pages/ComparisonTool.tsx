@@ -347,7 +347,7 @@ const ComparisonToolPage: React.FC = () => {
         <button
           className="dx-btn dx-btn-outline"
           style={{ width: "100%", fontSize: "1rem", textAlign: "center" }}
-          onClick={() => navigate("/main")}
+          onClick={() => navigate("/")}
         >
           <ArrowLeft size={18} /> Back
         </button>

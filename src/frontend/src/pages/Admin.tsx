@@ -82,7 +82,7 @@ const AdminPage: React.FC = () => {
     if (user === undefined) return;
 
     if (!user || user.role !== "superadmin") {
-      navigate("/main");
+      navigate("/");
       return;
     }
 
@@ -368,7 +368,7 @@ const AdminPage: React.FC = () => {
           <button
             className="dx-btn dx-btn-outline"
             style={{ width: "fit-content", fontSize: "1rem", marginBottom: 20 }}
-            onClick={() => navigate("/main")}
+            onClick={() => navigate("/")}
           >
             <ArrowLeft size={18} /> Back
           </button>
