@@ -488,7 +488,7 @@ const Main: React.FC = () => {
         credentials: "include",
       });
       logout();
-      navigate("/login");
+      navigate("/");
     } catch (err: any) {
       console.log(err);
     }

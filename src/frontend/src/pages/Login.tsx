@@ -29,7 +29,7 @@ const Login: React.FC = () => {
       if (!response.ok) throw new Error(data.error || "Login failed");
 
       setUser(data.user);
-      navigate("/main");
+      navigate("/");
     } catch (err: any) {
       setError(err.message);
     }

@@ -114,7 +114,7 @@ const EditDomain: React.FC = () => {
 
       if (response.ok) {
         setSuccess(true);
-        setTimeout(() => navigate("/main"), 2000);
+        setTimeout(() => navigate("/"), 2000);
       } else {
         const data = await response.json();
         setError(data.error || "Failed to update domain.");
@@ -139,7 +139,7 @@ const EditDomain: React.FC = () => {
         try {
           localStorage.removeItem("dx:lastDomainId");
         } catch {}
-        setTimeout(() => navigate("/main"), 2000);
+        setTimeout(() => navigate("/"), 2000);
       } else {
         const data = await response.json();
         setError(data.error || "Failed to delete domain.");
@@ -177,7 +177,7 @@ const EditDomain: React.FC = () => {
         <button
           className="dx-btn dx-btn-outline"
           style={{ width: "100%", fontSize: "1rem", textAlign: "center" }}
-          onClick={() => navigate("/main")}
+          onClick={() => navigate("/")}
         >
           <ArrowLeft size={18} /> Back
         </button>
@@ -298,7 +298,7 @@ const EditDomain: React.FC = () => {
                 <button
                   type="button"
                   className="dx-btn dx-btn-outline"
-                  onClick={() => navigate("/main")}
+                  onClick={() => navigate("/")}
                 >
                   Cancel
                 </button>
