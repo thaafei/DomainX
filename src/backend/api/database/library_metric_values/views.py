@@ -1,8 +1,9 @@
 from rest_framework import status
+from rest_framework.decorators import api_view, permission_classes
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
 from rest_framework.views import APIView
-
+from rest_framework.permissions import IsAuthenticatedOrReadOnly
 from django.conf import settings
 from django.db import transaction
 from django.shortcuts import get_object_or_404
@@ -52,6 +53,7 @@ def validate_metric_value(metric, value):
 
 
 @api_view(["POST"])
+@permission_classes([IsAuthenticatedOrReadOnly])
 def analyze_library(request, library_id):
     lib = get_object_or_404(Library, pk=library_id)
 
@@ -77,6 +79,7 @@ def analyze_library(request, library_id):
 
 
 @api_view(["POST"])
+@permission_classes([IsAuthenticatedOrReadOnly])
 def analyze_domain_libraries(request, domain_id):
     domain = get_object_or_404(Domain, pk=domain_id)
     libs = Library.objects.filter(domain=domain)
@@ -181,6 +184,7 @@ def domain_comparison(request, domain_id):
 
 
 class LibraryMetricValueUpdateView(APIView):
+    permission_classes = [IsAuthenticatedOrReadOnly]
     def post(self, request, library_id):
         library = get_object_or_404(Library, pk=library_id)
 
@@ -221,6 +225,7 @@ class LibraryMetricValueUpdateView(APIView):
 
 
 class MetricValueBulkUpdateView(APIView):
+    permission_classes = [IsAuthenticatedOrReadOnly]
     def post(self, request):
         updates = request.data
 

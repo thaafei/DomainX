@@ -1,6 +1,8 @@
 from rest_framework import generics, status
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
+from rest_framework.decorators import api_view, permission_classes
+from rest_framework.permissions import IsAuthenticatedOrReadOnly
 from django.conf import settings
 import os
 import json
@@ -12,6 +14,7 @@ from .serializers import DomainSerializer
 class DomainListCreateView(generics.ListCreateAPIView):
     queryset = Domain.objects.all()
     serializer_class = DomainSerializer
+    permission_classes = [IsAuthenticatedOrReadOnly]
 
     def perform_create(self, serializer):
         path = os.path.join(settings.BASE_DIR, "api", "database", "categories.json")
@@ -38,6 +41,7 @@ class DomainListCreateView(generics.ListCreateAPIView):
 class DomainRetrieveUpdateDestroyView(generics.RetrieveUpdateDestroyAPIView):
     queryset = Domain.objects.all()
     serializer_class = DomainSerializer
+    permission_classes = [IsAuthenticatedOrReadOnly]
 
     def perform_update(self, serializer):
         creator_ids = self.request.data.get("creator_ids")
@@ -48,8 +52,8 @@ class DomainRetrieveUpdateDestroyView(generics.RetrieveUpdateDestroyAPIView):
 
 
 @api_view(["GET", "POST"])
+@permission_classes([IsAuthenticatedOrReadOnly])
 def category_weights(request, domain_id):
-
     try:
         domain = Domain.objects.get(pk=domain_id)
     except Domain.DoesNotExist:
