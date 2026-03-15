@@ -75,7 +75,7 @@ GITHUB_TOKEN=ghp_xxxxxxxxxxxxxxxxxxxxx
     ```bash
     pip install -r requirements.txt
     ```
-4. Open **4 terminals**, make sure the **venv is activated in each**, and run these commands (from `DomainX/src/backend`):
+4. Open **5 terminals**, make sure the **venv is activated in each**, and run these commands (from `DomainX/src/backend`):
 
    **Terminal 1 — Redis**
    ```bash
@@ -85,7 +85,7 @@ GITHUB_TOKEN=ghp_xxxxxxxxxxxxxxxxxxxxx
    ```bash
    python manage_local.py dev
    ```
-   **Terminal 3 — Celery worker (default queue)**
+   **Terminal 3 — Celery worker (analysis queue)**
    ```bash
    python manage_local.py worker
    ```
@@ -93,7 +93,10 @@ GITHUB_TOKEN=ghp_xxxxxxxxxxxxxxxxxxxxx
    ```bash
    python manage_local.py worker_gitstats
    ```
-
+   **Terminal 5 — Celery worker (email queue)**
+   ```bash
+   python manage_local.py email
+   ```
 
     The API should now be running at: `http://localhost:8000/`
 
