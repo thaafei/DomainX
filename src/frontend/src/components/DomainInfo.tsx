@@ -127,6 +127,23 @@ const DomainInfo: React.FC<DomainInfoProps> = ({ selectedDomain, sidebarOpen, se
             )}
           </>
         )}
+
+        {!sidebarOpen && !user && (
+          <button
+            className="dx-btn dx-btn-primary"
+            onClick={() => navigate("/login")}
+            title="Sign In"
+            style={{
+              marginTop: "auto",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              padding: "10px 0"
+            }}
+          >
+            <span style={{ fontSize: 18 }}>🔐</span>
+          </button>
+        )}
         </div>
     );
 };
