@@ -40,14 +40,14 @@ def test_get_full_name_concatenates_first_and_last():
 
 
 @pytest.mark.django_db
-def test_role_default_is_user():
+def test_role_default_is_admin():
     User = get_user_model()
     user = User.objects.create_user(
         username="dave",
         email="dave@example.com",
         password="pass1234",
     )
-    assert user.role == "user"
+    assert user.role == "admin"
 
 
 @pytest.mark.django_db
@@ -60,7 +60,31 @@ def test_email_unique_constraint():
     )
     with pytest.raises(IntegrityError):
         User.objects.create_user(
-          username="eve2",
-          email="eve@example.com",
-          password="pass1234",
+            username="eve2",
+            email="eve@example.com",
+            password="pass1234",
         )
+
+
+@pytest.mark.django_db
+def test_email_and_username_are_lowercased_on_save():
+    User = get_user_model()
+    user = User.objects.create_user(
+        username="AliceUser",
+        email="Alice@Example.com",
+        password="pass1234",
+    )
+
+    assert user.email == "alice@example.com"
+    assert user.username == "aliceuser"
+
+
+@pytest.mark.django_db
+def test_is_deleted_defaults_to_false():
+    User = get_user_model()
+    user = User.objects.create_user(
+        username="frank",
+        email="frank@example.com",
+        password="pass1234",
+    )
+    assert user.is_deleted is False
