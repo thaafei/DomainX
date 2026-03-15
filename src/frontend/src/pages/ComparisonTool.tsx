@@ -265,18 +265,22 @@ const ComparisonToolPage: React.FC = () => {
         row.github_url || "",
         ...metricList.map((m) => {
           const v = row.metrics[m.metric_name];
+          const vDesc = row.metrics[`${m.metric_name}_description`];
 
           if (m.metric_key === "gitstats_report") {
             const url = v ? String(v) : "";
-
             if (!url) return "";
             if (url.startsWith("http://") || url.startsWith("https://")) return url;
             if (url.startsWith("/")) return `${SITE_BASE}${url}`;
-
             return url;
           }
 
-          return v ?? "";
+          const mainValue = v ?? "";
+          if (vDesc) {
+            return `${mainValue} (${vDesc})`;
+          }
+
+          return mainValue;
         }),
       ];
 
