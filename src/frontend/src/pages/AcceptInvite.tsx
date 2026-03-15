@@ -19,6 +19,8 @@ const AcceptInvite: React.FC = () => {
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [error, setError] = useState<string | null>(null);
+  const [tokenError, setTokenError] = useState<string | null>(null);
+  const [tokenUsed, setTokenUsed] = useState(false);
   const [success, setSuccess] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const [checkingInvite, setCheckingInvite] = useState(true);
@@ -47,42 +49,45 @@ const AcceptInvite: React.FC = () => {
   };
 
   useEffect(() => {
-      const checkInvite = async () => {
-        if (!token) {
-          navigate("/login");
-          return;
-        }
+    const checkInvite = async () => {
+      if (!token) {
+        setTokenError("This invitation link is invalid.");
+        setCheckingInvite(false);
+        return;
+      }
 
-        try {
-          await fetch(apiUrl("/logout/"), {
-            method: "POST",
+      try {
+        await fetch(apiUrl("/logout/"), {
+          method: "POST",
+          credentials: "include",
+        });
+      } catch {}
+
+      try {
+        const res = await fetch(
+          apiUrl(`/validate-invite/?token=${encodeURIComponent(token)}`),
+          {
             credentials: "include",
-          });
-        } catch {}
-
-        try {
-          const res = await fetch(
-            apiUrl(`/validate-invite/?token=${encodeURIComponent(token)}`),
-            {
-              credentials: "include",
-            }
-          );
-          const data = await res.json();
-
-          if (!data.valid) {
-            navigate("/login");
-            return;
           }
-        } catch {
-          navigate("/login");
-          return;
-        } finally {
-          setCheckingInvite(false);
-        }
-      };
+        );
+        const data = await res.json();
 
-      checkInvite();
-    }, [token, navigate]);
+        if (!data.valid) {
+          setTokenError(
+            "This invitation link is invalid, expired, or has already been used."
+          );
+        }
+      } catch {
+        setTokenError(
+          "We could not verify this invitation link. Please contact your administrator."
+        );
+      } finally {
+        setCheckingInvite(false);
+      }
+    };
+
+    checkInvite();
+  }, [token]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -122,13 +127,25 @@ const AcceptInvite: React.FC = () => {
           data.errors?.password?.[0] ||
           "Failed to activate account.";
 
+        const lowerMessage = message.toLowerCase();
+
         if (
-          message.toLowerCase().includes("expired") ||
-          message.toLowerCase().includes("already been used") ||
-          message.toLowerCase().includes("invalid invite")
+          lowerMessage.includes("already been used") ||
+          lowerMessage.includes("account already activated")
         ) {
-          setError(message);
-          setTimeout(() => navigate("/login"), 1800);
+          setTokenUsed(true);
+          setTokenError(message);
+          setError(null);
+          return;
+        }
+
+        if (
+          lowerMessage.includes("expired") ||
+          lowerMessage.includes("invalid invite")
+        ) {
+          setTokenUsed(false);
+          setTokenError(message);
+          setError(null);
           return;
         }
 
@@ -177,79 +194,120 @@ const AcceptInvite: React.FC = () => {
               Activate account
             </h3>
 
-            <form onSubmit={handleSubmit} style={{ display: "grid", gap: 14 }}>
-              <label className="dx-label">
-                Password
-                <input
-                  className="dx-input"
-                  type="password"
-                  required
-                  minLength={8}
-                  style={{ border: getInputBorder("password"), transition: "border-color 0.2s ease" }}
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  autoComplete="new-password"
-                />
-              </label>
+            {tokenError ? (
+              <div style={{ display: "grid", gap: 16 }}>
+                <div className="dx-error">{tokenError}</div>
 
-              <label className="dx-label">
-                Confirm Password
-                <input
-                  className="dx-input"
-                  type="password"
-                  required
-                  minLength={8}
-                  style={{ border: getInputBorder("confirm"), transition: "border-color 0.2s ease" }}
-                  value={confirmPassword}
-                  onChange={(e) => setConfirmPassword(e.target.value)}
-                  autoComplete="new-password"
-                />
-              </label>
+                {tokenUsed ? (
+                  <button
+                    className="dx-btn dx-btn-primary"
+                    type="button"
+                    onClick={() => navigate("/login")}
+                  >
+                    Go to Login
+                  </button>
+                ) : (
+                  <>
+                    <button
+                      className="dx-btn dx-btn-primary"
+                      type="button"
+                      onClick={() => navigate("/login")}
+                    >
+                      Back to Login
+                    </button>
 
-              {confirmPassword && !passwordsMatch && (
-                <span style={{ color: "#ff4d4f", fontSize: "0.75rem", marginTop: -8 }}>
-                  Passwords do not match
-                </span>
-              )}
-
-              <div
-                style={{
-                  fontSize: "0.85rem",
-                  color: "var(--text-dim)",
-                  marginTop: -6,
-                }}
-              >
-                Password must contain:
-                <ul style={{ marginTop: 6, paddingLeft: 18, lineHeight: "1.6" }}>
-                  <li style={{ color: passwordRules.length ? "#4ade80" : undefined }}>
-                    At least 8 characters
-                  </li>
-                  <li style={{ color: passwordRules.upper ? "#4ade80" : undefined }}>
-                    One uppercase letter
-                  </li>
-                  <li style={{ color: passwordRules.lower ? "#4ade80" : undefined }}>
-                    One lowercase letter
-                  </li>
-                  <li style={{ color: passwordRules.number ? "#4ade80" : undefined }}>
-                    One number
-                  </li>
-                  <li style={{ color: passwordRules.special ? "#4ade80" : undefined }}>
-                    One special character
-                  </li>
-                </ul>
+                    <div style={{ textAlign: "center" }}>
+                      <span
+                        style={{ color: "var(--accent)", cursor: "pointer" }}
+                        onClick={() => navigate("/login")}
+                      >
+                        Contact your administrator for a new invite
+                      </span>
+                    </div>
+                  </>
+                )}
               </div>
+            ) : (
+              <form onSubmit={handleSubmit} style={{ display: "grid", gap: 14 }}>
+                <label className="dx-label">
+                  Password
+                  <input
+                    className="dx-input"
+                    type="password"
+                    required
+                    minLength={8}
+                    style={{
+                      border: getInputBorder("password"),
+                      transition: "border-color 0.2s ease",
+                    }}
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    autoComplete="new-password"
+                  />
+                </label>
 
-              {error && <div className="dx-error">{error}</div>}
-              {success && <div className="dx-success">{success}</div>}
+                <label className="dx-label">
+                  Confirm Password
+                  <input
+                    className="dx-input"
+                    type="password"
+                    required
+                    minLength={8}
+                    style={{
+                      border: getInputBorder("confirm"),
+                      transition: "border-color 0.2s ease",
+                    }}
+                    value={confirmPassword}
+                    onChange={(e) => setConfirmPassword(e.target.value)}
+                    autoComplete="new-password"
+                  />
+                </label>
 
-              <button
-                className="dx-btn dx-btn-primary"
-                type="submit"
-                disabled={loading || !passwordValid || !passwordsMatch}
-              >
-                {loading ? "Activating..." : "Activate Account"}
-              </button>
-            </form>
+                {confirmPassword && !passwordsMatch && (
+                  <span style={{ color: "#ff4d4f", fontSize: "0.75rem", marginTop: -8 }}>
+                    Passwords do not match
+                  </span>
+                )}
+
+                <div
+                  style={{
+                    fontSize: "0.85rem",
+                    color: "var(--text-dim)",
+                    marginTop: -6,
+                  }}
+                >
+                  Password must contain:
+                  <ul style={{ marginTop: 6, paddingLeft: 18, lineHeight: "1.6" }}>
+                    <li style={{ color: passwordRules.length ? "#4ade80" : undefined }}>
+                      At least 8 characters
+                    </li>
+                    <li style={{ color: passwordRules.upper ? "#4ade80" : undefined }}>
+                      One uppercase letter
+                    </li>
+                    <li style={{ color: passwordRules.lower ? "#4ade80" : undefined }}>
+                      One lowercase letter
+                    </li>
+                    <li style={{ color: passwordRules.number ? "#4ade80" : undefined }}>
+                      One number
+                    </li>
+                    <li style={{ color: passwordRules.special ? "#4ade80" : undefined }}>
+                      One special character
+                    </li>
+                  </ul>
+                </div>
+
+                {error && <div className="dx-error">{error}</div>}
+                {success && <div className="dx-success">{success}</div>}
+
+                <button
+                  className="dx-btn dx-btn-primary"
+                  type="submit"
+                  disabled={loading || !passwordValid || !passwordsMatch}
+                >
+                  {loading ? "Activating..." : "Activate Account"}
+                </button>
+              </form>
+            )}
           </div>
         </div>
       </div>

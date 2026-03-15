@@ -19,6 +19,7 @@ const ResetPassword: React.FC = () => {
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [error, setError] = useState<string | null>(null);
+  const [tokenError, setTokenError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const [checkingToken, setCheckingToken] = useState(true);
@@ -49,7 +50,8 @@ const ResetPassword: React.FC = () => {
   useEffect(() => {
     const checkToken = async () => {
       if (!token) {
-        navigate("/login");
+        setTokenError("This password reset link is invalid.");
+        setCheckingToken(false);
         return;
       }
 
@@ -63,19 +65,21 @@ const ResetPassword: React.FC = () => {
         const data = await res.json();
 
         if (!data.valid) {
-          navigate("/login");
-          return;
+          setTokenError(
+            "This password reset link is invalid, expired, or has already been used."
+          );
         }
       } catch {
-        navigate("/login");
-        return;
+        setTokenError(
+          "We could not verify this password reset link. Please request a new one."
+        );
       } finally {
         setCheckingToken(false);
       }
     };
 
     checkToken();
-  }, [token, navigate]);
+  }, [token]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -120,8 +124,8 @@ const ResetPassword: React.FC = () => {
           message.toLowerCase().includes("already been used") ||
           message.toLowerCase().includes("invalid reset")
         ) {
-          setError(message);
-          setTimeout(() => navigate("/login"), 1800);
+          setTokenError(message);
+          setError(null);
           return;
         }
 
@@ -170,79 +174,108 @@ const ResetPassword: React.FC = () => {
               Reset password
             </h3>
 
-            <form onSubmit={handleSubmit} style={{ display: "grid", gap: 14 }}>
-              <label className="dx-label">
-                New Password
-                <input
-                  className="dx-input"
-                  type="password"
-                  required
-                  minLength={8}
-                  style={{ border: getInputBorder("password"), transition: "border-color 0.2s ease" }}
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  autoComplete="new-password"
-                />
-              </label>
+            {tokenError ? (
+              <div style={{ display: "grid", gap: 16 }}>
+                <div className="dx-error">{tokenError}</div>
 
-              <label className="dx-label">
-                Confirm New Password
-                <input
-                  className="dx-input"
-                  type="password"
-                  required
-                  minLength={8}
-                  style={{ border: getInputBorder("confirm"), transition: "border-color 0.2s ease" }}
-                  value={confirmPassword}
-                  onChange={(e) => setConfirmPassword(e.target.value)}
-                  autoComplete="new-password"
-                />
-              </label>
+                <button
+                  className="dx-btn dx-btn-primary"
+                  type="button"
+                  onClick={() => navigate("/forgot-password")}
+                >
+                  Request New Link
+                </button>
 
-              {confirmPassword && !passwordsMatch && (
-                <span style={{ color: "#ff4d4f", fontSize: "0.75rem", marginTop: -8 }}>
-                  Passwords do not match
-                </span>
-              )}
-
-              <div
-                style={{
-                  fontSize: "0.85rem",
-                  color: "var(--text-dim)",
-                  marginTop: -6,
-                }}
-              >
-                Password must contain:
-                <ul style={{ marginTop: 6, paddingLeft: 18, lineHeight: "1.6" }}>
-                  <li style={{ color: passwordRules.length ? "#4ade80" : undefined }}>
-                    At least 8 characters
-                  </li>
-                  <li style={{ color: passwordRules.upper ? "#4ade80" : undefined }}>
-                    One uppercase letter
-                  </li>
-                  <li style={{ color: passwordRules.lower ? "#4ade80" : undefined }}>
-                    One lowercase letter
-                  </li>
-                  <li style={{ color: passwordRules.number ? "#4ade80" : undefined }}>
-                    One number
-                  </li>
-                  <li style={{ color: passwordRules.special ? "#4ade80" : undefined }}>
-                    One special character
-                  </li>
-                </ul>
+                <div style={{ textAlign: "center" }}>
+                  <span
+                    style={{ color: "var(--accent)", cursor: "pointer" }}
+                    onClick={() => navigate("/login")}
+                  >
+                    Back to Login
+                  </span>
+                </div>
               </div>
+            ) : (
+              <form onSubmit={handleSubmit} style={{ display: "grid", gap: 14 }}>
+                <label className="dx-label">
+                  New Password
+                  <input
+                    className="dx-input"
+                    type="password"
+                    required
+                    minLength={8}
+                    style={{
+                      border: getInputBorder("password"),
+                      transition: "border-color 0.2s ease",
+                    }}
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    autoComplete="new-password"
+                  />
+                </label>
 
-              {error && <div className="dx-error">{error}</div>}
-              {success && <div className="dx-success">{success}</div>}
+                <label className="dx-label">
+                  Confirm New Password
+                  <input
+                    className="dx-input"
+                    type="password"
+                    required
+                    minLength={8}
+                    style={{
+                      border: getInputBorder("confirm"),
+                      transition: "border-color 0.2s ease",
+                    }}
+                    value={confirmPassword}
+                    onChange={(e) => setConfirmPassword(e.target.value)}
+                    autoComplete="new-password"
+                  />
+                </label>
 
-              <button
-                className="dx-btn dx-btn-primary"
-                type="submit"
-                disabled={loading || !passwordValid || !passwordsMatch}
-              >
-                {loading ? "Resetting..." : "Reset Password"}
-              </button>
-            </form>
+                {confirmPassword && !passwordsMatch && (
+                  <span style={{ color: "#ff4d4f", fontSize: "0.75rem", marginTop: -8 }}>
+                    Passwords do not match
+                  </span>
+                )}
+
+                <div
+                  style={{
+                    fontSize: "0.85rem",
+                    color: "var(--text-dim)",
+                    marginTop: -6,
+                  }}
+                >
+                  Password must contain:
+                  <ul style={{ marginTop: 6, paddingLeft: 18, lineHeight: "1.6" }}>
+                    <li style={{ color: passwordRules.length ? "#4ade80" : undefined }}>
+                      At least 8 characters
+                    </li>
+                    <li style={{ color: passwordRules.upper ? "#4ade80" : undefined }}>
+                      One uppercase letter
+                    </li>
+                    <li style={{ color: passwordRules.lower ? "#4ade80" : undefined }}>
+                      One lowercase letter
+                    </li>
+                    <li style={{ color: passwordRules.number ? "#4ade80" : undefined }}>
+                      One number
+                    </li>
+                    <li style={{ color: passwordRules.special ? "#4ade80" : undefined }}>
+                      One special character
+                    </li>
+                  </ul>
+                </div>
+
+                {error && <div className="dx-error">{error}</div>}
+                {success && <div className="dx-success">{success}</div>}
+
+                <button
+                  className="dx-btn dx-btn-primary"
+                  type="submit"
+                  disabled={loading || !passwordValid || !passwordsMatch}
+                >
+                  {loading ? "Resetting..." : "Reset Password"}
+                </button>
+              </form>
+            )}
           </div>
         </div>
       </div>

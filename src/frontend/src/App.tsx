@@ -19,6 +19,8 @@ import "./styles/auth.css";
 import "./styles/components.css";
 import "./styles/visualize.css";
 import UserProfilePage from './pages/UserProfile';
+import ForgotPassword from "./pages/ForgotPassword";
+import ResetPassword from "./pages/ResetPassword";
 
 const App: React.FC = () => {
   return (
@@ -42,6 +44,8 @@ const App: React.FC = () => {
         <Route path="/main" element={<Main />} />
         <Route path="/admin" element={<Admin />} />
         <Route path="/user" element={<UserProfilePage />} />
+        <Route path="/forgot-password" element={<ForgotPassword />} />
+        <Route path="/reset-password" element={<ResetPassword />} />
       </Routes>
     </Router>
   );
