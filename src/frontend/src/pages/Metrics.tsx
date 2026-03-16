@@ -1,4 +1,5 @@
 import React, { useEffect, useMemo, useRef, useLayoutEffect, useState } from "react";
+import { createPortal } from "react-dom";
 import { useNavigate } from "react-router-dom";
 import { apiUrl } from "../config/api";
 import SuccessNotification from "../components/SuccessNotification";
@@ -92,10 +93,6 @@ const compactButtonStyle: React.CSSProperties = {
 };
 
 const overlayCardStyle: React.CSSProperties = {
-  position: "absolute",
-  top: "100%",
-  left: 0,
-  marginTop: 6,
   minWidth: 260,
   maxWidth: 560,
   maxHeight: 280,
@@ -105,7 +102,7 @@ const overlayCardStyle: React.CSSProperties = {
   background: "rgba(20, 24, 38, 0.98)",
   border: "1px solid rgba(255,255,255,0.12)",
   boxShadow: "0 12px 32px rgba(0,0,0,0.45)",
-  zIndex: 10020,
+  zIndex: 200000,
   color: "rgba(255,255,255,0.92)",
   whiteSpace: "pre-wrap",
   overflowWrap: "anywhere",
@@ -121,6 +118,7 @@ const ExpandableText: React.FC<{
 }> = ({ text, lines = 2, emptyText = "—", textStyle, preserveWhitespace = false }) => {
   const [open, setOpen] = useState(false);
   const [truncated, setTruncated] = useState(false);
+  const [portalPos, setPortalPos] = useState<{ top: number; left: number } | null>(null);
   const textRef = useRef<HTMLDivElement>(null);
   const wrapRef = useRef<HTMLDivElement>(null);
 
@@ -140,12 +138,42 @@ const ExpandableText: React.FC<{
     return () => window.removeEventListener("resize", check);
   }, [text, lines]);
 
+  useLayoutEffect(() => {
+    if (!open || !wrapRef.current) return;
+
+    const updatePosition = () => {
+      const rect = wrapRef.current?.getBoundingClientRect();
+      if (!rect) return;
+
+      const left = Math.max(12, Math.min(rect.left, window.innerWidth - 572));
+      const top = rect.bottom + 6;
+
+      setPortalPos({ top, left });
+    };
+
+    updatePosition();
+    window.addEventListener("resize", updatePosition);
+    window.addEventListener("scroll", updatePosition, true);
+
+    return () => {
+      window.removeEventListener("resize", updatePosition);
+      window.removeEventListener("scroll", updatePosition, true);
+    };
+  }, [open, text, lines]);
+
   useEffect(() => {
     if (!open) return;
 
     const onDocClick = (e: MouseEvent) => {
       if (!wrapRef.current) return;
-      if (!wrapRef.current.contains(e.target as Node)) setOpen(false);
+      const portalEl = document.getElementById("expandable-text-overlay");
+      const target = e.target as Node;
+      if (
+        !wrapRef.current.contains(target) &&
+        !(portalEl && portalEl.contains(target))
+      ) {
+        setOpen(false);
+      }
     };
 
     const onEsc = (e: KeyboardEvent) => {
@@ -154,7 +182,6 @@ const ExpandableText: React.FC<{
 
     document.addEventListener("mousedown", onDocClick);
     document.addEventListener("keydown", onEsc);
-
     return () => {
       document.removeEventListener("mousedown", onDocClick);
       document.removeEventListener("keydown", onEsc);
@@ -168,71 +195,83 @@ const ExpandableText: React.FC<{
   const clampStyle =
     lines === 4 ? clamp4Style : lines === 3 ? clamp3Style : clamp2Style;
 
-  return (
-    <div
-      ref={wrapRef}
-      style={{
-        position: "relative",
-        display: "flex",
-        flexDirection: "column",
-        alignItems: "flex-start",
-        minWidth: 0,
-        width: "100%",
-      }}
-    >
-      <div
-        ref={textRef}
-        style={{
-          ...clampStyle,
-          ...textStyle,
-          width: "100%",
-          overflowWrap: "anywhere",
-          whiteSpace: preserveWhitespace ? "pre-wrap" : undefined,
-        }}
-        title={open ? "" : text}
-      >
-        {text}
-      </div>
-
-      {truncated && (
-        <button
-          type="button"
-          onClick={() => setOpen((v) => !v)}
-          style={compactButtonStyle}
-        >
-          {open ? "less" : "more"}
-        </button>
-      )}
-
-      {open && (
-        <div
-          style={{
-            ...overlayCardStyle,
-            whiteSpace: preserveWhitespace ? "pre-wrap" : "pre-wrap",
-            fontFamily: preserveWhitespace
-              ? 'ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace'
-              : undefined,
-            fontSize: preserveWhitespace ? 12.5 : undefined,
-            lineHeight: preserveWhitespace ? 1.35 : undefined,
-          }}
-        >
-          <div style={{ marginBottom: 8 }}>{text}</div>
-
-          <button
-            type="button"
-            className="dx-btn dx-btn-outline"
-            style={{ padding: "5px 8px", fontSize: 12 }}
-            onClick={async () => {
-              try {
-                await navigator.clipboard.writeText(text);
-              } catch {}
+  const overlay =
+    open && portalPos
+      ? createPortal(
+          <div
+            id="expandable-text-overlay"
+            style={{
+              ...overlayCardStyle,
+              position: "fixed",
+              top: portalPos.top,
+              left: portalPos.left,
+              whiteSpace: "pre-wrap",
+              fontFamily: preserveWhitespace
+                ? 'ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace'
+                : undefined,
+              fontSize: preserveWhitespace ? 12.5 : undefined,
+              lineHeight: preserveWhitespace ? 1.35 : undefined,
             }}
           >
-            Copy
-          </button>
+            <div style={{ marginBottom: 8 }}>{text}</div>
+
+            <button
+              type="button"
+              className="dx-btn dx-btn-outline"
+              style={{ padding: "5px 8px", fontSize: 12 }}
+              onClick={async () => {
+                try {
+                  await navigator.clipboard.writeText(text);
+                } catch {}
+              }}
+            >
+              Copy
+            </button>
+          </div>,
+          document.body
+        )
+      : null;
+
+  return (
+    <>
+      <div
+        ref={wrapRef}
+        style={{
+          position: "relative",
+          display: "flex",
+          flexDirection: "column",
+          alignItems: "flex-start",
+          minWidth: 0,
+          width: "100%",
+        }}
+      >
+        <div
+          ref={textRef}
+          style={{
+            ...clampStyle,
+            ...textStyle,
+            width: "100%",
+            overflowWrap: "anywhere",
+            whiteSpace: preserveWhitespace ? "pre-wrap" : undefined,
+          }}
+          title={open ? "" : text}
+        >
+          {text}
         </div>
-      )}
-    </div>
+
+        {truncated && (
+          <button
+            type="button"
+            onClick={() => setOpen((v) => !v)}
+            style={compactButtonStyle}
+          >
+            {open ? "less" : "more"}
+          </button>
+        )}
+      </div>
+
+      {overlay}
+    </>
   );
 };
 
@@ -240,7 +279,6 @@ const MetricsPage: React.FC = () => {
   const navigate = useNavigate();
 
   const [metrics, setMetrics] = useState<Metric[]>([]);
-
   const [rulesData, setRulesData] = useState<any>(null);
   const [categories, setCategories] = useState<string[]>([]);
   const [autoMetricOptions, setAutoMetricOptions] = useState<AutoMetricOptionsResponse>({});
@@ -416,7 +454,6 @@ const MetricsPage: React.FC = () => {
     if (!(err instanceof Error) || !err.message) return fallback;
 
     const msg = err.message;
-
     const apiPrefix = "API Error";
     const apiIndex = msg.indexOf(": ");
     const raw = msg.startsWith(apiPrefix) && apiIndex !== -1 ? msg.slice(apiIndex + 2) : msg;
@@ -458,6 +495,16 @@ const MetricsPage: React.FC = () => {
       return raw || fallback;
     }
   };
+
+  const modalType = modalMode === "create" ? newType : editType;
+  const modalAvailableCats = getAvailableCategoriesForType(modalType);
+  const modalOptionCategory = modalMode === "create" ? selectedOptionCategory : editOptionCategory;
+  const modalTemplate = modalMode === "create" ? selectedTemplate : editTemplate;
+
+  const modalPreview =
+    modalOptionCategory && modalTemplate
+      ? modalAvailableCats?.[modalOptionCategory]?.templates?.[modalTemplate] ?? null
+      : null;
 
   const addMetric = async (): Promise<boolean> => {
     if (!newName.trim()) {
@@ -642,24 +689,14 @@ const MetricsPage: React.FC = () => {
     if (!rulesData) return "—";
     if (m.value_type === "bool") {
       const obj = rulesData?.bool?.[m.option_category || "yes_no"]?.templates?.[m.rule || "standard"];
-      return obj ? JSON.stringify(obj) : "—";
+      return obj ? JSON.stringify(obj, null, 2) : "—";
     }
     if (m.value_type === "range") {
       const obj = rulesData?.range?.[m.option_category || "file_ranges"]?.templates?.[m.rule || "standard"];
-      return obj ? JSON.stringify(obj) : "—";
+      return obj ? JSON.stringify(obj, null, 2) : "—";
     }
     return "—";
   };
-
-  const modalType = modalMode === "create" ? newType : editType;
-  const modalAvailableCats = getAvailableCategoriesForType(modalType);
-  const modalOptionCategory = modalMode === "create" ? selectedOptionCategory : editOptionCategory;
-  const modalTemplate = modalMode === "create" ? selectedTemplate : editTemplate;
-
-  const modalPreview =
-    modalOptionCategory && modalTemplate
-      ? modalAvailableCats?.[modalOptionCategory]?.templates?.[modalTemplate] ?? null
-      : null;
 
   useEffect(() => {
     if (!isModalOpen) return;
@@ -714,7 +751,7 @@ const MetricsPage: React.FC = () => {
           <div
             className="dx-card"
             style={{
-              padding: 14,
+              padding: 20,
               flex: 1,
               minHeight: 0,
               display: "flex",
@@ -723,11 +760,11 @@ const MetricsPage: React.FC = () => {
           >
             <div
               style={{
+                marginBottom: 12,
                 display: "flex",
-                justifyContent: "flex-start",
-                marginBottom: 10,
-                flexWrap: "wrap",
                 gap: 10,
+                alignItems: "center",
+                flexWrap: "wrap",
               }}
             >
               <button className="dx-btn dx-btn-primary" onClick={openCreateModal}>
@@ -741,8 +778,6 @@ const MetricsPage: React.FC = () => {
                 style={{
                   tableLayout: "fixed",
                   width: "100%",
-                  borderCollapse: "separate",
-                  borderSpacing: 0,
                 }}
               >
                 <thead>
@@ -753,10 +788,7 @@ const MetricsPage: React.FC = () => {
                       style={{
                         ...headerCellStyle,
                         left: 0,
-                        width: 160,
-                        minWidth: 160,
-                        maxWidth: 160,
-                        zIndex: 4,
+                        width: 190,
                       }}
                     >
                       Actions
@@ -766,10 +798,7 @@ const MetricsPage: React.FC = () => {
                       style={{
                         ...headerCellStyle,
                         left: offset,
-                        width: 180,
-                        minWidth: 180,
-                        maxWidth: 180,
-                        zIndex: 3,
+                        width: 190,
                       }}
                     >
                       Name
@@ -778,9 +807,7 @@ const MetricsPage: React.FC = () => {
                       className="dx-th-sticky"
                       style={{
                         ...headerCellStyle,
-                        width: 100,
-                        minWidth: 100,
-                        maxWidth: 100,
+                        width: 120,
                       }}
                     >
                       Type
@@ -789,9 +816,7 @@ const MetricsPage: React.FC = () => {
                       className="dx-th-sticky"
                       style={{
                         ...headerCellStyle,
-                        width: 170,
-                        minWidth: 170,
-                        maxWidth: 170,
+                        width: 180,
                       }}
                     >
                       Input Category
@@ -800,9 +825,7 @@ const MetricsPage: React.FC = () => {
                       className="dx-th-sticky"
                       style={{
                         ...headerCellStyle,
-                        width: 260,
-                        minWidth: 260,
-                        maxWidth: 260,
+                        width: 270,
                       }}
                     >
                       Scoring Rule
@@ -811,9 +834,7 @@ const MetricsPage: React.FC = () => {
                       className="dx-th-sticky"
                       style={{
                         ...headerCellStyle,
-                        width: 170,
-                        minWidth: 170,
-                        maxWidth: 170,
+                        width: 180,
                       }}
                     >
                       Category
@@ -822,9 +843,7 @@ const MetricsPage: React.FC = () => {
                       className="dx-th-sticky"
                       style={{
                         ...headerCellStyle,
-                        width: 220,
-                        minWidth: 220,
-                        maxWidth: 220,
+                        width: 240,
                       }}
                     >
                       Description
@@ -833,124 +852,170 @@ const MetricsPage: React.FC = () => {
                 </thead>
 
                 <tbody>
-                  {metrics.map((m, index) => {
-                    const rowBg =
-                      index % 2 === 0
-                        ? "rgba(255,255,255,0.01)"
-                        : "rgba(255,255,255,0.025)";
-
-                    const stickyBg =
-                      index % 2 === 0
-                        ? "rgba(15,18,30,0.98)"
-                        : "rgba(18,22,34,0.98)";
-
-                    return (
-                      <tr
-                        key={m.metric_ID}
+                  {metrics.map((m) => (
+                    <tr
+                      key={m.metric_ID}
+                      style={{
+                        borderBottom: "1px solid rgba(255,255,255,0.08)",
+                        background: "rgba(255,255,255,0.01)",
+                      }}
+                    >
+                      <td
+                        className="dx-sticky-left"
                         style={{
-                          borderBottom: "1px solid rgba(255,255,255,0.08)",
-                          background: rowBg,
+                          padding: "8px 8px",
+                          verticalAlign: "top",
+                          left: 0,
+                          whiteSpace: "normal",
+                          wordBreak: "break-word",
+                          fontSize: 12.5,
                         }}
                       >
-                        <td
-                          className="dx-sticky-left"
+                        <div
                           style={{
-                            ...cellBaseStyle,
-                            left: 0,
-                            width: 160,
-                            minWidth: 160,
-                            maxWidth: 160,
-                            background: stickyBg,
-                            zIndex: 2,
+                            display: "flex",
+                            gap: 6,
+                            alignItems: "center",
+                            flexWrap: "wrap",
                           }}
                         >
-                          <div style={{ display: "flex", gap: 6, flexWrap: "wrap" }}>
-                            <button className="dx-btn dx-btn-outline" onClick={() => openEditModal(m)}>
-                              Edit
-                            </button>
-                            <button
-                              className="dx-btn dx-btn-outline"
-                              style={{ borderColor: "var(--danger)", color: "var(--danger)" }}
-                              onClick={() => deleteMetric(m.metric_ID)}
-                            >
-                              Delete
-                            </button>
-                          </div>
-                        </td>
-
-                        <td
-                          className="dx-sticky-left"
-                          style={{
-                            ...cellBaseStyle,
-                            left: offset,
-                            width: 180,
-                            minWidth: 180,
-                            maxWidth: 180,
-                            background: stickyBg,
-                            zIndex: 1,
-                            fontWeight: 700,
-                            fontSize: 14.5,
-                            lineHeight: 1.35,
-                          }}
-                          title={m.metric_name}
-                        >
-                          <ExpandableText
-                            text={m.metric_name || ""}
-                            lines={2}
-                            textStyle={{ fontWeight: 700, fontSize: 14.5, lineHeight: 1.35 }}
-                          />
-                        </td>
-
-                        <td style={metricCellStyle} title={m.value_type}>
-                          <ExpandableText
-                            text={m.value_type || ""}
-                            lines={2}
-                            emptyText="—"
-                          />
-                        </td>
-
-                        <td style={metricCellStyle} title={displayInputCategory(m)}>
-                          <ExpandableText
-                            text={displayInputCategory(m)}
-                            lines={3}
-                            emptyText="—"
-                          />
-                        </td>
-
-                        <td style={metricCellStyle} title={displayRulePreview(m)}>
-                          <ExpandableText
-                            text={displayRulePreview(m)}
-                            lines={4}
-                            emptyText="—"
-                            preserveWhitespace
-                            textStyle={{
-                              fontFamily:
-                                'ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace',
-                              fontSize: 12.5,
-                              lineHeight: 1.35,
-                              color: "inherit",
+                          <button
+                            className="dx-btn dx-btn-outline"
+                            onClick={() => openEditModal(m)}
+                            style={{
+                              padding: "5px 8px",
+                              fontSize: 14,
+                              lineHeight: 1.4,
                             }}
-                          />
-                        </td>
+                          >
+                            Edit
+                          </button>
 
-                        <td style={metricCellStyle} title={m.category || "—"}>
-                          <ExpandableText
-                            text={m.category || ""}
-                            lines={3}
-                            emptyText="—"
-                          />
-                        </td>
+                          <button
+                            className="dx-btn dx-btn-outline"
+                            style={{
+                              padding: "5px 8px",
+                              fontSize: 14,
+                              lineHeight: 1.4,
+                              borderColor: "var(--danger)",
+                              color: "var(--danger)",
+                            }}
+                            onClick={() => deleteMetric(m.metric_ID)}
+                          >
+                            Delete
+                          </button>
+                        </div>
+                      </td>
 
-                        <td style={metricCellStyle} title={m.description || "—"}>
-                          <ExpandableText
-                            text={m.description || ""}
-                            lines={3}
-                            emptyText="—"
-                          />
-                        </td>
-                      </tr>
-                    );
-                  })}
+                      <td
+                        className="dx-sticky-left"
+                        style={{
+                          padding: "8px 8px",
+                          verticalAlign: "top",
+                          left: offset,
+                          fontWeight: 600,
+                          whiteSpace: "normal",
+                          wordBreak: "break-word",
+                          fontSize: 14,
+                          lineHeight: 1.4,
+                        }}
+                        title={m.metric_name}
+                      >
+                        <ExpandableText
+                          text={m.metric_name || ""}
+                          lines={2}
+                          textStyle={{
+                            fontWeight: 600,
+                            fontSize: 12.75,
+                            lineHeight: 1.28,
+                          }}
+                        />
+                      </td>
+
+                      <td
+                        style={{
+                          ...metricCellStyle,
+                          whiteSpace: "normal",
+                          wordBreak: "break-word",
+                        }}
+                        title={m.value_type}
+                      >
+                        <ExpandableText
+                          text={m.value_type || ""}
+                          lines={2}
+                          emptyText="—"
+                        />
+                      </td>
+
+                      <td
+                        style={{
+                          ...metricCellStyle,
+                          whiteSpace: "normal",
+                          wordBreak: "break-word",
+                        }}
+                        title={displayInputCategory(m)}
+                      >
+                        <ExpandableText
+                          text={displayInputCategory(m)}
+                          lines={3}
+                          emptyText="—"
+                        />
+                      </td>
+
+                      <td
+                        style={{
+                          ...metricCellStyle,
+                          whiteSpace: "normal",
+                          wordBreak: "break-word",
+                        }}
+                        title={displayRulePreview(m)}
+                      >
+                        <ExpandableText
+                          text={displayRulePreview(m)}
+                          lines={4}
+                          emptyText="—"
+                          preserveWhitespace
+                          textStyle={{
+                            fontFamily:
+                              'ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace',
+                            fontSize: 12.5,
+                            lineHeight: 1.35,
+                            color: "inherit",
+                          }}
+                        />
+                      </td>
+
+                      <td
+                        style={{
+                          ...metricCellStyle,
+                          whiteSpace: "normal",
+                          wordBreak: "break-word",
+                        }}
+                        title={m.category || "—"}
+                      >
+                        <ExpandableText
+                          text={m.category || ""}
+                          lines={3}
+                          emptyText="—"
+                        />
+                      </td>
+
+                      <td
+                        style={{
+                          ...metricCellStyle,
+                          whiteSpace: "normal",
+                          wordBreak: "break-word",
+                        }}
+                        title={m.description || "—"}
+                      >
+                        <ExpandableText
+                          text={m.description || ""}
+                          lines={3}
+                          emptyText="—"
+                        />
+                      </td>
+                    </tr>
+                  ))}
                 </tbody>
               </table>
 
