@@ -5,7 +5,7 @@ import Home from './pages/Home';
 import Login from './pages/Login';
 import Visualize from './pages/Visualize';
 import Main from "./pages/Main";
-import Signup from "./pages/Signup";
+import AcceptInvite from "./pages/AcceptInvite";
 import Metrics from "./pages/Metrics";
 import ComparisonTool from "./pages/ComparisonTool";
 import Edit from "./pages/Edit";
@@ -19,14 +19,16 @@ import "./styles/auth.css";
 import "./styles/components.css";
 import "./styles/visualize.css";
 import UserProfilePage from './pages/UserProfile';
+import ForgotPassword from "./pages/ForgotPassword";
+import ResetPassword from "./pages/ResetPassword";
 
 const App: React.FC = () => {
   return (
     <Router>
       <Routes>
-        <Route path="/" element={<Home />} />
+        <Route path="/" element={<Main />} />
         <Route path="/login" element={<Login />} />
-        <Route path="/signup" element={<Signup />} />
+        <Route path="/accept-invite" element={<AcceptInvite />} />
         <Route path="/metrics" element={<Metrics />} />
         {/* <Route path="/comparison-tool" element={<ComparisonTool />} /> */}
         <Route path="/comparison-tool/:domainId" element={<ComparisonTool />} />
@@ -39,9 +41,11 @@ const App: React.FC = () => {
         <Route path="/visualize/:domainId" element={<Visualize />} />
         <Route path="/edit-weights/:domainId" element={<EditCategoryWeights />} />
         <Route path="/libraries" element={<Navigate to="/" replace />} />
-        <Route path="/main" element={<Main />} />
+        {/* <Route path="/main" element={<Main />} />*/}
         <Route path="/admin" element={<Admin />} />
         <Route path="/user" element={<UserProfilePage />} />
+        <Route path="/forgot-password" element={<ForgotPassword />} />
+        <Route path="/reset-password" element={<ResetPassword />} />
       </Routes>
     </Router>
   );

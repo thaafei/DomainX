@@ -54,13 +54,24 @@ Usage:
     if cmd == "worker":
         if not os.getenv("CELERY_BROKER_URL"):
             print("CELERY_BROKER_URL is not set. Check backend/.env")
-        run(["celery", "-A", "DomainX", "worker", "-l", "info", "-P", "solo", "-Q", "celery"])
+        run(["celery", "-A", "DomainX", "worker", "-l", "info", "-P", "solo", "-Q", "celery_analysis"])
         return
 
     if cmd == "worker_gitstats":
         if not os.getenv("CELERY_BROKER_URL"):
             print("CELERY_BROKER_URL is not set. Check backend/.env")
         run(["celery", "-A", "DomainX", "worker", "-l", "info", "-P", "solo", "-Q", "gitstats"])
+        return
+    if cmd == "worker":
+        if not os.getenv("CELERY_BROKER_URL"):
+            print("CELERY_BROKER_URL is not set. Check backend/.env")
+        run(["celery", "-A", "DomainX", "worker", "-l", "info", "-P", "solo", "-Q", "analysis"])
+        return
+
+    if cmd == "email":
+        if not os.getenv("CELERY_BROKER_URL"):
+            print("CELERY_BROKER_URL is not set. Check backend/.env")
+        run(["celery", "-A", "DomainX", "worker", "-l", "info", "-P", "solo", "-Q", "email"])
         return
 
     if cmd == "loaddata":

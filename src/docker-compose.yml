@@ -35,11 +35,11 @@ services:
     extra_hosts:
       - "host.docker.internal:host-gateway"
 
-  celery:
+  celery_analysis:
     build: ./backend
     env_file:
       - .env
-    command: celery -A DomainX worker -l info -Q celery
+    command: celery -A DomainX worker -l info -Q analysis --concurrency=1
     depends_on:
       backend:
         condition: service_started
@@ -90,6 +90,24 @@ services:
       - "host.docker.internal:host-gateway"
     volumes:
       - gitstats_data:/data/gitstats
+
+  celery_email:
+    build: ./backend
+    env_file:
+      - .env
+    command: celery -A DomainX worker -l info -Q email --concurrency=1
+    depends_on:
+      backend:
+        condition: service_started
+      redis:
+        condition: service_started
+    restart: always
+    networks:
+      - domainx-net
+    secrets:
+      - github_app_pem
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
 
   web:
     build: ./frontend
