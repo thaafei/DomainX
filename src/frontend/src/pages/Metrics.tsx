@@ -1,5 +1,4 @@
 import React, { useEffect, useMemo, useRef, useLayoutEffect, useState } from "react";
-import { createPortal } from "react-dom";
 import { useNavigate } from "react-router-dom";
 import { apiUrl } from "../config/api";
 import SuccessNotification from "../components/SuccessNotification";
@@ -9,7 +8,7 @@ interface Metric {
   metric_ID: string;
   metric_name: string;
   value_type: string;
-  source_type?: string;
+  source_type?: string | null;
   metric_key?: string | null;
   option_category?: string | null;
   rule?: string | null;
@@ -93,6 +92,10 @@ const compactButtonStyle: React.CSSProperties = {
 };
 
 const overlayCardStyle: React.CSSProperties = {
+  position: "absolute",
+  top: "100%",
+  left: 0,
+  marginTop: 6,
   minWidth: 260,
   maxWidth: 560,
   maxHeight: 280,
@@ -102,7 +105,7 @@ const overlayCardStyle: React.CSSProperties = {
   background: "rgba(20, 24, 38, 0.98)",
   border: "1px solid rgba(255,255,255,0.12)",
   boxShadow: "0 12px 32px rgba(0,0,0,0.45)",
-  zIndex: 200000,
+  zIndex: 10020,
   color: "rgba(255,255,255,0.92)",
   whiteSpace: "pre-wrap",
   overflowWrap: "anywhere",
@@ -115,12 +118,25 @@ const ExpandableText: React.FC<{
   emptyText?: string;
   textStyle?: React.CSSProperties;
   preserveWhitespace?: boolean;
-}> = ({ text, lines = 2, emptyText = "—", textStyle, preserveWhitespace = false }) => {
+  description?: string;
+  onToggle?: (isOpen: boolean) => void;
+}> = ({
+  text,
+  lines = 2,
+  emptyText = "—",
+  textStyle,
+  preserveWhitespace = false,
+  description,
+  onToggle,
+}) => {
   const [open, setOpen] = useState(false);
   const [truncated, setTruncated] = useState(false);
-  const [portalPos, setPortalPos] = useState<{ top: number; left: number } | null>(null);
-  const textRef = useRef<HTMLDivElement>(null);
-  const wrapRef = useRef<HTMLDivElement>(null);
+
+  const wrapRef = React.useRef<HTMLDivElement>(null);
+  const textRef = React.useRef<HTMLDivElement>(null);
+
+  const clampStyle =
+    lines === 4 ? clamp4Style : lines === 3 ? clamp3Style : clamp2Style;
 
   useLayoutEffect(() => {
     const el = textRef.current;
@@ -136,48 +152,24 @@ const ExpandableText: React.FC<{
     check();
     window.addEventListener("resize", check);
     return () => window.removeEventListener("resize", check);
-  }, [text, lines]);
-
-  useLayoutEffect(() => {
-    if (!open || !wrapRef.current) return;
-
-    const updatePosition = () => {
-      const rect = wrapRef.current?.getBoundingClientRect();
-      if (!rect) return;
-
-      const left = Math.max(12, Math.min(rect.left, window.innerWidth - 572));
-      const top = rect.bottom + 6;
-
-      setPortalPos({ top, left });
-    };
-
-    updatePosition();
-    window.addEventListener("resize", updatePosition);
-    window.addEventListener("scroll", updatePosition, true);
-
-    return () => {
-      window.removeEventListener("resize", updatePosition);
-      window.removeEventListener("scroll", updatePosition, true);
-    };
-  }, [open, text, lines]);
+  }, [text, lines, description]);
 
   useEffect(() => {
     if (!open) return;
 
     const onDocClick = (e: MouseEvent) => {
       if (!wrapRef.current) return;
-      const portalEl = document.getElementById("expandable-text-overlay");
-      const target = e.target as Node;
-      if (
-        !wrapRef.current.contains(target) &&
-        !(portalEl && portalEl.contains(target))
-      ) {
+      if (!wrapRef.current.contains(e.target as Node)) {
         setOpen(false);
+        onToggle?.(false);
       }
     };
 
     const onEsc = (e: KeyboardEvent) => {
-      if (e.key === "Escape") setOpen(false);
+      if (e.key === "Escape") {
+        setOpen(false);
+        onToggle?.(false);
+      }
     };
 
     document.addEventListener("mousedown", onDocClick);
@@ -186,92 +178,99 @@ const ExpandableText: React.FC<{
       document.removeEventListener("mousedown", onDocClick);
       document.removeEventListener("keydown", onEsc);
     };
-  }, [open]);
+  }, [open, onToggle]);
 
-  if (!text) {
+  const showMoreButton = truncated || !!description;
+
+  if (!text && !description) {
     return <div style={textStyle}>{emptyText}</div>;
   }
 
-  const clampStyle =
-    lines === 4 ? clamp4Style : lines === 3 ? clamp3Style : clamp2Style;
-
-  const overlay =
-    open && portalPos
-      ? createPortal(
-          <div
-            id="expandable-text-overlay"
-            style={{
-              ...overlayCardStyle,
-              position: "fixed",
-              top: portalPos.top,
-              left: portalPos.left,
-              whiteSpace: "pre-wrap",
-              fontFamily: preserveWhitespace
-                ? 'ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace'
-                : undefined,
-              fontSize: preserveWhitespace ? 12.5 : undefined,
-              lineHeight: preserveWhitespace ? 1.35 : undefined,
-            }}
-          >
-            <div style={{ marginBottom: 8 }}>{text}</div>
-
-            <button
-              type="button"
-              className="dx-btn dx-btn-outline"
-              style={{ padding: "5px 8px", fontSize: 12 }}
-              onClick={async () => {
-                try {
-                  await navigator.clipboard.writeText(text);
-                } catch {}
-              }}
-            >
-              Copy
-            </button>
-          </div>,
-          document.body
-        )
-      : null;
+  const handleToggle = () => {
+    const newState = !open;
+    setOpen(newState);
+    onToggle?.(newState);
+  };
 
   return (
-    <>
+    <div
+      ref={wrapRef}
+      style={{
+        position: "relative",
+        display: "flex",
+        flexDirection: "column",
+        alignItems: "flex-start",
+        minWidth: 0,
+        width: "100%",
+      }}
+    >
       <div
-        ref={wrapRef}
+        ref={textRef}
         style={{
-          position: "relative",
-          display: "flex",
-          flexDirection: "column",
-          alignItems: "flex-start",
-          minWidth: 0,
+          ...clampStyle,
+          ...textStyle,
           width: "100%",
+          overflowWrap: "anywhere",
+          whiteSpace: preserveWhitespace ? "pre-wrap" : undefined,
         }}
+        title={open ? "" : text}
       >
-        <div
-          ref={textRef}
-          style={{
-            ...clampStyle,
-            ...textStyle,
-            width: "100%",
-            overflowWrap: "anywhere",
-            whiteSpace: preserveWhitespace ? "pre-wrap" : undefined,
-          }}
-          title={open ? "" : text}
-        >
-          {text}
-        </div>
-
-        {truncated && (
-          <button
-            type="button"
-            onClick={() => setOpen((v) => !v)}
-            style={compactButtonStyle}
-          >
-            {open ? "less" : "more"}
-          </button>
-        )}
+        {text || emptyText}
       </div>
 
-      {overlay}
-    </>
+      {showMoreButton && (
+        <button
+          type="button"
+          onClick={handleToggle}
+          style={compactButtonStyle}
+        >
+          {open ? "less" : "more"}
+        </button>
+      )}
+
+      {open && (
+        <div
+          style={{
+            ...overlayCardStyle,
+            whiteSpace: preserveWhitespace ? "pre-wrap" : "pre-wrap",
+            fontFamily: preserveWhitespace
+              ? 'ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace'
+              : undefined,
+            fontSize: preserveWhitespace ? 12.5 : undefined,
+            lineHeight: preserveWhitespace ? 1.35 : undefined,
+          }}
+        >
+          {description ? (
+            <>
+              <div style={{ fontWeight: 700, marginBottom: 4, color: "var(--accent)" }}>
+                Value:
+              </div>
+              <div style={{ marginBottom: 12 }}>{text || emptyText}</div>
+              <div style={{ fontWeight: 700, marginBottom: 4, color: "var(--accent)" }}>
+                Description:
+              </div>
+              <div>{description}</div>
+            </>
+          ) : (
+            <>
+              <div style={{ marginBottom: 8 }}>{text}</div>
+              <button
+                type="button"
+                className="dx-btn dx-btn-outline"
+                style={{ padding: "5px 8px", fontSize: 12 }}
+                onClick={async () => {
+                  try {
+                    await navigator.clipboard.writeText(text);
+                  } catch {}
+                }}
+              >
+                Copy
+              </button>
+            </>
+          )}
+        </div>
+      )}
+    </div>
   );
 };
 
@@ -282,6 +281,7 @@ const MetricsPage: React.FC = () => {
   const [rulesData, setRulesData] = useState<any>(null);
   const [categories, setCategories] = useState<string[]>([]);
   const [autoMetricOptions, setAutoMetricOptions] = useState<AutoMetricOptionsResponse>({});
+  const [expandedRowId, setExpandedRowId] = useState<string | null>(null);
 
   const [modalMode, setModalMode] = useState<ModalMode>(null);
   const isModalOpen = modalMode !== null;
@@ -463,30 +463,30 @@ const MetricsPage: React.FC = () => {
 
       if (typeof parsed === "string") return parsed;
 
-      if (parsed.metric_name) {
-        const metricNameError = Array.isArray(parsed.metric_name)
-          ? parsed.metric_name[0]
-          : parsed.metric_name;
+      if ((parsed as any).metric_name) {
+        const metricNameError = Array.isArray((parsed as any).metric_name)
+          ? (parsed as any).metric_name[0]
+          : (parsed as any).metric_name;
         if (String(metricNameError).toLowerCase().includes("already exists")) {
           return "A metric with this name already exists. Please choose a different name.";
         }
         return `Metric name: ${metricNameError}`;
       }
 
-      if (parsed.metric_key) {
-        const metricKeyError = Array.isArray(parsed.metric_key)
-          ? parsed.metric_key[0]
-          : parsed.metric_key;
+      if ((parsed as any).metric_key) {
+        const metricKeyError = Array.isArray((parsed as any).metric_key)
+          ? (parsed as any).metric_key[0]
+          : (parsed as any).metric_key;
         return `System metric: ${metricKeyError}`;
       }
 
-      if (parsed.non_field_errors) {
-        return Array.isArray(parsed.non_field_errors)
-          ? parsed.non_field_errors[0]
-          : parsed.non_field_errors;
+      if ((parsed as any).non_field_errors) {
+        return Array.isArray((parsed as any).non_field_errors)
+          ? (parsed as any).non_field_errors[0]
+          : (parsed as any).non_field_errors;
       }
 
-      const firstValue = Object.values(parsed)[0];
+      const firstValue = Object.values(parsed as Record<string, unknown>)[0];
       if (Array.isArray(firstValue) && firstValue.length > 0) return String(firstValue[0]);
       if (typeof firstValue === "string") return firstValue;
 
@@ -852,170 +852,191 @@ const MetricsPage: React.FC = () => {
                 </thead>
 
                 <tbody>
-                  {metrics.map((m) => (
-                    <tr
-                      key={m.metric_ID}
-                      style={{
-                        borderBottom: "1px solid rgba(255,255,255,0.08)",
-                        background: "rgba(255,255,255,0.01)",
-                      }}
-                    >
-                      <td
-                        className="dx-sticky-left"
+                  {metrics.map((m, rowIndex) => {
+                    const isExpanded = expandedRowId === m.metric_ID;
+
+                    return (
+                      <tr
+                        key={m.metric_ID}
                         style={{
-                          padding: "8px 8px",
-                          verticalAlign: "top",
-                          left: 0,
-                          whiteSpace: "normal",
-                          wordBreak: "break-word",
-                          fontSize: 12.5,
+                          borderBottom: "1px solid rgba(255,255,255,0.08)",
+                          background:
+                            rowIndex % 2 === 0
+                              ? "rgba(255,255,255,0.01)"
+                              : "rgba(255,255,255,0.025)",
+                          position: "relative",
+                          zIndex: isExpanded ? 100 : 1,
                         }}
                       >
-                        <div
+                        <td
+                          className="dx-sticky-left"
                           style={{
-                            display: "flex",
-                            gap: 6,
-                            alignItems: "center",
-                            flexWrap: "wrap",
+                            padding: "8px 8px",
+                            verticalAlign: "top",
+                            left: 0,
+                            whiteSpace: "normal",
+                            wordBreak: "break-word",
+                            fontSize: 12.5,
                           }}
                         >
-                          <button
-                            className="dx-btn dx-btn-outline"
-                            onClick={() => openEditModal(m)}
+                          <div
                             style={{
-                              padding: "5px 8px",
-                              fontSize: 14,
-                              lineHeight: 1.4,
+                              display: "flex",
+                              gap: 6,
+                              alignItems: "center",
+                              flexWrap: "wrap",
                             }}
                           >
-                            Edit
-                          </button>
+                            <button
+                              className="dx-btn dx-btn-outline"
+                              onClick={() => openEditModal(m)}
+                              style={{
+                                padding: "5px 8px",
+                                fontSize: 14,
+                                lineHeight: 1.4,
+                              }}
+                            >
+                              Edit
+                            </button>
 
-                          <button
-                            className="dx-btn dx-btn-outline"
-                            style={{
-                              padding: "5px 8px",
-                              fontSize: 14,
-                              lineHeight: 1.4,
-                              borderColor: "var(--danger)",
-                              color: "var(--danger)",
-                            }}
-                            onClick={() => deleteMetric(m.metric_ID)}
-                          >
-                            Delete
-                          </button>
-                        </div>
-                      </td>
+                            <button
+                              className="dx-btn dx-btn-outline"
+                              style={{
+                                padding: "5px 8px",
+                                fontSize: 14,
+                                lineHeight: 1.4,
+                                borderColor: "var(--danger)",
+                                color: "var(--danger)",
+                              }}
+                              onClick={() => deleteMetric(m.metric_ID)}
+                            >
+                              Delete
+                            </button>
+                          </div>
+                        </td>
 
-                      <td
-                        className="dx-sticky-left"
-                        style={{
-                          padding: "8px 8px",
-                          verticalAlign: "top",
-                          left: offset,
-                          fontWeight: 600,
-                          whiteSpace: "normal",
-                          wordBreak: "break-word",
-                          fontSize: 14,
-                          lineHeight: 1.4,
-                        }}
-                        title={m.metric_name}
-                      >
-                        <ExpandableText
-                          text={m.metric_name || ""}
-                          lines={2}
-                          textStyle={{
+                        <td
+                          className="dx-sticky-left"
+                          style={{
+                            padding: "8px 8px",
+                            verticalAlign: "top",
+                            left: offset,
                             fontWeight: 600,
-                            fontSize: 12.75,
-                            lineHeight: 1.28,
+                            whiteSpace: "normal",
+                            wordBreak: "break-word",
+                            fontSize: 14,
+                            lineHeight: 1.4,
                           }}
-                        />
-                      </td>
+                          title={m.metric_name}
+                        >
+                          <ExpandableText
+                            text={m.metric_name || ""}
+                            lines={2}
+                            onToggle={(isOpen) => setExpandedRowId(isOpen ? m.metric_ID : null)}
+                            textStyle={{
+                              fontWeight: 600,
+                              fontSize: 12.75,
+                              lineHeight: 1.28,
+                            }}
+                          />
+                        </td>
 
-                      <td
-                        style={{
-                          ...metricCellStyle,
-                          whiteSpace: "normal",
-                          wordBreak: "break-word",
-                        }}
-                        title={m.value_type}
-                      >
-                        <ExpandableText
-                          text={m.value_type || ""}
-                          lines={2}
-                          emptyText="—"
-                        />
-                      </td>
-
-                      <td
-                        style={{
-                          ...metricCellStyle,
-                          whiteSpace: "normal",
-                          wordBreak: "break-word",
-                        }}
-                        title={displayInputCategory(m)}
-                      >
-                        <ExpandableText
-                          text={displayInputCategory(m)}
-                          lines={3}
-                          emptyText="—"
-                        />
-                      </td>
-
-                      <td
-                        style={{
-                          ...metricCellStyle,
-                          whiteSpace: "normal",
-                          wordBreak: "break-word",
-                        }}
-                        title={displayRulePreview(m)}
-                      >
-                        <ExpandableText
-                          text={displayRulePreview(m)}
-                          lines={4}
-                          emptyText="—"
-                          preserveWhitespace
-                          textStyle={{
-                            fontFamily:
-                              'ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace',
-                            fontSize: 12.5,
-                            lineHeight: 1.35,
-                            color: "inherit",
+                        <td
+                          style={{
+                            ...metricCellStyle,
+                            whiteSpace: "normal",
+                            wordBreak: "break-word",
+                            position: "relative",
                           }}
-                        />
-                      </td>
+                          title={m.value_type}
+                        >
+                          <ExpandableText
+                            text={m.value_type || ""}
+                            lines={2}
+                            emptyText="—"
+                            onToggle={(isOpen) => setExpandedRowId(isOpen ? m.metric_ID : null)}
+                          />
+                        </td>
 
-                      <td
-                        style={{
-                          ...metricCellStyle,
-                          whiteSpace: "normal",
-                          wordBreak: "break-word",
-                        }}
-                        title={m.category || "—"}
-                      >
-                        <ExpandableText
-                          text={m.category || ""}
-                          lines={3}
-                          emptyText="—"
-                        />
-                      </td>
+                        <td
+                          style={{
+                            ...metricCellStyle,
+                            whiteSpace: "normal",
+                            wordBreak: "break-word",
+                            position: "relative",
+                          }}
+                          title={displayInputCategory(m)}
+                        >
+                          <ExpandableText
+                            text={displayInputCategory(m)}
+                            lines={3}
+                            emptyText="—"
+                            onToggle={(isOpen) => setExpandedRowId(isOpen ? m.metric_ID : null)}
+                          />
+                        </td>
 
-                      <td
-                        style={{
-                          ...metricCellStyle,
-                          whiteSpace: "normal",
-                          wordBreak: "break-word",
-                        }}
-                        title={m.description || "—"}
-                      >
-                        <ExpandableText
-                          text={m.description || ""}
-                          lines={3}
-                          emptyText="—"
-                        />
-                      </td>
-                    </tr>
-                  ))}
+                        <td
+                          style={{
+                            ...metricCellStyle,
+                            whiteSpace: "normal",
+                            wordBreak: "break-word",
+                            position: "relative",
+                          }}
+                          title={displayRulePreview(m)}
+                        >
+                          <ExpandableText
+                            text={displayRulePreview(m)}
+                            lines={4}
+                            emptyText="—"
+                            preserveWhitespace
+                            description={m.description ? String(m.description) : undefined}
+                            onToggle={(isOpen) => setExpandedRowId(isOpen ? m.metric_ID : null)}
+                            textStyle={{
+                              fontFamily:
+                                'ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace',
+                              fontSize: 12.5,
+                              lineHeight: 1.35,
+                              color: "inherit",
+                            }}
+                          />
+                        </td>
+
+                        <td
+                          style={{
+                            ...metricCellStyle,
+                            whiteSpace: "normal",
+                            wordBreak: "break-word",
+                            position: "relative",
+                          }}
+                          title={m.category || "—"}
+                        >
+                          <ExpandableText
+                            text={m.category || ""}
+                            lines={3}
+                            emptyText="—"
+                            onToggle={(isOpen) => setExpandedRowId(isOpen ? m.metric_ID : null)}
+                          />
+                        </td>
+
+                        <td
+                          style={{
+                            ...metricCellStyle,
+                            whiteSpace: "normal",
+                            wordBreak: "break-word",
+                            position: "relative",
+                          }}
+                          title={m.description || "—"}
+                        >
+                          <ExpandableText
+                            text={m.description || ""}
+                            lines={3}
+                            emptyText="—"
+                            onToggle={(isOpen) => setExpandedRowId(isOpen ? m.metric_ID : null)}
+                          />
+                        </td>
+                      </tr>
+                    );
+                  })}
                 </tbody>
               </table>
 
