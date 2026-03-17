@@ -12,7 +12,6 @@ const DomainInfo: React.FC<DomainInfoProps> = ({ selectedDomain, sidebarOpen, se
       const navigate = useNavigate();
       const { user } = useAuthStore();
       
-      // Check if current user is a creator or superadmin
       const isCreator = user && selectedDomain?.creators?.some((c: any) => c.id === user.id);
       const isSuperAdmin = user?.role === "superadmin";
       const canEditDomain = isCreator || isSuperAdmin;
@@ -33,9 +32,9 @@ const DomainInfo: React.FC<DomainInfoProps> = ({ selectedDomain, sidebarOpen, se
         }}
         >
         <div
-            style={{ 
-              cursor: "pointer", 
-              fontSize: 24, 
+            style={{
+              cursor: "pointer",
+              fontSize: 24,
               color: "var(--accent)",
               display: "flex",
               justifyContent: sidebarOpen ? "flex-start" : "flex-end",
@@ -50,9 +49,6 @@ const DomainInfo: React.FC<DomainInfoProps> = ({ selectedDomain, sidebarOpen, se
           <>
             <h3 style={{ marginTop: 0, color: "var(--accent)" }}>Details</h3>
             <div className="dx-info-field"><strong>Name:</strong> {selectedDomain?.domain_name || "N/A"}</div>
-            {/* commenting this field out since our versioning is not implemented yet
-              <div className="dx-info-field"><strong>Version:</strong> {selectedDomain?.description || "No version available"}</div>
-            */}
             <div className="dx-info-field">
               <strong>Authors:</strong>
               <ul style={{ margin: "6px 0 0 16px" }}>
@@ -76,9 +72,9 @@ const DomainInfo: React.FC<DomainInfoProps> = ({ selectedDomain, sidebarOpen, se
             {selectedDomain?.paper_url && (
               <div className="dx-info-field">
                 <strong>Paper:</strong>{" "}
-                <a 
-                  href={selectedDomain.paper_url} 
-                  target="_blank" 
+                <a
+                  href={selectedDomain.paper_url}
+                  target="_blank"
                   rel="noopener noreferrer"
                   style={{ color: "var(--accent)" }}
                 >
@@ -120,8 +116,11 @@ const DomainInfo: React.FC<DomainInfoProps> = ({ selectedDomain, sidebarOpen, se
               >
                 <span style={{ fontSize: 15 }}>⚖️</span> Comparison Tool
             </button>
+
           </>
         )}
+
+
         </div>
     );
 };

@@ -15,7 +15,7 @@ from .database.services import RepoAnalyzer
 logger = get_task_logger("api.tasks.analyze_repo")
 
 
-@shared_task(bind=True)
+@shared_task(bind=True, queue="analysis")
 def analyze_repo_task(self, library_id: str, repo_url: str):
     task_id = getattr(self.request, "id", None)
 
