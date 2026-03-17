@@ -1,4 +1,3 @@
-import React from 'react';
 import { BrowserRouter as Router } from 'react-router-dom';
 import { Routes, Route, Navigate } from "react-router-dom";
 import Home from './pages/Home';
@@ -20,8 +19,17 @@ import "./styles/components.css";
 import "./styles/visualize.css";
 import UserProfilePage from './pages/UserProfile';
 import ProtectedRoute from './components/ProtectedRoute'; // Add this import
+import React, { useEffect } from 'react';
+import { useAuthStore } from './store/useAuthStore';
+
 
 const App: React.FC = () => {
+  const { checkAuth } = useAuthStore();
+
+  useEffect(() => {
+    checkAuth(); // Check auth when app loads
+  }, [checkAuth]);
+
   return (
     <Router>
       <Routes>

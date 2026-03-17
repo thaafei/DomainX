@@ -3,7 +3,7 @@ from .views.auth_views import LoginView, LogoutView, MeView, SignupView, UserLis
 from .views.profile import ProfileView
 from .views.auth_views import ChangePasswordView
 from .views.auth_views import UserDomainListView
-
+from .views.auth_views import RefreshTokenView
 urlpatterns = [
     path("signup/", SignupView.as_view(), name="signup"),
     path("login/", LoginView.as_view(), name="login"),
@@ -14,4 +14,5 @@ urlpatterns = [
     path("users/<int:user_id>/", UserUpdateView.as_view(), name="user-update"),
     path("users/<int:user_id>/change-password/", ChangePasswordView.as_view(), name="change-password"),
     path("users/<int:user_id>/domains/", UserDomainListView.as_view(), name="user-domains"),
+    path('refresh-token/', RefreshTokenView.as_view(), name='refresh_token'),
 ]

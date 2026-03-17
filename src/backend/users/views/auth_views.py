@@ -9,6 +9,10 @@ from django.conf import settings
 from rest_framework.permissions import AllowAny
 from ..models import CustomUser
 from api.database.domain.models import Domain
+from rest_framework_simplejwt.authentication import JWTAuthentication
+from rest_framework.exceptions import AuthenticationFailed
+from users.auth import CookieJWTAuthentication
+
 from ..serializers import (
     UserProfileSerializer, 
     SignupSerializer, 
@@ -57,20 +61,71 @@ class LoginView(APIView):
 
 
 class MeView(APIView):
+    authentication_classes = [CookieJWTAuthentication]
     permission_classes = [IsAuthenticated]
     def get(self, request):
         return Response({"user": UserProfileSerializer(request.user).data})
 
 
 class LogoutView(APIView):
+    authentication_classes = [CookieJWTAuthentication]
+    permission_classes = [IsAuthenticated]
     def post(self, request):
         response = Response({"message": "Logged out"}, status=200)
         response.delete_cookie("access_token")
         response.delete_cookie("refresh_token")
         return response
+    
+class RefreshTokenView(APIView):
+    """
+    Refreshes the access token using the refresh token cookie
+    """
+    permission_classes = [AllowAny]
+    
+    def post(self, request):
+        # Get refresh token from cookie
+        refresh_token = request.COOKIES.get('refresh_token')
+        
+        if not refresh_token:
+            return Response(
+                {"error": "Refresh token not found"}, 
+                status=status.HTTP_401_UNAUTHORIZED
+            )
+        
+        try:
+            # Create new refresh token object and get new access token
+            refresh = RefreshToken(refresh_token)
+            new_access_token = str(refresh.access_token)
+            
+            # Create response
+            response = Response(
+                {"message": "Token refreshed successfully"}, 
+                status=status.HTTP_200_OK
+            )
+            
+            # Set the new access token cookie
+            response.set_cookie(
+                "access_token", 
+                new_access_token,
+                httponly=True, 
+                secure=not settings.DEBUG, 
+                samesite="Lax",
+                max_age=7200  # 2 hours in seconds
+            )
+            
+            return response
+            
+        except Exception as e:
+            # Token is invalid or expired
+            return Response(
+                {"error": "Invalid or expired refresh token"}, 
+                status=status.HTTP_401_UNAUTHORIZED
+            )
+
 
 
 class UserListView(APIView):
+    authentication_classes = [CookieJWTAuthentication]
     permission_classes = [IsAuthenticated]
     
     def get(self, request):
@@ -98,6 +153,7 @@ class UserListView(APIView):
 
 
 class UserUpdateView(APIView):
+    authentication_classes = [CookieJWTAuthentication]
     permission_classes = [IsAuthenticated]
     
     def patch(self, request, user_id):
@@ -151,6 +207,7 @@ class UserUpdateView(APIView):
         return Response({"message": "Profile updated successfully"}, status=200)
     
 class ChangePasswordView(APIView):
+    authentication_classes = [CookieJWTAuthentication]
     permission_classes = [IsAuthenticated]
 
     def post(self, request, user_id):
@@ -193,6 +250,7 @@ class ChangePasswordView(APIView):
         return Response({"message": "Password updated successfully."}, status=status.HTTP_200_OK)
 
 class UserDomainListView(APIView):
+    authentication_classes = [CookieJWTAuthentication]
     permission_classes = [IsAuthenticated]
 
     def get(self, request, user_id):
