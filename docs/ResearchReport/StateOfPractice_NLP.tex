@@ -36,16 +36,29 @@ Hamilton, Ontario, Canada}
 %  headline results, contributions (DomainX tool + dataset + findings). 
 %  one-line pointer to the DomainX repo and a brief data availability statement.}
 
-Neural network (NN) libraries underpin modern research and production AI systems, yet their software-engineering practices vary 
-widely and are rarely assessed in a transparent, reproducible way. Existing comparisons are often ad hoc, relying on manual 
-checklists and spreadsheets that are difficult to audit and update as repositories evolve. 
-We present DomainX, a tool-supported workflow for conducting a state-of-practice assessment of NN software based on a published
- methodology. DomainX centralizes evidence capture from public artifacts (documentation, tests, issue trackers, releases, and CI pipelines),
-  supports scoring via a measurement template across nine software-quality attributes, and incorporates repository-based measures extracted from public repositories. 
-  Using these inputs, DomainX computes an overall comparison using the Analytic Hierarchy Process (AHP) and exports traceable assessment artifacts. 
-  We apply the workflow to a curated shortlist of 28 open-source NN software packages, producing a traceable dataset of template responses, measures, 
-  and package-level references (project website and repository URLs), along with an evidence-based ranking and per-quality breakdowns. A companion repository provides the tool and assessment artifacts to support review 
-  and reuse.
+Open-source neural network (NN) software plays an important
+role in modern AI research and development. Assessing the
+software-engineering practices of NN packages, however, is
+challenging because relevant evidence is distributed across
+public artifacts such as documentation, tests, issue trackers,
+releases, and continuous integration (CI) configurations.
+
+This paper presents DomainX, a tool-supported workflow for
+conducting a state-of-practice assessment of open-source NN
+software based on a published methodology. DomainX supports
+evidence capture, scoring through a measurement template
+spanning nine software-quality attributes, incorporation of
+repository-based measures, and overall comparison using the
+Analytic Hierarchy Process (AHP).
+
+We apply this workflow to a curated shortlist of 28
+open-source NN software packages and produce a traceable
+dataset containing template responses, repository-based
+measures, and package-level references (project website and
+repository URLs). \textbf{[RESULTS SUMMARY TO BE ADDED AFTER 
+FINAL RANKING IS CONFIRMED.]}
+A companion repository provides the DomainX tool and
+associated assessment artifacts to support review and reuse.
 \end{abstract}
 
 \begin{keyword}
@@ -76,16 +89,26 @@ measurement template; Analytic Hierarchy Process (AHP); traceability; reproducib
 
 % \wss{ roadmap of the remainder of the paper.}
 
-Research and engineering outcomes increasingly depend on software, and the quality of that software affects reliability,
- maintainability, and reproducibility. In domains where open-source libraries are widely reused,
-  understanding current development practice is a prerequisite for improving it. A \emph{state-of-practice} assessment provides
-   a structured way to characterize what developers commonly do in a domain by evaluating representative software packages against 
-   explicit software-quality criteria using traceable evidence.
+Research and engineering outcomes increasingly depend on
+software, and the quality of that software affects
+reliability, maintainability, and reproducibility. In domains
+where open-source libraries are widely reused, understanding
+current development practice is an important step toward
+improving it. A \emph{state-of-practice} assessment provides
+a structured way to characterize what developers commonly do
+in a domain by evaluating representative software packages
+against explicit software-quality criteria using traceable
+evidence.
 
-Conducting such assessments rigorously is challenging in practice. Evidence relevant to software quality is distributed across many 
-public artifacts, including documentation, tutorials, repository history, tests, issue trackers, releases, and continuous integration 
-(CI) configurations. As a result, assessments are often performed using manual spreadsheet-based workflows with ad hoc scoring 
-and limited traceability, making the process time-consuming, difficult to audit, and hard to reproduce as repositories evolve.
+Conducting such assessments rigorously is challenging in
+practice. Evidence relevant to software quality is
+distributed across many public artifacts, including
+documentation, tutorials, repository history, tests, issue
+trackers, releases, and continuous integration (CI)
+configurations. This makes the assessment process
+time-consuming and creates challenges for auditability,
+maintenance, and reproducibility as repositories evolve over
+time.
 
 This paper presents a tool-supported state-of-practice assessment for \emph{neural network (NN) software}. 
 The target audience is developers and maintainers of NN software; accordingly, the scope is restricted to NN packages rather than 
@@ -97,7 +120,8 @@ comparisons.
 The contributions of this work are:
 \begin{itemize}
   \item A curated shortlist of 28 open-source NN software packages evaluated using a consistent, evidence-based procedure (Appendix~\ref{app-packages}).
-  \item A traceable assessment dataset recording measurement-template responses, repository-based measures, and associated evidence links for auditability and reuse.
+  \item A traceable assessment dataset recording measurement-template responses, repository-based measures, and package-level references (project website and repository
+        URLs) for auditability and reuse.
   \item DomainX, a tool that supports evidence capture, scoring, ranking computations, and export of results to reduce manual effort and improve traceability (\url{https://github.com/thaafei/DomainX}).
 \end{itemize}
 
