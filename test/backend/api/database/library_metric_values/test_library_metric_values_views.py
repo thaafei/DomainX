@@ -18,6 +18,7 @@ import api.database.library_metric_values.views as views_module
 def rf():
     return APIRequestFactory()
 
+
 @pytest.fixture()
 def user_factory():
     def _factory(email: str, username: str, role: str = "admin"):
@@ -113,6 +114,36 @@ def metric_text():
 
 
 @pytest.fixture()
+def metric_date():
+    return Metric.objects.create(
+        metric_name="Release Date",
+        metric_key="release_date",
+        value_type="date",
+        scoring_dict={},
+    )
+
+
+@pytest.fixture()
+def metric_time():
+    return Metric.objects.create(
+        metric_name="Review Time",
+        metric_key="review_time",
+        value_type="time",
+        scoring_dict={},
+    )
+
+
+@pytest.fixture()
+def metric_datetime():
+    return Metric.objects.create(
+        metric_name="Published At",
+        metric_key="published_at",
+        value_type="datetime",
+        scoring_dict={},
+    )
+
+
+@pytest.fixture()
 def metric_scored():
     return Metric.objects.create(
         metric_name="License Type",
@@ -200,6 +231,55 @@ def test_validate_metric_value_text_passthrough(metric_text):
 
 
 @pytest.mark.django_db
+def test_validate_metric_value_accepts_valid_date(metric_date):
+    error, value = views_module.validate_metric_value(metric_date, "2026-03-18")
+    assert error is None
+    assert value == "2026-03-18"
+
+
+@pytest.mark.django_db
+def test_validate_metric_value_rejects_invalid_date(metric_date):
+    error, value = views_module.validate_metric_value(metric_date, "2026-99-99")
+    assert error == "Release Date must be a valid date in YYYY-MM-DD format."
+    assert value is None
+
+
+@pytest.mark.django_db
+def test_validate_metric_value_accepts_valid_time(metric_time):
+    error, value = views_module.validate_metric_value(metric_time, "14:30")
+    assert error is None
+    assert value == "14:30"
+
+
+@pytest.mark.django_db
+def test_validate_metric_value_accepts_valid_time_with_seconds(metric_time):
+    error, value = views_module.validate_metric_value(metric_time, "14:30:15")
+    assert error is None
+    assert value == "14:30:15"
+
+
+@pytest.mark.django_db
+def test_validate_metric_value_rejects_invalid_time(metric_time):
+    error, value = views_module.validate_metric_value(metric_time, "25:61")
+    assert error == "Review Time must be a valid time in HH:MM or HH:MM:SS format."
+    assert value is None
+
+
+@pytest.mark.django_db
+def test_validate_metric_value_accepts_valid_datetime(metric_datetime):
+    error, value = views_module.validate_metric_value(metric_datetime, "2026-03-18T14:30")
+    assert error is None
+    assert value == "2026-03-18T14:30"
+
+
+@pytest.mark.django_db
+def test_validate_metric_value_rejects_invalid_datetime(metric_datetime):
+    error, value = views_module.validate_metric_value(metric_datetime, "2026-03-18 14:30")
+    assert error == "Published At must be a valid date and time in YYYY-MM-DDTHH:MM format."
+    assert value is None
+
+
+@pytest.mark.django_db
 def test_analyze_library_success_202(rf, lib_a, monkeypatch, user_factory):
     user = user_factory("test@example.com", "testuser")
 
@@ -258,6 +338,7 @@ def test_analyze_library_enqueue_raises_500_and_marks_failed(rf, lib_a, monkeypa
 @pytest.mark.django_db
 def test_analyze_domain_libraries_mixed_results(rf, domain, lib_a, lib_b, monkeypatch, user_factory):
     user = user_factory("test@example.com", "testuser")
+
     def fake_enqueue(lib):
         if lib.library_name == "A":
             return {"analysis_task_id": "tA", "gitstats_task_id": "gA"}
@@ -297,6 +378,7 @@ def test_analyze_domain_libraries_exception_marks_failed(rf, domain, lib_a, lib_
         if lib.library_name == "A":
             raise RuntimeError("explode")
         return {"analysis_task_id": "tB", "gitstats_task_id": "gB"}
+
     user = user_factory("test@example.com", "testuser")
     monkeypatch.setattr(views_module, "enqueue_library_analysis", fake_enqueue)
 
@@ -411,6 +493,105 @@ def test_library_metric_value_update_creates_value_and_evidence(rf, lib_a, metri
 
 
 @pytest.mark.django_db
+def test_library_metric_value_update_accepts_valid_date(rf, lib_a, metric_date, user_factory):
+    view = views_module.LibraryMetricValueUpdateView.as_view()
+    user = user_factory("test@example.com", "testuser")
+    req = rf.post(
+        "/x",
+        {"metrics": {"Release Date": "2026-03-18"}},
+        format="json",
+    )
+    force_authenticate(req, user=user)
+    resp = view(req, library_id=str(lib_a.library_ID))
+
+    assert resp.status_code == status.HTTP_200_OK
+    value = LibraryMetricValue.objects.get(library=lib_a, metric=metric_date)
+    assert value.value == "2026-03-18"
+
+
+@pytest.mark.django_db
+def test_library_metric_value_update_rejects_invalid_date(rf, lib_a, metric_date, user_factory):
+    view = views_module.LibraryMetricValueUpdateView.as_view()
+    user = user_factory("test@example.com", "testuser")
+    req = rf.post(
+        "/x",
+        {"metrics": {"Release Date": "2026-13-50"}},
+        format="json",
+    )
+    force_authenticate(req, user=user)
+    resp = view(req, library_id=str(lib_a.library_ID))
+
+    assert resp.status_code == status.HTTP_400_BAD_REQUEST
+    assert "Release Date must be a valid date in YYYY-MM-DD format." in resp.data["error"]
+
+
+@pytest.mark.django_db
+def test_library_metric_value_update_accepts_valid_time(rf, lib_a, metric_time, user_factory):
+    view = views_module.LibraryMetricValueUpdateView.as_view()
+    user = user_factory("test@example.com", "testuser")
+    req = rf.post(
+        "/x",
+        {"metrics": {"Review Time": "14:30"}},
+        format="json",
+    )
+    force_authenticate(req, user=user)
+    resp = view(req, library_id=str(lib_a.library_ID))
+
+    assert resp.status_code == status.HTTP_200_OK
+    value = LibraryMetricValue.objects.get(library=lib_a, metric=metric_time)
+    assert value.value == "14:30"
+
+
+@pytest.mark.django_db
+def test_library_metric_value_update_rejects_invalid_time(rf, lib_a, metric_time, user_factory):
+    view = views_module.LibraryMetricValueUpdateView.as_view()
+    user = user_factory("test@example.com", "testuser")
+    req = rf.post(
+        "/x",
+        {"metrics": {"Review Time": "99:99"}},
+        format="json",
+    )
+    force_authenticate(req, user=user)
+    resp = view(req, library_id=str(lib_a.library_ID))
+
+    assert resp.status_code == status.HTTP_400_BAD_REQUEST
+    assert "Review Time must be a valid time in HH:MM or HH:MM:SS format." in resp.data["error"]
+
+
+@pytest.mark.django_db
+def test_library_metric_value_update_accepts_valid_datetime(rf, lib_a, metric_datetime, user_factory):
+    view = views_module.LibraryMetricValueUpdateView.as_view()
+    user = user_factory("test@example.com", "testuser")
+    req = rf.post(
+        "/x",
+        {"metrics": {"Published At": "2026-03-18T14:30"}},
+        format="json",
+    )
+    force_authenticate(req, user=user)
+    resp = view(req, library_id=str(lib_a.library_ID))
+
+    assert resp.status_code == status.HTTP_200_OK
+    value = LibraryMetricValue.objects.get(library=lib_a, metric=metric_datetime)
+    assert value.value == "2026-03-18T14:30"
+
+
+@pytest.mark.django_db
+def test_library_metric_value_update_rejects_invalid_datetime(rf, lib_a, metric_datetime, user_factory):
+    view = views_module.LibraryMetricValueUpdateView.as_view()
+    user = user_factory("test@example.com", "testuser")
+    req = rf.post(
+        "/x",
+        {"metrics": {"Published At": "2026-03-18 14:30"}},
+        format="json",
+    )
+    force_authenticate(req, user=user)
+    resp = view(req, library_id=str(lib_a.library_ID))
+
+    assert resp.status_code == status.HTTP_400_BAD_REQUEST
+    assert "Published At must be a valid date and time in YYYY-MM-DDTHH:MM format." in resp.data["error"]
+
+
+@pytest.mark.django_db
 def test_library_metric_value_update_rejects_invalid_int(rf, lib_a, metric_stars, user_factory):
     view = views_module.LibraryMetricValueUpdateView.as_view()
     user = user_factory("test@example.com", "testuser")
@@ -512,6 +693,105 @@ def test_metric_value_bulk_update_success(rf, lib_a, metric_stars, metric_forks,
 
     forks = LibraryMetricValue.objects.get(library=lib_a, metric=metric_forks)
     assert forks.value is None
+
+
+@pytest.mark.django_db
+def test_metric_value_bulk_update_accepts_valid_date(rf, lib_a, metric_date, user_factory):
+    view = views_module.MetricValueBulkUpdateView.as_view()
+
+    updates = [
+        {"library_id": str(lib_a.library_ID), "metric_id": str(metric_date.metric_ID), "value": "2026-03-18"},
+    ]
+    user = user_factory("test@example.com", "testuser")
+    req = rf.post("/x", updates, format="json")
+    force_authenticate(req, user=user)
+    resp = view(req)
+
+    assert resp.status_code == status.HTTP_200_OK
+    value = LibraryMetricValue.objects.get(library=lib_a, metric=metric_date)
+    assert value.value == "2026-03-18"
+
+
+@pytest.mark.django_db
+def test_metric_value_bulk_update_rejects_invalid_date(rf, lib_a, metric_date, user_factory):
+    view = views_module.MetricValueBulkUpdateView.as_view()
+
+    updates = [
+        {"library_id": str(lib_a.library_ID), "metric_id": str(metric_date.metric_ID), "value": "2026-15-99"},
+    ]
+    user = user_factory("test@example.com", "testuser")
+    req = rf.post("/x", updates, format="json")
+    force_authenticate(req, user=user)
+    resp = view(req)
+
+    assert resp.status_code == status.HTTP_400_BAD_REQUEST
+    assert resp.data["error"] == "Release Date must be a valid date in YYYY-MM-DD format."
+
+
+@pytest.mark.django_db
+def test_metric_value_bulk_update_accepts_valid_time(rf, lib_a, metric_time, user_factory):
+    view = views_module.MetricValueBulkUpdateView.as_view()
+
+    updates = [
+        {"library_id": str(lib_a.library_ID), "metric_id": str(metric_time.metric_ID), "value": "14:30"},
+    ]
+    user = user_factory("test@example.com", "testuser")
+    req = rf.post("/x", updates, format="json")
+    force_authenticate(req, user=user)
+    resp = view(req)
+
+    assert resp.status_code == status.HTTP_200_OK
+    value = LibraryMetricValue.objects.get(library=lib_a, metric=metric_time)
+    assert value.value == "14:30"
+
+
+@pytest.mark.django_db
+def test_metric_value_bulk_update_rejects_invalid_time(rf, lib_a, metric_time, user_factory):
+    view = views_module.MetricValueBulkUpdateView.as_view()
+
+    updates = [
+        {"library_id": str(lib_a.library_ID), "metric_id": str(metric_time.metric_ID), "value": "77:88"},
+    ]
+    user = user_factory("test@example.com", "testuser")
+    req = rf.post("/x", updates, format="json")
+    force_authenticate(req, user=user)
+    resp = view(req)
+
+    assert resp.status_code == status.HTTP_400_BAD_REQUEST
+    assert resp.data["error"] == "Review Time must be a valid time in HH:MM or HH:MM:SS format."
+
+
+@pytest.mark.django_db
+def test_metric_value_bulk_update_accepts_valid_datetime(rf, lib_a, metric_datetime, user_factory):
+    view = views_module.MetricValueBulkUpdateView.as_view()
+
+    updates = [
+        {"library_id": str(lib_a.library_ID), "metric_id": str(metric_datetime.metric_ID), "value": "2026-03-18T14:30"},
+    ]
+    user = user_factory("test@example.com", "testuser")
+    req = rf.post("/x", updates, format="json")
+    force_authenticate(req, user=user)
+    resp = view(req)
+
+    assert resp.status_code == status.HTTP_200_OK
+    value = LibraryMetricValue.objects.get(library=lib_a, metric=metric_datetime)
+    assert value.value == "2026-03-18T14:30"
+
+
+@pytest.mark.django_db
+def test_metric_value_bulk_update_rejects_invalid_datetime(rf, lib_a, metric_datetime, user_factory):
+    view = views_module.MetricValueBulkUpdateView.as_view()
+
+    updates = [
+        {"library_id": str(lib_a.library_ID), "metric_id": str(metric_datetime.metric_ID), "value": "2026/03/18 14:30"},
+    ]
+    user = user_factory("test@example.com", "testuser")
+    req = rf.post("/x", updates, format="json")
+    force_authenticate(req, user=user)
+    resp = view(req)
+
+    assert resp.status_code == status.HTTP_400_BAD_REQUEST
+    assert resp.data["error"] == "Published At must be a valid date and time in YYYY-MM-DDTHH:MM format."
 
 
 @pytest.mark.django_db
