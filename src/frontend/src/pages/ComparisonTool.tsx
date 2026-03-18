@@ -473,8 +473,7 @@ const ComparisonToolPage: React.FC = () => {
                 onClick={() => navigate(`/libraries/${DOMAIN_ID}`)}
                 style={{ display: "flex", alignItems: "center", gap: 6 }}
               >
-                <Plus size={18} />
-                Add Library
+                Manage Libraries
               </button>
             )}
             {user && (
