@@ -86,11 +86,12 @@ const AddLibraryPage: React.FC = () => {
   const { domainId } = useParams<{ domainId: string }>();
   const DOMAIN_ID = domainId;
   const navigate = useNavigate();
-  const { user } = useAuthStore();
-  
+  const { user, isLoading } = useAuthStore();
+
   const [libraries, setLibraries] = useState<Library[]>([]);
   const [pageError, setPageError] = useState<string>("");
-  
+  const [loading, setLoading] = useState(true);
+
   const [modalOpen, setModalOpen] = useState(false);
   const [formError, setFormError] = useState<string>("");
   const [name, setName] = useState("");
@@ -106,18 +107,21 @@ const AddLibraryPage: React.FC = () => {
   const [failMessage, setFailMessage] = useState("");
 
   useEffect(() => {
+    if (isLoading) return;
+
     if (!user) {
-      navigate("/login", { 
-        state: { from: `/libraries/${domainId}` }
+      navigate("/login", {
+        state: { from: `/libraries/${domainId}` },
       });
     }
-  }, [user, navigate, domainId]);
+  }, [user, isLoading, navigate, domainId]);
 
   useEffect(() => {
     if (!DOMAIN_ID || !user) return;
     document.title = "DomainX – Libraries";
     loadLibraries();
   }, [DOMAIN_ID, user]);
+
   const showSuccess = (msg: string) => {
     setSuccessMessage(msg);
     setSuccess(true);
@@ -131,13 +135,8 @@ const AddLibraryPage: React.FC = () => {
   };
 
   if (!user) {
-    return (
-      <div className="dx-bg" style={{ display: "flex", height: "100vh", justifyContent: "center", alignItems: "center" }}>
-        <div>Redirecting to login...</div>
-      </div>
-    );
+    return null;
   }
-
 
   const getErrorMessage = (data: any, fallback: string) => {
     if (!data) return fallback;
@@ -175,7 +174,7 @@ const AddLibraryPage: React.FC = () => {
 
     return fallback;
   };
-  
+
   const closeModal = () => {
     setModalOpen(false);
     setFormError("");
@@ -208,6 +207,7 @@ const AddLibraryPage: React.FC = () => {
 
   const loadLibraries = async () => {
     try {
+      setLoading(true);
       setPageError("");
 
       const res = await fetch(apiUrl(`/libraries/by_domain/${DOMAIN_ID}/`), {
@@ -223,6 +223,8 @@ const AddLibraryPage: React.FC = () => {
       console.error(err);
       setPageError("Failed to load libraries.");
       showFail("Failed to load libraries.");
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -579,17 +581,11 @@ const AddLibraryPage: React.FC = () => {
                       <div style={clamp2Style}>{lib.programming_language || "—"}</div>
                     </td>
 
-                    <td
-                      style={metricCellStyle}
-                      title={lib.github_url || "—"}
-                    >
+                    <td style={metricCellStyle} title={lib.github_url || "—"}>
                       <div style={clamp3Style}>{lib.github_url || "—"}</div>
                     </td>
 
-                    <td
-                      style={metricCellStyle}
-                      title={lib.url || "—"}
-                    >
+                    <td style={metricCellStyle} title={lib.url || "—"}>
                       <div style={clamp3Style}>{lib.url || "—"}</div>
                     </td>
 
@@ -625,9 +621,28 @@ const AddLibraryPage: React.FC = () => {
               </tbody>
             </table>
 
-            {libraries.length === 0 && (
-              <div style={{ padding: 20, opacity: 0.6 }}>No libraries yet.</div>
-            )}
+            {loading ? (
+              <div
+                style={{
+                  padding: "40px 20px",
+                  opacity: 0.7,
+                  color: "rgba(255,255,255,0.75)",
+                  textAlign: "center",
+                }}
+              >
+                Just a moment
+              </div>
+            ) : libraries.length === 0 ? (
+              <div
+                style={{
+                  padding: "40px 20px",
+                  opacity: 0.6,
+                  textAlign: "center",
+                }}
+              >
+                No libraries yet.
+              </div>
+            ) : null}
           </div>
         </div>
 

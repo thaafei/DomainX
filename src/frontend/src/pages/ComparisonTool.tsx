@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { apiUrl } from "../config/api";
+import AuthTransition from "../components/AuthTransition";
 import {
   BarChart3,
   Plus,
@@ -353,9 +354,7 @@ const ComparisonToolPage: React.FC = () => {
   // Show loading state
   if (loading || authLoading || domainPublished === null) {
     return (
-      <div className="dx-bg" style={{ display: "flex", height: "100vh", justifyContent: "center", alignItems: "center" }}>
-        <div style={{ color: "white" }}>Loading...</div>
-      </div>
+      <AuthTransition message="Loading..." />
     );
   }
 

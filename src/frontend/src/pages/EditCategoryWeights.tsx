@@ -2,7 +2,7 @@ import React, { useState, useEffect, useMemo } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { apiUrl } from "../config/api";
 import { ArrowLeft } from "lucide-react";
-
+import AuthTransition from "../components/AuthTransition";
 // Define the shape of our Metric based on your Django Serializer
 interface Metric {
   metric_ID: string;
@@ -149,9 +149,8 @@ const EditCategoryWeights: React.FC = () => {
   };
 
   if (loading) return (
-    <div className="dx-bg" style={{ minHeight: "100vh", padding: "40px", color: "white" }}>
-      Loading Domain Categories...
-    </div>
+
+    <AuthTransition message="Loading Domain Categories..." />
   );
 
   return (

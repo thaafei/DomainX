@@ -4,7 +4,7 @@ import { apiUrl } from "../config/api";
 import { useAuthStore } from "../store/useAuthStore";
 import SuccessNotification from "../components/SuccessNotification";
 import { ArrowLeft } from "lucide-react";
-
+import AuthTransition from "../components/AuthTransition";
 interface Domain {
   domain_ID: string;
   domain_name: string;
@@ -339,12 +339,7 @@ const AdminPage: React.FC = () => {
   // Show loading while checking auth
   if (isLoading) {
     return (
-      <div className="dx-bg" style={{ display: "flex", height: "100vh" }}>
-        <div className="stars"></div>
-        <div style={{ margin: "auto", color: "white", fontSize: "1.5rem" }}>
-          Checking authentication...
-        </div>
-      </div>
+      <AuthTransition message="Checking Authentication..." />
     );
   }
 
