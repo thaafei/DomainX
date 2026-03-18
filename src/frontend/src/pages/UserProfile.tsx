@@ -36,6 +36,9 @@ const UserProfilePage: React.FC = () => {
   const [activeTab, setActiveTab] = useState<"details" | "password">("details");
   const [isModalOpen, setIsModalOpen] = useState(false);
 
+  // Check if user is superadmin
+  const isSuperAdmin = user?.role === "superadmin";
+
   const getSidebarItemStyle = (isActive: boolean) => ({
     padding: "12px 16px",
     cursor: "pointer",
@@ -473,66 +476,69 @@ const UserProfilePage: React.FC = () => {
                   />
                 </div>
 
-                <div style={{ gridColumn: "span 2", marginTop: "10px" }}>
-                  <div
-                    style={{
-                      display: "flex",
-                      justifyContent: "space-between",
-                      alignItems: "center",
-                      marginBottom: "12px",
-                    }}
-                  >
-                    <label style={{ color: "var(--text-dim)", fontSize: "0.85rem" }}>
-                      Associated Domains
-                    </label>
-                    {(formData.role === "admin" || formData.role === "superadmin") && (
-                      <button
-                        className="dx-btn dx-btn-outline"
-                        style={{ fontSize: "0.7rem", padding: "4px 10px", height: "auto" }}
-                        onClick={openEditDomains}
-                      >
-                        Edit Assignments
-                      </button>
-                    )}
-                  </div>
-
-                  <div
-                    style={{
-                      display: "flex",
-                      flexWrap: "wrap",
-                      gap: "8px",
-                      minHeight: "40px",
-                      padding: "12px",
-                      background: "rgba(0,0,0,0.2)",
-                      borderRadius: "8px",
-                      border: "1px solid rgba(255,255,255,0.05)",
-                    }}
-                  >
-                    {assignedDomains.length > 0 ? (
-                      assignedDomains.map((domain) => (
-                        <span
-                          key={domain.domain_ID}
-                          style={{
-                            maxHeight: "200px",
-                            overflow: "auto",
-                            border: "1px solid rgba(255,255,255,0.1)",
-                            borderRadius: "8px",
-                            padding: "12px",
-                            background: "rgba(123, 97, 255, 0.2)",
-                            fontSize: "0.8rem",
-                            color: "#b39df5",
-                          }}
+                {/* Associated Domains section - Only visible to superadmins */}
+                {isSuperAdmin && (
+                  <div style={{ gridColumn: "span 2", marginTop: "10px" }}>
+                    <div
+                      style={{
+                        display: "flex",
+                        justifyContent: "space-between",
+                        alignItems: "center",
+                        marginBottom: "12px",
+                      }}
+                    >
+                      <label style={{ color: "var(--text-dim)", fontSize: "0.85rem" }}>
+                        Associated Domains
+                      </label>
+                      {(formData.role === "admin" || formData.role === "superadmin") && (
+                        <button
+                          className="dx-btn dx-btn-outline"
+                          style={{ fontSize: "0.7rem", padding: "4px 10px", height: "auto" }}
+                          onClick={openEditDomains}
                         >
-                          {domain.domain_name}
+                          Edit Assignments
+                        </button>
+                      )}
+                    </div>
+
+                    <div
+                      style={{
+                        display: "flex",
+                        flexWrap: "wrap",
+                        gap: "8px",
+                        minHeight: "40px",
+                        padding: "12px",
+                        background: "rgba(0,0,0,0.2)",
+                        borderRadius: "8px",
+                        border: "1px solid rgba(255,255,255,0.05)",
+                      }}
+                    >
+                      {assignedDomains.length > 0 ? (
+                        assignedDomains.map((domain) => (
+                          <span
+                            key={domain.domain_ID}
+                            style={{
+                              maxHeight: "200px",
+                              overflow: "auto",
+                              border: "1px solid rgba(255,255,255,0.1)",
+                              borderRadius: "8px",
+                              padding: "12px",
+                              background: "rgba(123, 97, 255, 0.2)",
+                              fontSize: "0.8rem",
+                              color: "#b39df5",
+                            }}
+                          >
+                            {domain.domain_name}
+                          </span>
+                        ))
+                      ) : (
+                        <span style={{ color: "var(--text-dim)", fontSize: "0.85rem" }}>
+                          No domains assigned
                         </span>
-                      ))
-                    ) : (
-                      <span style={{ color: "var(--text-dim)", fontSize: "0.85rem" }}>
-                        No domains assigned
-                      </span>
-                    )}
+                      )}
+                    </div>
                   </div>
-                </div>
+                )}
 
                 <div style={{ gridColumn: "span 2", marginTop: "12px" }}>
                   <button
@@ -636,7 +642,7 @@ const UserProfilePage: React.FC = () => {
         </div>
       </div>
 
-      {isModalOpen && (
+      {isModalOpen && isSuperAdmin && (
         <div
           style={{
             position: "fixed",

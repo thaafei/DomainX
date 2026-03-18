@@ -24,7 +24,7 @@ interface User {
 
 const AdminPage: React.FC = () => {
   const navigate = useNavigate();
-  const { user } = useAuthStore();
+  const { user, isLoading } = useAuthStore();
 
   const [users, setUsers] = useState<User[]>([]);
   const [loading, setLoading] = useState(true);
@@ -80,18 +80,25 @@ const AdminPage: React.FC = () => {
     }
   }, [showInviteSuccess]);
 
+  // Handle authentication and authorization
   useEffect(() => {
-    if (user === undefined) return;
-
-    if (!user || user.role !== "superadmin") {
+    if (isLoading) return;
+    // If not logged in, redirect to login
+    if (!user) {
+      navigate("/login", { state: { from: "/admin" } });
+      return;
+    }
+    // If logged in but not superadmin, redirect to home
+    if (user.role !== "superadmin") {
       navigate("/");
       return;
     }
 
+    // Only fetch data if user is superadmin
     document.title = "DomainX – Admin";
     fetchUsers();
     fetchAllDomains();
-  }, [user, navigate]);
+  }, [user, isLoading, navigate]);
 
   const fetchAllDomains = async () => {
     try {
@@ -328,6 +335,23 @@ const AdminPage: React.FC = () => {
         : [...prev.domain_ids, domainId],
     }));
   };
+
+  // Show loading while checking auth
+  if (isLoading) {
+    return (
+      <div className="dx-bg" style={{ display: "flex", height: "100vh" }}>
+        <div className="stars"></div>
+        <div style={{ margin: "auto", color: "white", fontSize: "1.5rem" }}>
+          Checking authentication...
+        </div>
+      </div>
+    );
+  }
+
+  // Don't render anything while redirecting
+  if (!user || user.role !== "superadmin") {
+    return null;
+  }
 
   if (loading) {
     return (

@@ -10,6 +10,7 @@ import {
   Globe,
   Github,
 } from "lucide-react";
+import { useAuthStore } from "../store/useAuthStore";
 
 interface Metric {
   metric_ID: string;
@@ -181,10 +182,15 @@ const ComparisonToolPage: React.FC = () => {
   const { domainId } = useParams<{ domainId: string }>();
   const navigate = useNavigate();
   const DOMAIN_ID = domainId;
+  const { user, isLoading: authLoading } = useAuthStore();
 
   const [domainName, setDomainName] = useState("");
+  const [domainPublished, setDomainPublished] = useState<boolean | null>(null);
   const [metricList, setMetricList] = useState<Metric[]>([]);
   const [tableRows, setTableRows] = useState<LibraryMetricRow[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [accessDenied, setAccessDenied] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     if (!DOMAIN_ID) return;
@@ -198,44 +204,85 @@ const ComparisonToolPage: React.FC = () => {
         credentials: "include",
       });
 
-      if (!response.ok) throw new Error("Failed to fetch domain specifications");
+      if (!response.ok) {
+        if (response.status === 404) {
+          throw new Error("Domain not found");
+        }
+        throw new Error("Failed to fetch domain specifications");
+      }
 
       const data = await response.json();
       setDomainName(data.domain_name || "");
+      setDomainPublished(data.published || false);
       return data;
     } catch (error) {
       console.error("Error:", error);
+      setError(error instanceof Error ? error.message : "Failed to load domain");
       return null;
     }
   };
 
+  // Check access based on domain published status and auth
+  useEffect(() => {
+    // Wait for auth to load and domain data to be fetched
+    if (authLoading || domainPublished === null || loading) return;
+
+    // If domain is not published and user is not logged in, deny access
+    if (!domainPublished && !user) {
+      setAccessDenied(true);
+      // Redirect to login after a short delay to show message
+      setTimeout(() => {
+        navigate("/login", { state: { from: `/comparison-tool/${DOMAIN_ID}` } });
+      }, 2000);
+    }
+  }, [domainPublished, user, authLoading, loading, navigate, DOMAIN_ID]);
+
   const loadPageData = async () => {
     try {
-      await getDomainSpecification();
+      setLoading(true);
+      setError(null);
+      
+      const domainData = await getDomainSpecification();
 
-      const res = await fetch(
-        apiUrl(`/library_metric_values/comparison/${DOMAIN_ID}/`),
-        {
-          credentials: "include",
-        }
-      );
-
-      const contentType = res.headers.get("content-type") || "";
-      const text = await res.text();
-
-      if (!res.ok) throw new Error(`HTTP ${res.status}: ${text.slice(0, 200)}`);
-
-      if (!contentType.includes("application/json")) {
-        throw new Error(
-          `Expected JSON, got ${contentType}. Body starts with: ${text.slice(0, 80)}`
+      // If domain fetch succeeded, proceed with loading comparison data
+      if (domainData) {
+        const res = await fetch(
+          apiUrl(`/library_metric_values/comparison/${DOMAIN_ID}/`),
+          {
+            credentials: "include",
+          }
         );
-      }
 
-      const data = JSON.parse(text);
-      setMetricList(Array.isArray(data.metrics) ? data.metrics : []);
-      setTableRows(Array.isArray(data.libraries) ? data.libraries : []);
+        const contentType = res.headers.get("content-type") || "";
+        const text = await res.text();
+
+        if (!res.ok) {
+          if (res.status === 403) {
+            // Backend explicitly forbids access
+            setAccessDenied(true);
+            setTimeout(() => {
+              navigate("/login", { state: { from: `/comparison-tool/${DOMAIN_ID}` } });
+            }, 2000);
+            return;
+          }
+          throw new Error(`HTTP ${res.status}: ${text.slice(0, 200)}`);
+        }
+
+        if (!contentType.includes("application/json")) {
+          throw new Error(
+            `Expected JSON, got ${contentType}. Body starts with: ${text.slice(0, 80)}`
+          );
+        }
+
+        const data = JSON.parse(text);
+        setMetricList(Array.isArray(data.metrics) ? data.metrics : []);
+        setTableRows(Array.isArray(data.libraries) ? data.libraries : []);
+      }
     } catch (err) {
       console.error("Error loading comparison data:", err);
+      setError(err instanceof Error ? err.message : "Failed to load comparison data");
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -303,6 +350,64 @@ const ComparisonToolPage: React.FC = () => {
     URL.revokeObjectURL(url);
   };
 
+  // Show loading state
+  if (loading || authLoading || domainPublished === null) {
+    return (
+      <div className="dx-bg" style={{ display: "flex", height: "100vh", justifyContent: "center", alignItems: "center" }}>
+        <div style={{ color: "white" }}>Loading...</div>
+      </div>
+    );
+  }
+
+  // Show error state
+  if (error) {
+    return (
+      <div className="dx-bg" style={{ display: "flex", height: "100vh", justifyContent: "center", alignItems: "center" }}>
+        <div 
+          className="dx-card" 
+          style={{ 
+            padding: "40px", 
+            maxWidth: "500px", 
+            textAlign: "center",
+            color: "white"
+          }}
+        >
+          <h2 style={{ color: "var(--accent)", marginBottom: "20px" }}>Error</h2>
+          <p style={{ marginBottom: "20px" }}>{error}</p>
+          <button
+            className="dx-btn dx-btn-primary"
+            onClick={() => navigate("/")}
+          >
+            Go Back Home
+          </button>
+        </div>
+      </div>
+    );
+  }
+
+  // Show access denied message before redirect
+  if (accessDenied) {
+    return (
+      <div className="dx-bg" style={{ display: "flex", height: "100vh", justifyContent: "center", alignItems: "center" }}>
+        <div 
+          className="dx-card" 
+          style={{ 
+            padding: "40px", 
+            maxWidth: "500px", 
+            textAlign: "center",
+            color: "white"
+          }}
+        >
+          <h2 style={{ color: "var(--accent)", marginBottom: "20px" }}>Access Denied</h2>
+          <p style={{ marginBottom: "20px" }}>
+            This domain is not published and requires authentication to view.
+          </p>
+          <p>Redirecting to login page...</p>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="dx-bg" style={{ display: "flex", height: "100vh" }}>
       <div
@@ -319,7 +424,7 @@ const ComparisonToolPage: React.FC = () => {
         <button
           className="dx-btn dx-btn-outline"
           style={{ width: "100%", fontSize: "1rem", textAlign: "center" }}
-          onClick={() => navigate("/")}
+          onClick={() => navigate("/main")}
         >
           <ArrowLeft size={18} /> Back
         </button>
@@ -363,23 +468,26 @@ const ComparisonToolPage: React.FC = () => {
               flexWrap: "wrap",
             }}
           >
-            <button
-              className="dx-btn dx-btn-primary"
-              onClick={() => navigate(`/libraries/${DOMAIN_ID}`)}
-              style={{ display: "flex", alignItems: "center", gap: 6 }}
-            >
-              <Plus size={18} />
-              Add Library
-            </button>
-
-            <button
-              className="dx-btn dx-btn-outline"
-              onClick={() => navigate(`/edit/${DOMAIN_ID}`)}
-              style={{ display: "flex", alignItems: "center", gap: 6 }}
-            >
-              <Pencil size={18} />
-              Edit Metric Values
-            </button>
+            {user && (
+              <button
+                className="dx-btn dx-btn-primary"
+                onClick={() => navigate(`/libraries/${DOMAIN_ID}`)}
+                style={{ display: "flex", alignItems: "center", gap: 6 }}
+              >
+                <Plus size={18} />
+                Add Library
+              </button>
+            )}
+            {user && (
+              <button
+                className="dx-btn dx-btn-outline"
+                onClick={() => navigate(`/edit/${DOMAIN_ID}`)}
+                style={{ display: "flex", alignItems: "center", gap: 6 }}
+              >
+                <Pencil size={18} />
+                Edit Metric Values
+              </button>
+            )}
 
             <div style={{ flexGrow: 1 }} />
 
@@ -593,65 +701,63 @@ const ComparisonToolPage: React.FC = () => {
                             </a>
                           )}
                         </div>
-
-
                       </div>
                     </td>
 
                     {metricList.map((m) => {
-  const cellVal = row.metrics[m.metric_name];
-  const cellDesc = row.metrics[`${m.metric_name}_description`];
+                      const cellVal = row.metrics[m.metric_name];
+                      const cellDesc = row.metrics[`${m.metric_name}_description`];
 
-  if (m.metric_key === "gitstats_report") {
-    const url = cellVal ? String(cellVal) : null;
-    return (
-      <td
-        key={m.metric_ID}
-        style={{
-          ...metricCellStyle,
-          whiteSpace: "normal",
-          wordBreak: "break-word",
-        }}
-        title={url || "—"}
-      >
-        <div style={clamp2Style}>
-          {url ? (
-            <a
-              href={url}
-              target="_blank"
-              rel="noreferrer"
-              style={{ color: "var(--accent)", textDecoration: "none" }}
-            >
-              View report
-            </a>
-          ) : (
-            "—"
-          )}
-        </div>
-      </td>
-    );
-  }
+                      if (m.metric_key === "gitstats_report") {
+                        const url = cellVal ? String(cellVal) : null;
+                        return (
+                          <td
+                            key={m.metric_ID}
+                            style={{
+                              ...metricCellStyle,
+                              whiteSpace: "normal",
+                              wordBreak: "break-word",
+                            }}
+                            title={url || "—"}
+                          >
+                            <div style={clamp2Style}>
+                              {url ? (
+                                <a
+                                  href={url}
+                                  target="_blank"
+                                  rel="noreferrer"
+                                  style={{ color: "var(--accent)", textDecoration: "none" }}
+                                >
+                                  View report
+                                </a>
+                              ) : (
+                                "—"
+                              )}
+                            </div>
+                          </td>
+                        );
+                      }
 
-  return (
-    <td
-      key={m.metric_ID}
-      style={{
-        ...metricCellStyle,
-        whiteSpace: "normal",
-        wordBreak: "break-word",
-        position: "relative",
-      }}
-      title={cellDesc ? `Value: ${cellVal}\n\nDescription: ${cellDesc}` : String(cellVal || "—")}
-    >
-      <ExpandableText
-        text={cellVal != null ? String(cellVal) : ""}
-        lines={3}
-        emptyText="—"
-        description={cellDesc ? String(cellDesc) : undefined} 
-      />
-    </td>
-  );
-})}
+                      return (
+                        <td
+                          key={m.metric_ID}
+                          style={{
+                            ...metricCellStyle,
+                            whiteSpace: "normal",
+                            wordBreak: "break-word",
+                            position: "relative",
+                          }}
+                          title={cellDesc ? `Value: ${cellVal}\n\nDescription: ${cellDesc}` : String(cellVal || "—")}
+                        >
+                          <ExpandableText
+                            text={cellVal != null ? String(cellVal) : ""}
+                            lines={3}
+                            emptyText="—"
+                            description={cellDesc ? String(cellDesc) : undefined} 
+                          />
+                        </td>
+                      );
+                    })}
                   </tr>
                 ))}
               </tbody>

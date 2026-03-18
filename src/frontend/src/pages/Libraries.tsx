@@ -3,6 +3,7 @@ import { useNavigate, useParams } from "react-router-dom";
 import { apiUrl } from "../config/api";
 import SuccessNotification from "../components/SuccessNotification";
 import { ArrowLeft } from "lucide-react";
+import { useAuthStore } from "../store/useAuthStore";
 
 interface Library {
   library_ID: string;
@@ -85,10 +86,11 @@ const AddLibraryPage: React.FC = () => {
   const { domainId } = useParams<{ domainId: string }>();
   const DOMAIN_ID = domainId;
   const navigate = useNavigate();
-
+  const { user } = useAuthStore();
+  
   const [libraries, setLibraries] = useState<Library[]>([]);
   const [pageError, setPageError] = useState<string>("");
-
+  
   const [modalOpen, setModalOpen] = useState(false);
   const [formError, setFormError] = useState<string>("");
   const [name, setName] = useState("");
@@ -103,6 +105,19 @@ const AddLibraryPage: React.FC = () => {
   const [fail, setFail] = useState(false);
   const [failMessage, setFailMessage] = useState("");
 
+  useEffect(() => {
+    if (!user) {
+      navigate("/login", { 
+        state: { from: `/libraries/${domainId}` }
+      });
+    }
+  }, [user, navigate, domainId]);
+
+  useEffect(() => {
+    if (!DOMAIN_ID || !user) return;
+    document.title = "DomainX – Libraries";
+    loadLibraries();
+  }, [DOMAIN_ID, user]);
   const showSuccess = (msg: string) => {
     setSuccessMessage(msg);
     setSuccess(true);
@@ -114,6 +129,15 @@ const AddLibraryPage: React.FC = () => {
     setFail(true);
     setTimeout(() => setFail(false), 2200);
   };
+
+  if (!user) {
+    return (
+      <div className="dx-bg" style={{ display: "flex", height: "100vh", justifyContent: "center", alignItems: "center" }}>
+        <div>Redirecting to login...</div>
+      </div>
+    );
+  }
+
 
   const getErrorMessage = (data: any, fallback: string) => {
     if (!data) return fallback;
@@ -151,13 +175,7 @@ const AddLibraryPage: React.FC = () => {
 
     return fallback;
   };
-
-  useEffect(() => {
-    if (!DOMAIN_ID) return;
-    document.title = "DomainX – Libraries";
-    loadLibraries();
-  }, [DOMAIN_ID]);
-
+  
   const closeModal = () => {
     setModalOpen(false);
     setFormError("");

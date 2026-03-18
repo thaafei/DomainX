@@ -1,7 +1,9 @@
 from rest_framework import generics, status
+from rest_framework.decorators import api_view, permission_classes
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
 from rest_framework.views import APIView
+from rest_framework.permissions import IsAuthenticatedOrReadOnly, IsAuthenticated
 from django.conf import settings
 import json, os
 from .models import Metric
@@ -70,6 +72,7 @@ class MetricCategoryView(APIView):
 class MetricListCreateView(generics.ListCreateAPIView):
     queryset = Metric.objects.all().order_by("metric_name")
     serializer_class = MetricSerializer
+    permission_classes = [IsAuthenticatedOrReadOnly]
 
 
 class MetricRetrieveUpdateDestroyView(generics.RetrieveUpdateDestroyAPIView):
@@ -77,9 +80,11 @@ class MetricRetrieveUpdateDestroyView(generics.RetrieveUpdateDestroyAPIView):
     serializer_class = MetricSerializer
     lookup_field = "metric_ID"
     lookup_url_kwarg = "metric_id"
+    permission_classes = [IsAuthenticatedOrReadOnly]
 
 
 class MetricUpdateWeightView(APIView):
+    permission_classes = [IsAuthenticatedOrReadOnly]
     def patch(self, request, metric_id):
         try:
             metric = Metric.objects.get(metric_ID=metric_id)

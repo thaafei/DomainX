@@ -28,7 +28,7 @@ def user_factory():
 @pytest.mark.django_db
 def test_create_domain_success(api_client, user_factory):
     creator = user_factory("alice@example.com", "alice", role="admin")
-
+    api_client.force_authenticate(user=creator)
     payload = {
         "domain_name": "Test Domain",
         "description": "A description",
@@ -46,7 +46,9 @@ def test_create_domain_success(api_client, user_factory):
 
 
 @pytest.mark.django_db
-def test_create_domain_missing_fields(api_client):
+def test_create_domain_missing_fields(api_client, user_factory):
+    user = user_factory("test@example.com", "testuser")
+    api_client.force_authenticate(user=user)
     response = api_client.post("/api/domain/", {}, format="json")
 
     assert response.status_code == status.HTTP_400_BAD_REQUEST
@@ -73,7 +75,7 @@ def test_update_domain_sets_creators(api_client, user_factory):
     domain = Domain.objects.create(domain_name="Original", description="old")
     u1 = user_factory("u1@example.com", "u1", role="admin")
     u2 = user_factory("u2@example.com", "u2", role="superadmin")
-
+    api_client.force_authenticate(user=u1)
     payload = {
         "domain_name": "Updated",
         "description": "new",
@@ -94,9 +96,10 @@ def test_update_domain_sets_creators(api_client, user_factory):
 
 
 @pytest.mark.django_db
-def test_delete_domain(api_client):
+def test_delete_domain(api_client, user_factory):
     domain = Domain.objects.create(domain_name="Temp", description="temp")
-
+    user = user_factory("test@example.com", "testuser")
+    api_client.force_authenticate(user=user)
     response = api_client.delete(f"/api/domain/{domain.domain_ID}/")
 
     assert response.status_code == status.HTTP_204_NO_CONTENT

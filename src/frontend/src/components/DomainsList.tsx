@@ -32,6 +32,8 @@ interface DomainsListProps {
   updateLoading: boolean;
   updateError: string | null;
   showSuccess: boolean;
+  isLoggedIn: boolean;
+  isAdmin: boolean;
 }
 
 const DomainsList: React.FC<DomainsListProps> = ({
@@ -62,7 +64,9 @@ const DomainsList: React.FC<DomainsListProps> = ({
   handleUpdateUser,
   updateLoading,
   updateError,
-  showSuccess
+  showSuccess,
+  isLoggedIn,
+  isAdmin
 }) => {
   const navigate = useNavigate();
   const { user } = useAuthStore();
@@ -116,7 +120,11 @@ const DomainsList: React.FC<DomainsListProps> = ({
       )}
 
       <div style={{ flex: 1, overflowY: "auto" }}>
-        {domains.map((d) => (
+        {domains
+          .filter((d) => {
+            return isLoggedIn ? true : d.published === true;
+          })
+          .map((d) => (
           <div
             key={d.domain_ID} 
             className="dx-side-item"
@@ -170,20 +178,24 @@ const DomainsList: React.FC<DomainsListProps> = ({
               </button>
             </>
           )}
-          <button
-            className="dx-btn dx-btn-primary"
-            onClick={() => navigate("/user")}
-            style={{display: "flex", alignItems: "center", gap: 8}}
-          >
-            <span style={{ fontSize: 15, marginRight: 8 }}>👤</span> Edit Profile
-          </button>
-          <button
-            className="dx-btn dx-btn-outline"
-            onClick={() => handleLogout()}
-            style={{ display: "flex", alignItems: "center", gap: 8}}
-          >
-            Logout
-          </button>
+          {isLoggedIn ? (
+            <>
+              <button className="dx-btn dx-btn-primary" onClick={() => navigate("/user")}>
+                <span style={{ fontSize: 15, marginRight: 8 }}>👤</span> Edit Profile
+              </button>
+              <button className="dx-btn dx-btn-outline" onClick={() => handleLogout()}>
+                Logout
+              </button>
+            </>
+          ) : (
+            <button 
+              className="dx-btn dx-btn-primary" 
+              onClick={() => navigate("/login")}
+              style={{ display: "flex", alignItems: "center", gap: 8 }}
+            >
+              <span style={{ fontSize: 15, marginRight: 8 }}>🔑</span> Login
+            </button>
+          )}
           {isEditModalOpen && currentUser && (
             <div
               style={{

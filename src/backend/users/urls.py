@@ -15,8 +15,8 @@ from .views.auth_views import (
     ForgotPasswordView,
     ResetPasswordView,
     ValidateResetPasswordView,
-    ResendInviteView
-
+    ResendInviteView,
+    RefreshTokenView
 )
 urlpatterns = [
     path("login/", LoginView.as_view(), name="login"),
@@ -31,6 +31,7 @@ urlpatterns = [
     path("users/<int:user_id>/", UserUpdateView.as_view(), name="user-update"),
     path("users/<int:user_id>/change-password/", ChangePasswordView.as_view(), name="change-password"),
     path("users/<int:user_id>/domains/", UserDomainListView.as_view(), name="user-domains"),
+    path('refresh-token/', RefreshTokenView.as_view(), name='refresh_token'),
     path("users/<int:user_id>/deactivate/", DeactivateUserView.as_view()),
     path("forgot-password/", ForgotPasswordView.as_view(), name="forgot-password"),
     path("reset-password/", ResetPasswordView.as_view(), name="reset-password"),

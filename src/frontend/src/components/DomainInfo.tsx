@@ -10,11 +10,9 @@ interface DomainInfoProps {
 
 const DomainInfo: React.FC<DomainInfoProps> = ({ selectedDomain, sidebarOpen, setSidebarOpen }) => {
       const navigate = useNavigate();
-      const { user } = useAuthStore();
+      const { user, isLoading } = useAuthStore();
       
-      const isCreator = user && selectedDomain?.creators?.some((c: any) => c.id === user.id);
-      const isSuperAdmin = user?.role === "superadmin";
-      const canEditDomain = isCreator || isSuperAdmin;
+      const isLoggedIn = !!user;
 
     return (
         <div
@@ -82,15 +80,19 @@ const DomainInfo: React.FC<DomainInfoProps> = ({ selectedDomain, sidebarOpen, se
                 </a>
               </div>
             )}
-            {canEditDomain && (
+            
+            {/* Only show buttons when auth is not loading */}
+            {!isLoading && isLoggedIn && (
               <>
                 <button
                   className="dx-btn dx-btn-primary"
+                  disabled={!selectedDomain}
                   onClick={() => navigate(`/edit-domain/${selectedDomain.domain_ID}`)}
                   style={{ display: "flex", alignItems: "center", gap: 8}}
                 >
                   <span style={{ fontSize: 15 }}>✏️</span> Edit Domain
                 </button>
+                
                 <button
                   className="dx-btn dx-btn-primary"
                   disabled={!selectedDomain}
@@ -99,15 +101,25 @@ const DomainInfo: React.FC<DomainInfoProps> = ({ selectedDomain, sidebarOpen, se
                 >
                   <span style={{ fontSize: 15, marginRight: 8 }}>📊</span> Edit Category Weights
                 </button>
+                
                 <button
-                    className="dx-btn dx-btn-primary"
-                    onClick={() => navigate("/metrics")}
-                    style={{  display: "flex", alignItems: "center", gap: 8}}
-                  >
-                    Edit Metrics
+                  className="dx-btn dx-btn-primary"
+                  onClick={() => navigate("/metrics")}
+                  style={{ display: "flex", alignItems: "center", gap: 8}}
+                >
+                  Edit Metrics
                 </button>
               </>
-             )}
+            )}
+            
+            {/* Show loading state while checking auth */}
+            {isLoading && (
+              <div style={{ textAlign: 'center', padding: '10px', opacity: 0.7 }}>
+                Checking authentication...
+              </div>
+            )}
+            
+            {/* Comparison Tool button - visible to everyone (even while loading) */}
             <button
                 className="dx-btn dx-btn-primary"
                 disabled={!selectedDomain}
@@ -119,8 +131,6 @@ const DomainInfo: React.FC<DomainInfoProps> = ({ selectedDomain, sidebarOpen, se
 
           </>
         )}
-
-
         </div>
     );
 };
