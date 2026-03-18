@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo } from "react";
+import React, { useState, useEffect, useMemo, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuthStore } from "../store/useAuthStore";
 import CustomIsometricBar from '../components/CustomIsometricBar';
@@ -21,35 +21,31 @@ import JSZip from 'jszip';
 import { saveAs } from 'file-saver';
 import Plotly, { Data, Layout } from "plotly.js-dist-min";
 import AuthTransition from "../components/AuthTransition";
-// Helper for image conversion
+
 const dataUrlToBlob = (data: string) => {
   if (!data) return new Blob();
 
-  // 1. Handle Raw XML/SVG tags
   if (data.startsWith('<svg') || data.startsWith('<?xml')) {
     return new Blob([data], { type: 'image/svg+xml;charset=utf-8' });
   }
 
-  // 2. Handle Data URLs
   if (data.startsWith('data:')) {
     const [header, body] = data.split(',');
-    
+
     if (header.includes('base64')) {
-      // Decode Base64 (usually for PNG/JPEG)
       const bin = window.atob(body);
       const arr = new Uint8Array(bin.length).map((_, i) => bin.charCodeAt(i));
       return new Blob([arr], { type: header.split(':')[1].split(';')[0] });
     } else {
-      // Decode URL-encoded string (usually for SVG)
       return new Blob([decodeURIComponent(body)], { type: 'image/svg+xml;charset=utf-8' });
     }
   }
-  
+
   return new Blob([data], { type: 'text/plain' });
 };
 
 const getPastelColor = (index: number) => {
-  const hue = (index * 137.5) % 360; 
+  const hue = (index * 137.5) % 360;
   return `hsl(${hue}, 60%, 70%)`;
 };
 
@@ -74,9 +70,10 @@ const downloadConfig: any = {
     height: 500,
     width: 700,
     scale: 2,
-    setBackground: 'transparent' 
+    setBackground: 'transparent'
   }
 };
+
 const Main: React.FC = () => {
   const navigate = useNavigate();
   const [leftSidebarOpen, setLeftSidebarOpen] = useState(true);
@@ -121,43 +118,50 @@ const Main: React.FC = () => {
   const [libraries, setLibraries] = useState<LibraryRow[]>([]);
   const [selectedIndividualAhpCategories, setSelectedIndividualAhpCategories] = useState<string[]>([]);
   const [plotlyCharts, setPlotlyCharts] = useState<{ metric: string; rows: { label: string; value: number }[] }[]>([]);
+  const [showCategoryDropdown, setShowCategoryDropdown] = useState(false);
+  const dropdownRef = useRef<HTMLDivElement | null>(null);
+
   const toggleIndividualAhpCategory = (category: string) => {
     setSelectedIndividualAhpCategories(prev =>
       prev.includes(category) ? prev.filter(x => x !== category) : [...prev, category]
     );
   };
+
   const downloadFormat = "svg";
-  //Derived List for Filter Buttons
+
   const categoryListForAhp = useMemo(() => {
     if (!ahpData?.category_details) return [];
     return Object.keys(ahpData.category_details);
   }, [ahpData]);
-  function buildChartLayout(metric: string, isExport: boolean = false): Partial<Layout> {
-  // Website: White text for dark theme | Download: Black text for general use
-  const fontColor = isExport ? "#000000" : "#ffffff";
-  const gridColor = isExport ? "rgba(0,0,0,0.1)" : "rgba(255,255,255,0.1)";
 
-  return {
-    title: {
-      text: metric,
-      font: { size: 18, color: fontColor },
-    },
-    paper_bgcolor: "rgba(0,0,0,0)", // Keep background transparent for both
-    plot_bgcolor: "rgba(0,0,0,0)",
-    xaxis: {
-      title: { text: "Category", font: { color: fontColor } },
-      tickfont: { color: fontColor },
-      gridcolor: gridColor,
-    },
-    yaxis: {
-      title: { text: metric, font: { color: fontColor } },
-      tickfont: { color: fontColor },
-      gridcolor: gridColor,
-    },
-    margin: { t: 80, l: 60, r: 60, b: 60 },
-    autosize: true,
-  };
-}
+  function buildChartLayout(metric: string, isExport: boolean = false): Partial<Layout> {
+    const fontColor = isExport ? "#000000" : "#ffffff";
+    const gridColor = isExport ? "rgba(0,0,0,0.1)" : "rgba(255,255,255,0.1)";
+
+    return {
+      title: {
+        text: metric,
+        font: { size: 18, color: fontColor },
+      },
+      paper_bgcolor: "rgba(0,0,0,0)",
+      plot_bgcolor: "rgba(0,0,0,0)",
+      xaxis: {
+        title: { text: "Category", font: { color: fontColor }, standoff: 20 },
+        tickfont: { color: fontColor, size: 12 },
+        gridcolor: gridColor,
+        tickangle: -90,
+        automargin: true,
+      },
+      yaxis: {
+        title: { text: metric, font: { color: fontColor } },
+        tickfont: { color: fontColor },
+        gridcolor: gridColor,
+        automargin: true,
+      },
+      margin: { t: 80, l: 60, r: 60, b: 170 },
+      autosize: true,
+    };
+  }
 
   const buildChartData = (rows: { label: string; value: number }[]): Data[] => [{
     x: rows.map(r => r.label),
@@ -166,50 +170,59 @@ const Main: React.FC = () => {
     marker: { color: "#4facfe" }
   }];
 
-  // Download All Logic
   const handleDownloadAll = async () => {
-  if (!plotlyCharts.length) return;
-  const zip = new JSZip();
-  const dateStamp = new Date().toISOString().slice(0, 10);
+    if (!plotlyCharts.length) return;
+    const zip = new JSZip();
+    const dateStamp = new Date().toISOString().slice(0, 10);
 
-  try {
-    const downloadPromises = plotlyCharts.map(async (chart) => {
-      const data = buildChartData(chart.rows);
-      const layout = buildChartLayout(chart.metric, true);
+    try {
+      const downloadPromises = plotlyCharts.map(async (chart) => {
+        const data = buildChartData(chart.rows);
+        const layout = buildChartLayout(chart.metric, true);
 
-      // Generating higher resolution for the zip files
-      const dataUrl = await Plotly.toImage(
-        { data, layout }, 
-        { width: 1200, height: 800, format: 'svg' }
-      );
+        const dataUrl = await Plotly.toImage(
+          { data, layout },
+          { width: 1200, height: 800, format: 'svg' }
+        );
 
-      const blob = dataUrlToBlob(dataUrl as string);
-      const safeName = chart.metric.replace(/[^\w\s]/gi, '').replace(/\s+/g, "_").toLowerCase();
-      zip.file(`${safeName}.svg`, blob);
-    });
+        const blob = dataUrlToBlob(dataUrl as string);
+        const safeName = chart.metric.replace(/[^\w\s]/gi, '').replace(/\s+/g, "_").toLowerCase();
+        zip.file(`${safeName}.svg`, blob);
+      });
 
-    await Promise.all(downloadPromises);
-    const content = await zip.generateAsync({ type: "blob" });
-    saveAs(content, `DomainX_Analysis_${dateStamp}.zip`);
-  } catch (error) {
-    console.error("Export failed:", error);
-  }
-};
-  // Trigger the update whenever categories or domain changes
+      await Promise.all(downloadPromises);
+      const content = await zip.generateAsync({ type: "blob" });
+      saveAs(content, `DomainX_Analysis_${dateStamp}.zip`);
+    } catch (error) {
+      console.error("Export failed:", error);
+    }
+  };
+
   useEffect(() => {
-      if (selectedDomain && ahpData) {
-          generatePlotlyCharts();
-      }
+    if (selectedDomain && ahpData) {
+      generatePlotlyCharts();
+    }
   }, [selectedIndividualAhpCategories, selectedDomain, ahpData]);
 
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
+        setShowCategoryDropdown(false);
+      }
+    };
+
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, []);
+
   const generatePlotlyCharts = () => {
-    // 1. Create the Global chart object
     const globalChart = {
       metric: "Global AHP Ranking",
       rows: chartData.map(d => ({ label: d.name, value: d.score / 100 }))
     };
 
-    // 2. Create the Category chart objects
     const categoryCharts = selectedIndividualAhpCategories.map(cat => {
       const categoryScores = ahpData?.category_details[cat];
       if (!categoryScores) return null;
@@ -220,14 +233,12 @@ const Main: React.FC = () => {
       })).sort((a, b) => b.value - a.value);
 
       return { metric: `${cat} Score`, rows };
-    }).filter((chart): chart is { metric: string; rows: { label: string; value: number }[] } => 
+    }).filter((chart): chart is { metric: string; rows: { label: string; value: number }[] } =>
       chart !== null
     );
 
-    // 3. Set state with Global first, then Categories
     setPlotlyCharts([globalChart, ...categoryCharts]);
   };
-
 
   const handleUpdateUser = async () => {
     if (!user) return;
@@ -248,7 +259,6 @@ const Main: React.FC = () => {
       if (response.ok) {
         await fetchCurrentUser();
         setShowSuccess(true);
-        // Automatically hide the message and close modal after 2 seconds
         setTimeout(() => {
           setShowSuccess(false);
           setIsEditModalOpen(false);
@@ -276,13 +286,13 @@ const Main: React.FC = () => {
         const data = await response.json();
         setAhpData(data);
         const libraryRows: LibraryRow[] = Object.keys(data.global_ranking).map(name => ({
-        library_ID: name,
-        library_name: name,
-        metrics: {} 
-      }));
-      setLibraries(libraryRows);
+          library_ID: name,
+          library_name: name,
+          metrics: {}
+        }));
+        setLibraries(libraryRows);
         setGlobalRanking(data.global_ranking || {});
-        
+
         const libraries = Object.keys(data.global_ranking);
         const rows = libraries.map(lib => ({
           name: lib,
@@ -292,7 +302,7 @@ const Main: React.FC = () => {
             return acc;
           }, {})
         }));
-        
+
         setTableData(rows);
         setGraph(true);
       } else {
@@ -303,6 +313,7 @@ const Main: React.FC = () => {
       setGraph(false);
     }
   };
+
   const requestSort = (key: string) => {
     let direction: "asc" | "desc" = "desc";
     if (sortConfig && sortConfig.key === key && sortConfig.direction === "desc") {
@@ -317,11 +328,11 @@ const Main: React.FC = () => {
     const bVal = b[sortConfig.key];
     return sortConfig.direction === "asc" ? aVal - bVal : bVal - aVal;
   });
+
   const activeCategories = useMemo(() => {
     if (!categories || !tableData.length) return [];
 
-    // Filter categories: keep only those where at least one row has a valid number
-    return categories.filter((cat: string) => 
+    return categories.filter((cat: string) =>
       tableData.some(row => {
         const val = row[cat];
         return typeof val === 'number' && !isNaN(val) && val !== 0;
@@ -335,7 +346,8 @@ const Main: React.FC = () => {
       score: parseFloat(((score as number) * 100).toFixed(2)),
       color: getPastelColor(index),
     }))
-    .sort((a, b) => b.score - a.score);;
+    .sort((a, b) => b.score - a.score);
+
   const fetchCurrentUser = async () => {
     try {
       const response = await fetch(apiUrl("/me/"), {
@@ -391,23 +403,19 @@ const Main: React.FC = () => {
 
       if (response.ok) {
         const data = await response.json();
-        
-        // 1. Always set the full list to state so the UI has them
+
         setDomains(data);
 
         if (data.length > 0) {
           const savedId = localStorage.getItem("dx:lastDomainId");
-          
-          // 2. Logic for Logged In vs Guest
+
           let domainToSelect;
 
           if (user) {
-            // LOGGED IN: Use saved ID or just the first one in the list
             domainToSelect = data.find((d: any) => String(d.domain_ID) === String(savedId)) || data[0];
           } else {
-            // GUEST: Only look at published domains
             const publishedDomains = data.filter((d: any) => d.is_published);
-            
+
             if (publishedDomains.length > 0) {
               domainToSelect = publishedDomains[0];
             } else {
@@ -430,7 +438,7 @@ const Main: React.FC = () => {
   };
 
   useEffect(() => {
-      document.title = "DomainX - Home";
+    document.title = "DomainX - Home";
     const fetchRules = async () => {
       try {
         const response = await fetch(apiUrl("/metrics/categories/"), {
@@ -496,7 +504,7 @@ const Main: React.FC = () => {
     }
   };
 
- if (loading) return <AuthTransition message="Loading..." />;
+  if (loading) return <AuthTransition message="Loading..." />;
 
   const handleLogout = async () => {
     if (!user) {
@@ -551,7 +559,7 @@ const Main: React.FC = () => {
         setDomainName("");
         setDescription("");
         setSelectedCreatorIds([]);
-        await fetchDomains(); // refresh list
+        await fetchDomains();
       } else {
         setFormError("Failed to create domain. Please try again.");
       }
@@ -562,7 +570,6 @@ const Main: React.FC = () => {
 
   return (
     <div className="dx-bg" style={{ display: "flex", height: "100vh", overflow: "hidden" }}>
-      {/* Left Sidebar - Existing Domains Logic */}
       <DomainsList
         sidebarOpen={leftSidebarOpen}
         setSidebarOpen={setLeftSidebarOpen}
@@ -599,12 +606,11 @@ const Main: React.FC = () => {
       <div style={{ flex: 1, display: "flex", flexDirection: "column", alignItems: "center", position: "relative", overflow: "hidden" }}>
         <div className="stars"></div>
 
-        {/* Tab Toggle */}
-        <div style={{ 
-          display: "inline-flex", 
-          background: "#161b22", 
-          padding: "4px", 
-          borderRadius: "10px", 
+        <div style={{
+          display: "inline-flex",
+          background: "#161b22",
+          padding: "4px",
+          borderRadius: "10px",
           border: "1px solid #30363d",
           marginTop: "30px",
           marginBottom: "10px",
@@ -632,39 +638,127 @@ const Main: React.FC = () => {
         </div>
 
         {activeTab === "graph" && (
-          <div className="dx-card" style={{ 
-            padding: "24px", 
-            width: "95%", 
-            maxWidth: "1200px", 
-            height: "calc(100vh - 150px)", // Set a fixed height relative to viewport
-            overflowY: "auto",             // Enable vertical scrolling
-            display: "flex", 
+          <div className="dx-card" style={{
+            padding: "24px",
+            width: "95%",
+            maxWidth: "1200px",
+            height: "calc(100vh - 150px)",
+            overflowY: "auto",
+            display: "flex",
             flexDirection: "column",
-            background: "rgba(13, 17, 23, 0.8)" 
+            background: "rgba(13, 17, 23, 0.8)"
           }}>
-            
-            {/* Filters and Download Header */}
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-end", marginBottom: "24px", gap: "20px" }}>
               <div style={{ flex: 1 }}>
                 <h3 style={{ color: "white", marginBottom: "12px" }}>Detailed Analysis Filters</h3>
-                <div style={{ display: "flex", gap: "10px", flexWrap: "wrap" }}>
-                  {categoryListForAhp.map(cat => (
-                    <button 
-                      key={cat}
-                      onClick={() => toggleIndividualAhpCategory(cat)}
+                <div ref={dropdownRef} style={{ position: "relative", display: "inline-block", minWidth: "320px", maxWidth: "420px", width: "100%" }}>
+                  <button
+                    type="button"
+                    onClick={() => setShowCategoryDropdown(prev => !prev)}
+                    style={{
+                      width: "100%",
+                      padding: "10px 14px",
+                      borderRadius: "10px",
+                      border: "1px solid #30363d",
+                      background: "#161b22",
+                      color: "white",
+                      cursor: "pointer",
+                      fontSize: "0.9rem",
+                      textAlign: "left",
+                      display: "flex",
+                      justifyContent: "space-between",
+                      alignItems: "center"
+                    }}
+                  >
+                    <span style={{ overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+                      {selectedIndividualAhpCategories.length > 0
+                        ? `${selectedIndividualAhpCategories.length} filter${selectedIndividualAhpCategories.length > 1 ? "s" : ""} selected`
+                        : "Select analysis filters"}
+                    </span>
+                    <span style={{ marginLeft: "12px", fontSize: "0.8rem", color: "#8b949e" }}>
+                      {showCategoryDropdown ? "▲" : "▼"}
+                    </span>
+                  </button>
+
+                  {showCategoryDropdown && (
+                    <div
                       style={{
-                        padding: "6px 14px",
-                        borderRadius: "20px",
+                        position: "absolute",
+                        top: "calc(100% + 8px)",
+                        left: 0,
+                        width: "100%",
+                        maxHeight: "260px",
+                        overflowY: "auto",
+                        background: "#0d1117",
                         border: "1px solid #30363d",
-                        background: selectedIndividualAhpCategories.includes(cat) ? "#4facfe" : "#161b22",
-                        color: "white",
-                        cursor: "pointer",
-                        fontSize: "0.85rem"
+                        borderRadius: "12px",
+                        boxShadow: "0 8px 24px rgba(0,0,0,0.35)",
+                        zIndex: 100
                       }}
                     >
-                      {cat}
-                    </button>
-                  ))}
+                      <div style={{ padding: "10px", borderBottom: "1px solid #21262d", display: "flex", gap: "8px", flexWrap: "wrap" }}>
+                        <button
+                          type="button"
+                          onClick={() => setSelectedIndividualAhpCategories(categoryListForAhp)}
+                          style={{
+                            padding: "6px 10px",
+                            borderRadius: "8px",
+                            border: "1px solid #30363d",
+                            background: "#161b22",
+                            color: "white",
+                            cursor: "pointer",
+                            fontSize: "0.8rem"
+                          }}
+                        >
+                          Select All
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => setSelectedIndividualAhpCategories([])}
+                          style={{
+                            padding: "6px 10px",
+                            borderRadius: "8px",
+                            border: "1px solid #30363d",
+                            background: "#161b22",
+                            color: "white",
+                            cursor: "pointer",
+                            fontSize: "0.8rem"
+                          }}
+                        >
+                          Clear
+                        </button>
+                      </div>
+
+                      <div style={{ padding: "8px" }}>
+                        {categoryListForAhp.map((cat) => {
+                          const checked = selectedIndividualAhpCategories.includes(cat);
+
+                          return (
+                            <label
+                              key={cat}
+                              style={{
+                                display: "flex",
+                                alignItems: "center",
+                                gap: "10px",
+                                padding: "10px 12px",
+                                borderRadius: "8px",
+                                cursor: "pointer",
+                                color: "white"
+                              }}
+                            >
+                              <input
+                                type="checkbox"
+                                checked={checked}
+                                onChange={() => toggleIndividualAhpCategory(cat)}
+                                style={{ cursor: "pointer" }}
+                              />
+                              <span style={{ fontSize: "0.9rem" }}>{cat}</span>
+                            </label>
+                          );
+                        })}
+                      </div>
+                    </div>
+                  )}
                 </div>
               </div>
 
@@ -682,7 +776,6 @@ const Main: React.FC = () => {
               )}
             </div>
 
-            {/* Scrollable Chart Area */}
             <div style={{ flex: 1, overflowY: "auto", paddingRight: "10px" }}>
               {plotlyCharts.length > 0 ? (
                 plotlyCharts.map((chart) => (
@@ -691,7 +784,7 @@ const Main: React.FC = () => {
                       data={buildChartData(chart.rows)}
                       layout={buildChartLayout(chart.metric)}
                       config={downloadConfig}
-                      style={{ width: "100%", height: "400px" }}
+                      style={{ width: "100%", height: "520px" }}
                     />
                   </div>
                 ))
@@ -703,26 +796,27 @@ const Main: React.FC = () => {
             </div>
           </div>
         )}
+
         {graph && activeTab === "table" && (
           <div className="dx-card" style={{ width: "95%", maxWidth: "1200px", background: "#161b22", padding: "20px", borderRadius: "12px", border: "1px solid #30363d", overflowX: "auto", display: "block" }}>
             <table style={{ width: "100%", borderCollapse: "collapse", color: "#c9d1d9", textAlign: "left", minWidth: "800px" }}>
               <thead>
                 <tr style={{ borderBottom: "1px solid #30363d" }}>
                   <th style={{ padding: "12px" }}>Library</th>
-                  <th 
-                    onClick={() => requestSort("overall")} 
+                  <th
+                    onClick={() => requestSort("overall")}
                     style={{ padding: "12px", cursor: "pointer", color: sortConfig?.key === "overall" ? "#4facfe" : "inherit" }}
                   >
                     Overall {sortConfig?.key === "overall" ? (sortConfig.direction === "asc" ? "↑" : "↓") : ""}
                   </th>
                   {activeCategories.map((cat: string) => (
-                    <th 
+                    <th
                       key={cat}
                       onClick={() => requestSort(cat)}
-                      style={{ 
-                        padding: "12px", 
-                        cursor: "pointer", 
-                        color: sortConfig?.key === cat ? "#4facfe" : "inherit" 
+                      style={{
+                        padding: "12px",
+                        cursor: "pointer",
+                        color: sortConfig?.key === cat ? "#4facfe" : "inherit"
                       }}
                     >
                       {cat} {sortConfig?.key === cat ? (sortConfig.direction === "asc" ? "↑" : "↓") : ""}
@@ -756,6 +850,6 @@ const Main: React.FC = () => {
       <DomainInfo selectedDomain={selectedDomain} sidebarOpen={moreInfoSidebarOpen} setSidebarOpen={setMoreInfoSidebarOpen} />
     </div>
   );
-}
+};
 
 export default Main;
