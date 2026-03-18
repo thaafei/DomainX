@@ -55,8 +55,12 @@ We apply this workflow to a curated shortlist of 28
 open-source NN software packages and produce a traceable
 dataset containing template responses, repository-based
 measures, and package-level references (project website and
-repository URLs). \textbf{[RESULTS SUMMARY TO BE ADDED AFTER 
-FINAL RANKING IS CONFIRMED.]}
+repository URLs). Under the current configuration, TensorFlow achieved the
+highest overall score, followed by Catboost, OpenCV,
+PyTorch, and Hugging Face Transformers. Beyond the
+top-ranked package, many libraries were more tightly
+clustered, with the strongest differentiation arising from
+installability and correctness and verifiability.
 A companion repository provides the DomainX tool and
 associated assessment artifacts to support review and reuse.
 \end{abstract}
@@ -482,26 +486,124 @@ are comparatively uniform across the shortlisted packages.
 \section{Discussion and Recommendations}\label{discussion}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-\wss{ what the results imply for users and maintainers. 
- actionable recommendations organized by quality attribute (installability, maintainability, transparency...). 
- Keep recommendations evidence-backed.}
+% \wss{ what the results imply for users and maintainers. 
+%  actionable recommendations organized by quality attribute (installability, maintainability, transparency...). 
+%  Keep recommendations evidence-backed.}
+
+The current results suggest that the overall ranking is
+driven primarily by a small subset of differentiating
+categories, rather than by broad variation across all
+qualities. In particular, installability and correctness and
+verifiability contribute strongly to the separation between
+packages, while several of the remaining surface-level
+qualities are comparatively uniform across the shortlisted
+set. This means that, under the current assessment
+configuration, packages that perform strongly in the most
+differentiating categories can rise substantially in the
+overall ranking.
+
+For users of neural network software, the ranking provides a
+useful evidence-based comparison, but it should not be
+interpreted as a universal statement that one package is
+always best for every purpose. Instead, the results are most
+useful for identifying strong candidates and for showing
+which quality dimensions currently contribute most to the
+observed differences across packages. For maintainers, the
+results highlight areas where visible software-engineering
+practice can be strengthened and made more consistent.
+
+Several recommendations follow from the current findings.
+First, maintainers should improve installability by providing
+clear installation instructions, dependency information, and
+environment guidance. Second, projects should strengthen
+correctness and verifiability by exposing more visible
+evidence of testing, validation, and related quality
+assurance practices. Third, maintainers should continue to
+improve transparency through well-maintained public
+artifacts, since these materials directly affect the
+evidence available for state-of-practice assessment.
+Finally, future refinements of the assessment process should
+consider how to better differentiate categories that are
+currently highly uniform across the shortlisted packages.
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \section{Threats to Validity and Limitations}\label{validity}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-\wss{ construct validity, internal validity, external validity, and temporal validity. 
-Note limitations such as evolving repositories, subjectivity in scoring, missing/ambiguous evidence,
- and interviews not conducted yet.}
+% \wss{ construct validity, internal validity, external validity, and temporal validity. 
+% Note limitations such as evolving repositories, subjectivity in scoring, missing/ambiguous evidence,
+%  and interviews not conducted yet.}
+This work is subject to several threats to validity.
+Construct validity is limited by the fact that the
+assessment relies on publicly visible artifacts as evidence
+of software-engineering practice. A package may implement
+strong internal practices that are not clearly reflected in
+its repository, documentation, or related public materials.
+Similarly, categories that appear uniform in the current
+results may reflect limitations of the available evidence or
+of the applied scoring scheme rather than true equality
+across packages.
+
+Internal validity is affected by the need for manual
+judgment when answering some measurement-template questions.
+Although the methodology and template provide structure,
+interpretation of public artifacts can still introduce
+subjectivity. In addition, the current dataset records
+package-level references through project website and
+repository URLs rather than per-question artifact links,
+which limits the granularity of traceability.
+
+External validity is limited because the assessment focuses
+on a specific shortlist of 28 open-source neural network
+software packages. The results therefore should not be
+generalized automatically to all neural network software or
+to adjacent communities using general-purpose supporting
+libraries. The scope was intentionally restricted to align
+with the target audience of neural network software
+developers and maintainers.
+
+Temporal validity is also a limitation. Open-source
+repositories evolve over time as releases, issues, pull
+requests, documentation, and tests change. As a result, the
+assessment reflects the state of the observed artifacts at
+the time of data collection rather than a permanent ranking.
+Finally, interviews with developers or maintainers were not
+conducted at this stage, so the analysis is based only on
+publicly available evidence and repository-derived measures.
+
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \section{Conclusion and Future Work}\label{conclusion}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-\wss{Summarize contributions (DomainX + dataset + findings), key results,  list future work 
-(interviews, expanded shortlist, stronger sensitivity analysis, refined scoring rules, deeper automation).}
+% \wss{Summarize contributions (DomainX + dataset + findings), key results,  list future work 
+% (interviews, expanded shortlist, stronger sensitivity analysis, refined scoring rules, deeper automation).}
+This paper presented a state-of-practice assessment of
+28 open-source neural network software packages using
+DomainX, a tool-supported workflow based on a published
+methodology. The work contributes a curated shortlist, a
+traceable dataset containing measurement-template responses
+and repository-based measures, and a tool that supports
+evidence capture, scoring, ranking, and export of
+assessment artifacts.
+
+The current results show that the overall ranking is shaped
+primarily by a small subset of differentiating categories,
+especially installability and correctness and verifiability,
+while several other quality categories are comparatively
+uniform across the shortlisted packages. TensorFlow emerged
+as the top-ranked package under the current configuration,
+with the remaining packages more tightly clustered below it.
+
+Future work includes refining categories that are currently weakly
+differentiated, and extending the assessment with additional
+validation mechanisms such as interviews with developers or
+maintainers. Further work on DomainX may also improve
+automation, traceability granularity, and support for
+repeated assessments as repositories evolve over time.
+
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
