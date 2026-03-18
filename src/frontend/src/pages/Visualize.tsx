@@ -7,6 +7,8 @@ import JSZip from "jszip";
 import { saveAs } from "file-saver";
 import { apiUrl } from "../config/api";
 import VisualizeSidebar from "../components/VisualizeSidebar";
+import { useAuthStore } from "../store/useAuthStore";
+
 interface Metric {
   metric_ID: string;
   metric_name: string;
@@ -27,7 +29,12 @@ interface ChartRow {
 
 const Visualize: React.FC = () => {
   const { domainId } = useParams<{ domainId: string }>();
+  const navigate = useNavigate();
   const DOMAIN_ID = domainId; 
+  const { user, isLoading: authLoading } = useAuthStore();
+  
+  const [domainName, setDomainName] = useState("");
+  const [domainPublished, setDomainPublished] = useState<boolean | null>(null);
   const [metricList, setMetricList] = useState<Metric[]>([]);
   const [categories, setCategories] = useState<string[]>([]);
   const [libraries, setLibraries] = useState<LibraryRow[]>([]);
@@ -39,6 +46,8 @@ const Visualize: React.FC = () => {
 
   const [chartData, setChartData] = useState<{ metric: string; rows: { label: string; value: number }[] }[] | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [accessDenied, setAccessDenied] = useState(false);
 
   const downloadFormat = "svg";
 
@@ -47,25 +56,76 @@ const Visualize: React.FC = () => {
     return metricList.filter(m => m.value_type !== "bool" && m.value_type !== "text");
   }, [metricList]);
 
+  const getDomainSpecification = async () => {
+    try {
+      const response = await fetch(apiUrl(`/domain/${DOMAIN_ID}/`), {
+        credentials: "include",
+      });
+
+      if (!response.ok) {
+        if (response.status === 404) {
+          throw new Error("Domain not found");
+        }
+        throw new Error("Failed to fetch domain specifications");
+      }
+
+      const data = await response.json();
+      setDomainName(data.domain_name || "");
+      setDomainPublished(data.published || false);
+      return data;
+    } catch (error) {
+      console.error("Error:", error);
+      setError(error instanceof Error ? error.message : "Failed to load domain");
+      return null;
+    }
+  };
+
+  // Check access based on domain published status and auth
   useEffect(() => {
-      document.title = "DomainX – Visualize";
+    // Wait for auth to load and domain data to be fetched
+    if (authLoading || domainPublished === null || loading) return;
+
+    // If domain is not published and user is not logged in, deny access
+    if (!domainPublished && !user) {
+      setAccessDenied(true);
+      // Redirect to login after a short delay to show message
+      setTimeout(() => {
+        navigate("/login", { state: { from: `/visualize/${DOMAIN_ID}` } });
+      }, 2000);
+    }
+  }, [domainPublished, user, authLoading, loading, navigate, DOMAIN_ID]);
+
+  useEffect(() => {
+    document.title = "DomainX – Visualize";
     const visualizableMetricNames = new Set(visualizableMetrics.map(m => m.metric_name));
     setSelectedMetrics(prev => prev.filter(name => visualizableMetricNames.has(name)));
   }, [visualizableMetrics]);
 
   useEffect(() => {
-  if (!DOMAIN_ID) return;
-      loadData();
-    }, [DOMAIN_ID]);
-
+    if (!DOMAIN_ID) return;
+    loadData();
+  }, [DOMAIN_ID]);
 
   const loadData = async () => {
     try {
+      setLoading(true);
+      setError(null);
+      
+      await getDomainSpecification();
+
       const parseJson = async (res: Response) => {
         const contentType = res.headers.get("content-type") || "";
         const responseText = await res.text();
 
         if (!res.ok) {
+          if (res.status === 403) {
+            // Backend explicitly forbids access
+            setAccessDenied(true);
+            setTimeout(() => {
+              navigate("/login", { state: { from: `/visualize/${DOMAIN_ID}` } });
+            }, 2000);
+            return null;
+          }
           console.error("Visualize load error:", res.status, responseText);
           throw new Error(`Server Error (${res.status})`);
         }
@@ -90,6 +150,10 @@ const Visualize: React.FC = () => {
         parseJson(metricsRes),
         parseJson(categoriesRes)
       ]);
+      // If any of the requests returned null due to 403, stop loading
+      if (comparisonData === null || metricsData === null || categoriesData === null) {
+        return;
+      }
 
       setMetricList(Array.isArray(metricsData) ? metricsData : comparisonData.metrics || []);
       const librariesData = comparisonData.libraries || [];
@@ -111,11 +175,17 @@ const Visualize: React.FC = () => {
 
       const hasUncategorized = (Array.isArray(metricsData) ? metricsData : comparisonData.metrics || [])
         .some((m: Metric) => !m.category);
+      
       const categoryList = hasUncategorized
         ? [...availableCategories, "Uncategorized"]
         : availableCategories;
+      
+      setCategories(categoryList);
     } catch (err) {
       console.error(err);
+      setError(err instanceof Error ? err.message : "Failed to load data");
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -159,7 +229,6 @@ const Visualize: React.FC = () => {
       prev.includes(id) ? prev.filter(x => x !== id) : [...prev, id]
     );
   };
-
 
   const toggleSelectAllLibraries = () => {
     if (libraries.length === 0) return;
@@ -252,12 +321,12 @@ const Visualize: React.FC = () => {
   const handleVisualize = () => {
     setError(null);
     setChartData(null);
+    
     if (selectedCategories.length === 0 && selectedMetrics.length === 0) {
       setError("Please select at least one category or metric.");
       return;
     }
   
-
     if (selectedLibraries.length < 2) {
       setError("Select at least two libraries.");
       return;
@@ -307,7 +376,7 @@ const Visualize: React.FC = () => {
 
     let charts: { metric: string; rows: { label: string; value: number }[] }[] = [];
 
-      // Metrics mode - show raw metric values
+    // Metrics mode - show raw metric values
     charts = selectedMetricArray.map(metricName => {
       const rows = selectedLibs.map(l => ({
         label: l.library_name,
@@ -319,7 +388,6 @@ const Visualize: React.FC = () => {
         rows
       };
     });
-    
 
     if (hasInvalid) {
       setError("Some selected metrics have invalid values.");
@@ -329,10 +397,69 @@ const Visualize: React.FC = () => {
     setChartData(charts);
   };
 
-  const handleClear =() => {
+  const handleClear = () => {
     setError(null);
     setChartData(null);
+  };
+
+  // Show loading state
+  if (loading || authLoading || domainPublished === null) {
+    return (
+      <div className="dx-bg" style={{ display: "flex", height: "100vh", justifyContent: "center", alignItems: "center" }}>
+        <div style={{ color: "white" }}>Loading...</div>
+      </div>
+    );
   }
+
+  // Show access denied message before redirect
+  if (accessDenied) {
+    return (
+      <div className="dx-bg" style={{ display: "flex", height: "100vh", justifyContent: "center", alignItems: "center" }}>
+        <div 
+          className="dx-card" 
+          style={{ 
+            padding: "40px", 
+            maxWidth: "500px", 
+            textAlign: "center",
+            color: "white"
+          }}
+        >
+          <h2 style={{ color: "var(--accent)", marginBottom: "20px" }}>Access Denied</h2>
+          <p style={{ marginBottom: "20px" }}>
+            This domain is not published and requires authentication to view.
+          </p>
+          <p>Redirecting to login page...</p>
+        </div>
+      </div>
+    );
+  }
+
+  // Show error state
+  if (error && !chartData) {
+    return (
+      <div className="dx-bg" style={{ display: "flex", height: "100vh", justifyContent: "center", alignItems: "center" }}>
+        <div 
+          className="dx-card" 
+          style={{ 
+            padding: "40px", 
+            maxWidth: "500px", 
+            textAlign: "center",
+            color: "white"
+          }}
+        >
+          <h2 style={{ color: "var(--accent)", marginBottom: "20px" }}>Error</h2>
+          <p style={{ marginBottom: "20px" }}>{error}</p>
+          <button
+            className="dx-btn dx-btn-primary"
+            onClick={() => navigate("/")}
+          >
+            Go Back Home
+          </button>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="dx-bg" style={{ display: "flex", height: "100vh", overflow: "hidden" }}>
       <VisualizeSidebar
