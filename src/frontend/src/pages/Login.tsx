@@ -81,15 +81,14 @@ const Login: React.FC = () => {
               <button className="dx-btn dx-btn-primary" type="submit" disabled={loading}>
                 {loading ? "Signing in..." : "Sign in"}
               </button>
-              <div style={{ marginTop: 10, textAlign: "center" }}>
-                Don’t have an account?{" "}
-                <span
-                  style={{ color: "var(--accent)", cursor: "pointer" }}
-                  onClick={() => navigate("/signup")}
-                >
-                  Sign up
-                </span>
-              </div>
+             <div style={{ marginTop: 10, textAlign: "right" }}>
+              <span
+                style={{ color: "var(--accent)", cursor: "pointer", fontSize: "0.9rem" }}
+                onClick={() => navigate("/forgot-password")}
+              >
+                Forgot password?
+              </span>
+            </div>
 
             </form>
 

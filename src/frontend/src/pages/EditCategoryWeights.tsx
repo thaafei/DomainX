@@ -25,6 +25,8 @@ const EditCategoryWeights: React.FC = () => {
     1: 0, 2: 0, 3: 0.58, 4: 0.9, 5: 1.12, 6: 1.24, 7: 1.32, 8: 1.41, 9: 1.45, 10: 1.49 
   };
   useEffect(() => {
+      document.title = "DomainX - Edit Weight";
+
     const fetchData = async () => {
       if (!domainId) return;
       try {
@@ -130,7 +132,7 @@ const EditCategoryWeights: React.FC = () => {
 
       if (res.ok) {
         setSaveStatus("Saved!");
-        setTimeout(() => navigate(`/main`), 1000);
+        setTimeout(() => navigate(`/`), 1000);
       }
     } catch (err) { 
       setSaveStatus("Error.");
@@ -159,7 +161,7 @@ const EditCategoryWeights: React.FC = () => {
       <div style={{ maxWidth: "1300px", margin: "0 auto", marginBottom: "20px" }}>
         <button 
           className="dx-btn dx-btn-outline" 
-          onClick={() => navigate("/main")}
+          onClick={() => navigate("/")}
         >
           ← Back
         </button>

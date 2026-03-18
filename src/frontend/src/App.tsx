@@ -4,7 +4,7 @@ import Home from './pages/Home';
 import Login from './pages/Login';
 import Visualize from './pages/Visualize';
 import Main from "./pages/Main";
-import Signup from "./pages/Signup";
+import AcceptInvite from "./pages/AcceptInvite";
 import Metrics from "./pages/Metrics";
 import ComparisonTool from "./pages/ComparisonTool";
 import Edit from "./pages/Edit";
@@ -18,27 +18,26 @@ import "./styles/auth.css";
 import "./styles/components.css";
 import "./styles/visualize.css";
 import UserProfilePage from './pages/UserProfile';
-import ProtectedRoute from './components/ProtectedRoute'; // Add this import
+import ProtectedRoute from './components/ProtectedRoute';
 import React, { useEffect } from 'react';
 import { useAuthStore } from './store/useAuthStore';
 
+import ForgotPassword from "./pages/ForgotPassword";
+import ResetPassword from "./pages/ResetPassword";
 
 const App: React.FC = () => {
   const { checkAuth } = useAuthStore();
 
   useEffect(() => {
-    checkAuth(); // Check auth when app loads
+    checkAuth();
   }, [checkAuth]);
 
   return (
     <Router>
       <Routes>
-        {/* Public routes - accessible to everyone */}
         <Route path="/" element={<Home />} />
         <Route path="/login" element={<Login />} />
-        <Route path="/signup" element={<Signup />} />
-        
-        {/* Protected routes - require authentication */}
+        <Route path="/accept-invite" element={<AcceptInvite />} />
         <Route 
           path="/metrics" 
           element={
@@ -101,6 +100,12 @@ const App: React.FC = () => {
         <Route path="/comparison-tool" element={<Navigate to="/" replace />} />
         <Route path="/edit" element={<Navigate to="/" replace />} />
         <Route path="/libraries" element={<Navigate to="/" replace />} />
+
+        {/* <Route path="/main" element={<Main />} />*/}
+        <Route path="/admin" element={<Admin />} />
+        <Route path="/user" element={<UserProfilePage />} />
+        <Route path="/forgot-password" element={<ForgotPassword />} />
+        <Route path="/reset-password" element={<ResetPassword />} />
       </Routes>
     </Router>
   );
