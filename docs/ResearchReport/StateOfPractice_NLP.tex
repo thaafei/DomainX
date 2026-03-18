@@ -300,7 +300,7 @@ is available at \url{https://github.com/thaafei/DomainX}.
 
 \begin{figure}[H]
   \centering
-  \includegraphics[width=\textwidth]{snapshots/graphview.png}
+  \includegraphics[width=\textwidth]{snapshots/domainxgraphview.png}
   \caption{DomainX graph view illustrating the overall AHP
 ranking for the assessed packages.}
   \label{fig:domainx}
@@ -341,16 +341,134 @@ assessment process.
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 \subsection{Descriptive summary of assessed packages}\label{results-summary}
-\wss{Summarize the evaluated set (final no., alive/dead counts, languages/activity/licensing if reported). 
-Present  statistics that help give insight into the domain landscape before ranking.}
+% \wss{Summarize the evaluated set (final no., alive/dead counts, languages/activity/licensing if reported). 
+% Present  statistics that help give insight into the domain landscape before ranking.}
+
+The final shortlist contains 28 open-source neural network
+software packages selected according to the scope and
+filtering process described in Section~\ref{methods}. Based
+on the project-status information recorded in the assessment
+template, 23 packages were classified as alive and 5 were
+classified as dead. This mix of active and inactive projects
+provides important context for interpreting the assessment
+results, since project activity can affect the availability
+of documentation, testing artifacts, maintenance signals,
+and other observable evidence of development practice.
 
 \subsection{Overall ranking}\label{results-ranking}
-\wss{ the final ranking table and a short explanation of how to read it. 
-Highlight  top-ranked packages without overconfidence/ overdoing it. Reference DomainX ranking output as a figure/table.}
+% \wss{ the final ranking table and a short explanation of how to read it. 
+% Highlight  top-ranked packages without overconfidence/ overdoing it. Reference DomainX ranking output as a figure/table.}
+\subsection{Overall ranking}\label{results-ranking}
+
+\subsection{Overall ranking}\label{results-ranking}
+
+Figure~\ref{fig:overall-ranking} presents the overall AHP
+ranking for the shortlisted packages as produced by
+DomainX. TensorFlow achieved the highest overall score
+(13.65\%), followed by Catboost (5.67\%), OpenCV
+(4.27\%), PyTorch (4.08\%), and Hugging Face
+Transformers (3.93\%). At the lower end of the ranking,
+LightGBM (2.54\%), TensorBoard (2.59\%), Chainer
+(2.62\%), XGBoost (2.63\%), and Caffe (2.64\%) obtained
+the smallest overall scores.
+
+A notable feature of the ranking is the large gap between
+TensorFlow and the rest of the shortlisted packages.
+Beyond the top-ranked package, many libraries are clustered
+within a comparatively narrow score range, suggesting that
+the middle and lower portions of the ranking are more
+densely packed. Under the current configuration, many
+category-level scores are identical across packages, so
+differences in the overall ranking are driven primarily by
+variation in installability, correctness and
+verifiability, and repository-based measures.
+
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=\textwidth]{snapshots/graphview.png}
+  \caption{Overall AHP ranking for the shortlisted packages
+  as visualized in DomainX.}
+  \label{fig:overall-ranking}
+\end{figure}
+
+\begin{table}[H]
+\centering
+\caption{Top 10 packages by overall AHP score.}
+\label{tab:top10-ranking}
+\begin{tabular}{r l r}
+\toprule
+\textbf{Rank} & \textbf{Package} & \textbf{Overall Score} \\
+\midrule
+1  & TensorFlow                & 13.65\% \\
+2  & Catboost                  & 5.67\%  \\
+3  & OpenCV                    & 4.27\%  \\
+4  & PyTorch                   & 4.08\%  \\
+5  & Hugging Face Transformers & 3.93\%  \\
+6  & PaddlePaddle              & 3.58\%  \\
+7  & DeepLearning4J            & 3.45\%  \\
+8  & CNTK                      & 3.44\%  \\
+9  & Captum                    & 3.41\%  \\
+10 & Jax                       & 3.26\%  \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+Table~\ref{tab:top10-ranking} lists the top 10 packages
+under the current overall AHP ranking. TensorFlow is the
+clear top-ranked package, while the remaining top 10
+packages are more tightly clustered.
 
 \subsection{Quality-by-quality breakdown}\label{results-byquality}
-\wss{ results by quality attribute (tables/figures). Identify strong/weak packages per quality and report domain-wide patterns
- supported by evidence.}
+% \wss{ results by quality attribute (tables/figures). Identify strong/weak packages per quality and report domain-wide patterns
+%  supported by evidence.}
+Figure~\ref{fig:quality-heatmap} summarizes the per-quality
+results across the 28 shortlisted packages. The heatmap
+shows that several assessed categories take nearly the same
+value across most of the shortlisted packages. In
+particular, surface reliability, surface robustness,
+surface usability, reusability, visibility/transparency,
+and surface understandability are highly uniform in the
+current results. As a result, the most visible differences
+across packages arise in installability, quality, and
+correctness and verifiability.
+
+Correctness and verifiability has the strongest visible
+effect on the ranking. TensorFlow obtains the highest value
+in this category (99.98\%), substantially exceeding the
+other shortlisted packages, and this contributes strongly to
+its position as the top-ranked package overall.
+
+Installability also differentiates several packages.
+Catboost records the highest installability value
+(18.18\%), followed by Captum (11.36\%) and a group of
+packages including DeepLearning4J, NeuroLab, OpenCV, and
+TorchVision (6.82\%). In contrast, several packages have
+installability values of 0.00\%, indicating that this
+category contributes little to separating them in the final
+ranking.
+
+The quality category is also non-uniform. Most shortlisted
+packages receive a value of 4.00\%, while PyTorch,
+TensorBoard, and TensorFlow receive 0.00\% in this
+dimension. Overall, the current results indicate that the
+ranking is driven primarily by a small subset of
+differentiating categories, while many of the remaining
+quality categories are comparatively uniform across the
+shortlisted packages.
+
+Overall, the current results indicate that the ranking is
+driven primarily by a small subset of differentiating
+categories, while many of the remaining quality categories
+are comparatively uniform across the shortlisted packages.
+
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=\textwidth]{snapshots/nn_quality_heatmap.png}
+  \caption{Heatmap summarizing per-quality scores for the
+  28 shortlisted neural network software packages. Darker
+  cells indicate larger values within a given category.}
+  \label{fig:quality-heatmap}
+\end{figure}
 
 \subsection{Sensitivity analysis}\label{results-sensitivity}
 \wss{ how rankings change under weight variation, identify stable vs unstable parts of the ranking and summary of implications.}
