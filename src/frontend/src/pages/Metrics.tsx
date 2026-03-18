@@ -1260,6 +1260,9 @@ const MetricsPage: React.FC = () => {
                     <option value="text" className="dx-input-select">
                       Text
                     </option>
+                    <option value="date" className="dx-input-select">Date</option>
+                    <option value="time" className="dx-input-select">Time</option>
+                    <option value="datetime" className="dx-input-select">Date & Time</option>
                   </select>
                 </div>
 
