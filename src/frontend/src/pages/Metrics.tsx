@@ -184,7 +184,7 @@ const ExpandableText: React.FC<{
     setOpen(newState);
     onToggle?.(newState);
   };
-
+  const clampStyle = lines === 4 ? clamp4Style : lines === 3 ? clamp3Style : clamp2Style;
   return (
     <div
       ref={wrapRef}
