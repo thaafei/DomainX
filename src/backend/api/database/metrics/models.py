@@ -8,6 +8,9 @@ class Metric(models.Model):
         ("bool", "Boolean"),
         ("range", "Range"),
         ("text", "Text"),
+        ("date", "Date"),
+        ("time", "Time"),
+        ("datetime", "Date & Time"),
     ]
 
     SOURCE_TYPES = [

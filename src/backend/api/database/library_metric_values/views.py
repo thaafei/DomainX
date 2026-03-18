@@ -1,13 +1,13 @@
 from rest_framework import status
 from rest_framework.decorators import api_view, permission_classes
-from rest_framework.decorators import api_view
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework.permissions import IsAuthenticatedOrReadOnly
 from django.conf import settings
 from django.db import transaction
 from django.shortcuts import get_object_or_404
-
+import re
+from datetime import datetime
 import ahpy
 import json
 import os
@@ -32,25 +32,49 @@ def validate_metric_value(metric, value):
             return f"{metric.metric_name} must be one of: {', '.join(allowed_values)}.", None
         return None, value
 
+    raw = str(value).strip()
+
     if metric.value_type == "int":
         try:
-            parsed = int(str(value).strip())
+            parsed = int(raw)
             return None, parsed
         except (TypeError, ValueError):
             return f"{metric.metric_name} must be a whole number.", None
 
     if metric.value_type == "float":
         try:
-            parsed = float(str(value).strip())
+            parsed = float(raw)
             return None, parsed
         except (TypeError, ValueError):
             return f"{metric.metric_name} must be a valid number.", None
 
     if metric.value_type == "text":
-        return None, value
+        return None, raw
+
+    if metric.value_type == "date":
+        try:
+            datetime.strptime(raw, "%Y-%m-%d")
+            return None, raw
+        except ValueError:
+            return f"{metric.metric_name} must be a valid date in YYYY-MM-DD format.", None
+
+    if metric.value_type == "time":
+        for fmt in ("%H:%M", "%H:%M:%S"):
+            try:
+                datetime.strptime(raw, fmt)
+                return None, raw
+            except ValueError:
+                continue
+        return f"{metric.metric_name} must be a valid time in HH:MM or HH:MM:SS format.", None
+
+    if metric.value_type == "datetime":
+        try:
+            datetime.strptime(raw, "%Y-%m-%dT%H:%M")
+            return None, raw
+        except ValueError:
+            return f"{metric.metric_name} must be a valid date and time in YYYY-MM-DDTHH:MM format.", None
 
     return None, value
-
 
 @api_view(["POST"])
 @permission_classes([IsAuthenticatedOrReadOnly])

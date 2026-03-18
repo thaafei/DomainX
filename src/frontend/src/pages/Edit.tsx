@@ -771,16 +771,43 @@ const EditMetricValuesModal: React.FC<{
                         <option key={key} value={key}>{key}</option>
                       ))}
                     </select>
-                  ) : (
-                    <input
-                      className="dx-input"
-                      placeholder="Enter value..."
-                      value={cellVal ?? ""}
-                      onChange={(e) => onChangeValue(m.metric_name, e.target.value)}
-                      disabled={pageLoading}
-                      style={{ borderColor: fieldError ? "rgba(255, 99, 99, 0.75)" : undefined }}
-                    />
-                  )}
+                     ) : m.value_type === "date" ? (
+                              <input
+                                type="date"
+                                className="dx-input"
+                                value={cellVal ?? ""}
+                                onChange={(e) => onChangeValue(m.metric_name, e.target.value)}
+                                disabled={pageLoading}
+                                style={{ borderColor: fieldError ? "rgba(255, 99, 99, 0.75)" : undefined }}
+                              />
+                            ) : m.value_type === "time" ? (
+                              <input
+                                type="time"
+                                className="dx-input"
+                                value={cellVal ?? ""}
+                                onChange={(e) => onChangeValue(m.metric_name, e.target.value)}
+                                disabled={pageLoading}
+                                style={{ borderColor: fieldError ? "rgba(255, 99, 99, 0.75)" : undefined }}
+                              />
+                            ) : m.value_type === "datetime" ? (
+                              <input
+                                type="datetime-local"
+                                className="dx-input"
+                                value={cellVal ?? ""}
+                                onChange={(e) => onChangeValue(m.metric_name, e.target.value)}
+                                disabled={pageLoading}
+                                style={{ borderColor: fieldError ? "rgba(255, 99, 99, 0.75)" : undefined }}
+                              />
+                            ) : (
+                              <input
+                                className="dx-input"
+                                placeholder="Enter value..."
+                                value={cellVal ?? ""}
+                                onChange={(e) => onChangeValue(m.metric_name, e.target.value)}
+                                disabled={pageLoading}
+                                style={{ borderColor: fieldError ? "rgba(255, 99, 99, 0.75)" : undefined }}
+                              />
+                            )}
                 </div>
 
                 <div style={{ display: "flex", flexDirection: "column", gap: 4 }}>
@@ -984,6 +1011,19 @@ const EditValuesPage: React.FC = () => {
 
     if (metric.value_type === "text") {
       return "";
+    }
+    if (metric.value_type === "date") {
+      return /^\d{4}-\d{2}-\d{2}$/.test(raw) ? "" : "Please enter a valid date.";
+    }
+
+    if (metric.value_type === "time") {
+      return /^\d{2}:\d{2}(:\d{2})?$/.test(raw) ? "" : "Please enter a valid time.";
+    }
+
+    if (metric.value_type === "datetime") {
+      return /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}$/.test(raw)
+        ? ""
+        : "Please enter a valid date and time.";
     }
 
     return "";

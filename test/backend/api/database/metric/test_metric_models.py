@@ -115,13 +115,17 @@ def test_metric_can_store_metric_key_and_metadata():
 
 
 @pytest.mark.django_db
-@pytest.mark.parametrize("value_type", ["float", "int", "bool", "range", "text"])
+@pytest.mark.parametrize(
+    "value_type",
+    ["float", "int", "bool", "range", "text", "date", "time", "datetime"],
+)
 def test_metric_accepts_all_value_type_choices(value_type):
     metric = Metric.objects.create(
         metric_name=f"Metric-{value_type}",
         value_type=value_type,
     )
     assert metric.value_type == value_type
+
 
 @pytest.mark.django_db
 @pytest.mark.parametrize("source_type", ["manual", "github_api", "scc", "gitstats"])
