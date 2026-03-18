@@ -20,7 +20,7 @@ import DomainInfo from "../components/DomainInfo";
 import JSZip from 'jszip';
 import { saveAs } from 'file-saver';
 import Plotly, { Data, Layout } from "plotly.js-dist-min";
-
+import AuthTransition from "../components/AuthTransition";
 // Helper for image conversion
 const dataUrlToBlob = (data: string) => {
   if (!data) return new Blob();
@@ -496,7 +496,7 @@ const Main: React.FC = () => {
     }
   };
 
-  if (loading) return <div>Loading...</div>;
+ if (loading) return <AuthTransition message="Loading..." />;
 
   const handleLogout = async () => {
     if (!user) {

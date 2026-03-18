@@ -8,7 +8,7 @@ import { saveAs } from "file-saver";
 import { apiUrl } from "../config/api";
 import VisualizeSidebar from "../components/VisualizeSidebar";
 import { useAuthStore } from "../store/useAuthStore";
-
+import AuthTransition from "../components/AuthTransition";
 interface Metric {
   metric_ID: string;
   metric_name: string;
@@ -405,9 +405,7 @@ const Visualize: React.FC = () => {
   // Show loading state
   if (loading || authLoading || domainPublished === null) {
     return (
-      <div className="dx-bg" style={{ display: "flex", height: "100vh", justifyContent: "center", alignItems: "center" }}>
-        <div style={{ color: "white" }}>Loading...</div>
-      </div>
+      <AuthTransition message="Loading..." />
     );
   }
 

@@ -3,7 +3,7 @@ import { useParams, useNavigate } from "react-router-dom";
 import { apiUrl } from "../config/api";
 import SuccessNotification from "../components/SuccessNotification";
 import { ArrowLeft } from "lucide-react";
-
+import AuthTransition from "../components/AuthTransition";
 const EditDomain: React.FC = () => {
   const { domain_id } = useParams<{ domain_id: string }>();
   const navigate = useNavigate();
@@ -153,12 +153,7 @@ const EditDomain: React.FC = () => {
 
   if (loading)
     return (
-      <div
-        className="dx-bg"
-        style={{ display: "flex", height: "100vh", alignItems: "center", justifyContent: "center" }}
-      >
-        <div style={{ color: "white" }}>Loading...</div>
-      </div>
+      <AuthTransition message="Loading..." />
     );
 
   return (

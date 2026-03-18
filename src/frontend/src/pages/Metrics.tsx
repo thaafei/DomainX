@@ -3,7 +3,6 @@ import { useNavigate } from "react-router-dom";
 import { apiUrl } from "../config/api";
 import SuccessNotification from "../components/SuccessNotification";
 import { ArrowLeft } from "lucide-react";
-
 interface Metric {
   metric_ID: string;
   metric_name: string;
@@ -111,7 +110,6 @@ const overlayCardStyle: React.CSSProperties = {
   overflowWrap: "anywhere",
   userSelect: "text",
 };
-
 const ExpandableText: React.FC<{
   text: string;
   lines?: 2 | 3 | 4;
@@ -131,13 +129,8 @@ const ExpandableText: React.FC<{
 }) => {
   const [open, setOpen] = useState(false);
   const [truncated, setTruncated] = useState(false);
-
-  const wrapRef = React.useRef<HTMLDivElement>(null);
-  const textRef = React.useRef<HTMLDivElement>(null);
-
-  const clampStyle =
-    lines === 4 ? clamp4Style : lines === 3 ? clamp3Style : clamp2Style;
-
+  const textRef = useRef<HTMLDivElement>(null);
+  const wrapRef = useRef<HTMLDivElement>(null);
   useLayoutEffect(() => {
     const el = textRef.current;
     if (!el) return;
@@ -275,6 +268,7 @@ const ExpandableText: React.FC<{
 };
 
 const MetricsPage: React.FC = () => {
+  const [loading, setLoading] = useState(true);
   const navigate = useNavigate();
 
   const [metrics, setMetrics] = useState<Metric[]>([]);
@@ -369,19 +363,22 @@ const MetricsPage: React.FC = () => {
   }, []);
 
   const loadMetrics = async () => {
-    try {
-      const res = await fetch(apiUrl("/metrics/"), { credentials: "include" });
-      const data = await res.json();
+      try {
+        setLoading(true);
+        const res = await fetch(apiUrl("/metrics/"), { credentials: "include" });
+        const data = await res.json();
 
-      const uniqueMetricsMap = new Map<string, Metric>();
-      (Array.isArray(data) ? data : []).forEach((metric: Metric) => {
-        uniqueMetricsMap.set(metric.metric_ID, metric);
-      });
-      setMetrics(Array.from(uniqueMetricsMap.values()));
-    } catch (err) {
-      console.error(err);
-    }
-  };
+        const uniqueMetricsMap = new Map<string, Metric>();
+        (Array.isArray(data) ? data : []).forEach((metric: Metric) => {
+          uniqueMetricsMap.set(metric.metric_ID, metric);
+        });
+        setMetrics(Array.from(uniqueMetricsMap.values()));
+      } catch (err) {
+        console.error(err);
+      } finally {
+        setLoading(false);
+      }
+    };
 
   useEffect(() => {
     loadMetrics();
@@ -1040,7 +1037,19 @@ const MetricsPage: React.FC = () => {
                 </tbody>
               </table>
 
-              {metrics.length === 0 && <div style={{ padding: 20, opacity: 0.6 }}>No metrics yet.</div>}
+              {loading ? (
+                  <div
+                        style={{
+                          padding: 20,
+                          opacity: 0.7,
+                          color: "rgba(255,255,255,0.75)",
+                        }}
+                      >
+                        Just a moment
+                      </div>
+                ) : metrics.length === 0 ? (
+                  <div style={{ padding: 20, opacity: 0.6 }}>No metrics yet.</div>
+                ) : null}
             </div>
           </div>
         </div>
