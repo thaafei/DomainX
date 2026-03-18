@@ -10,6 +10,7 @@ import {
   ArrowLeft,
   Globe,
   Github,
+  Library,
 } from "lucide-react";
 import { useAuthStore } from "../store/useAuthStore";
 
@@ -109,7 +110,7 @@ const ExpandableText: React.FC<{
 }> = ({ text, lines = 2, emptyText = "—", textStyle, description }) => {
   const [open, setOpen] = useState(false);
   const [truncated, setTruncated] = useState(false);
-  
+
   const wrapRef = React.useRef<HTMLDivElement>(null);
   const textRef = React.useRef<HTMLDivElement>(null);
 
@@ -242,7 +243,7 @@ const ComparisonToolPage: React.FC = () => {
     try {
       setLoading(true);
       setError(null);
-      
+
       const domainData = await getDomainSpecification();
 
       // If domain fetch succeeded, proceed with loading comparison data
@@ -362,11 +363,11 @@ const ComparisonToolPage: React.FC = () => {
   if (error) {
     return (
       <div className="dx-bg" style={{ display: "flex", height: "100vh", justifyContent: "center", alignItems: "center" }}>
-        <div 
-          className="dx-card" 
-          style={{ 
-            padding: "40px", 
-            maxWidth: "500px", 
+        <div
+          className="dx-card"
+          style={{
+            padding: "40px",
+            maxWidth: "500px",
             textAlign: "center",
             color: "white"
           }}
@@ -388,11 +389,11 @@ const ComparisonToolPage: React.FC = () => {
   if (accessDenied) {
     return (
       <div className="dx-bg" style={{ display: "flex", height: "100vh", justifyContent: "center", alignItems: "center" }}>
-        <div 
-          className="dx-card" 
-          style={{ 
-            padding: "40px", 
-            maxWidth: "500px", 
+        <div
+          className="dx-card"
+          style={{
+            padding: "40px",
+            maxWidth: "500px",
             textAlign: "center",
             color: "white"
           }}
@@ -473,6 +474,7 @@ const ComparisonToolPage: React.FC = () => {
                 onClick={() => navigate(`/libraries/${DOMAIN_ID}`)}
                 style={{ display: "flex", alignItems: "center", gap: 6 }}
               >
+              <Library size={18} />
                 Manage Libraries
               </button>
             )}
@@ -545,7 +547,7 @@ const ComparisonToolPage: React.FC = () => {
                     >
                       <div style={{ display: "flex", alignItems: "flex-start", gap: "6px" }}>
                         <div style={clamp2Style}>{m.metric_name}</div>
-                        
+
                         {/* Added Help Icon Badge */}
                         {m.description && (
                           <span
@@ -751,7 +753,7 @@ const ComparisonToolPage: React.FC = () => {
                             text={cellVal != null ? String(cellVal) : ""}
                             lines={3}
                             emptyText="—"
-                            description={cellDesc ? String(cellDesc) : undefined} 
+                            description={cellDesc ? String(cellDesc) : undefined}
                           />
                         </td>
                       );
