@@ -53,6 +53,7 @@
 \midrule
 Nov 3, 2025 & Fei & Rev -1\\
 Dec 16, 2025 & Fei & Rev 0 Based on issues extracted from TA review and peer reviews. The list of related issues can be found in this \href{https://github.com/thaafei/DomainX/pull/307}{pull request}. \\
+Mar 18, 2026 & Fei & Final Documentation changes, compiled in this \href{https://github.com/thaafei/DomainX/issues/497}{github issue} \\
 \bottomrule
 \end{tabularx}
 \end{table}
@@ -223,7 +224,6 @@ actually be implemented.
 \item [\refstepcounter{mnum} \mthemnum \label{mCompare}:] Comparison Module
 \item [\refstepcounter{mnum} \mthemnum \label{mDB}:] Database Persistence Module
 \item [\refstepcounter{mnum} \mthemnum \label{mLog}:] Logging Module
-\item [\refstepcounter{mnum} \mthemnum \label{mConf}:] Configuration Module
 
 
 \end{description}
@@ -246,7 +246,6 @@ actually be implemented.
 & User Page Module \\
 & Automated Metrics Module\\
 & Comparison Module \\
-& Configuration Module \\
 \midrule
 
 \multirow{3}{0.3\textwidth}{Software Decision Module} & {System API Gateway Module}\\
@@ -384,15 +383,6 @@ to be implemented.
 \item[Implemented By:] \projname
 \item[Type of Module:] Abstract Object
 \end{description}
-
-\subsubsection{Configuration Module (\mref{mConf})}
-\begin{description}
-\item[Secrets:] The data structures and algorithm that stores each individual user.
-\item[Services:] Using the user authentication and provides interface to retrieve and update user information.
-\item[Implemented By:] \projname
-\item[Type of Module:] Abstract Object
-\end{description}
-
 
 \subsection{Software Decision Module}
 \begin{description}
@@ -723,8 +713,6 @@ Figure \ref{FigUI5} shows the user management page, this page is visible for adm
 \end{figure}
 Figure \ref{FigUI6} shows the main user information page that any users can see. This apge allows users to set their basic information. Additional side columns are added based on the role access level.
 
-\section{Design of Communication Protocols}
-N/A
 \section{Timeline}
 
 The following is the timeline for development of the modules, building up from the POC. Issues related to the timeline will be created and tracked through \href{https://github.com/thaafei/DomainX/issues}{Github Issues} and the associated \href{https://github.com/users/thaafei/projects/6}{project board}.
@@ -743,7 +731,6 @@ The following is the timeline for development of the modules, building up from t
 
 2 & Jan 12 -- Jan 18 & Haniye & Extend backend to support \textbf{Database Persistence (\mref{mDB})}: ORM models, migrations, CRUD operations. \\ \cline{3-4}
   &  & Ghena & Expand \textbf{System API Gateway (\mref{mSysApi})} to integrate Auth \& Repo APIs, include error-handling layer. \\ \cline{3-4}
-  &  & Awurama & Expand user page with \textbf{configurable functionalities (\mref{mConf})}  based on user role \\ \hline
 
 3 & Jan 19 -- Jan 25 & Awurama & Build \textbf{Application UI Module (\mref{mAppUI})} with global navigation, sidebar, responsive design, and state handling. \\ \cline{3-4}
   &  & Fei & Implement \textbf{Domains Page Module (\mref{mDomainsPage})} to display domains and metrics with integrated backend data. \\ \cline{3-4}
