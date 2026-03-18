@@ -90,6 +90,7 @@ const DomainInfo: React.FC<DomainInfoProps> = ({ selectedDomain, sidebarOpen, se
               <>
                 <button
                   className="dx-btn dx-btn-primary"
+                  disabled={!selectedDomain}
                   onClick={() => navigate(`/edit-domain/${selectedDomain.domain_ID}`)}
                   style={{ display: "flex", alignItems: "center", gap: 8}}
                 >
