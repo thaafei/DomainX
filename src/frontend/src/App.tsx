@@ -1,6 +1,6 @@
+import React from 'react';
 import { BrowserRouter as Router } from 'react-router-dom';
 import { Routes, Route, Navigate } from "react-router-dom";
-import Home from './pages/Home';
 import Login from './pages/Login';
 import Visualize from './pages/Visualize';
 import Main from "./pages/Main";
@@ -12,26 +12,32 @@ import EditDomain from "./pages/EditDomain";
 import Libraries from "./pages/Libraries";
 import Admin from "./pages/Admin";
 import EditCategoryWeights from "./pages/EditCategoryWeights";
+import UserProfilePage from './pages/UserProfile';
+import ForgotPassword from "./pages/ForgotPassword";
+import ResetPassword from "./pages/ResetPassword";
+import ProtectedRoute from './components/ProtectedRoute';
+import PublicRoute from './components/PublicRoute';
+import { AuthLoader } from './components/AuthLoader';
+
 import "./styles/base.css";
 import "./styles/theme.css";
 import "./styles/auth.css";
 import "./styles/components.css";
 import "./styles/visualize.css";
-import UserProfilePage from './pages/UserProfile';
-import ProtectedRoute from './components/ProtectedRoute';
-import PublicRoute from './components/PublicRoute';
-import React from 'react';
-import { AuthLoader } from './components/AuthLoader';
-
-import ForgotPassword from "./pages/ForgotPassword";
-import ResetPassword from "./pages/ResetPassword";
 
 const App: React.FC = () => {
   return (
     <Router>
       <AuthLoader>
         <Routes>
-          <Route path="/" element={<Home />} />
+          <Route
+            path="/"
+            element={
+              <ProtectedRoute>
+                <Main />
+              </ProtectedRoute>
+            }
+          />
 
           <Route
             path="/login"
@@ -45,15 +51,6 @@ const App: React.FC = () => {
           <Route path="/accept-invite" element={<AcceptInvite />} />
 
           <Route
-            path="/main"
-            element={
-              <ProtectedRoute>
-                <Main />
-              </ProtectedRoute>
-            }
-          />
-
-          <Route
             path="/metrics"
             element={
               <ProtectedRoute>
@@ -63,10 +60,28 @@ const App: React.FC = () => {
           />
 
           <Route
+            path="/comparison-tool/:domainId"
+            element={
+                <ComparisonTool />
+            }
+          />
+          <Route path="/comparison-tool" element={<Navigate to="/" replace />} />
+
+          <Route
             path="/edit/:domainId"
             element={
               <ProtectedRoute>
                 <Edit />
+              </ProtectedRoute>
+            }
+          />
+          <Route path="/edit" element={<Navigate to="/" replace />} />
+
+          <Route
+            path="/edit-domain/:domain_id"
+            element={
+              <ProtectedRoute>
+                <EditDomain />
               </ProtectedRoute>
             }
           />
@@ -79,13 +94,12 @@ const App: React.FC = () => {
               </ProtectedRoute>
             }
           />
+          <Route path="/libraries" element={<Navigate to="/" replace />} />
 
           <Route
-            path="/edit-domain/:domain_id"
+            path="/visualize/:domainId"
             element={
-              <ProtectedRoute>
-                <EditDomain />
-              </ProtectedRoute>
+                <Visualize />
             }
           />
 
@@ -115,12 +129,6 @@ const App: React.FC = () => {
               </ProtectedRoute>
             }
           />
-
-          <Route path="/visualize/:domainId" element={<Visualize />} />
-          <Route path="/comparison-tool/:domainId" element={<ComparisonTool />} />
-          <Route path="/comparison-tool" element={<Navigate to="/" replace />} />
-          <Route path="/edit" element={<Navigate to="/" replace />} />
-          <Route path="/libraries" element={<Navigate to="/" replace />} />
 
           <Route
             path="/forgot-password"
