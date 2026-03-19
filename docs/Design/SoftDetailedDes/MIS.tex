@@ -101,6 +101,7 @@ Domain & Research Software Domain. \\
 Excel Sheets & Existing manual tools previously used for data collection. \\
 Infrastructure & University-provided resources such as hosting, databases, and servers. \\
 JSON & JavaScript Object Notation, data interchange format used by the system’s APIs. \\
+JWT & JSON Web Token, authoritzation tokens. \\
 LLM & Large Language Model. \\
 M & Module. \\
 MG & Module Guide. \\
@@ -380,11 +381,11 @@ System API Gateway Module \\
   \toprule
   \textbf{Name} & \textbf{In} & \textbf{Out} & \textbf{Exceptions}\\
   \midrule
-  initAppShell & none & mountedRoot & RenderError \\
-  navigateTo & routeID& renderedView & RouteNotFound \\
-  renderComponent & componentID, props & renderedFragment & RenderError \\
-  handleUserAction & actionType, payload & dispatchResult & ActionError \\
-  showNotification & message, severity & successFlag & None \\
+  initAppShell & none & mountedRoot (object) & RenderError \\
+  navigateTo & routeID& renderedView (object) & RouteNotFound \\
+  renderComponent & componentID, props & renderedFragment (object) & RenderError \\
+  handleUserAction & actionType, payload & dispatchResult (object) & ActionError \\
+  showNotification & message, severity & successFlag (bool) & None \\
   \bottomrule
   \end{tabularx}
   \end{center}
@@ -495,12 +496,12 @@ System API Gateway Module \\
   \toprule
   \textbf{Name} & \textbf{In} & \textbf{Out} & \textbf{Exceptions}\\
   \midrule
-  addMetric & metricData & successFlag & SchemaError \\
-  editMetric & metricID, newValue & successFlag & ValidationError \\
-  deleteMetric & metricID & successFlag & NotFoundError \\
-  undoLastEdit & -- & successFlag & StackEmptyError \\
-  validateEdit & candidateChange & bool & ValidationError \\
-  commitBatch & changeList & successFlag & NetworkError \\
+  addMetric & metricData & successFlag (bool) & SchemaError \\
+  editMetric & metricID, newValue & successFlag (bool) & ValidationError \\
+  deleteMetric & metricID & successFlag (bool)& NotFoundError \\
+  undoLastEdit & -- & successFlag (bool)& StackEmptyError \\
+  validateEdit & candidateChange & successFlag (bool) & ValidationError \\
+  commitBatch & changeList & successFlag (bool) & NetworkError \\
   \bottomrule
   \end{tabularx}
   \end{center}
@@ -612,12 +613,12 @@ System API Gateway Module \\
   \toprule
   \textbf{Name} & \textbf{In} & \textbf{Out} & \textbf{Exceptions}\\
   \midrule
-  sendInvite & email, role & inviteCode & AuthError \\
-  registerUser & email, password, inviteCode & authToken & ValidationError \\
-  loginUser & email, password & authToken & AuthError \\
-  logoutUser & authToken & successFlag & SessionError \\
-  validateSession & authToken & bool & TokenError \\
-  refreshToken & oldToken & newToken & TokenExpiredError \\
+  sendInvite & email, role & inviteCode (JWT)& AuthError \\
+  registerUser & email, password, inviteCode & authToken (JWT) & ValidationError \\
+  loginUser & email, password & authToken (JWT) & AuthError \\
+  logoutUser & authToken & successFlag (bool)& SessionError \\
+  validateSession & authToken & successFlag (bool) & TokenError \\
+  refreshToken & oldToken & newToken (JWT) & TokenExpiredError \\
   \bottomrule
   \end{tabularx}
   \end{center}
@@ -738,11 +739,11 @@ System API Gateway Module \\
   \toprule
   \textbf{Name} & \textbf{In} & \textbf{Out} & \textbf{Exceptions}\\
   \midrule
-  assignRole & userID, roleName & successFlag & InvalidRoleError \\
-  getUserRole & userID & roleName & NotFoundError \\
-  verifyAccess & userID, actionType & bool & PermissionError \\
-  updateRolePermissions & roleName, newPermissions & successFlag & ConfigError \\
-  listAllRoles & -- & roleList & None \\
+  assignRole & userID, roleName & successFlag (bool)& InvalidRoleError \\
+  getUserRole & userID & roleName (str) & NotFoundError \\
+  verifyAccess & userID, actionType & successFlag (bool) & PermissionError \\
+  updateRolePermissions & roleName, newPermissions & successFlag (bool) & ConfigError \\
+  listAllRoles & -- & roleList (list[str]) & None \\
   \bottomrule
   \end{tabularx}
   \end{center}
@@ -858,11 +859,11 @@ System API Gateway Module \\
   \toprule
   \textbf{Name} & \textbf{In} & \textbf{Out} & \textbf{Exceptions}\\
   \midrule
-  fetchMetricsFromRepo & packageID & metricsData & APIError \\
-  validateMetrics & metricsData & bool & ValidationError \\
-  storeValidatedMetrics & metricsData & successFlag & WriteError \\
-  enqueueMetricsFetch & packageID & successFlag & QueueError \\
-  processMetricsQueue & None & successFlag & WorkerError \\
+  fetchMetricsFromRepo & packageID & metricsData (object) & APIError \\
+  validateMetrics & metricsData & successFlag (bool) & ValidationError \\
+  storeValidatedMetrics & metricsData & successFlag (bool) & WriteError \\
+  enqueueMetricsFetch & packageID & successFlag (bool) & QueueError \\
+  processMetricsQueue & None & successFlag (bool) & WorkerError \\
   \bottomrule
   \end{tabularx}
   \end{center}
@@ -969,10 +970,10 @@ System API Gateway Module \\
   \toprule
   \textbf{Name} & \textbf{In} & \textbf{Out} & \textbf{Exceptions}\\
   \midrule
-  fetchAllDomains & filterOptions & domainList & DatabaseError \\
-  displayDomainDetails & domainID & renderedView & DataNotFoundError \\
-  renderDomainMetrics & domainID, metricType & chartObject & RenderError \\
-  searchDomains & searchTerm & filteredList & None \\
+  fetchAllDomains & filterOptions & domainList (list[str]) & DatabaseError \\
+  displayDomainDetails & domainID & renderedView (object) & DataNotFoundError \\
+  renderDomainMetrics & domainID, metricType & chartObject (object) & RenderError \\
+  searchDomains & searchTerm & filteredList (list[str]) & None \\
   \bottomrule
   \end{tabularx}
   \end{center}
@@ -1073,10 +1074,10 @@ System API Gateway Module \\
   \toprule
   \textbf{Name} & \textbf{In} & \textbf{Out} & \textbf{Exceptions}\\
   \midrule
-  selectComparisonMethod & methodName & successFlag & InvalidMethodError \\
-  computeComparison & domainSet, metricWeights & comparisonTable & ComputationError \\
-  fetchComparisonData & domainSet & metricsData & DatabaseError \\
-  visualizeComparison & comparisonTable, chartType & chartObject & RenderError \\
+  selectComparisonMethod & methodName & successFlag (bool) & InvalidMethodError \\
+  computeComparison & domainSet, metricWeights & comparisonTable (object) & ComputationError \\
+  fetchComparisonData & domainSet & metricsData (object) & DatabaseError \\
+  visualizeComparison & comparisonTable, chartType & chartObject (object) & RenderError \\
   \bottomrule
   \end{tabularx}
   \end{center}
@@ -1180,12 +1181,12 @@ System API Gateway Module \\
   \toprule
   \textbf{Name} & \textbf{In} & \textbf{Out} & \textbf{Exceptions}\\
   \midrule
-  handleHTTPRequest & request & response & NetworkError \\
-  authenticate & request & userContext & AuthError \\
-  authorize & userContext, action & bool & PermissionError \\
-  validatePayload & endpoint, payload & bool & ValidationError \\
-  dispatchToModule & endpoint, payload, userContext & serviceOutput & RouteError \\
-  buildResponse & serviceOutput & response & SerializeError \\
+  handleHTTPRequest & request & response (object) & NetworkError \\
+  authenticate & request & userContext (object) & AuthError \\
+  authorize & userContext, action & successFlag (bool) & PermissionError \\
+  validatePayload & endpoint, payload & successFlag (bool) & ValidationError \\
+  dispatchToModule & endpoint, payload, userContext & serviceOutput (object) & RouteError \\
+  buildResponse & serviceOutput & response (object) & SerializeError \\
   \bottomrule
   \end{tabularx}
   \end{center}
@@ -1303,10 +1304,10 @@ System API Gateway Module \\
   \toprule
   \textbf{Name} & \textbf{In} & \textbf{Out} & \textbf{Exceptions}\\
   \midrule
-  computeRankScores & metricsTable, userWeights & rankTable & InvalidMetricError \\
-  applyAHPWeights & criteriaMatrix & weightedMatrix & MatrixError \\
-  normalizeScores & rankTable & normalizedTable & NormalizationError \\
-  getTopPackages & normalizedTable, limit & rankedList & None \\
+  computeRankScores & metricsTable, userWeights & rankTable (dict) & InvalidMetricError \\
+  applyAHPWeights & criteriaMatrix & weightedMatrix (dict) & MatrixError \\
+  normalizeScores & rankTable & normalizedTable (dict) & NormalizationError \\
+  getTopPackages & normalizedTable, limit & rankedList (list[object]) & None \\
   \bottomrule
   \end{tabularx}
   \end{center}
@@ -1405,10 +1406,10 @@ System API Gateway Module \\
   \toprule
   \textbf{Name} & \textbf{In} & \textbf{Out} & \textbf{Exceptions}\\
   \midrule
-  generateGraph & metricData, graphType, config & graphImage & GraphError \\
-  updateGraphStyle & styleParams & successFlag & StyleError \\
-  exportGraph & graphImage, format, fileName & exportPath & ExportError \\
-  renderComparisonPlot & domainMetrics, metricType & comparisonImage & DataError \\
+  generateGraph & metricData, graphType, config & graphImage (object) & GraphError \\
+  updateGraphStyle & styleParams & successFlag (bool) & StyleError \\
+  exportGraph & graphImage, format, fileName & exportPath (str) & ExportError \\
+  renderComparisonPlot & domainMetrics, metricType & comparisonImage (object) & DataError \\
   \bottomrule
   \end{tabularx}
   \end{center}
@@ -1507,10 +1508,10 @@ System API Gateway Module \\
   \toprule
   \textbf{Name} & \textbf{In} & \textbf{Out} & \textbf{Exceptions}\\
   \midrule
-  prepareExportData & queryParams, dataType & exportData & DataError \\
-  exportToCSV & exportData, fileName & filePath & WriteError \\
-  exportToExcel & exportData, fileName & filePath & WriteError \\
-  getExportSummary & filePath & summaryDict & None \\
+  prepareExportData & queryParams, dataType & exportData (object) & DataError \\
+  exportToCSV & exportData, fileName & filePath (str) & WriteError \\
+  exportToExcel & exportData, fileName & filePath (str) & WriteError \\
+  getExportSummary & filePath & summaryDict (dict) & None \\
   \bottomrule
   \end{tabularx}
   \end{center}
@@ -1607,10 +1608,10 @@ System API Gateway Module \\
   \toprule
   \textbf{Name} & \textbf{In} & \textbf{Out} & \textbf{Exceptions}\\
   \midrule
-  setAuthToken & token & successFlag & AuthError \\
-  fetchRepoMetadata & packageID & repoData & APIError \\
-  fetchRepoMetrics & packageID, metricList & metricsData & APIError \\
-  handleRateLimit & responseHeaders & delaySeconds & RateLimitError \\
+  setAuthToken & token & successFlag (bool) & AuthError \\
+  fetchRepoMetadata & packageID & repoData (object) & APIError \\
+  fetchRepoMetrics & packageID, metricList & metricsData (object) & APIError \\
+  handleRateLimit & responseHeaders & delaySeconds (float) & RateLimitError \\
   \bottomrule
   \end{tabularx}
   \end{center}
@@ -1706,11 +1707,11 @@ System API Gateway Module \\
   \toprule
   \textbf{Name} & \textbf{In} & \textbf{Out} & \textbf{Exceptions}\\
   \midrule
-  createEntity & entityType, entityData & entityID & WriteError \\
-  readEntity & entityType, query & entitySet & NotFoundError \\
-  updateEntity & entityType, entityID, patch & successFlag & WriteError \\
-  deleteEntity & entityType, entityID & successFlag & DeleteError \\
-  executeQuery & querySpec & queryResult & QueryError \\
+  createEntity & entityType, entityData & entityID (UUID) & WriteError \\
+  readEntity & entityType, query & entitySet (object) & NotFoundError \\
+  updateEntity & entityType, entityID, patch & successFlag (bool) & WriteError \\
+  deleteEntity & entityType, entityID & successFlag (bool) & DeleteError \\
+  executeQuery & querySpec & queryResult (object) & QueryError \\
   \bottomrule
   \end{tabularx}
   \end{center}
@@ -1819,10 +1820,10 @@ System API Gateway Module \\
   \toprule
   \textbf{Name} & \textbf{In} & \textbf{Out} & \textbf{Exceptions}\\
   \midrule
-  initLogger & logConfig & successFlag & ConfigError \\
-  logEvent & message, level, context & successFlag & WriteError \\
+  initLogger & logConfig & successFlag (bool)& ConfigError \\
+  logEvent & message, level, context & successFlag (bool)& WriteError \\
   getRecentLogs & limit, [filter:LogFilter] & list(LogEntry) & ReadError \\
-  archiveLogs & None & successFlag & ArchiveError \\
+  archiveLogs & None & successFlag (bool)& ArchiveError \\
   \bottomrule
   \end{tabularx}
   \end{center}
