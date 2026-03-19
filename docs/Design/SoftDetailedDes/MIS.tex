@@ -63,10 +63,6 @@ Mar 19, 2026 & Fei & Final Documentation changes, compiled in this \href{https:/
 ~\newpage
 
 \section{Symbols, Abbreviations and Acronyms}
-
-See SRS Documentation at 
-\href{https://github.com/thaafei/DomainX/blob/main/docs/SRS/SRS.pdf}{SRS Documentation}.
-
 This section records acronyms and abbreviations for easy reference. 
 Additional terms specific to the Module Interface Specification (MIS) are included below.
 
@@ -411,18 +407,18 @@ System API Gateway Module \\
 
   \paragraph{Environment Variables}
   \begin{itemize}
-    \item \textbf{screen}: display surface used to render the user interface (provided via M2).
-    \item \textbf{inputDevices}: user input sources (mouse, keyboard, touch) that generate UI events (via M2).
-    \item \textbf{net}: network interface used to send and receive requests to external services (via M2).
-    \item \textbf{clock}: system clock used for timeouts and session timing (via M2).
+    \item \textbf{screen}: display surface used to render the user interface (provided via M2 [\ref{mis:Browser}]).
+    \item \textbf{inputDevices}: user input sources (mouse, keyboard, touch) that generate UI events (via M2 [\ref{mis:Browser}]).
+    \item \textbf{net}: network interface used to send and receive requests to external services (via M2 [\ref{mis:Browser}]).
+    \item \textbf{clock}: system clock used for timeouts and session timing (via M2 [\ref{mis:Browser}]).
   \end{itemize}
 
 
   \paragraph{Assumptions}
   \begin{itemize}
-    \item Executed within the Browser Module (M2), which provides DOM rendering, event delivery, storage, and networking facilities.
-    \item Network I/O occurs exclusively through the System API Gateway Module (M10); backend endpoints are not embedded in the UI.
-    \item Graphs are rendered via M12; file workflows are delegated to M13/M14.
+    \item Executed within the Browser Module (\ref{mis:Browser}), which provides DOM rendering, event delivery, storage, and networking facilities.
+    \item Network I/O occurs exclusively through the System API Gateway Module (\ref{mis:SystemAPIGateway}); backend endpoints are not embedded in the UI.
+    \item Graphs are rendered via \ref{mis:GraphingModule}; file workflows are delegated to \ref{mis:FileExportModule}.
   \end{itemize}
 
 
@@ -452,7 +448,7 @@ System API Gateway Module \\
 
   \noindent \textbf{handleUserAction}(actionType, payload):
   \begin{itemize}
-    \item transition: may update \texttt{uiState}; may delegate to M10/M12/M13/M14/M15 via callbacks.
+    \item transition: may update \texttt{uiState}; may delegate to modules listed in uses section via callbacks.
     \item output: \texttt{dispatchResult} (ack/nack).
     \item exception: \texttt{ActionError} on invalid action/payload.
   \end{itemize}
@@ -467,7 +463,7 @@ System API Gateway Module \\
   \paragraph{Local Functions}
   \begin{itemize}
     \item \texttt{guardByRole()} — checks \texttt{sessionContext} to gate routes/components.
-    \item \texttt{bindGraphHandlers()} — wires chart events (M12) to UI callbacks.
+    \item \texttt{bindGraphHandlers()} — wires chart events (M12 [\ref{mis:Graphing}]) to UI callbacks.
     \item \texttt{confirmBeforeLeave()} — prompts on unsaved changes before navigation.
   \end{itemize}
 
@@ -528,17 +524,16 @@ System API Gateway Module \\
 
   \paragraph{Assumptions}
   \begin{itemize}
-    \item The user is authenticated (M5) and authorized (M6) for the requested action.
-    \item Executed within a browser-based React UI; form state and feedback are managed by M3.
-    \item Network I/O is performed through M10 over HTTPS using JSON payloads conforming to M10 schemas.
-    \item Persistent storage of edits is performed by M17 \emph{via} M10 (M4 does not access M17 directly).
+    \item The user is authenticated (M5 [\ref{mis:UserAuthentication}]) and authorized (M6 [\ref{mis:UserMgm}]) for the requested action.
+    \item Executed within a browser-based React UI; form state and feedback are managed by M3 [\ref{mis:ApplicationUI}].
+    \item Network I/O is performed through M10 [\ref{mis:SystemAPIGateway}] over HTTPS using JSON payloads conforming to M10 schemas.
   \end{itemize}
 
   \paragraph{Access Routine Semantics}
 
   \noindent \textbf{addMetric}(metricData):
   \begin{itemize}
-    \item transition: validate \texttt{metricData}; stage in \texttt{editBuffer}; on commit, send create request via M10 to M17.
+    \item transition: validate \texttt{metricData}; stage in \texttt{editBuffer}; on commit, send create request via M10 to M15 [\ref{mis:DatabasePersistenceModule}].
     \item output: \texttt{successFlag} = true if accepted by backend.
     \item exception: \texttt{SchemaError} if required fields are missing or malformed.
   \end{itemize}
@@ -553,7 +548,7 @@ System API Gateway Module \\
   \noindent \textbf{deleteMetric}(metricID):
   \begin{itemize}
     \item transition: stage delete action in \texttt{editBuffer}.
-    \item output: \texttt{successFlag} = true if deletion is confirmed by M17 (via M10).
+    \item output: \texttt{successFlag} = true if deletion is confirmed by M15 [\ref{mis:DatabasePersistenceModule}] (via M10 [\ref{mis:SystemAPIGateway}]).
     \item exception: \texttt{NotFoundError} if the metric does not exist.
   \end{itemize}
 
@@ -573,8 +568,8 @@ System API Gateway Module \\
 
   \noindent \textbf{commitBatch}(changeList):
   \begin{itemize}
-    \item transition: send up to \texttt{MAX\_EDIT\_BATCH} staged changes via M10; clear successful items from \texttt{editBuffer}; push entries to \texttt{undoStack}.
-    \item output: \texttt{successFlag} = true if all changes are acknowledged by M17.
+    \item transition: send up to \texttt{MAX\_EDIT\_BATCH} staged changes via M10 [\ref{mis:SystemAPIGateway}]; clear successful items from \texttt{editBuffer}; push entries to \texttt{undoStack}.
+    \item output: \texttt{successFlag} = true if all changes are acknowledged by M15 [\ref{mis:DatabasePersistenceModule}].
     \item exception: \texttt{NetworkError} if API calls fail or time out.
   \end{itemize}
 
@@ -646,7 +641,7 @@ System API Gateway Module \\
   \paragraph{Environment Variables}
   \begin{itemize}
     \item \textbf{net}: network interface used to receive authentication requests
-          and return responses via M10.
+          and return responses via M10 [\ref{mis:SystemAPIGateway}].
     \item \textbf{clock}: system clock used to evaluate token expiry and session timeouts.
   \end{itemize}
 
@@ -664,7 +659,7 @@ System API Gateway Module \\
 
   \noindent \textbf{registerUser}(email, password, inviteCode):
   \begin{itemize}
-    \item transition: validate \texttt{inviteCode}; if valid, create a new user in M17 with a hashed password and the role associated with the invite.
+    \item transition: validate \texttt{inviteCode}; if valid, create a new user in M15 [\ref{mis:DatabasePersistenceModule}] with a hashed password and the role associated with the invite.
     \item output: \texttt{authToken} if registration succeeds.
     \item exception: \texttt{ValidationError} if email exists, password fails checks, or \texttt{inviteCode} is invalid/expired.
   \end{itemize}
@@ -714,7 +709,7 @@ System API Gateway Module \\
 
 
 \subsection{MIS of User Management Module (M6)}
-  \label{mis:UserRoleAccess}
+  \label{mis:UserMgm}
 
   \subsubsection{Module}
   Defines, stores, and enforces role-based permissions across the system.
@@ -771,16 +766,16 @@ System API Gateway Module \\
 
   \paragraph{Environment Variables}
   \begin{itemize}
-    \item \textbf{net}: network interface used to request and return authorization decisions via M10.
+    \item \textbf{net}: network interface used to request and return authorization decisions via M10 [\ref{mis:SystemAPIGateway}].
     \item \textbf{clock}: system clock used to evaluate cache expiration for \texttt{PERMISSIONS\_CACHE\_TTL}.
   \end{itemize}
 
 
   \paragraph{Assumptions}
   \begin{itemize}
-    \item All users are authenticated before authorization checks are performed (via M5).
+    \item All users are authenticated before authorization checks are performed (via M5 [\ref{mis:UserAuthentication}]).
     \item Each \texttt{actionType} requested by other modules is mapped to a permission category understood by this module.
-    \item Role and permission data is stored persistently via M17 and accessed through M10.
+    \item Role and permission data is stored persistently via M15 [\ref{mis:DatabasePersistenceModule}] and accessed through M10 [\ref{mis:SystemAPIGateway}].
   \end{itemize}
 
 
@@ -825,7 +820,7 @@ System API Gateway Module \\
   \begin{itemize}
     \item \texttt{hasPermission(userID, action)} – returns true if user’s role allows the action.
     \item \texttt{invalidateCache()} – clears cached permissions on role update or logout.
-    \item \texttt{syncWithBackend()} – persists role/permission updates via M10.
+    \item \texttt{syncWithBackend()} – persists role/permission updates via M10 [\ref{mis:SystemAPIGateway}].
   \end{itemize}
 
 
@@ -839,7 +834,7 @@ System API Gateway Module \\
   \subsubsection{Uses}
   Repository API Module (M14) (\ref{mis:RepositoryAPIModule})\\
   System API Gateway Module (M10) (\ref{mis:SystemAPIGateway})\\
-  Ranking Algorithm Module (M14) (\ref{mis:RankingAlgorithm})
+  Ranking Algorithm Module (M11) (\ref{mis:RankingAlgorithm})
 
   \subsubsection{Syntax}
 
@@ -888,7 +883,7 @@ System API Gateway Module \\
 
   \paragraph{Environment Variables}
   \begin{itemize}
-    \item \textbf{net}: network interface used to contact external APIs (via M15) and submit stored metric results (via M10).
+    \item \textbf{net}: network interface used to contact external APIs (via M15) and submit stored metric results (via M10 [\ref{mis:SystemAPIGateway}]).
     \item \textbf{clock}: system clock used to trigger periodic refresh every \texttt{UPDATE\_INTERVAL\_HOURS}.
   \end{itemize}
 
@@ -917,7 +912,7 @@ System API Gateway Module \\
 
   \noindent \textbf{storeValidatedMetrics}(metricsData):
   \begin{itemize}
-    \item transition: \item transition: submits validated metric records to persistent storage via M10.
+    \item transition: \item transition: submits validated metric records to persistent storage via M10 [\ref{mis:SystemAPIGateway}].
     \item output: \texttt{successFlag} = true if stored successfully.
     \item exception: \texttt{WriteError} if database transaction fails.
   \end{itemize}
@@ -932,7 +927,7 @@ System API Gateway Module \\
   \noindent \textbf{processMetricsQueue}():
   \begin{itemize}
     \item transition: dequeue pending repositories and fetch supported metrics
-          via M15; validate and store results via M10.
+          via M15 [\ref{mis:DatabasePersistenceModule}]; validate and store results via M10 [\ref{mis:SystemAPIGateway}].
     \item output: \texttt{successFlag} = true if all queued jobs complete.
     \item exception: \texttt{WorkerError} if processing fails or is interrupted.
   \end{itemize}
@@ -1006,8 +1001,8 @@ System API Gateway Module \\
 
   \paragraph{Assumptions}
   \begin{itemize}
-    \item Domain and metric data is available through the System API Gateway (M10).
-    \item Users have appropriate permissions (via M6) to view domain data.
+    \item Domain and metric data is available through the System API Gateway (M10 [\ref{mis:SystemAPIGateway}]).
+    \item Users have appropriate permissions (via M6 [\ref{mis:UserMgm}]) to view domain data.
     \item Visualization requests are delegated to the Graphing Module (M12).
   \end{itemize}
 
@@ -1029,7 +1024,7 @@ System API Gateway Module \\
 
   \noindent \textbf{renderDomainMetrics}(domainID, metricType):
   \begin{itemize}
-    \item transition: retrieves stored metric data for the domain via M10 and delegates visualization to M12.
+    \item transition: retrieves stored metric data for the domain via M10 [\ref{mis:SystemAPIGateway}] and delegates visualization to M12.
     \item output: visualization object.
     \item exception: \texttt{RenderError} if visualization fails.
   \end{itemize}
@@ -1104,12 +1099,12 @@ System API Gateway Module \\
   \begin{itemize}
     \item \textbf{screen}: display surface used to present comparison tables and charts.
     \item \textbf{inputDevices}: user input sources used to select domains/methods and interact with results.
-    \item \textbf{net}: network interface used to request comparison data via M10.
+    \item \textbf{net}: network interface used to request comparison data via M10 [\ref{mis:SystemAPIGateway}].
   \end{itemize}
 
   \paragraph{Assumptions}
   \begin{itemize}
-    \item Required domain/metric data for comparisons is accessible through M10.
+    \item Required domain/metric data for comparisons is accessible through M10 [\ref{mis:SystemAPIGateway}].
     \item The user selects a valid method from \texttt{SUPPORTED\_METHODS}.
     \item Visualization requests are delegated to M12.
   \end{itemize}
@@ -1125,7 +1120,7 @@ System API Gateway Module \\
 
   \noindent \textbf{computeComparison}(domainSet, metricWeights):
   \begin{itemize}
-    \item transition: requests required metric data via M10 and computes comparison results using the selected method; may delegate scoring/weighting to M11.  
+    \item transition: requests required metric data via  [\ref{mis:SystemAPIGateway}] and computes comparison results using the selected method; may delegate scoring/weighting to M11 [\ref{mis:RankingAlgorithm}].  
     \item output: \texttt{comparisonTable} containing ranked and weighted scores.  
     \item exception: \texttt{ComputationError} if calculation fails or data incomplete.  
   \end{itemize}
@@ -1134,7 +1129,7 @@ System API Gateway Module \\
   \begin{itemize}
     \item transition: none.  
     \item output: retrieves the metric data required to compare all entities in \texttt{domainSet}.
-    \item exception: \texttt{DataAccessError} if data cannot be retrieved through M10.
+    \item exception: \texttt{DataAccessError} if data cannot be retrieved through M10 [\ref{mis:SystemAPIGateway}].
   \end{itemize}
 
   \noindent \textbf{visualizeComparison}(comparisonTable, chartType):
@@ -1155,7 +1150,7 @@ System API Gateway Module \\
   \label{mis:SystemAPIGateway}
 
   \subsubsection{Module}
-  Implements the backend REST API layer that governs communication between the frontend and the server application, and mediates access to persisted data via M17.
+  Implements the backend REST API layer that governs communication between the frontend and the server application, and mediates access to persisted data via M15 [\ref{mis:DatabasePersistenceModule}].
   This module manages request handling, validation, and serialization across all feature modules.
   It ensures that frontend requests are authenticated, validated, and dispatched to the correct internal service routines.
 
@@ -1222,7 +1217,7 @@ System API Gateway Module \\
   \begin{itemize}
     \item All endpoints conform to REST conventions (GET, POST, PUT, DELETE).  
     \item Network connections are encrypted via HTTPS.  
-    \item Frontend tokens are validated by M5 (User Authentication Module).  
+    \item Frontend tokens are validated by M5 [\ref{mis:UserAuthentication}].  
     \item The backend is executed using standard server entry points (development runner and WSGI/ASGI deployment interfaces).
   \end{itemize}
 
@@ -1237,14 +1232,14 @@ System API Gateway Module \\
 
   \noindent \textbf{authenticate}(request):
   \begin{itemize}
-    \item transition: extracts credentials (e.g., session/JWT token) from \texttt{request} and validates them via M5.
+    \item transition: extracts credentials (e.g., session/JWT token) from \texttt{request} and validates them via M5 [\ref{mis:UserAuthentication}].
     \item output: \texttt{userContext} (authenticated user identity and session info).
     \item exception: \texttt{AuthError} if credentials are invalid, expired, or missing.
   \end{itemize}
 
   \noindent \textbf{authorize}(userContext, action):
   \begin{itemize}
-    \item transition: checks whether \texttt{userContext} is permitted to perform \texttt{action} using M6.
+    \item transition: checks whether \texttt{userContext} is permitted to perform \texttt{action} using M6 [\ref{mis:UserMgm}].
     \item output: Boolean indicating whether access is permitted.
     \item exception: \texttt{PermissionError} if the user is not authorized for the requested action.
   \end{itemize}
@@ -1436,7 +1431,7 @@ System API Gateway Module \\
   \begin{itemize}
     \item \textbf{screen}: display surface used to present generated visualizations.
     \item \textbf{fs}: file system used to store exported graph images.
-    \item \textbf{net}: network interface used to return visualization outputs via M10.
+    \item \textbf{net}: network interface used to return visualization outputs via M10 [\ref{mis:SystemAPIGateway}].
   \end{itemize}
 
   \paragraph{Assumptions}
@@ -1550,7 +1545,7 @@ System API Gateway Module \\
 
   \noindent \textbf{prepareExportData}(queryParams, dataType):
   \begin{itemize}
-    \item transition: requests the required records via M10 using \texttt{queryParams} and \texttt{dataType}.
+    \item transition: requests the required records via M10 [\ref{mis:SystemAPIGateway}] using \texttt{queryParams} and \texttt{dataType}.
     \item output: \texttt{exportData} containing normalized records ready for serialization.
     \item exception: \texttt{DataError} if retrieval fails or returns incomplete data.
   \end{itemize}
@@ -1874,7 +1869,7 @@ System API Gateway Module \\
   \paragraph{Project Configuration Note}
   For the peer-implementation deliverable and the current system release,
   \texttt{logConfig.storeType = FILE}. Therefore, persistence and retrieval are file-based under
-  \texttt{logDir}. Database persistence via M17 is supported by this MIS but is not required for the peer implementation.
+  \texttt{logDir}. Database persistence via M15 [\ref{mis:DatabasePersistenceModule}] is supported by this MIS but is not required for the peer implementation.
   If \texttt{fileName = None}, the implementation shall use \texttt{app.log}.
 
 
@@ -1895,7 +1890,7 @@ System API Gateway Module \\
       \item Create \texttt{entry : LogEntry} using the current \texttt{clock} for \texttt{timestamp}.
       \item If \texttt{level} is below the configured threshold \texttt{logLevel}, do not persist and return \texttt{successFlag = false}.
       \item If \texttt{logConfig.storeType = FILE}, append \texttt{entry} to \texttt{logDir/fileName} (default \texttt{app.log} if \texttt{fileName = None}).
-      \item If \texttt{logConfig.storeType = DB}, persist \texttt{entry} via the Database Persistence Module (M17).
+      \item If \texttt{logConfig.storeType = DB}, persist \texttt{entry} via the Database Persistence Module (M15).
     \end{itemize}
     \item output: \texttt{successFlag} indicates whether the entry was persisted.
     \item exception: \texttt{WriteError} if the configured log store cannot be written.
