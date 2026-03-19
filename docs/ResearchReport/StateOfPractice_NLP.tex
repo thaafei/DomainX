@@ -419,6 +419,30 @@ under the current overall AHP ranking. TensorFlow is the
 clear top-ranked package, while the remaining top 10
 packages are more tightly clustered.
 
+\subsection{Interpreting TensorFlow's lead}
+TensorFlow's position as the top-ranked package is driven
+primarily by a small set of differentiating categories
+rather than broad dominance across all assessed qualities.
+In particular, TensorFlow received a substantially larger
+value in correctness and verifiability than the other
+shortlisted packages, and this had a strong effect on the
+overall ranking under the current configuration. TensorFlow
+also shows comparatively strong repository-based metric
+values, which further separate it from much of the
+shortlist.
+
+At the same time, the results do not suggest that
+TensorFlow is uniquely superior in every quality dimension.
+Several assessed categories are relatively uniform across
+most packages, meaning that TensorFlow's overall lead is
+best interpreted as the result of exceptional performance in
+a few highly differentiating areas rather than consistently
+higher scores across the board. This is important because it
+shows that the ranking should be read as an evidence-based
+comparison under the current scoring and weighting setup,
+rather than as a universal claim that one package is best in
+all respects.
+
 \subsection{Quality-by-quality breakdown}\label{results-byquality}
 % \wss{ results by quality attribute (tables/figures). Identify strong/weak packages per quality and report domain-wide patterns
 %  supported by evidence.}
@@ -470,9 +494,6 @@ are comparatively uniform across the shortlisted packages.
 \subsection{Sensitivity analysis}\label{results-sensitivity}
 \wss{ how rankings change under weight variation, identify stable vs unstable parts of the ranking and summary of implications.}
 
-\subsection{Popularity vs evidence-based ranking (optional)}\label{results-popularity}
-\wss{Compare evidence-based results against reputation indicators (e.g. stars/download). Discuss alignment/misalignment
- and what it suggests about state-of-practice versus  popularity.}
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -605,17 +626,346 @@ repeated assessments as repositories evolve over time.
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 \section{Assessed packages and exclusions}\label{app-packages}
-\wss{table listing all assessed packages and excluded candidates with brief reasons to help traceability.}
+% \wss{table listing all assessed packages and excluded candidates with brief reasons to help traceability.}
+
+Table~\ref{tab:final28} lists the 28 packages included in the
+final assessed set used throughout this paper. Packages that
+appeared in intermediate tool views but were not retained in
+the final assessed set are listed separately in
+Table~\ref{tab:excluded-packages} for traceability.
+
+\begin{table}[H]
+\centering
+\caption{Final assessed set of 28 neural network software packages.}
+\label{tab:final28}
+\begin{tabular}{r l l}
+\toprule
+\textbf{\#} & \textbf{Package} & \textbf{Status} \\
+\midrule
+1  & Apache MXNet              & Dead  \\
+2  & Caffe                     & Dead  \\
+3  & Captum                    & Alive \\
+4  & Catboost                  & Alive \\
+5  & Chainer                   & Dead  \\
+6  & CNTK                      & Dead  \\
+7  & Cudf                      & Alive \\
+8  & DeepLearning4J            & Alive \\
+9  & Gensim                    & Alive \\
+10 & Hugging Face Transformers & Alive \\
+11 & Jax                       & Alive \\
+12 & Keras                     & Alive \\
+13 & LightGBM                  & Alive \\
+14 & MLFlow                    & Alive \\
+15 & NeuroLab                  & Dead  \\
+16 & NLTK                      & Alive \\
+17 & OpenCV                    & Alive \\
+18 & Optuna                    & Alive \\
+19 & PaddlePaddle              & Alive \\
+20 & Pytensor                  & Alive \\
+21 & PyTorch                   & Alive \\
+22 & PyTorch Geometric         & Alive \\
+23 & Scikit                    & Alive \\
+24 & SHAP                      & Alive \\
+25 & TensorBoard               & Alive \\
+26 & TensorFlow                & Alive \\
+27 & TorchVision               & Alive \\
+28 & XGBoost                   & Alive \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\begin{table}[H]
+\centering
+\caption{Packages not retained in the final paper analysis}
+\label{tab:excluded-packages}
+\begin{tabular}{l p{0.68\textwidth}}
+\toprule
+\textbf{Package} & \textbf{Reason} \\
+\midrule
+Theano & Excluded from the final paper analysis because it is better characterized as a legacy tensor-expression / computational backend and historical precursor than as a current representative neural-network software package. \\
+
+ONNX & Excluded from the final paper analysis because ONNX is primarily an interoperability standard / model format ecosystem rather than a core neural-network software library of the same kind as the finalized shortlisted frameworks. \\
+
+NNabla & Considered during shortlist development but not
+retained in the final paper analysis after shortlist
+validation. \\
+\bottomrule
+\end{tabular}
+\end{table}
 
 \section{Measurement template excerpt and scoring rules}\label{app-template}
-\wss{compact excerpt of measurement template and key scoring/normalization rules, or provide link to full template.}
+% \wss{compact excerpt of measurement template and key scoring/normalization rules, or provide link to full template.}
+The assessment used the same measurement-template structure
+defined in the methodology paper \cite{MethodologyPaper}.
+Rather than reproducing the full template verbatim, this
+appendix provides a compact excerpt summarizing the major
+template sections, the kinds of questions they contain, and
+the response formats used in the assessment.
+
+\begin{longtable}{p{0.25\textwidth} p{0.68\textwidth}}
+\caption{Compact excerpt of the measurement template used in
+the assessment.}
+\label{tab:template-excerpt} \\
+\toprule
+\textbf{Section} & \textbf{Representative items and response types} \\
+\midrule
+\endfirsthead
+
+\toprule
+\textbf{Section} & \textbf{Representative items and response types} \\
+\midrule
+\endhead
+
+\bottomrule
+\endfoot
+
+Summary Information &
+Software name, URL, affiliation, software purpose, number
+of developers, initial release date, last commit date,
+status, licence, platform, publications, programming
+languages, and performance references. Response types
+include string, date, URL, category, and number. \\
+
+Installability &
+Installation instructions, linearity of instructions,
+dependency handling, operating-system support, automation,
+installation breakage, validation method, uninstall
+support, and overall impression. Response types include
+yes/no, yes/no/n/a, string, number, and 1--10. \\
+
+Correctness and Verifiability &
+Reference to requirements or theory manuals, correctness
+techniques, getting-started tutorial, expected output,
+unit tests, continuous integration, and overall
+impression. Response types include yes/no,
+yes/no/unclear, given-via-string, and 1--10. \\
+
+Surface Reliability &
+Whether software broke during installation or tutorial
+testing, recoverability, descriptive error messages, and
+overall impression. Response types include yes/no,
+yes/no/n/a, and 1--10. \\
+
+Surface Robustness &
+Handling of unexpected input and overall impression.
+Response types include yes/no/n/a and 1--10. \\
+
+Surface Usability &
+Getting-started tutorial, user manual, documentation of
+expected user characteristics, sources of user support,
+and overall impression. Response types include yes/no,
+string, and 1--10. \\
+
+Maintainability &
+Current version, contribution process, issue-tracking
+tool, issue closure percentage, code-comment percentage,
+version control system, and overall impression. Response
+types include number, yes/no, given-via-string,
+percentage, and 1--10. \\
+
+Reusability &
+Number of code files, API documentation, and overall
+impression. Response types include number, yes/no/n/a,
+and 1--10. \\
+
+Visibility / Transparency &
+Documented development process, documented development
+environment, release notes, and overall impression.
+Response types include yes/no and 1--10. \\
+
+Surface Understandability &
+Indentation and formatting consistency, coding standard,
+identifier quality, comment quality, modularization,
+parameter naming, algorithm-name clarity, and overall
+impression. Response types include yes/no,
+yes/no/n/a, and 1--10. \\
+
+Raw Metrics (\texttt{git\_stats}) &
+Text-based files, binary files, total lines, lines
+added, lines deleted, total commits, yearly commit
+counts, and monthly commit counts. Response types
+include number and list of numbers. \\
+
+Raw Metrics (\texttt{scc}) &
+Text-based files, total lines, code lines, comment
+lines, and blank lines. Response type: number. \\
+
+Repo Metrics (GitHub) &
+Stars, forks, watchers, open pull requests, and closed
+pull requests. Response type: number. \\
+\end{longtable}
+
+Scoring followed the conventions defined in the methodology
+paper \cite{MethodologyPaper}. Binary and categorical
+questions were answered using the response options specified
+by the template (for example, yes/no, yes/no/n/a, or
+yes/no/unclear). Several categories also include an overall
+impression item scored on a 1--10 scale. Repository-based
+measures were recorded as raw numeric values, and derived
+or normalized values were used in later comparison and
+ranking steps. When evidence was missing or ambiguous,
+responses were recorded conservatively, consistent with the
+approach described in Section~\ref{template}. In the present
+work, evidence traceability was maintained through
+package-level references, specifically the project website
+URL and source-code repository URL recorded for each
+package.
+
+\subsubsection*{Representative scoring rules}
+
+The full scoring rules follow the methodology paper
+\cite{MethodologyPaper}. Table~\ref{tab:scoring-rules}
+provides representative examples of how common response
+types were mapped during scoring.
+
+\begin{table}[H]
+\centering
+\caption{Representative scoring-rule examples derived from
+the measurement template.}
+\label{tab:scoring-rules}
+\begin{tabularx}{\textwidth}{l X}
+\toprule
+\textbf{Category} & \textbf{Example scoring rule} \\
+\midrule
+Installability &
+Binary questions were typically mapped to small numeric
+values, for example yes/no or yes/no/n/a. The category also
+included an overall impression scored on a 1--10 scale. \\
+
+Correctness and Verifiability &
+Questions such as the presence of requirements references,
+unit tests, or continuous integration evidence were scored
+using template-defined yes/no/unclear mappings, together
+with an overall impression on a 1--10 scale. \\
+
+Surface Reliability &
+Breakage and recoverability questions were mapped using
+template-defined yes/no or yes/no/n/a scoring rules, with
+an overall impression on a 1--10 scale. \\
+
+Surface Usability &
+Questions about tutorials, user manuals, and user-support
+artifacts were scored using yes/no or small ordinal rules,
+together with an overall impression on a 1--10 scale. \\
+
+Maintainability &
+Several maintainability items used categorical or derived
+numeric rules, for example issue-closure percentage bands,
+comment-percentage bands, and identified contribution
+processes. \\
+
+Reusability &
+Items such as number of code files were mapped through
+bucketed numeric ranges, while API documentation was scored
+using yes/no/n/a. \\
+
+Visibility / Transparency &
+Questions about development process, documented environment,
+and release notes were scored using binary rules, with an
+overall impression on a 1--10 scale. \\
+
+Raw repository metrics &
+Repository-based measures were recorded as raw numeric
+values (for example commits, stars, forks, lines of code,
+comment lines, and blank lines) and used later in
+normalization and aggregation. \\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+These examples are intended to illustrate the scoring
+approach used in the assessment; the full question set and
+complete scoring details are given in the methodology paper
+\cite{MethodologyPaper}.
 
 \section{AHP weights and matrices}\label{app-ahp}
-\wss{ final AHP weights and any matrices needed for transparency and reproducibility.}
+% \wss{ final AHP weights and any matrices needed for transparency and reproducibility.}
+This appendix summarizes the AHP configuration used to
+produce the overall ranking reported in the paper. Under the
+current configuration, the category weights are nearly
+uniform, with installability assigned a slightly larger
+priority than the remaining categories. The pairwise
+comparison interface and resulting calculated priorities are
+shown in Figure~\ref{fig:app-weights}. These materials are
+included to support transparency and reproducibility of the
+ranking configuration used in DomainX.
+
+\begin{table}[H]
+\centering
+\caption{Final AHP category weights used in the current configuration.}
+\label{tab:ahp-weights}
+\begin{tabular}{l r}
+\toprule
+\textbf{Category} & \textbf{Weight} \\
+\midrule
+Installability & 7.7\% \\
+Quality & 7.7\% \\
+Correctness and Verifiability & 7.7\% \\
+Surface Reliability & 7.7\% \\
+Surface Robustness & 7.7\% \\
+Surface Usability & 7.7\% \\
+Reusability & 7.7\% \\
+Visibility/Transparency & 7.7\% \\
+Surface Understandability & 7.7\% \\
+Raw Metrics (Measured via \texttt{git\_stats}) & 7.7\% \\
+Raw Metrics (Measured via \texttt{scc}) & 7.7\% \\
+Repo Metrics (Measured via GitHub) & 7.7\% \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=\textwidth]{snapshots/weights.png}
+  \caption{DomainX AHP weight-configuration interface,
+  including pairwise comparisons and calculated priorities.}
+  \label{fig:app-weights}
+\end{figure}
 
 \section{DomainX screenshots and exported artifacts}\label{app-tool}
-\wss{potential figures: ranking view, table view, metric editing view, export example. }
+% \wss{potential figures: ranking view, table view, metric editing view, export example. }
 
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=\textwidth]{snapshots/domainxgraphview.png}
+  \caption{DomainX graph view showing the overall AHP
+  ranking for the shortlisted packages.}
+  \label{fig:app-graphview}
+\end{figure}
+
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=\textwidth]{snapshots/tableview.png}
+  \caption{DomainX table view showing overall and
+  per-category results for the shortlisted packages.}
+  \label{fig:app-tableview}
+\end{figure}
+
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=\textwidth]{snapshots/comparisontool.png}
+  \caption{DomainX comparison tool view showing package-level
+  metadata such as website links, repository links, project
+  status, licence, and platform information.}
+  \label{fig:app-comparison}
+\end{figure}
+
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=\textwidth]{snapshots/weights.png}
+  \caption{DomainX weight-configuration interface used to
+  specify category priorities for AHP-based comparison.}
+  \label{fig:app-weights}
+\end{figure}
+
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=\textwidth]{snapshots/managemetrics.png}
+  \caption{DomainX metric-management interface showing how
+  measurement items and associated metadata can be edited
+  within the tool.}
+  \label{fig:app-metrics}
+\end{figure}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % References
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
