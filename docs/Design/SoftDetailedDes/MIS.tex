@@ -285,76 +285,6 @@ System API Gateway Module \\
 
 
 \section{Module Interface Specifications}
-%   cross-referencing}
-
-% \wss{You can reference SRS labels, such as R\ref{R_Inputs}.}
-
-% \wss{It is also possible to use \LaTeX for hypperlinks to external documents.}
-
-% \subsection{Module}
-
-% \wss{Short name for the module}
-
-% \subsection{Uses}
-
-
-% \subsection{Syntax}
-
-% \subsubsection{Exported Constants}
-
-% \subsubsection{Exported Access Programs}
-
-% \begin{center}
-% \begin{tabular}{p{2cm} p{4cm} p{4cm} p{2cm}}
-% \hline
-% \textbf{Name} & \textbf{In} & \textbf{Out} & \textbf{Exceptions} \\
-% \hline
-% \wss{accessProg} & - & - & - \\
-% \hline
-% \end{tabular}
-% \end{center}
-
-% \subsection{Semantics}
-
-% \subsubsection{State Variables}
-
-% \wss{Not all modules will have state variables.  State variables give the module
-%   a memory.}
-
-% \subsubsection{Environment Variables}
-
-% \wss{This section is not necessary for all modules.  Its purpose is to capture
-%   when the module has external interaction with the environment, such as for a
-%   device driver, screen interface, keyboard, file, etc.}
-
-% \subsubsection{Assumptions}
-
-% \wss{Try to minimize assumptions and anticipate programmer errors via
-%   exceptions, but for practical purposes assumptions are sometimes appropriate.}
-
-% \subsubsection{Access Routine Semantics}
-
-% \noindent \wss{accessProg}():
-% \begin{itemize}
-% \item transition: \wss{if appropriate} 
-% \item output: \wss{if appropriate} 
-% \item exception: \wss{if appropriate} 
-% \end{itemize}
-
-% \wss{A module without environment variables or state variables is unlikely to
-%   have a state transition.  In this case a state transition can only occur if
-%   the module is changing the state of another module.}
-
-% \wss{Modules rarely have both a transition and an output.  In most cases you
-%   will have one or the other.}
-
-% \subsubsection{Local Functions}
-
-% \wss{As appropriate} \wss{These functions are for the purpose of specification.
-%   They are not necessarily something that is going to be implemented
-%   explicitly.  Even if they are implemented, they are not exported; they only
-%   have local scope.}
-
 
 \subsection{MIS of Browser Module (M2)}
   \label{mis:Browser}
@@ -436,8 +366,7 @@ System API Gateway Module \\
   Browser Module (M2) (\ref{mis:Browser})\\
   System API Gateway Module (M10) (\ref{mis:SystemAPIGateway})\\
   Graphing Module (M12) (\ref{mis:GraphingModule})\\
-  File Import Module (M13) (\ref{mis:FileImportModule})\\
-  File Export Module (M14) (\ref{mis:FileExportModule})\\
+  File Export Module (M13) (\ref{mis:FileExportModule})\\
 
   \subsubsection{Syntax}
 
@@ -669,8 +598,8 @@ System API Gateway Module \\
 
   \subsubsection{Uses}
   System API Gateway Module (M10) (\ref{mis:SystemAPIGateway})\\
-  User Role Access Module (M6) (\ref{mis:UserRoleAccess})\\
-  Database Persistence Module (M17) (\ref{mis:DatabasePersistenceModule})\\
+  User Management Module (M6) (\ref{mis:UserMgm})\\
+  Database Persistence Module (M15) (\ref{mis:DatabasePersistenceModule})\\
 
   \subsubsection{Syntax}
 
@@ -796,7 +725,7 @@ System API Gateway Module \\
   \subsubsection{Uses}
   User Authentication Module (M5) (\ref{mis:UserAuthentication})\\
   System API Gateway Module (M10) (\ref{mis:SystemAPIGateway})\\
-  Database Persistence Module (M17) (\ref{mis:DatabasePersistenceModule})\\
+  Database Persistence Module (M15) (\ref{mis:DatabasePersistenceModule})\\
 
   \subsubsection{Syntax}
 
@@ -908,9 +837,9 @@ System API Gateway Module \\
   This module interacts with external APIs through M15 to gather data such as stars, forks, downloads, or commit frequency and stores them in the internal database for further ranking and analysis.
 
   \subsubsection{Uses}
-  Repository API Module (M15) (\ref{mis:RepositoryAPIModule})\\
+  Repository API Module (M14) (\ref{mis:RepositoryAPIModule})\\
   System API Gateway Module (M10) (\ref{mis:SystemAPIGateway})\\
-  Ranking Algorithm Module (M11) (\ref{mis:RankingAlgorithm})
+  Ranking Algorithm Module (M14) (\ref{mis:RankingAlgorithm})
 
   \subsubsection{Syntax}
 
@@ -1025,7 +954,6 @@ System API Gateway Module \\
   through the defined system interfaces.
 
   \subsubsection{Uses}
-  Configuration Module (M19)  (\ref{mis:Configuration})\\ 
   System API Gateway Module (M10)  (\ref{mis:SystemAPIGateway})\\
   Graphing Module (M12) (\ref{mis:GraphingModule})\\
   Ranking Algorithm Module (M11) (\ref{mis:RankingAlgorithm})\\
@@ -1233,12 +1161,11 @@ System API Gateway Module \\
 
 
   \subsubsection{Uses}
-  Database Persistence Module (M17) (\ref{mis:DatabasePersistenceModule})\\
+  Database Persistence Module (M15) (\ref{mis:DatabasePersistenceModule})\\
   User Authentication Module (M5)  (\ref{mis:UserAuthentication})\\
-  Automated Metrics Module (M8) (\ref{mis:AutomatedMetrics})\\
-  Repository API Module (M15) (\ref{mis:RepositoryAPIModule})\\
-  Configuration Module (M19) (\ref{mis:Configuration})\\
-  User Role Access Module (M6) (\ref{mis:UserRoleAccess})
+  Automated Metrics Module (M7) (\ref{mis:AutomatedMetrics})\\
+  Repository API Module (M14) (\ref{mis:RepositoryAPIModule})\\
+  User Management Module (M6) (\ref{mis:UserMgm})
 
 
   \subsubsection{Syntax}
@@ -1363,8 +1290,7 @@ System API Gateway Module \\
   for downstream comparison and visualization.
 
   \subsubsection{Uses}
-  Comparison Module (M16) (\ref{mis:Comparison})\\
-  Configuration Module (M19) (\ref{mis:Configuration})
+  Comparison Module (M9) (\ref{mis:Comparison})\\
 
   \subsubsection{Syntax}
 
@@ -1465,8 +1391,7 @@ System API Gateway Module \\
 
   \subsubsection{Uses}
   System API Gateway Module (M10) (\ref{mis:SystemAPIGateway})\\
-  Comparison Module (M16)  (\ref{mis:Comparison})\\
-  Configuration Module (M19)  (\ref{mis:Configuration})
+  Comparison Module (M9)  (\ref{mis:Comparison})\\
 
   \subsubsection{Syntax}
 
@@ -1569,7 +1494,6 @@ System API Gateway Module \\
 
   \subsubsection{Uses}
   System API Gateway Module (M10)  (\ref{mis:SystemAPIGateway})\\
-  Configuration Module (M19)  (\ref{mis:Configuration})\\
   Ranking Algorithm Module (M11)  (\ref{mis:RankingAlgorithm})
 
   \subsubsection{Syntax}
@@ -1882,7 +1806,7 @@ System API Gateway Module \\
 
   \subsubsection{Uses}
   System API Gateway Module (M10)  (\ref{mis:SystemAPIGateway})\\
-  Database Persistence Module (M17) (\emph{optional; only if} \texttt{storeType = DB}) (\ref{mis:DatabasePersistenceModule})\\
+  Database Persistence Module (M15) (\emph{optional; only if} \texttt{storeType = DB}) (\ref{mis:DatabasePersistenceModule})\\
 
   \subsubsection{Syntax}
 
