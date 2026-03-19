@@ -381,7 +381,7 @@ System API Gateway Module \\
   \textbf{Name} & \textbf{In} & \textbf{Out} & \textbf{Exceptions}\\
   \midrule
   initAppShell & none & mountedRoot & RenderError \\
-  navigateTo & routeID, [params] & renderedView & RouteNotFound \\
+  navigateTo & routeID& renderedView & RouteNotFound \\
   renderComponent & componentID, props & renderedFragment & RenderError \\
   handleUserAction & actionType, payload & dispatchResult & ActionError \\
   showNotification & message, severity & successFlag & None \\
@@ -393,7 +393,7 @@ System API Gateway Module \\
 
   \paragraph{State Variables}
   \begin{itemize}
-    \item \textbf{currentRoute}: the active route (path and params).
+    \item \textbf{currentRoute}: the active route (path).
     \item \textbf{uiState}: global UI model (loading flags, toasts, modal state).
     \item \textbf{sessionContext}: authenticated user + role snapshot for conditional rendering.
   \end{itemize}
@@ -432,7 +432,7 @@ System API Gateway Module \\
     \item exception: \texttt{RenderError} if bootstrap fails.
   \end{itemize}
 
-  \noindent \textbf{navigateTo}(routeID, [params]):
+  \noindent \textbf{navigateTo}(routeID):
   \begin{itemize}
     \item transition: updates \texttt{currentRoute}; triggers route component render.
     \item output: \texttt{renderedView}.
