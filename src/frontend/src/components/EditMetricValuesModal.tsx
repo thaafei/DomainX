@@ -24,6 +24,15 @@ const EditMetricValuesModal: React.FC<{
   if (!open || !row) return null;
 
   const hasValidationErrors = Object.keys(fieldErrors).length > 0;
+  const groupedMetrics = metricList.reduce((acc, metric) => {
+    const category = metric.category || "Other";
+      if (!acc[category]) {
+        acc[category] = [];
+      }
+
+      acc[category].push(metric);
+      return acc;
+  }, {} as Record<string, typeof metricList>);
 
   return (
     <div
@@ -88,7 +97,7 @@ const EditMetricValuesModal: React.FC<{
             <div
               style={{
                 color: "rgba(255,255,255,0.82)",
-                fontSize: 14,
+                fontSize: 18,
                 ...clamp2Style,
               }}
               title={row.library_name}
@@ -245,182 +254,187 @@ const EditMetricValuesModal: React.FC<{
           </div>
         </div>
 
-        <div
-          style={{
-            display: "grid",
-            gridTemplateColumns: "repeat(2, minmax(0, 1fr))",
-            gap: 10,
-          }}
-        >
-          {metricList.map((m) => {
-            const cellVal = row.metrics[m.metric_name];
-            const descVal = row.metrics[m.metric_name + "_description"] || ""; 
-            const fieldError = fieldErrors[m.metric_name];
-            const staticDesc = (m.description || "").trim();
-
-            return (
-              <div
-                key={m.metric_ID}
-                style={{
-                  display: "flex",
-                  flexDirection: "column",
-                  gap: 4,
-                  padding: "8px 10px",
-                  borderRadius: 10,
-                  background: "rgba(255,255,255,0.03)",
-                  border: "1px solid rgba(255,255,255,0.08)",
-                  minWidth: 0,
-                }}
-              >
+      { Object.entries(groupedMetrics).map(([category, metrics]) => (
+        <div key={category} style={{ marginBottom: 20 }}>
+          {/* Category Header */}
+          <h3 style={{color: "rgba(255,255,255,0.82)", fontSize: 16, ...clamp2Style,}}>{category}</h3>
+          <div
+            style={{
+              display: "grid",
+              gridTemplateColumns: "repeat(2, minmax(0, 1fr))",
+              gap: 10,
+            }}
+          >
+            { metrics.map((m) => {
+              const cellVal = row.metrics[m.metric_name];
+              const _ = row.metrics[m.metric_name + "_description"] || ""; 
+              const fieldError = fieldErrors[m.metric_name];
+              const staticDesc = (m.description || "").trim();
+              return (
                 <div
+                  key={m.metric_ID}
                   style={{
                     display: "flex",
                     flexDirection: "column",
                     gap: 4,
-                    minHeight: 42,
+                    padding: "8px 10px",
+                    borderRadius: 10,
+                    background: "rgba(255,255,255,0.03)",
+                    border: "1px solid rgba(255,255,255,0.08)",
+                    minWidth: 0,
                   }}
                 >
-                  <label
-                    style={{
-                      color: "rgba(255,255,255,0.88)",
-                      fontSize: 13,
-                      fontWeight: 600,
-                      overflowWrap: "anywhere",
-                      ...clamp2Style,
-                    }}
-                    title={m.metric_name}
-                  >
-                    {m.metric_name}
-                  </label>
-
                   <div
                     style={{
-                      fontSize: 11,
-                      color: "rgba(255,255,255,0.45)",
-                      lineHeight: 1.25,
-                      overflowWrap: "anywhere",
+                      display: "flex",
+                      flexDirection: "column",
+                      gap: 4,
+                      minHeight: 42,
                     }}
                   >
-                    {staticDesc ? `(${staticDesc})` : <span>&nbsp;</span>}
-                  </div>
-                </div>
-
-                <div style={{ display: "flex", flexDirection: "column", gap: 4 }}>
-                  {m.metric_key === "gitstats_report" ? (
-                    cellVal ? (
-                      <a href={String(cellVal)} target="_blank" rel="noreferrer" style={{ color: "var(--accent)", fontSize: 13 }}>
-                        View report
-                      </a>
-                    ) : (
-                      <div style={{ fontSize: 13, color: "rgba(255,255,255,0.4)" }}>—</div>
-                    )
-                  ) : m.scoring_dict && Object.keys(m.scoring_dict).length > 0 ? (
-                    <select
-                      className="dx-input"
-                      value={cellVal ?? ""}
-                      onChange={(e) => onChangeValue(m.metric_name, e.target.value)}
-                      disabled={pageLoading}
-                      style={{ borderColor: fieldError ? "rgba(255, 99, 99, 0.75)" : undefined }}
+                    <label
+                      style={{
+                        color: "rgba(255,255,255,0.88)",
+                        fontSize: 13,
+                        fontWeight: 600,
+                        overflowWrap: "anywhere",
+                        ...clamp2Style,
+                      }}
+                      title={m.metric_name}
                     >
-                      <option value="">-- Select --</option>
-                      {Object.keys(m.scoring_dict).map((key) => (
-                        <option key={key} value={key}>{key}</option>
-                      ))}
-                    </select>
-                     ) : m.value_type === "date" ? (
-                              <input
-                                type="date"
-                                className="dx-input"
-                                value={cellVal ?? ""}
-                                onChange={(e) => onChangeValue(m.metric_name, e.target.value)}
-                                disabled={pageLoading}
-                                style={{ borderColor: fieldError ? "rgba(255, 99, 99, 0.75)" : undefined }}
-                              />
-                            ) : m.value_type === "time" ? (
-                              <input
-                                type="time"
-                                className="dx-input"
-                                value={cellVal ?? ""}
-                                onChange={(e) => onChangeValue(m.metric_name, e.target.value)}
-                                disabled={pageLoading}
-                                style={{ borderColor: fieldError ? "rgba(255, 99, 99, 0.75)" : undefined }}
-                              />
-                            ) : m.value_type === "datetime" ? (
-                              <input
-                                type="datetime-local"
-                                className="dx-input"
-                                value={cellVal ?? ""}
-                                onChange={(e) => onChangeValue(m.metric_name, e.target.value)}
-                                disabled={pageLoading}
-                                style={{ borderColor: fieldError ? "rgba(255, 99, 99, 0.75)" : undefined }}
-                              />
-                            ) : (
-                              <input
-                                className="dx-input"
-                                placeholder="Enter value..."
-                                value={cellVal ?? ""}
-                                onChange={(e) => onChangeValue(m.metric_name, e.target.value)}
-                                disabled={pageLoading}
-                                style={{ borderColor: fieldError ? "rgba(255, 99, 99, 0.75)" : undefined }}
-                              />
-                            )}
-                </div>
+                      {m.metric_name}
+                    </label>
 
-                <div style={{ display: "flex", flexDirection: "column", gap: 4 }}>
-                  <div style={{ fontSize: 11, color: "rgba(255,255,255,0.5)", fontWeight: 500 }}>
-                    Notes / Comments
+                    <div
+                      style={{
+                        fontSize: 11,
+                        color: "rgba(255,255,255,0.45)",
+                        lineHeight: 1.25,
+                        overflowWrap: "anywhere",
+                      }}
+                    >
+                      {staticDesc ? `(${staticDesc})` : <span>&nbsp;</span>}
+                    </div>
                   </div>
-                  <textarea
-                    className="dx-input"
-                    placeholder="Add description..."
-                    rows={2}
-                    value={row.metrics[`${m.metric_name}_description`] || ""}
-                    onChange={(e) => onChangeValue(m.metric_name + "_description", e.target.value)}
-                    disabled={pageLoading}
-                    style={{
-                      fontSize: 12,
-                      resize: "none",
-                      minHeight: 50,
-                      background: "rgba(0,0,0,0.2)",
-                    }}
-                  />
-                </div>
 
-                {fieldError && (
-                  <div style={{ color: "#ff9b9b", fontSize: 11, marginTop: 2 }}>
-                    {fieldError}
+                  <div style={{ display: "flex", flexDirection: "column", gap: 4 }}>
+                    {m.metric_key === "gitstats_report" ? (
+                      cellVal ? (
+                        <a href={String(cellVal)} target="_blank" rel="noreferrer" style={{ color: "var(--accent)", fontSize: 13 }}>
+                          View report
+                        </a>
+                      ) : (
+                        <div style={{ fontSize: 13, color: "rgba(255,255,255,0.4)" }}>—</div>
+                      )
+                    ) : m.scoring_dict && Object.keys(m.scoring_dict).length > 0 ? (
+                      <select
+                        className="dx-input"
+                        value={cellVal ?? ""}
+                        onChange={(e) => onChangeValue(m.metric_name, e.target.value)}
+                        disabled={pageLoading}
+                        style={{ borderColor: fieldError ? "rgba(255, 99, 99, 0.75)" : undefined }}
+                      >
+                        <option value="">-- Select --</option>
+                        {Object.keys(m.scoring_dict).map((key) => (
+                          <option key={key} value={key}>{key}</option>
+                        ))}
+                      </select>
+                      ) : m.value_type === "date" ? (
+                                <input
+                                  type="date"
+                                  className="dx-input"
+                                  value={cellVal ?? ""}
+                                  onChange={(e) => onChangeValue(m.metric_name, e.target.value)}
+                                  disabled={pageLoading}
+                                  style={{ borderColor: fieldError ? "rgba(255, 99, 99, 0.75)" : undefined }}
+                                />
+                              ) : m.value_type === "time" ? (
+                                <input
+                                  type="time"
+                                  className="dx-input"
+                                  value={cellVal ?? ""}
+                                  onChange={(e) => onChangeValue(m.metric_name, e.target.value)}
+                                  disabled={pageLoading}
+                                  style={{ borderColor: fieldError ? "rgba(255, 99, 99, 0.75)" : undefined }}
+                                />
+                              ) : m.value_type === "datetime" ? (
+                                <input
+                                  type="datetime-local"
+                                  className="dx-input"
+                                  value={cellVal ?? ""}
+                                  onChange={(e) => onChangeValue(m.metric_name, e.target.value)}
+                                  disabled={pageLoading}
+                                  style={{ borderColor: fieldError ? "rgba(255, 99, 99, 0.75)" : undefined }}
+                                />
+                              ) : (
+                                <input
+                                  className="dx-input"
+                                  placeholder="Enter value..."
+                                  value={cellVal ?? ""}
+                                  onChange={(e) => onChangeValue(m.metric_name, e.target.value)}
+                                  disabled={pageLoading}
+                                  style={{ borderColor: fieldError ? "rgba(255, 99, 99, 0.75)" : undefined }}
+                                />
+                              )}
                   </div>
-                )}
-              </div>
-            );
-          })}
+
+                  <div style={{ display: "flex", flexDirection: "column", gap: 4 }}>
+                    <div style={{ fontSize: 11, color: "rgba(255,255,255,0.5)", fontWeight: 500 }}>
+                      Notes / Comments
+                    </div>
+                    <textarea
+                      className="dx-input"
+                      placeholder="Add description..."
+                      rows={2}
+                      value={row.metrics[`${m.metric_name}_description`] || ""}
+                      onChange={(e) => onChangeValue(m.metric_name + "_description", e.target.value)}
+                      disabled={pageLoading}
+                      style={{
+                        fontSize: 12,
+                        resize: "none",
+                        minHeight: 50,
+                        background: "rgba(0,0,0,0.2)",
+                      }}
+                    />
+                  </div>
+
+                  {fieldError && (
+                    <div style={{ color: "#ff9b9b", fontSize: 11, marginTop: 2 }}>
+                      {fieldError}
+                    </div>
+                  )}
+                </div>
+              );
+            })}
+          </div>
         </div>
-
-        <div
-          style={{
-            display: "flex",
-            justifyContent: "flex-end",
-            gap: 10,
-            marginTop: 18,
-          }}
+        )) 
+      };
+      <div
+        style={{
+          display: "flex",
+          justifyContent: "flex-end",
+          gap: 10,
+          marginTop: 18,
+        }}
+      >
+        <button
+          className="dx-btn dx-btn-outline"
+          onClick={onClose}
+          disabled={pageLoading}
+          style={{ opacity: pageLoading ? 0.7 : 1 }}
         >
-          <button
-            className="dx-btn dx-btn-outline"
-            onClick={onClose}
-            disabled={pageLoading}
-            style={{ opacity: pageLoading ? 0.7 : 1 }}
-          >
-            Cancel
-          </button>
-          <button
-            className="dx-btn dx-btn-primary"
-            onClick={onSave}
-            disabled={pageLoading || hasValidationErrors}
-            style={{ opacity: pageLoading || hasValidationErrors ? 0.7 : 1 }}
-          >
-            Save
-          </button>
-        </div>
+          Cancel
+        </button>
+        <button
+          className="dx-btn dx-btn-primary"
+          onClick={onSave}
+          disabled={pageLoading || hasValidationErrors}
+          style={{ opacity: pageLoading || hasValidationErrors ? 0.7 : 1 }}
+        >
+          Save
+        </button>
+      </div>
       </div>
     </div>
   );

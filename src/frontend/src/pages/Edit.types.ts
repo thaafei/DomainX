@@ -6,6 +6,7 @@ export interface Metric {
   source_type?: string;
   metric_key?: string | null;
   scoring_dict?: Record<string, number> | null;
+  category: string | null;
 }
 
 export type AnalysisStatus = "pending" | "running" | "success" | "failed" | string;
