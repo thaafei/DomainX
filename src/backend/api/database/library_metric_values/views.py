@@ -198,6 +198,7 @@ def domain_comparison(request, domain_id):
                     "value_type": m.value_type,
                     "source_type": m.source_type,
                     "scoring_dict": m.scoring_dict,
+                    "category": m.category
                 }
                 for m in metrics
             ],
