@@ -140,45 +140,58 @@ const EditValuesPage: React.FC = () => {
   };
 
   const validateMetricValue = (metric: Metric, value: any): string => {
-    const raw = value == null ? "" : String(value).trim();
+      const raw = value == null ? "" : String(value).trim();
 
-    if (raw === "") return "";
+      if (raw === "") return "";
 
-    if (metric.scoring_dict && Object.keys(metric.scoring_dict).length > 0) {
+      if (metric.metric_key === "gitstats_report") {
+        return "";
+      }
+
+      if (metric.scoring_dict && Object.keys(metric.scoring_dict).length > 0) {
+        return "";
+      }
+
+      if (metric.value_type === "int") {
+        if (!/^-?\d+$/.test(raw)) {
+          return "Please enter a whole number.";
+        }
+
+        const num = Number(raw);
+
+        if (metric.option_category === "scale_1_10" && metric.rule === "bounded") {
+          if (num < 1 || num > 10) {
+            return "Please enter a whole number between 1 and 10.";
+          }
+        }
+
+        return "";
+      }
+
+      if (metric.value_type === "float") {
+        return /^-?\d+(\.\d+)?$/.test(raw) ? "" : "Please enter a valid number.";
+      }
+
+      if (metric.value_type === "text") {
+        return "";
+      }
+
+      if (metric.value_type === "date") {
+        return /^\d{4}-\d{2}-\d{2}$/.test(raw) ? "" : "Please enter a valid date.";
+      }
+
+      if (metric.value_type === "time") {
+        return /^\d{2}:\d{2}(:\d{2})?$/.test(raw) ? "" : "Please enter a valid time.";
+      }
+
+      if (metric.value_type === "datetime") {
+        return /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}$/.test(raw)
+          ? ""
+          : "Please enter a valid date and time.";
+      }
+
       return "";
-    }
-
-    if (metric.metric_key === "gitstats_report") {
-      return "";
-    }
-
-    if (metric.value_type === "int") {
-      return /^-?\d+$/.test(raw) ? "" : "Please enter a whole number.";
-    }
-
-    if (metric.value_type === "float") {
-      return /^-?\d+(\.\d+)?$/.test(raw) ? "" : "Please enter a valid number.";
-    }
-
-    if (metric.value_type === "text") {
-      return "";
-    }
-    if (metric.value_type === "date") {
-      return /^\d{4}-\d{2}-\d{2}$/.test(raw) ? "" : "Please enter a valid date.";
-    }
-
-    if (metric.value_type === "time") {
-      return /^\d{2}:\d{2}(:\d{2})?$/.test(raw) ? "" : "Please enter a valid time.";
-    }
-
-    if (metric.value_type === "datetime") {
-      return /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}$/.test(raw)
-        ? ""
-        : "Please enter a valid date and time.";
-    }
-
-    return "";
-  };
+    };
 
   const validateDraft = (draft: EditableRow | null, metrics: Metric[]) => {
     if (!draft) return {};
