@@ -15,6 +15,18 @@
         "Raw Metrics (Measured via git_stats)",
         "Raw Metrics (Measured via scc)", 
         "Repo Metrics (Measured via GitHub)"
+    ],
+    "AHP_Categories": [
+        "Installability", 
+        "Popularity",
+        "Activity",
+        "Quality",
+        "Correctness and Verifiability", 
+        "Surface Reliability", 
+        "Surface Robustness", 
+        "Surface Usability", 
+        "Maintenance", 
+        "Reusability", 
+        "Visibility/Transparency"
     ]
-
 }

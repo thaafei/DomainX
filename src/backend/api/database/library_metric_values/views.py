@@ -309,12 +309,12 @@ class AHPCalculations(APIView):
         with open(rules_path, "r") as f:
             rules_data = json.load(f)
         with open(cat_path, "r") as f:
-            all_categories = json.load(f).get("Categories", [])
+            ahp_categories = json.load(f).get("AHP_Categories", [])
 
         libraries = Library.objects.filter(domain=domain)
 
         category_ahp = []
-        for category_name in all_categories:
+        for category_name in ahp_categories:
             metrics = Metric.objects.filter(category=category_name)
             if not metrics.exists():
                 continue
@@ -379,5 +379,16 @@ class AHPCalculations(APIView):
                 "global_ranking": global_rank,
                 "category_details": {c.name: c.target_weights for c in category_ahp},
             },
+            status=status.HTTP_200_OK,
+        )
+
+class AHPCategories(APIView):
+    def get(self, request):
+        cat_path = os.path.join(settings.BASE_DIR, "api", "database", "categories.json")
+        with open(cat_path, "r") as f:
+            ahp_categories = json.load(f).get("AHP_Categories", [])
+
+        return Response(
+            ahp_categories,
             status=status.HTTP_200_OK,
         )

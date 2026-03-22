@@ -1,18 +1,6 @@
 import React, { useState, useEffect, useMemo, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuthStore } from "../store/useAuthStore";
-import CustomIsometricBar from '../components/CustomIsometricBar';
-import {
-  BarChart,
-  Bar,
-  XAxis,
-  YAxis,
-  CartesianGrid,
-  Tooltip,
-  ResponsiveContainer,
-  LabelList,
-  Cell,
-} from "recharts";
 import Plot from 'react-plotly.js';
 import { apiUrl } from "../config/api";
 import DomainsList from "../components/DomainsList";
@@ -126,8 +114,6 @@ const Main: React.FC = () => {
       prev.includes(category) ? prev.filter(x => x !== category) : [...prev, category]
     );
   };
-
-  const downloadFormat = "svg";
 
   const categoryListForAhp = useMemo(() => {
     if (!ahpData?.category_details) return [];
@@ -844,7 +830,9 @@ const Main: React.FC = () => {
               </tbody>
             </table>
           </div>
-        )}
+        )
+        
+        }
       </div>
 
       <DomainInfo selectedDomain={selectedDomain} sidebarOpen={moreInfoSidebarOpen} setSidebarOpen={setMoreInfoSidebarOpen} />

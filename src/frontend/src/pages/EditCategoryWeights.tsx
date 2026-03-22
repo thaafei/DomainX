@@ -1,7 +1,6 @@
 import React, { useState, useEffect, useMemo } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { apiUrl } from "../config/api";
-import { ArrowLeft } from "lucide-react";
 import AuthTransition from "../components/AuthTransition";
 // Define the shape of our Metric based on your Django Serializer
 interface Metric {
@@ -30,32 +29,35 @@ const EditCategoryWeights: React.FC = () => {
     const fetchData = async () => {
       if (!domainId) return;
       try {
-        const [catRes, metricsRes, savedRes] = await Promise.all([
+        const [catRes, metricsRes, savedRes, AhpCatRes] = await Promise.all([
           fetch(apiUrl("/metrics/categories/"), { credentials: "include" }),
           fetch(apiUrl("/metrics/"), { credentials: "include" }),
-          fetch(apiUrl(`/domain/${domainId}/category-weights/`), { credentials: "include" })
+          fetch(apiUrl(`/domain/${domainId}/category-weights/`), { credentials: "include" }),
+          fetch(apiUrl("/library_metric_values/ahp/categories/"))
         ]);
 
         const catData = await catRes.json();
         const metricsData: Metric[] = await metricsRes.json();
         const savedData = await savedRes.json(); 
+        const AhpCatList = await AhpCatRes.json(); 
 
         // Identify categories currently in use by metrics
         const usedCategories = new Set(metricsData.map(m => m.category?.trim()).filter(Boolean));
         const filteredCategories = (catData?.Categories || []).filter((c: string) => usedCategories.has(c.trim()));
-        
+        const filterAHPCategories = filteredCategories.filter((c: string) => AhpCatList.includes(c.trim()));
+
         if (metricsData.some(m => !m.category || m.category.trim() === "")) {
-          filteredCategories.push("Uncategorized");
+          filterAHPCategories.push("Uncategorized");
         }
 
-        setCategories(filteredCategories);
+        setCategories(filterAHPCategories);
         setMetricList(metricsData);
 
         // BUILD MATRIX WITH DEFAULT FALLBACKS
         const initialMatrix: Record<string, Record<string, number>> = {};
-        filteredCategories.forEach((r: string) => {
+        filterAHPCategories.forEach((r: string) => {
           initialMatrix[r] = {};
-          filteredCategories.forEach((c: string) => {
+          filterAHPCategories.forEach((c: string) => {
             // Check if the pair exists in saved data; if not, default to 1
             const savedValue = savedData?.ahp_matrix?.[r]?.[c];
             initialMatrix[r][c] = (savedValue !== undefined) ? savedValue : 1;

@@ -3,6 +3,7 @@ from .views import (
     LibraryMetricValueUpdateView,
     MetricValueBulkUpdateView,
     AHPCalculations,
+    AHPCategories,
     analyze_library,
     analyze_domain_libraries,
     domain_comparison,
@@ -15,4 +16,5 @@ urlpatterns = [
     path("<uuid:domain_id>/analyze-all/", analyze_domain_libraries, name="values-analyze-domain"),
     path("bulk-update/", MetricValueBulkUpdateView.as_view(), name="values-bulk-update"),
     path("ahp/<uuid:domain_id>/", AHPCalculations.as_view(), name="values-ahp"),
+    path("ahp/categories/", AHPCategories.as_view(), name="values-ahp-categories"),
 ]
