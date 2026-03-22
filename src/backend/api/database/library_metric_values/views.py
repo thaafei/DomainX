@@ -37,9 +37,22 @@ def validate_metric_value(metric, value):
     if metric.value_type == "int":
         try:
             parsed = int(raw)
-            return None, parsed
         except (TypeError, ValueError):
             return f"{metric.metric_name} must be a whole number.", None
+
+        if metric.option_category:
+            rules_path = os.path.join(settings.BASE_DIR, "api", "database", "rules.json")
+            with open(rules_path, "r") as f:
+                rules_data = json.load(f)
+
+            int_rules = rules_data.get("int", {}).get(metric.option_category, {})
+
+            if "min" in int_rules and parsed < int_rules["min"]:
+                return f"{metric.metric_name} must be >= {int_rules['min']}.", None
+            if "max" in int_rules and parsed > int_rules["max"]:
+                return f"{metric.metric_name} must be <= {int_rules['max']}.", None
+
+        return None, parsed
 
     if metric.value_type == "float":
         try:
@@ -198,7 +211,9 @@ def domain_comparison(request, domain_id):
                     "value_type": m.value_type,
                     "source_type": m.source_type,
                     "scoring_dict": m.scoring_dict,
-                    "category": m.category
+                    "category": m.category,
+                    "option_category": m.option_category,
+                    "rule": m.rule,
                 }
                 for m in metrics
             ],
