@@ -384,14 +384,15 @@ const MetricsPage: React.FC = () => {
     loadMetrics();
   }, []);
 
-  const isRuleType = (t: string) => t === "bool" || t === "range";
+  const isRuleType = (t: string) => t === "bool" || t === "range" || t === "int";
 
   const getAvailableCategoriesForType = (type: string) => {
-    if (!rulesData) return {};
-    if (type === "bool") return rulesData.bool || {};
-    if (type === "range") return rulesData.range || {};
-    return {};
-  };
+      if (!rulesData) return {};
+      if (type === "bool") return rulesData.bool || {};
+      if (type === "range") return rulesData.range || {};
+      if (type === "int") return rulesData.int || {};
+      return {};
+    };
 
   useMemo(() => {
     return getAvailableCategoriesForType(newType);
@@ -502,6 +503,11 @@ const MetricsPage: React.FC = () => {
     modalOptionCategory && modalTemplate
       ? modalAvailableCats?.[modalOptionCategory]?.templates?.[modalTemplate] ?? null
       : null;
+  const buildScoringDict = (type: string, preview: any) => {
+      if (!preview) return null;
+      if (type === "int") return null;
+      return preview;
+    };
 
   const addMetric = async (): Promise<boolean> => {
     if (!newName.trim()) {
@@ -526,7 +532,7 @@ const MetricsPage: React.FC = () => {
     }
 
     setFormError("");
-    const scoringDict = modalPreview;
+    const scoringDict = buildScoringDict(newType, modalPreview);
 
     const payload: any = {
       metric_name: newName.trim(),
@@ -612,7 +618,7 @@ const MetricsPage: React.FC = () => {
     if (editSourceType === "manual" && isRuleType(editType)) {
       payload.option_category = editOptionCategory;
       payload.rule = editTemplate;
-      const scoringDict = modalPreview;
+      const scoringDict = buildScoringDict(editType, modalPreview);
       payload.scoring_dict = scoringDict;
     } else {
       payload.option_category = null;
@@ -672,28 +678,35 @@ const MetricsPage: React.FC = () => {
   };
 
   const displayInputCategory = (m: Metric) => {
-    if (!rulesData) return "—";
-    if (m.value_type === "bool") {
-      return rulesData?.bool?.[m.option_category || "yes_no"]?.display_name ?? "—";
-    }
-    if (m.value_type === "range") {
-      return rulesData?.range?.[m.option_category || "file_ranges"]?.display_name ?? "—";
-    }
-    return "—";
-  };
+      if (!rulesData) return "—";
+      if (m.value_type === "bool") {
+        return rulesData?.bool?.[m.option_category || "yes_no"]?.display_name ?? "—";
+      }
+      if (m.value_type === "range") {
+        return rulesData?.range?.[m.option_category || "file_ranges"]?.display_name ?? "—";
+      }
+      if (m.value_type === "int") {
+        return rulesData?.int?.[m.option_category || "other"]?.display_name ?? "—";
+      }
+      return "—";
+    };
 
   const displayRulePreview = (m: Metric) => {
-    if (!rulesData) return "—";
-    if (m.value_type === "bool") {
-      const obj = rulesData?.bool?.[m.option_category || "yes_no"]?.templates?.[m.rule || "standard"];
-      return obj ? JSON.stringify(obj, null, 2) : "—";
-    }
-    if (m.value_type === "range") {
-      const obj = rulesData?.range?.[m.option_category || "file_ranges"]?.templates?.[m.rule || "standard"];
-      return obj ? JSON.stringify(obj, null, 2) : "—";
-    }
-    return "—";
-  };
+      if (!rulesData) return "—";
+      if (m.value_type === "bool") {
+        const obj = rulesData?.bool?.[m.option_category || "yes_no"]?.templates?.[m.rule || "standard"];
+        return obj ? JSON.stringify(obj, null, 2) : "—";
+      }
+      if (m.value_type === "range") {
+        const obj = rulesData?.range?.[m.option_category || "file_ranges"]?.templates?.[m.rule || "standard"];
+        return obj ? JSON.stringify(obj, null, 2) : "—";
+      }
+      if (m.value_type === "int") {
+        const obj = rulesData?.int?.[m.option_category || "other"]?.templates?.[m.rule || "free"];
+        return obj ? JSON.stringify(obj, null, 2) : "—";
+      }
+      return "—";
+    };
 
   useEffect(() => {
     if (!isModalOpen) return;
