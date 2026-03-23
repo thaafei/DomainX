@@ -377,6 +377,10 @@ def test_ahp_calculations_response_structure(api_client, ahp_qualities):
 
 @pytest.mark.django_db
 def test_ahp_only_uses_paper_qualities(api_client):
+    """
+    Test that ONLY the 9 PAPER_QUALITIES are used in AHP calculations.
+    Non-AHP qualities are completely ignored.
+    """
     domain = Domain.objects.create(
         domain_name="AHP Filter Test",
         category_weights={}
@@ -392,21 +396,20 @@ def test_ahp_only_uses_paper_qualities(api_client):
         metric = Metric.objects.create(
             metric_name=f"{quality}_score",
             category=quality,
-            value_type="numeric",
-            rule="default"
+            value_type="bool",
+            option_category="yes_no",
+            rule="standard",
+            scoring_dict={}
         )
         ahp_metrics[quality] = metric
     
     non_ahp_qualities = [
-        "Raw Metrics (Measured via git_stats)",
-        "Raw Metrics (Measured via scc)",
-        "Repo Metrics (Measured via GitHub)",
         "Popularity",
         "Activity",
         "Quality",
-        "Performance",
-        "Security",
-        "Scalability"
+        "Raw Metrics (Measured via git_stats)",
+        "Raw Metrics (Measured via scc)",
+        "Repo Metrics (Measured via GitHub)"
     ]
     
     non_ahp_metrics = {}
@@ -414,8 +417,10 @@ def test_ahp_only_uses_paper_qualities(api_client):
         metric = Metric.objects.create(
             metric_name=f"{quality}_score",
             category=quality,
-            value_type="numeric",
-            rule="default"
+            value_type="bool",
+            option_category="yes_no",
+            rule="standard",
+            scoring_dict={}
         )
         non_ahp_metrics[quality] = metric
     
@@ -423,56 +428,38 @@ def test_ahp_only_uses_paper_qualities(api_client):
         LibraryMetricValue.objects.create(
             library=lib_a,
             metric=metric,
-            value="90"
+            value="yes"
         )
     
+    # Package B: Low scores on AHP qualities (use "no" to get score 0)
     for quality, metric in ahp_metrics.items():
         LibraryMetricValue.objects.create(
             library=lib_b,
             metric=metric,
-            value="10"
+            value="no"
         )
     
     for quality, metric in non_ahp_metrics.items():
         LibraryMetricValue.objects.create(
             library=lib_b,
             metric=metric,
-            value="100"
+            value="yes"
         )
         LibraryMetricValue.objects.create(
             library=lib_a,
             metric=metric,
-            value="0"
+            value="no"
         )
     
-    mock_rules = json.dumps({
-        "numeric": {
-            "default": {
-                "display_name": "Numeric Value",
-                "options": [],
-                "templates": {
-                    "default": {}
-                }
-            }
-        }
-    })
-    mock_categories = json.dumps({"Categories": ahp_qualities + non_ahp_qualities})
-    
-    with patch("builtins.open", mock_open()) as mocked_file:
-        mocked_file.side_effect = [
-            mock_open(read_data=mock_rules).return_value,
-            mock_open(read_data=mock_categories).return_value
-        ]
-        
-        url = reverse("values-ahp", kwargs={"domain_id": domain.domain_ID})
-        response = api_client.get(url)
+    url = reverse("values-ahp", kwargs={"domain_id": domain.domain_ID})
+    response = api_client.get(url)
     
     assert response.status_code == status.HTTP_200_OK
     data = response.json()
     
     print("\n=== Categories in response ===")
-    print(f"AHP qualities: {len(ahp_qualities)}")
-    print(f"Non-AHP qualities: {len(non_ahp_qualities)}")
+    print(f"AHP qualities expected: {len(ahp_qualities)}")
+    print(f"Non-AHP qualities expected to be filtered: {len(non_ahp_qualities)}")
     print(f"Actual categories in response: {list(data['category_details'].keys())}")
     
     for quality in ahp_qualities:
@@ -517,5 +504,9 @@ def test_ahp_only_uses_paper_qualities(api_client):
     
     assert lib_a.ahp_results["overall_score"] > lib_b.ahp_results["overall_score"], \
         "Package A should have higher overall score than Package B in saved results"
+    
+    score_ratio = global_ranking["PackageA"] / global_ranking["PackageB"]
+    print(f"\nScore ratio (PackageA / PackageB): {score_ratio:.2f}")
+    assert score_ratio > 1.5, f"Score ratio should be > 1.5, got {score_ratio:.2f}"
     
     print("\n✅ All tests passed: Non-AHP qualities were correctly filtered out and did not affect rankings!")
