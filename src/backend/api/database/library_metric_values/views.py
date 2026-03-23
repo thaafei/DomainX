@@ -364,9 +364,6 @@ class AHPCalculations(APIView):
                             .get(met.rule, {})
                         )
                         total_score += rule_set.get(value, 0)
-                    else:
-                        # Direct numeric value
-                        total_score += float(value or 0)
                         
                 except (LibraryMetricValue.DoesNotExist, ValueError, TypeError):
                     continue
