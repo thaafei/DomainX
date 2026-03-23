@@ -163,6 +163,30 @@ def metric_gitstats_report():
     )
 
 
+@pytest.fixture()
+def metric_int_bounded():
+    return Metric.objects.create(
+        metric_name="Maturity Score",
+        metric_key=None,
+        value_type="int",
+        option_category="scale_1_10",
+        rule="bounded",
+        scoring_dict={},
+    )
+
+
+@pytest.fixture()
+def metric_int_other():
+    return Metric.objects.create(
+        metric_name="Commit Count",
+        metric_key=None,
+        value_type="int",
+        option_category="other",
+        rule="free",
+        scoring_dict={},
+    )
+
+
 @pytest.mark.django_db
 def test_validate_metric_value_blank_returns_none(metric_stars):
     error, value = views_module.validate_metric_value(metric_stars, "")
@@ -207,6 +231,138 @@ def test_validate_metric_value_rejects_invalid_int(metric_stars):
     error, value = views_module.validate_metric_value(metric_stars, "4.2")
     assert error == "Stars Count must be a whole number."
     assert value is None
+
+
+@pytest.mark.django_db
+def test_validate_metric_value_accepts_bounded_int_in_range(metric_int_bounded, monkeypatch, tmp_path):
+    rules = {
+        "bool": {},
+        "range": {},
+        "int": {
+            "scale_1_10": {
+                "display_name": "1 to 10",
+                "templates": {
+                    "bounded": {
+                        "min": 1,
+                        "max": 10,
+                    }
+                },
+            },
+            "other": {
+                "display_name": "Other Integer",
+                "templates": {
+                    "free": {}
+                },
+            },
+        },
+    }
+
+    (tmp_path / "api" / "database").mkdir(parents=True, exist_ok=True)
+    (tmp_path / "api" / "database" / "rules.json").write_text(json.dumps(rules))
+    monkeypatch.setattr(views_module.settings, "BASE_DIR", str(tmp_path))
+
+    error, value = views_module.validate_metric_value(metric_int_bounded, "7")
+    assert error is None
+    assert value == 7
+
+
+@pytest.mark.django_db
+def test_validate_metric_value_rejects_bounded_int_below_min(metric_int_bounded, monkeypatch, tmp_path):
+    rules = {
+        "bool": {},
+        "range": {},
+        "int": {
+            "scale_1_10": {
+                "display_name": "1 to 10",
+                "templates": {
+                    "bounded": {
+                        "min": 1,
+                        "max": 10,
+                    }
+                },
+            },
+            "other": {
+                "display_name": "Other Integer",
+                "templates": {
+                    "free": {}
+                },
+            },
+        },
+    }
+
+    (tmp_path / "api" / "database").mkdir(parents=True, exist_ok=True)
+    (tmp_path / "api" / "database" / "rules.json").write_text(json.dumps(rules))
+    monkeypatch.setattr(views_module.settings, "BASE_DIR", str(tmp_path))
+
+    error, value = views_module.validate_metric_value(metric_int_bounded, "0")
+    assert error == "Maturity Score must be >= 1."
+    assert value is None
+
+
+@pytest.mark.django_db
+def test_validate_metric_value_rejects_bounded_int_above_max(metric_int_bounded, monkeypatch, tmp_path):
+    rules = {
+        "bool": {},
+        "range": {},
+        "int": {
+            "scale_1_10": {
+                "display_name": "1 to 10",
+                "templates": {
+                    "bounded": {
+                        "min": 1,
+                        "max": 10,
+                    }
+                },
+            },
+            "other": {
+                "display_name": "Other Integer",
+                "templates": {
+                    "free": {}
+                },
+            },
+        },
+    }
+
+    (tmp_path / "api" / "database").mkdir(parents=True, exist_ok=True)
+    (tmp_path / "api" / "database" / "rules.json").write_text(json.dumps(rules))
+    monkeypatch.setattr(views_module.settings, "BASE_DIR", str(tmp_path))
+
+    error, value = views_module.validate_metric_value(metric_int_bounded, "11")
+    assert error == "Maturity Score must be <= 10."
+    assert value is None
+
+
+@pytest.mark.django_db
+def test_validate_metric_value_accepts_free_int(metric_int_other, monkeypatch, tmp_path):
+    rules = {
+        "bool": {},
+        "range": {},
+        "int": {
+            "scale_1_10": {
+                "display_name": "1 to 10",
+                "templates": {
+                    "bounded": {
+                        "min": 1,
+                        "max": 10,
+                    }
+                },
+            },
+            "other": {
+                "display_name": "Other Integer",
+                "templates": {
+                    "free": {}
+                },
+            },
+        },
+    }
+
+    (tmp_path / "api" / "database").mkdir(parents=True, exist_ok=True)
+    (tmp_path / "api" / "database" / "rules.json").write_text(json.dumps(rules))
+    monkeypatch.setattr(views_module.settings, "BASE_DIR", str(tmp_path))
+
+    error, value = views_module.validate_metric_value(metric_int_other, "2120234324")
+    assert error is None
+    assert value == 2120234324
 
 
 @pytest.mark.django_db
@@ -405,6 +561,10 @@ def test_analyze_domain_libraries_exception_marks_failed(rf, domain, lib_a, lib_
 def test_domain_comparison_returns_metrics_and_rows_with_values_and_evidence(
     rf, domain, lib_a, lib_b, metric_stars, metric_forks, user_factory
 ):
+    metric_stars.option_category = "other"
+    metric_stars.rule = "free"
+    metric_stars.save(update_fields=["option_category", "rule"])
+
     LibraryMetricValue.objects.create(library=lib_a, metric=metric_stars, value=10, evidence="srcA")
     LibraryMetricValue.objects.create(library=lib_a, metric=metric_forks, value=2, evidence="srcB")
     LibraryMetricValue.objects.create(library=lib_b, metric=metric_stars, value=None, evidence=None)
@@ -421,6 +581,10 @@ def test_domain_comparison_returns_metrics_and_rows_with_values_and_evidence(
 
     assert isinstance(body["metrics"], list)
     assert {m["metric_name"] for m in body["metrics"]} == {"Stars Count", "Forks Count"}
+
+    stars_metric = next(m for m in body["metrics"] if m["metric_name"] == "Stars Count")
+    assert stars_metric["option_category"] == "other"
+    assert stars_metric["rule"] == "free"
 
     libs = body["libraries"]
     assert isinstance(libs, list)
@@ -606,6 +770,96 @@ def test_library_metric_value_update_rejects_invalid_int(rf, lib_a, metric_stars
     assert resp.status_code == status.HTTP_400_BAD_REQUEST
     assert "Stars Count must be a whole number." in resp.data["error"]
     assert LibraryMetricValue.objects.filter(library=lib_a, metric=metric_stars).count() == 0
+
+
+@pytest.mark.django_db
+def test_library_metric_value_update_rejects_bounded_int_out_of_range(
+    rf, lib_a, metric_int_bounded, monkeypatch, tmp_path, user_factory
+):
+    rules = {
+        "bool": {},
+        "range": {},
+        "int": {
+            "scale_1_10": {
+                "display_name": "1 to 10",
+                "templates": {
+                    "bounded": {
+                        "min": 1,
+                        "max": 10,
+                    }
+                },
+            },
+            "other": {
+                "display_name": "Other Integer",
+                "templates": {
+                    "free": {}
+                },
+            },
+        },
+    }
+
+    (tmp_path / "api" / "database").mkdir(parents=True, exist_ok=True)
+    (tmp_path / "api" / "database" / "rules.json").write_text(json.dumps(rules))
+    monkeypatch.setattr(views_module.settings, "BASE_DIR", str(tmp_path))
+
+    view = views_module.LibraryMetricValueUpdateView.as_view()
+    user = user_factory("test@example.com", "testuser")
+    req = rf.post(
+        "/x",
+        {"metrics": {"Maturity Score": "11"}},
+        format="json",
+    )
+    force_authenticate(req, user=user)
+    resp = view(req, library_id=str(lib_a.library_ID))
+
+    assert resp.status_code == status.HTTP_400_BAD_REQUEST
+    assert "Maturity Score must be <= 10." in resp.data["error"]
+    assert LibraryMetricValue.objects.filter(library=lib_a, metric=metric_int_bounded).count() == 0
+
+
+@pytest.mark.django_db
+def test_library_metric_value_update_accepts_free_int(
+    rf, lib_a, metric_int_other, monkeypatch, tmp_path, user_factory
+):
+    rules = {
+        "bool": {},
+        "range": {},
+        "int": {
+            "scale_1_10": {
+                "display_name": "1 to 10",
+                "templates": {
+                    "bounded": {
+                        "min": 1,
+                        "max": 10,
+                    }
+                },
+            },
+            "other": {
+                "display_name": "Other Integer",
+                "templates": {
+                    "free": {}
+                },
+            },
+        },
+    }
+
+    (tmp_path / "api" / "database").mkdir(parents=True, exist_ok=True)
+    (tmp_path / "api" / "database" / "rules.json").write_text(json.dumps(rules))
+    monkeypatch.setattr(views_module.settings, "BASE_DIR", str(tmp_path))
+
+    view = views_module.LibraryMetricValueUpdateView.as_view()
+    user = user_factory("test@example.com", "testuser")
+    req = rf.post(
+        "/x",
+        {"metrics": {"Commit Count": "2120234324"}},
+        format="json",
+    )
+    force_authenticate(req, user=user)
+    resp = view(req, library_id=str(lib_a.library_ID))
+
+    assert resp.status_code == status.HTTP_200_OK
+    value = LibraryMetricValue.objects.get(library=lib_a, metric=metric_int_other)
+    assert value.value == 2120234324
 
 
 @pytest.mark.django_db
@@ -812,6 +1066,96 @@ def test_metric_value_bulk_update_rejects_invalid_int(rf, lib_a, metric_stars, u
 
 
 @pytest.mark.django_db
+def test_metric_value_bulk_update_rejects_bounded_int_out_of_range(
+    rf, lib_a, metric_int_bounded, monkeypatch, tmp_path, user_factory
+):
+    rules = {
+        "bool": {},
+        "range": {},
+        "int": {
+            "scale_1_10": {
+                "display_name": "1 to 10",
+                "templates": {
+                    "bounded": {
+                        "min": 1,
+                        "max": 10,
+                    }
+                },
+            },
+            "other": {
+                "display_name": "Other Integer",
+                "templates": {
+                    "free": {}
+                },
+            },
+        },
+    }
+
+    (tmp_path / "api" / "database").mkdir(parents=True, exist_ok=True)
+    (tmp_path / "api" / "database" / "rules.json").write_text(json.dumps(rules))
+    monkeypatch.setattr(views_module.settings, "BASE_DIR", str(tmp_path))
+
+    view = views_module.MetricValueBulkUpdateView.as_view()
+
+    updates = [
+        {"library_id": str(lib_a.library_ID), "metric_id": str(metric_int_bounded.metric_ID), "value": "11"},
+    ]
+    user = user_factory("test@example.com", "testuser")
+    req = rf.post("/x", updates, format="json")
+    force_authenticate(req, user=user)
+    resp = view(req)
+
+    assert resp.status_code == status.HTTP_400_BAD_REQUEST
+    assert resp.data["error"] == "Maturity Score must be <= 10."
+    assert LibraryMetricValue.objects.filter(library=lib_a, metric=metric_int_bounded).count() == 0
+
+
+@pytest.mark.django_db
+def test_metric_value_bulk_update_accepts_free_int(
+    rf, lib_a, metric_int_other, monkeypatch, tmp_path, user_factory
+):
+    rules = {
+        "bool": {},
+        "range": {},
+        "int": {
+            "scale_1_10": {
+                "display_name": "1 to 10",
+                "templates": {
+                    "bounded": {
+                        "min": 1,
+                        "max": 10,
+                    }
+                },
+            },
+            "other": {
+                "display_name": "Other Integer",
+                "templates": {
+                    "free": {}
+                },
+            },
+        },
+    }
+
+    (tmp_path / "api" / "database").mkdir(parents=True, exist_ok=True)
+    (tmp_path / "api" / "database" / "rules.json").write_text(json.dumps(rules))
+    monkeypatch.setattr(views_module.settings, "BASE_DIR", str(tmp_path))
+
+    view = views_module.MetricValueBulkUpdateView.as_view()
+
+    updates = [
+        {"library_id": str(lib_a.library_ID), "metric_id": str(metric_int_other.metric_ID), "value": "2120234324"},
+    ]
+    user = user_factory("test@example.com", "testuser")
+    req = rf.post("/x", updates, format="json")
+    force_authenticate(req, user=user)
+    resp = view(req)
+
+    assert resp.status_code == status.HTTP_200_OK
+    value = LibraryMetricValue.objects.get(library=lib_a, metric=metric_int_other)
+    assert value.value == 2120234324
+
+
+@pytest.mark.django_db
 def test_metric_value_bulk_update_skips_gitstats_report_metric(rf, lib_a, metric_gitstats_report, user_factory):
     view = views_module.MetricValueBulkUpdateView.as_view()
 
@@ -834,7 +1178,7 @@ def test_metric_value_bulk_update_skips_gitstats_report_metric(rf, lib_a, metric
 
 @pytest.mark.django_db
 def test_ahp_calculations_basic(rf, domain, lib_a, lib_b, monkeypatch, tmp_path, user_factory):
-    rules = {"range": {}, "bool": {}, "options": {}}
+    rules = {"range": {}, "bool": {}, "options": {}, "int": {}}
     categories = {"Categories": ["Quality"]}
 
     (tmp_path / "api" / "database").mkdir(parents=True, exist_ok=True)

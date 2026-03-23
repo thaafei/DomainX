@@ -17,10 +17,13 @@
       "options": ["yes", "no", "n/a"],
       "templates": {
         "standard_na": {"yes": 1, "no": 0, "n/a": 0},
+        "inclusive": {"yes": 1, "no": 0, "n/a": 1},
         "recovery": {"yes": 5, "no": 0, "n/a": 0},
         "robustness": {"yes": 5, "no": 0, "n/a": 5},
+        "failure_penalty": {"yes": 0, "no": 5, "n/a": 0},
         "error_msg": {"yes": 0, "no": -2, "n/a": 1},
         "tutorial": {"yes": 3, "no": 0, "n/a": 0}
+
       }
     },
     "yes_no_unclear": {
@@ -43,6 +46,13 @@
       "options": ["any", "nothing"],
       "templates": {
         "vcs_check": {"any": 2, "nothing": 0}
+      }
+    },
+    "yes_no_unavail": {
+      "display_name": "Yes / No / Unavailable",
+      "options": ["yes", "no", "unavail"],
+      "templates": {
+        "strict": {"yes": 0, "no": 1, "unavail": 1}
       }
     },
     "provided_nothing": {
@@ -81,6 +91,23 @@
       "options": ["nothing", "private", "public"],
       "templates": {
       "tool_quality": {"nothing": 0, "private": 1, "public": 2}
+      }
+    }
+  },
+  "int": {
+    "scale_1_10": {
+      "display_name": "1 to 10",
+      "templates": {
+        "bounded": {
+          "min": 1,
+          "max": 10
+        }
+      }
+    },
+    "other": {
+      "display_name": "Other Integer",
+      "templates": {
+        "free": {}
       }
     }
   }
