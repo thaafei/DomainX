@@ -11,6 +11,8 @@ from datetime import datetime
 import ahpy
 import json
 import os
+import numpy as np
+
 
 from ..domain.models import Domain
 from ..libraries.models import Library
@@ -324,84 +326,180 @@ class MetricValueBulkUpdateView(APIView):
 
 
 class AHPCalculations(APIView):
+    # The 9 qualities from the LBM paper
+    PAPER_QUALITIES = [
+        "Installability",
+        "Correctness and Verifiability",
+        "Surface Reliability",
+        "Surface Robustness",
+        "Surface Usability",
+        "Maintainability",
+        "Reusability",
+        "Surface Understandability",
+        "Visibility/Transparency"
+    ]
+    
+    def get_library_scores_for_category(self, libraries, category_name, rules_data):
+        """
+        Calculate scores for all libraries in a category.
+        """
+        metrics = Metric.objects.filter(category=category_name)
+        if not metrics.exists():
+            return {}
+        
+        library_scores = {}
+        for lib in libraries:
+            total_score = 0
+            for met in metrics:
+                try:
+                    val_obj = LibraryMetricValue.objects.get(library=lib, metric=met)
+                    value = val_obj.value
+                    
+                    if met.option_category:
+                        # Use rules.json for scoring
+                        rule_set = (
+                            rules_data.get(met.value_type, {})
+                            .get(met.option_category, {})
+                            .get("templates", {})
+                            .get(met.rule, {})
+                        )
+                        total_score += rule_set.get(value, 0)
+                        
+                except (LibraryMetricValue.DoesNotExist, ValueError, TypeError):
+                    continue
+            
+            # Ensure score is positive
+            final_score = min(10.0, total_score) if total_score > 0 else 0.0001
+            library_scores[lib.library_name] = final_score
+        
+        return library_scores
+    
+    def build_pairwise_matrix(self, library_scores):
+        """
+        Build pairwise comparison matrix using LBM paper's formula:
+        A_jk = min(9, x_sub - y_sub + 1) if x_sub >= y_sub
+        A_jk = 1 / min(9, y_sub - x_sub + 1) if x_sub < y_sub
+        """
+        # Convert to list for consistent ordering
+        package_names = list(library_scores.keys())
+        score_values = [library_scores[name] for name in package_names]
+        n = len(package_names)
+        
+        # Build pairwise matrix A
+        A = np.zeros((n, n))
+        
+        for i in range(n):
+            for j in range(n):
+                if i == j:
+                    A[i][j] = 1
+                else:
+                    x_sub = score_values[i]
+                    y_sub = score_values[j]
+                    
+                    if x_sub >= y_sub:
+                        value = min(9, x_sub - y_sub + 1)
+                        A[i][j] = value
+                    else:
+                        denominator = min(9, y_sub - x_sub + 1)
+                        A[i][j] = 1 / denominator
+        
+        # Normalize columns
+        B = np.zeros((n, n))
+        for j in range(n):
+            col_sum = np.sum(A[:, j])
+            if col_sum > 0:
+                B[:, j] = A[:, j] / col_sum
+        
+        # Calculate priority vector (average of rows)
+        priority_vector = np.mean(B, axis=1)
+        
+        return {
+            package_names[i]: round(priority_vector[i], 6)
+            for i in range(n)
+        }
+    
     def get(self, request, domain_id):
+        """
+        Calculate AHP rankings using:
+        1. Get raw scores for each category
+        2. The LBM paper's pairwise comparison formula
+        """
         domain = get_object_or_404(Domain, pk=domain_id)
-
+        
+        # Load rules.json
         rules_path = os.path.join(settings.BASE_DIR, "api", "database", "rules.json")
         cat_path = os.path.join(settings.BASE_DIR, "api", "database", "categories.json")
-
+        
         with open(rules_path, "r") as f:
             rules_data = json.load(f)
         with open(cat_path, "r") as f:
             all_categories = json.load(f).get("Categories", [])
-
+        
         libraries = Library.objects.filter(domain=domain)
-
-        category_ahp = []
-        for category_name in all_categories:
-            metrics = Metric.objects.filter(category=category_name)
-            if not metrics.exists():
-                continue
-
-            library_scores = {}
-            for lib in libraries:
-                total_score = 0
-                for met in metrics:
-                    try:
-                        val_obj = LibraryMetricValue.objects.get(library=lib, metric=met)
-                        value = val_obj.value
-
-                        if met.option_category:
-                            rule_set = (
-                                rules_data.get(met.value_type, {})
-                                .get(met.option_category, {})
-                                .get("templates", {})
-                                .get(met.rule, {})
-                            )
-                            total_score += rule_set.get(value, 0)
-                        else:
-                            total_score += float(value or 0)
-
-                    except (LibraryMetricValue.DoesNotExist, ValueError, TypeError):
-                        continue
-
-                library_scores[lib.library_name] = total_score if total_score > 0 else 0.0001
-
-            if library_scores:
-                category_ahp.append(
-                    ahpy.Compare(name=category_name, comparisons=library_scores, precision=4)
-                )
-
-        active_cat_names = [c.name for c in category_ahp]
+        
+        if not libraries.exists():
+            return Response({
+                "domain": domain.domain_name,
+                "global_ranking": {},
+                "category_details": {}
+            })
+        
+        # Filter to only the 9 paper qualities
+        categories_to_use = [c for c in self.PAPER_QUALITIES if c in all_categories]
+        
+        if not categories_to_use:
+            return Response({
+                "domain": domain.domain_name,
+                "global_ranking": {lib.library_name: 0.0 for lib in libraries},
+                "category_details": {}
+            })
+        
+        # Get raw scores for each category
+        category_raw_scores = {}
+        for category_name in categories_to_use:
+            category_raw_scores[category_name] = self.get_library_scores_for_category(
+                libraries, category_name, rules_data
+            )
+        
+        # Apply LBM paper's pairwise formula to get normalized scores
+        category_normalized_scores = {}
+        for category_name, raw_scores in category_raw_scores.items():
+            if raw_scores:
+                category_normalized_scores[category_name] = self.build_pairwise_matrix(raw_scores)
+        
+        # Get category weights from domain
+        active_cat_names = list(category_normalized_scores.keys())
         raw_weights = {cat: domain.category_weights.get(cat, 1.0) for cat in active_cat_names}
         total_weight = sum(raw_weights.values()) or 1.0
         normalized_weights = {k: (v / total_weight) for k, v in raw_weights.items()}
-
-        global_rank = {}
+        
+        # Calculate overall scores using weighted sum
+        global_ranking = {}
         for lib in libraries:
             lib_name = lib.library_name
             overall_score = 0
-            lib_cat_scores = {}
-
-            for child in category_ahp:
-                local_weight = child.target_weights.get(lib_name, 0)
-                cat_priority = normalized_weights.get(child.name, 0)
+            for category_name, normalized_scores in category_normalized_scores.items():
+                local_weight = normalized_scores.get(lib_name, 0)
+                cat_priority = normalized_weights.get(category_name, 0)
                 overall_score += local_weight * cat_priority
-                lib_cat_scores[child.name] = local_weight
-
-            global_rank[lib_name] = round(overall_score, 4)
-
+            global_ranking[lib_name] = round(overall_score, 6)
+        
+        # Save results to library
+        for lib in libraries:
+            lib_name = lib.library_name
+            lib_cat_scores = {
+                cat: normalized_scores.get(lib_name, 0)
+                for cat, normalized_scores in category_normalized_scores.items()
+            }
             lib.ahp_results = {
                 "category_scores": lib_cat_scores,
-                "overall_score": global_rank[lib_name],
+                "overall_score": global_ranking.get(lib_name, 0),
             }
             lib.save(update_fields=["ahp_results"])
-
-        return Response(
-            {
-                "domain": domain.domain_name,
-                "global_ranking": global_rank,
-                "category_details": {c.name: c.target_weights for c in category_ahp},
-            },
-            status=status.HTTP_200_OK,
-        )
+        
+        return Response({
+            "domain": domain.domain_name,
+            "global_ranking": global_ranking,
+            "category_details": category_normalized_scores,
+            "raw_scores": category_raw_scores
+        }, status=status.HTTP_200_OK)
