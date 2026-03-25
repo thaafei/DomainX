@@ -14,13 +14,11 @@ const OverallImpressionPage: React.FC = () => {
   const { domainId } = useParams<{ domainId: string }>();
   const navigate = useNavigate();
   const DOMAIN_ID = domainId;
-  const { user, isLoading: authLoading } = useAuthStore();
+  const { isLoading: authLoading } = useAuthStore();
 
   const [domainName, setDomainName] = useState("");
-  const [domainPublished, setDomainPublished] = useState<boolean | null>(null);
   const [categoryScores, setCategoryScores] = useState<CategoryScores>({});
   const [loading, setLoading] = useState(true);
-  const [accessDenied, setAccessDenied] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [sortColumn, setSortColumn] = useState<string | null>(null);
   const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('asc');
@@ -76,7 +74,6 @@ const OverallImpressionPage: React.FC = () => {
 
       const data = await response.json();
       setDomainName(data.domain_name || "");
-      setDomainPublished(data.published || false);
       return data;
     } catch (error) {
       console.error("Error:", error);
@@ -85,17 +82,6 @@ const OverallImpressionPage: React.FC = () => {
     }
   };
 
-  useEffect(() => {
-    if (authLoading || domainPublished === null || loading) return;
-
-    if (!domainPublished && !user) {
-      setAccessDenied(true);
-      setTimeout(() => {
-        navigate("/login", { state: { from: `/overall-impression/${DOMAIN_ID}` } });
-      }, 2000);
-    }
-  }, [domainPublished, user, authLoading, loading, navigate, DOMAIN_ID]);
-
   const loadPageData = async () => {
     try {
       setLoading(true);
@@ -103,7 +89,6 @@ const OverallImpressionPage: React.FC = () => {
 
       const domainData = await getDomainSpecification();
 
-      // If domain fetch succeeded, proceed with loading AHP data
       if (domainData) {
         const res = await fetch(
           apiUrl(`/library_metric_values/ahp/${DOMAIN_ID}/`),
@@ -117,7 +102,6 @@ const OverallImpressionPage: React.FC = () => {
 
         if (!res.ok) {
           if (res.status === 403) {
-            setAccessDenied(true);
             setTimeout(() => {
               navigate("/login", { state: { from: `/overall-impression/${DOMAIN_ID}` } });
             }, 2000);
@@ -143,7 +127,7 @@ const OverallImpressionPage: React.FC = () => {
     }
   };
 
-  if (loading || authLoading || domainPublished === null) {
+  if (loading) {
     return (
       <AuthTransition message="Loading..." />
     );
@@ -169,29 +153,6 @@ const OverallImpressionPage: React.FC = () => {
           >
             Go Back Home
           </button>
-        </div>
-      </div>
-    );
-  }
-
-  // Show access denied message before redirect
-  if (accessDenied) {
-    return (
-      <div className="dx-bg" style={{ display: "flex", height: "100vh", justifyContent: "center", alignItems: "center" }}>
-        <div
-          className="dx-card"
-          style={{
-            padding: "40px",
-            maxWidth: "500px",
-            textAlign: "center",
-            color: "white"
-          }}
-        >
-          <h2 style={{ color: "var(--accent)", marginBottom: "20px" }}>Access Denied</h2>
-          <p style={{ marginBottom: "20px" }}>
-            This domain is not published and requires authentication to view.
-          </p>
-          <p>Redirecting to login page...</p>
         </div>
       </div>
     );
@@ -326,6 +287,9 @@ const OverallImpressionPage: React.FC = () => {
 
                     {categories.map((category) => {
                       const score = categoryScores[category]?.[library];
+                      const displayScore =
+                        score != null && typeof score === "number" && score < 1 ? 0 : score;
+
                       return (
                         <td
                           key={category}
@@ -340,7 +304,7 @@ const OverallImpressionPage: React.FC = () => {
                           }}
                           title={score != null ? score.toString() : "—"}
                         >
-                          {score != null ? score : "—"}
+                          {score != null ? displayScore : "—"}
                         </td>
                       );
                     })}
