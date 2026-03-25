@@ -7,6 +7,7 @@ import Main from "./pages/Main";
 import AcceptInvite from "./pages/AcceptInvite";
 import Metrics from "./pages/Metrics";
 import ComparisonTool from "./pages/ComparisonTool";
+import OverallImpression from "./pages/OverallImpression";
 import Edit from "./pages/Edit";
 import EditDomain from "./pages/EditDomain";
 import Libraries from "./pages/Libraries";
@@ -64,6 +65,14 @@ const App: React.FC = () => {
             }
           />
           <Route path="/comparison-tool" element={<Navigate to="/" replace />} />
+
+          <Route
+            path="/overall-impression/:domainId"
+            element={
+                <OverallImpression />
+            }
+          />
+          <Route path="/overall-impression" element={<Navigate to="/" replace />} />
 
           <Route
             path="/edit/:domainId"
