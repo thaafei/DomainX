@@ -357,25 +357,38 @@ const EditMetricValuesModal: React.FC<{
                                   disabled={pageLoading}
                                   style={{ borderColor: fieldError ? "rgba(255, 99, 99, 0.75)" : undefined }}
                                 />
-                              ) : m.value_type === "datetime" ? (
-                                <input
-                                  type="datetime-local"
-                                  className="dx-input"
-                                  value={cellVal ?? ""}
-                                  onChange={(e) => onChangeValue(m.metric_name, e.target.value)}
-                                  disabled={pageLoading}
-                                  style={{ borderColor: fieldError ? "rgba(255, 99, 99, 0.75)" : undefined }}
-                                />
-                              ) : (
-                                <input
-                                  className="dx-input"
-                                  placeholder="Enter value..."
-                                  value={cellVal ?? ""}
-                                  onChange={(e) => onChangeValue(m.metric_name, e.target.value)}
-                                  disabled={pageLoading}
-                                  style={{ borderColor: fieldError ? "rgba(255, 99, 99, 0.75)" : undefined }}
-                                />
-                              )}
+                            ) : m.value_type === "datetime" ? (
+                              <input
+                                type="datetime-local"
+                                className="dx-input"
+                                value={cellVal ?? ""}
+                                onChange={(e) => onChangeValue(m.metric_name, e.target.value)}
+                                disabled={pageLoading}
+                                style={{ borderColor: fieldError ? "rgba(255, 99, 99, 0.75)" : undefined }}
+                              />
+                            ) : m.value_type === "int" && m.option_category === "score_0_2" ? (
+                              <select
+                                className="dx-input"
+                                value={cellVal ?? ""}
+                                onChange={(e) => onChangeValue(m.metric_name, e.target.value)}
+                                disabled={pageLoading}
+                                style={{ borderColor: fieldError ? "rgba(255, 99, 99, 0.75)" : undefined }}
+                              >
+                                <option value="">-- Select --</option>
+                                <option value="0">0</option>
+                                <option value="1">1</option>
+                                <option value="2">2</option>
+                              </select>
+                            ) : (
+                              <input
+                                className="dx-input"
+                                placeholder="Enter value..."
+                                value={cellVal ?? ""}
+                                onChange={(e) => onChangeValue(m.metric_name, e.target.value)}
+                                disabled={pageLoading}
+                                style={{ borderColor: fieldError ? "rgba(255, 99, 99, 0.75)" : undefined }}
+                              />
+                            )}
                   </div>
 
                   <div style={{ display: "flex", flexDirection: "column", gap: 4 }}>

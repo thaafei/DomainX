@@ -153,20 +153,19 @@ const EditValuesPage: React.FC = () => {
       }
 
       if (metric.value_type === "int") {
-        if (!/^-?\d+$/.test(raw)) {
-          return "Please enter a whole number.";
-        }
-
-        const num = Number(raw);
-
-        if (metric.option_category === "scale_1_10" && metric.rule === "bounded") {
-          if (num < 1 || num > 10) {
-            return "Please enter a whole number between 1 and 10.";
+          if (metric.option_category === "score_0_2") {
+            if (!["0", "1", "2"].includes(raw)) {
+              return "Please select 0, 1, or 2.";
+            }
+            return "";
           }
-        }
 
-        return "";
-      }
+          if (!/^-?\d+$/.test(raw)) {
+            return "Please enter a whole number.";
+          }
+
+          return "";
+        }
 
       if (metric.value_type === "float") {
         return /^-?\d+(\.\d+)?$/.test(raw) ? "" : "Please enter a valid number.";
