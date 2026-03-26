@@ -13,6 +13,7 @@ class LibrarySerializer(serializers.ModelSerializer):
         fields = [
             "library_ID",
             "library_name",
+            "description",
             "github_url",
             "url",
             "domain",
@@ -73,7 +74,7 @@ class LibraryUpdateSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Library
-        fields = ["library_name", "github_url","url", "programming_language", "domain"]
+        fields = ["library_name", "description", "github_url","url", "programming_language", "domain"]
         validators = []
 
     def validate_github_url(self, value):

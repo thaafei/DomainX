@@ -14,3 +14,6 @@ dump.rdb
 dump.rdb
 **/*.rdb
 
+# Arduino/embedded files
+*.ino
+*.pde

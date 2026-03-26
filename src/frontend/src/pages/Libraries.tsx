@@ -8,6 +8,7 @@ import { useAuthStore } from "../store/useAuthStore";
 interface Library {
   library_ID: string;
   library_name: string;
+  description: string | null;
   github_url: string | null;
   url: string | null;
   programming_language: string;
@@ -95,6 +96,7 @@ const AddLibraryPage: React.FC = () => {
   const [modalOpen, setModalOpen] = useState(false);
   const [formError, setFormError] = useState<string>("");
   const [name, setName] = useState("");
+  const [description, setDescription] = useState("");
   const [githubUrl, setGithubUrl] = useState("");
   const [url, setUrl] = useState("");
   const [language, setLanguage] = useState("");
@@ -179,6 +181,7 @@ const AddLibraryPage: React.FC = () => {
     setModalOpen(false);
     setFormError("");
     setName("");
+    setDescription("");
     setGithubUrl("");
     setUrl("");
     setLanguage("");
@@ -188,6 +191,7 @@ const AddLibraryPage: React.FC = () => {
   const openCreateModal = () => {
     setFormError("");
     setName("");
+    setDescription("");
     setGithubUrl("");
     setUrl("");
     setLanguage("");
@@ -198,6 +202,7 @@ const AddLibraryPage: React.FC = () => {
   const openEditModal = (lib: Library) => {
     setFormError("");
     setName(lib.library_name || "");
+    setDescription(lib.description || "");
     setGithubUrl(lib.github_url || "");
     setUrl(lib.url || "");
     setLanguage(lib.programming_language || "");
@@ -266,6 +271,7 @@ const AddLibraryPage: React.FC = () => {
 
     const payload = {
       library_name: name.trim(),
+      description: description.trim() || null,
       github_url: githubUrl.trim() || null,
       url: url.trim() || null,
       programming_language: language.trim(),
@@ -316,6 +322,7 @@ const AddLibraryPage: React.FC = () => {
 
     const payload = {
       library_name: name.trim(),
+      description: description.trim() || null,
       github_url: githubUrl.trim() || null,
       url: url.trim() || null,
       programming_language: language.trim(),
@@ -498,9 +505,9 @@ const AddLibraryPage: React.FC = () => {
                     className="dx-th-sticky"
                     style={{
                       ...headerCellStyle,
-                      width: 220,
-                      minWidth: 220,
-                      maxWidth: 220,
+                      width: 200,
+                      minWidth: 200,
+                      maxWidth: 200,
                     }}
                   >
                     Name
@@ -509,9 +516,20 @@ const AddLibraryPage: React.FC = () => {
                     className="dx-th-sticky"
                     style={{
                       ...headerCellStyle,
-                      width: 150,
-                      minWidth: 150,
-                      maxWidth: 150,
+                      width: 280,
+                      minWidth: 280,
+                      maxWidth: 280,
+                    }}
+                  >
+                    Description
+                  </th>
+                  <th
+                    className="dx-th-sticky"
+                    style={{
+                      ...headerCellStyle,
+                      width: 130,
+                      minWidth: 130,
+                      maxWidth: 130,
                     }}
                   >
                     Language
@@ -520,9 +538,9 @@ const AddLibraryPage: React.FC = () => {
                     className="dx-th-sticky"
                     style={{
                       ...headerCellStyle,
-                      width: 260,
-                      minWidth: 260,
-                      maxWidth: 260,
+                      width: 240,
+                      minWidth: 240,
+                      maxWidth: 240,
                     }}
                   >
                     GitHub URL
@@ -531,9 +549,9 @@ const AddLibraryPage: React.FC = () => {
                     className="dx-th-sticky"
                     style={{
                       ...headerCellStyle,
-                      width: 260,
-                      minWidth: 260,
-                      maxWidth: 260,
+                      width: 240,
+                      minWidth: 240,
+                      maxWidth: 240,
                     }}
                   >
                     URL
@@ -542,9 +560,9 @@ const AddLibraryPage: React.FC = () => {
                     className="dx-th-sticky"
                     style={{
                       ...headerCellStyle,
-                      width: 210,
-                      minWidth: 210,
-                      maxWidth: 210,
+                      width: 140,
+                      minWidth: 140,
+                      maxWidth: 140,
                     }}
                   />
                 </tr>
@@ -576,17 +594,46 @@ const AddLibraryPage: React.FC = () => {
 
                     <td
                       style={metricCellStyle}
+                      title={lib.description || "—"}
+                    >
+                      <div style={clamp3Style}>{lib.description || "—"}</div>
+                    </td>
+
+                    <td
+                      style={metricCellStyle}
                       title={lib.programming_language || "—"}
                     >
                       <div style={clamp2Style}>{lib.programming_language || "—"}</div>
                     </td>
 
                     <td style={metricCellStyle} title={lib.github_url || "—"}>
-                      <div style={clamp3Style}>{lib.github_url || "—"}</div>
+                      <div style={clamp3Style}>
+                        {lib.github_url ? (
+                          <a
+                            href={lib.github_url}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            style={{ color: "#4a9eff", textDecoration: "none" }}
+                          >
+                            {lib.github_url}
+                          </a>
+                        ) : "—"}
+                      </div>
                     </td>
 
                     <td style={metricCellStyle} title={lib.url || "—"}>
-                      <div style={clamp3Style}>{lib.url || "—"}</div>
+                      <div style={clamp3Style}>
+                        {lib.url ? (
+                          <a
+                            href={lib.url}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            style={{ color: "#4a9eff", textDecoration: "none" }}
+                          >
+                            {lib.url}
+                          </a>
+                        ) : "—"}
+                      </div>
                     </td>
 
                     <td style={{ ...cellBaseStyle, paddingTop: 8, paddingBottom: 8 }}>
@@ -730,7 +777,7 @@ const AddLibraryPage: React.FC = () => {
               >
                 <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
                   <label style={{ fontSize: "0.9rem", color: "var(--text-dim)" }}>
-                    Library Name
+                    Library Name *
                   </label>
                   <input
                     className="dx-input"
@@ -777,7 +824,37 @@ const AddLibraryPage: React.FC = () => {
                   }}
                 >
                   <label style={{ fontSize: "0.9rem", color: "var(--text-dim)" }}>
-                    GitHub Repository URL
+                    Description
+                  </label>
+                  <textarea
+                    className="dx-input"
+                    value={description}
+                    onChange={(e) => {
+                      setDescription(e.target.value);
+                      if (formError) setFormError("");
+                    }}
+                    placeholder="Brief description of the library..."
+                    rows={3}
+                    style={{
+                      color: "white",
+                      background: "rgba(255,255,255,0.06)",
+                      border: "1px solid rgba(255,255,255,0.18)",
+                      fontFamily: "inherit",
+                      resize: "vertical",
+                    }}
+                  />
+                </div>
+
+                <div
+                  style={{
+                    gridColumn: "1 / -1",
+                    display: "flex",
+                    flexDirection: "column",
+                    gap: 6,
+                  }}
+                >
+                  <label style={{ fontSize: "0.9rem", color: "var(--text-dim)" }}>
+                    GitHub Repository URL *
                   </label>
                   <input
                     className="dx-input"

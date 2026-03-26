@@ -4,15 +4,23 @@ import { apiUrl } from "../config/api";
 import AuthTransition from "../components/AuthTransition";
 import {
   BarChart3,
-  Plus,
   Pencil,
   Download,
   ArrowLeft,
   Globe,
   Github,
   Library,
+  Eye,
 } from "lucide-react";
 import { useAuthStore } from "../store/useAuthStore";
+import {
+  headerCellStyle, 
+  clamp2Style,
+  clamp3Style,
+  compactButtonStyle,
+  overlayCardStyle,
+  metricCellStyle
+ } from "../components/CellComponents";
 
 interface Metric {
   metric_ID: string;
@@ -28,78 +36,6 @@ interface LibraryMetricRow {
   url?: string | null;
   metrics: { [metricName: string]: string | number | null };
 }
-
-const clamp2Style: React.CSSProperties = {
-  display: "-webkit-box",
-  WebkitLineClamp: 2,
-  WebkitBoxOrient: "vertical",
-  overflow: "hidden",
-};
-
-const clamp3Style: React.CSSProperties = {
-  display: "-webkit-box",
-  WebkitLineClamp: 3,
-  WebkitBoxOrient: "vertical",
-  overflow: "hidden",
-};
-
-const cellBaseStyle: React.CSSProperties = {
-  padding: "7px 8px",
-  verticalAlign: "top",
-  fontSize: 13,
-  lineHeight: 1.32,
-  overflowWrap: "anywhere",
-};
-
-const metricCellStyle: React.CSSProperties = {
-  ...cellBaseStyle,
-  color: "rgba(255,255,255,0.9)",
-};
-
-const headerCellStyle: React.CSSProperties = {
-  textAlign: "left",
-  padding: "8px 8px",
-  fontSize: 12.5,
-  lineHeight: 1.25,
-  fontWeight: 700,
-  color: "rgba(255,255,255,0.92)",
-  background: "rgba(20, 24, 38, 0.96)",
-  borderBottom: "1px solid rgba(255,255,255,0.08)",
-  overflowWrap: "anywhere",
-};
-
-const compactButtonStyle: React.CSSProperties = {
-  border: "none",
-  background: "transparent",
-  color: "var(--accent)",
-  cursor: "pointer",
-  padding: 0,
-  marginTop: 4,
-  fontSize: 11.5,
-  lineHeight: 1.2,
-  alignSelf: "flex-start",
-};
-
-const overlayCardStyle: React.CSSProperties = {
-  position: "absolute",
-  top: "100%",
-  left: 0,
-  marginTop: 6,
-  minWidth: 260,
-  maxWidth: 560,
-  maxHeight: 280,
-  overflow: "auto",
-  padding: "10px 12px",
-  borderRadius: 12,
-  background: "rgba(20, 24, 38, 0.98)",
-  border: "1px solid rgba(255,255,255,0.12)",
-  boxShadow: "0 12px 32px rgba(0,0,0,0.45)",
-  zIndex: 10020,
-  color: "rgba(255,255,255,0.92)",
-  whiteSpace: "pre-wrap",
-  overflowWrap: "anywhere",
-  userSelect: "text",
-};
 
 const ExpandableText: React.FC<{
   text: string;
@@ -509,6 +445,15 @@ const ComparisonToolPage: React.FC = () => {
             >
               <BarChart3 size={18} />
               Visualize
+            </button>
+
+            <button
+              className="dx-btn dx-btn-primary"
+              onClick={() => navigate(`/overall-impression/${domainId}`)}
+              style={{ display: "flex", alignItems: "center", gap: 6 }}
+            >
+              <Eye size={18} />
+              Overall Impression
             </button>
           </div>
 
