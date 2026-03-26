@@ -199,11 +199,27 @@ training, deployment, analysis, or direct use of neural network models. The targ
 %  Report counts at each step and the final shortlist size. Final shortlist: 28. 
 %  Point to Appendix~\ref{app-packages} for the full list and exclusions (see emails).}
 
- Candidate packages were compiled by aggregating package names from authoritative sources and normalizing duplicates 
- and naming variants. To align the assessment with the intended audience, packages that were NN-supporting rather than NN software 
- were removed. Following supervisor guidance, NN software packages were retained even when they appeared only once across the
-  authoritative sources to prioritize completeness of coverage. The final shortlist contains 28 packages. 
-  The full shortlist and excluded candidates (with brief reasons) are provided in \ref{app-packages}.
+ 
+Candidate packages were identified by aggregating package
+names from authoritative sources and normalizing duplicates
+and naming variants. Packages that were primarily
+NN-supporting rather than neural network software were
+removed to keep the assessment aligned with the intended
+audience of neural network software developers and
+maintainers.
+
+Packages that appeared only once across the authoritative
+sources were not automatically excluded. In cases where the
+domain expert advised that such packages were still relevant
+to the domain, they were retained to improve completeness of
+coverage.
+
+After the initial shortlisting stage, 31 candidate packages
+remained. A further round of shortlist validation produced
+the final assessed set of 28 packages. The final shortlist
+and the packages excluded at the later stage, together with
+brief exclusionary reasons, are provided in
+Appendix~\ref{app-packages}.
 
 \subsection{Evidence sources and data collection}\label{data}
 % \wss{Describe evidence sources used to score each package: 
