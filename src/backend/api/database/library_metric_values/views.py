@@ -363,7 +363,7 @@ class AHPCalculations(APIView):
                             .get("templates", {})
                             .get(met.rule, {})
                         )
-                        total_score += rule_set.get(value, 0)
+                        total_score += rule_set.get(str(value), 0)
                         
                 except (LibraryMetricValue.DoesNotExist, ValueError, TypeError):
                     continue
