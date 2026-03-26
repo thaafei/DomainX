@@ -55,14 +55,16 @@ We apply this workflow to a curated shortlist of 28
 open-source NN software packages and produce a traceable
 dataset containing template responses, repository-based
 measures, and package-level references (project website and
-repository URLs). Under the current configuration, TensorFlow achieved the
-highest overall score, followed by Catboost, OpenCV,
-PyTorch, and Hugging Face Transformers. Beyond the
-top-ranked package, many libraries were more tightly
-clustered, with the strongest differentiation arising from
-installability and correctness and verifiability.
+repository URLs). Keras achieved the highest overall score, followed closely
+by TensorFlow, Hugging Face Transformers, and PyTorch. The
+leading packages are tightly clustered, with the overall
+ranking shaped by a broad mix of categories, including
+installability, correctness and verifiability, surface
+reliability, surface usability, maintainability, and
+reusability.
 A companion repository provides the DomainX tool and
 associated assessment artifacts to support review and reuse.
+
 \end{abstract}
 
 \begin{keyword}
@@ -365,24 +367,22 @@ and other observable evidence of development practice.
 
 Figure~\ref{fig:overall-ranking} presents the overall AHP
 ranking for the shortlisted packages as produced by
-DomainX. TensorFlow achieved the highest overall score
-(13.65\%), followed by Catboost (5.67\%), OpenCV
-(4.27\%), PyTorch (4.08\%), and Hugging Face
-Transformers (3.93\%). At the lower end of the ranking,
-LightGBM (2.54\%), TensorBoard (2.59\%), Chainer
-(2.62\%), XGBoost (2.63\%), and Caffe (2.64\%) obtained
+DomainX. Keras achieved the highest overall score
+(4.25\%), followed closely by TensorFlow (4.15\%),
+Hugging Face Transformers (4.13\%), PyTorch (4.13\%),
+and Scikit (4.07\%). At the lower end of the ranking,
+NeuroLab (2.08\%), SHAP (2.26\%), PyTorch Geometric
+(2.65\%), Gensim (2.68\%), and CNTK (2.87\%) obtained
 the smallest overall scores.
 
-A notable feature of the ranking is the large gap between
-TensorFlow and the rest of the shortlisted packages.
-Beyond the top-ranked package, many libraries are clustered
-within a comparatively narrow score range, suggesting that
-the middle and lower portions of the ranking are more
-densely packed. Under the current configuration, many
-category-level scores are identical across packages, so
-differences in the overall ranking are driven primarily by
-variation in installability, correctness and
-verifiability, and repository-based measures.
+A notable feature of the ranking is the tight clustering at
+the top of the shortlist. The leading packages are
+separated by relatively small margins, suggesting that
+multiple packages perform strongly across the assessed
+categories. At the same time, the lower-ranked packages
+remain meaningfully separated from the top group,
+particularly where weaker scores appear across several
+categories rather than just one.
 
 \begin{figure}[H]
   \centering
@@ -400,87 +400,97 @@ verifiability, and repository-based measures.
 \toprule
 \textbf{Rank} & \textbf{Package} & \textbf{Overall Score} \\
 \midrule
-1  & TensorFlow                & 13.65\% \\
-2  & Catboost                  & 5.67\%  \\
-3  & OpenCV                    & 4.27\%  \\
-4  & PyTorch                   & 4.08\%  \\
-5  & Hugging Face Transformers & 3.93\%  \\
-6  & PaddlePaddle              & 3.58\%  \\
-7  & DeepLearning4J            & 3.45\%  \\
-8  & CNTK                      & 3.44\%  \\
-9  & Captum                    & 3.41\%  \\
-10 & Jax                       & 3.26\%  \\
+1  & Keras                     & 4.25\% \\
+2  & TensorFlow                & 4.15\% \\
+3  & Hugging Face Transformers & 4.13\% \\
+4  & PyTorch                   & 4.13\% \\
+5  & Scikit                    & 4.07\% \\
+6  & Chainer                   & 4.01\% \\
+7  & Captum                    & 3.96\% \\
+8  & XGBoost                   & 3.96\% \\
+9  & Jax                       & 3.95\% \\
+10 & TensorBoard               & 3.87\% \\
 \bottomrule
 \end{tabular}
 \end{table}
 
-Table~\ref{tab:top10-ranking} lists the top 10 packages
-under the current overall AHP ranking. TensorFlow is the
-clear top-ranked package, while the remaining top 10
-packages are more tightly clustered.
+Table~\ref{tab:top10-ranking} lists the top 10 packages in
+the overall AHP ranking. Keras is the top-ranked package,
+but the leading group is tightly clustered, with
+TensorFlow, Hugging Face Transformers, and PyTorch close
+behind.
 
-\subsection{Interpreting TensorFlow's lead}
-TensorFlow's position as the top-ranked package is driven
-primarily by a small set of differentiating categories
-rather than broad dominance across all assessed qualities.
-In particular, TensorFlow received a substantially larger
-value in correctness and verifiability than the other
-shortlisted packages, and this had a strong effect on the
-overall ranking under the current configuration. TensorFlow
-also shows comparatively strong repository-based metric
-values, which further separate it from much of the
-shortlist.
+\subsection{Interpreting the leading cluster}
 
-At the same time, the results do not suggest that
-TensorFlow is uniquely superior in every quality dimension.
-Several assessed categories are relatively uniform across
-most packages, meaning that TensorFlow's overall lead is
-best interpreted as the result of exceptional performance in
-a few highly differentiating areas rather than consistently
-higher scores across the board. This is important because it
-shows that the ranking should be read as an evidence-based
-comparison under the current scoring and weighting setup,
-rather than as a universal claim that one package is best in
-all respects.
+The leading positions are not driven by a single
+overwhelmingly dominant package, but rather by a small
+cluster of packages that perform strongly across several of
+the most differentiating categories. Keras, TensorFlow,
+Hugging Face Transformers, and PyTorch all score well
+overall because they combine comparatively strong values
+across installability, correctness and verifiability,
+surface usability, maintainability, and reusability.
+
+Keras achieves the highest overall score, but its lead over
+TensorFlow, Hugging Face Transformers, and PyTorch is
+modest. This indicates that the top of the ranking is best
+interpreted as a competitive group rather than a single
+clear winner separated from all other packages by a large
+margin. Packages that are consistently strong across
+multiple categories are favored over packages that excel in
+only one or two dimensions.
+
+This is important because it shows that the ranking should
+be read as an evidence-based comparison rather than as a
+universal claim that one package is best in all respects.
+The relatively small gaps within the leading group also
+suggest that the ordering at the top is sensitive to small
+differences across several categories, even if the same
+general set of high-performing packages remains near the
+front of the ranking.
 
 \subsection{Quality-by-quality breakdown}\label{results-byquality}
 % \wss{ results by quality attribute (tables/figures). Identify strong/weak packages per quality and report domain-wide patterns
 %  supported by evidence.}
 Figure~\ref{fig:quality-heatmap} summarizes the per-quality
-results across the 28 shortlisted packages. The heatmap
-shows that several assessed categories take nearly the same
-value across most of the shortlisted packages. In
-particular, surface reliability, surface robustness,
-surface usability, reusability, visibility/transparency,
-and surface understandability are highly uniform in the
-current results. As a result, the most visible differences
-across packages arise in installability, quality, and
-correctness and verifiability.
+results across the 28 shortlisted packages. The results show
+meaningful variation across several categories.
+Installability, correctness and verifiability, surface
+reliability, surface usability, maintainability, and
+reusability all contribute to the observed differences in
+the final ranking, while surface robustness and
+visibility/transparency are more stable across much of the
+shortlist.
 
-Correctness and verifiability has the strongest visible
-effect on the ranking. TensorFlow obtains the highest value
-in this category (99.98\%), substantially exceeding the
-other shortlisted packages, and this contributes strongly to
-its position as the top-ranked package overall.
+Installability is an important differentiator. Several
+packages, including CNTK, Cudf, Keras, NLTK, OpenCV,
+PaddlePaddle, Scikit, TensorFlow, Torch Vision, and
+XGBoost, obtain the highest value in this category
+(5.93\%), while others such as LightGBM and TensorBoard
+score substantially lower. Correctness and verifiability
+also separates packages strongly: a large group including
+Captum, Chainer, Gensim, Hugging Face Transformers, Jax,
+Keras, Optuna, PyTorch, PyTorch Geometric, Scikit,
+TensorBoard, and TensorFlow receives the highest value
+(5.80\%), while several other packages score notably lower.
 
-Installability also differentiates several packages.
-Catboost records the highest installability value
-(18.18\%), followed by Captum (11.36\%) and a group of
-packages including DeepLearning4J, NeuroLab, OpenCV, and
-TorchVision (6.82\%). In contrast, several packages have
-installability values of 0.00\%, indicating that this
-category contributes little to separating them in the final
-ranking.
+Additional categories also contribute visibly to the final
+ordering. Surface reliability distinguishes packages such as
+Apache MXNet, Captum, Catboost, Chainer, and TensorFlow
+from lower-scoring packages such as Caffe, Cudf, LightGBM,
+NLTK, OpenCV, and Scikit. Surface usability varies
+meaningfully, with strong values for packages such as
+Captum, CNTK, Hugging Face Transformers, Keras, Scikit, and
+TensorFlow, and weaker values for packages such as OpenCV,
+Caffe, and Cudf. Reusability and maintainability further
+separate stronger packages from weaker performers, while
+visibility/transparency is relatively stable except for a
+few low-scoring outliers such as NeuroLab and SHAP.
 
-The quality category is also non-uniform. Most shortlisted
-packages receive a value of 4.00\%, while PyTorch,
-TensorBoard, and TensorFlow receive 0.00\% in this
-dimension. 
-
-Overall, the current results indicate that the ranking is
-driven primarily by a small subset of differentiating
-categories, while many of the remaining quality categories
-are comparatively uniform across the shortlisted packages.
+Overall, the final ordering reflects cumulative differences
+across several categories, with the strongest packages
+performing consistently well across multiple dimensions of
+the assessment.
 
 \begin{figure}[H]
   \centering
@@ -491,8 +501,8 @@ are comparatively uniform across the shortlisted packages.
   \label{fig:quality-heatmap}
 \end{figure}
 
-\subsection{Sensitivity analysis}\label{results-sensitivity}
-\wss{ how rankings change under weight variation, identify stable vs unstable parts of the ranking and summary of implications.}
+% \subsection{Sensitivity analysis}\label{results-sensitivity}
+% \wss{ how rankings change under weight variation, identify stable vs unstable parts of the ranking and summary of implications.}
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -504,41 +514,43 @@ are comparatively uniform across the shortlisted packages.
 %  actionable recommendations organized by quality attribute (installability, maintainability, transparency...). 
 %  Keep recommendations evidence-backed.}
 
-The current results suggest that the overall ranking is
-driven primarily by a small subset of differentiating
-categories, rather than by broad variation across all
-qualities. In particular, installability and correctness and
-verifiability contribute strongly to the separation between
-packages, while several of the remaining surface-level
-qualities are comparatively uniform across the shortlisted
-set. This means that, under the current assessment
-configuration, packages that perform strongly in the most
-differentiating categories can rise substantially in the
-overall ranking.
+The results indicate that the overall ranking is shaped by
+cumulative differences across several categories rather than
+by a single dominant outlier. The highest-ranked packages
+perform consistently well across multiple dimensions of the
+assessment, including installability, correctness and
+verifiability, surface reliability, surface usability,
+maintainability, and reusability. This means that the
+leading positions are best interpreted as a competitive
+cluster of packages with broadly strong performance rather
+than a ranking dominated by one package with an exceptional
+score in only one category.
 
 For users of neural network software, the ranking provides a
 useful evidence-based comparison, but it should not be
 interpreted as a universal statement that one package is
 always best for every purpose. Instead, the results are most
 useful for identifying strong candidates and for showing
-which quality dimensions currently contribute most to the
-observed differences across packages. For maintainers, the
-results highlight areas where visible software-engineering
-practice can be strengthened and made more consistent.
+which quality dimensions contribute most to the observed
+differences across packages. For maintainers, the results
+highlight areas where visible software-engineering practice
+can be strengthened and made more consistent.
 
-Several recommendations follow from the current findings.
-First, maintainers should improve installability by providing
-clear installation instructions, dependency information, and
+Several recommendations follow from these findings. First,
+maintainers should improve installability by providing clear
+installation instructions, dependency information, and
 environment guidance. Second, projects should strengthen
 correctness and verifiability by exposing more visible
 evidence of testing, validation, and related quality
-assurance practices. Third, maintainers should continue to
-improve transparency through well-maintained public
+assurance practices. Third, maintainers should improve
+surface usability by providing clear tutorials, expected
+outputs, and accessible user-support resources. Fourth,
+maintainers should continue to strengthen maintainability
+and reusability through well-documented contribution
+processes, API documentation, and modular code structure.
+Finally, projects should preserve transparent public
 artifacts, since these materials directly affect the
 evidence available for state-of-practice assessment.
-Finally, future refinements of the assessment process should
-consider how to better differentiate categories that are
-currently highly uniform across the shortlisted packages.
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -554,10 +566,10 @@ assessment relies on publicly visible artifacts as evidence
 of software-engineering practice. A package may implement
 strong internal practices that are not clearly reflected in
 its repository, documentation, or related public materials.
-Similarly, categories that appear uniform in the current
-results may reflect limitations of the available evidence or
-of the applied scoring scheme rather than true equality
-across packages.
+Similarly, some categories may appear more or less
+differentiated depending on the kinds of evidence that are
+available publicly and on how the template operationalizes
+those qualities.
 
 Internal validity is affected by the need for manual
 judgment when answering some measurement-template questions.
@@ -603,20 +615,23 @@ and repository-based measures, and a tool that supports
 evidence capture, scoring, ranking, and export of
 assessment artifacts.
 
-The current results show that the overall ranking is shaped
-primarily by a small subset of differentiating categories,
-especially installability and correctness and verifiability,
-while several other quality categories are comparatively
-uniform across the shortlisted packages. TensorFlow emerged
-as the top-ranked package under the current configuration,
-with the remaining packages more tightly clustered below it.
+The results show that the highest-ranked packages form a
+tightly clustered leading group rather than a ranking
+dominated by a single extreme outlier. Keras achieved the
+highest overall score, followed closely by TensorFlow,
+Hugging Face Transformers, and PyTorch. More broadly, the
+ranking reflects cumulative differences across several
+categories, with stronger packages performing consistently
+well across installability, correctness and verifiability,
+surface reliability, surface usability, maintainability,
+and reusability.
 
-Future work includes refining categories that are currently weakly
-differentiated, and extending the assessment with additional
-validation mechanisms such as interviews with developers or
-maintainers. Further work on DomainX may also improve
-automation, traceability granularity, and support for
-repeated assessments as repositories evolve over time.
+Future work includes refining categories that are currently
+weakly differentiated and extending the assessment with
+additional validation mechanisms such as interviews with
+developers or maintainers. Further work on DomainX may also
+improve automation, traceability granularity, and support
+for repeated assessments as repositories evolve over time.
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -629,8 +644,7 @@ repeated assessments as repositories evolve over time.
 % \wss{table listing all assessed packages and excluded candidates with brief reasons to help traceability.}
 
 Table~\ref{tab:final28} lists the 28 packages included in the
-final assessed set used throughout this paper. Packages that
-appeared in intermediate tool views but were not retained in
+final assessed set used throughout this paper. Packages that were not retained in
 the final assessed set are listed separately in
 Table~\ref{tab:excluded-packages} for traceability.
 
@@ -702,7 +716,7 @@ appendix provides a compact excerpt summarizing the major
 template sections, the kinds of questions they contain, and
 the response formats used in the assessment.
 
-\begin{longtable}{p{0.25\textwidth} p{0.68\textwidth}}
+\begin{longtable}{p{0.25\textwidth} p{0.65\textwidth}}
 \caption{Compact excerpt of the measurement template used in
 the assessment.}
 \label{tab:template-excerpt} \\
@@ -881,35 +895,32 @@ complete scoring details are given in the methodology paper
 \section{AHP weights and matrices}\label{app-ahp}
 % \wss{ final AHP weights and any matrices needed for transparency and reproducibility.}
 This appendix summarizes the AHP configuration used to
-produce the overall ranking reported in the paper. Under the
-current configuration, the category weights are nearly
-uniform, with installability assigned a slightly larger
-priority than the remaining categories. The pairwise
-comparison interface and resulting calculated priorities are
-shown in Figure~\ref{fig:app-weights}. These materials are
-included to support transparency and reproducibility of the
-ranking configuration used in DomainX.
+produce the overall ranking reported in the paper. The final
+ranking was generated using equal weights across the nine
+software-quality categories included in the comparison.
+The pairwise comparison interface and resulting calculated
+priorities are shown in Figure~\ref{fig:app-weights}. These
+materials are included to support transparency and
+reproducibility of the ranking configuration used in
+DomainX.
 
 \begin{table}[H]
 \centering
-\caption{Final AHP category weights used in the current configuration.}
+\caption{Final AHP category weights used in the overall ranking.}
 \label{tab:ahp-weights}
 \begin{tabular}{l r}
 \toprule
 \textbf{Category} & \textbf{Weight} \\
 \midrule
-Installability & 7.7\% \\
-Quality & 7.7\% \\
-Correctness and Verifiability & 7.7\% \\
-Surface Reliability & 7.7\% \\
-Surface Robustness & 7.7\% \\
-Surface Usability & 7.7\% \\
-Reusability & 7.7\% \\
-Visibility/Transparency & 7.7\% \\
-Surface Understandability & 7.7\% \\
-Raw Metrics (Measured via \texttt{git\_stats}) & 7.7\% \\
-Raw Metrics (Measured via \texttt{scc}) & 7.7\% \\
-Repo Metrics (Measured via GitHub) & 7.7\% \\
+Installability & 11.1\% \\
+Correctness and Verifiability & 11.1\% \\
+Surface Reliability & 11.1\% \\
+Surface Robustness & 11.1\% \\
+Surface Usability & 11.1\% \\
+Maintainability & 11.1\% \\
+Reusability & 11.1\% \\
+Surface Understandability & 11.1\% \\
+Visibility/Transparency & 11.1\% \\
 \bottomrule
 \end{tabular}
 \end{table}
