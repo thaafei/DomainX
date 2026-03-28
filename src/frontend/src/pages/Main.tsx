@@ -146,7 +146,7 @@ const Main: React.FC = () => {
       paper_bgcolor: "rgba(0,0,0,0)",
       plot_bgcolor: "rgba(0,0,0,0)",
       xaxis: {
-        title: { text: "Category", font: { color: fontColor }, standoff: 20 },
+        title: { text: "Libraries", font: { color: fontColor }, standoff: 20 },
         tickfont: { color: fontColor, size: 12 },
         gridcolor: gridColor,
         tickangle: -90,
