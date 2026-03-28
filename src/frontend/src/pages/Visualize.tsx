@@ -245,21 +245,24 @@ const Visualize: React.FC = () => {
   };
 
   function buildChartLayout(metric: string): Partial<Layout> {
-    return {
-      title: {
-        text: metric,
-        font: { size: 18 },
-      },
-      xaxis: {
-        title: { text: "Category" },
-      },
-      yaxis: {
-        title: { text: metric },
-      },
-      margin: { t: 60, l: 60, r: 60, b: 60 },
-      autosize: true,
-    };
-  }
+       return {
+            title: {
+              text: metric,
+              font: { size: 18 },
+            },
+            xaxis: {
+              title: { text: "Libraries", standoff: 20 },
+              tickangle: -90,
+              automargin: true,
+            },
+            yaxis: {
+              title: { text: metric },
+              automargin: true,
+            },
+            margin: { t: 60, l: 60, r: 60, b: 170 },
+            autosize: true,
+          };
+    }
 
   function buildChartData(rows: ChartRow[]): Data[] {
     return [
