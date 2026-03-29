@@ -743,7 +743,7 @@ const EditValuesPage: React.FC = () => {
                       style={{
                         ...headerCellStyle,
                         width: 170,
-                        position: "relative",
+
                       }}
                     >
                       <div style={{ ...clamp2Style, paddingRight: "18px" }}>

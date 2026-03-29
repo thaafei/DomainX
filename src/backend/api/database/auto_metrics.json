@@ -47,24 +47,7 @@
     "description": "Number of closed pull requests.",
     "value_type": "int"
   },
-  "commits_last_5_years": {
-    "label": "Commits (Last 5 Years)",
-    "source_type": "github_api",
-    "description": "Commits made in the last 60 months.",
-    "value_type": "int"
-  },
-  "text_files": {
-    "label": "Text Files",
-    "source_type": "github_api",
-    "description": "Number of non-binary files.",
-    "value_type": "int"
-  },
-  "binary_files": {
-    "label": "Binary Files",
-    "source_type": "github_api",
-    "description": "Number of binary files.",
-    "value_type": "int"
-  },
+
   "text_files_scc": {
     "label": "Text Files (SCC)",
     "source_type": "scc",
