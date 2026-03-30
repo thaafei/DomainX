@@ -74,17 +74,17 @@ To assist in the creation of this paper, we will create a reusable tool, whose m
 \subsection{Goals of the Project}
 The tool will make the data gathering process faster and more efficient for the current paper used to pilot the project. Future papers will then be able to use the tool to assist in their own data gathering for their domain.\\
 See below for our goals, listed in their order of importance.
-\subsubsection{Centralized Domain Data Location}
+\subsubsection{Centralized Domain Data Location}\label{goal-central-data}
 The tool should be the centralized location where users can view completed data gathered from a domain assessment, as well as create and edit new domains. 
-\subsubsection{Automated Data Collection}
+\subsubsection{Automated Data Collection}\label{goal-auto-data}
 The tool must be able to extract the repository based metrics automatically, to eliminate the need for user to manually enter this information. At least 80\% of the accessed packages should have these types of metrics automatically filled without error.
-\subsubsection{Interactive Data Table}
+\subsubsection{Interactive Data Table}\label{goal-data-table}
 The tool's data table should be intuitive to use, and be similar to pre-existing industry standard spreadsheet tools such as Excel. Users with prior experience using Excel should automatically be able to use the tool for inputting data.
-\subsubsection{Automated Analytic Hierarchy Process}
+\subsubsection{Automated Analytic Hierarchy Process}\label{goal-auto-ahp}
 The tool will implement an automated AHP to compare libraries, guiding users through pairwise comparisons to weigh criteria and evaluate alternatives. It should match what the user would calculate exactly if they were to do it manually.
-\subsubsection{Data Visualization and Download}
+\subsubsection{Data Visualization and Download}\label{goal-visual}
 The tool should allow users to export tables and visuals relating to the domain they want, based on the data gathered in that domain. 
-\subsubsection{Collaboration and Access Control}
+\subsubsection{Collaboration and Access Control}\label{goal-collab}
 The tool should allow for multiple users to use the tool simultaneously and contain multiple access levels.
 \section{Stakeholders}
 The following section contains the stakeholders of the project.
@@ -93,10 +93,14 @@ The main users for the tool, and the individuals who requested it.
 \subsubsection{Dr. Spencer Smith}\label{smith}
 Our supervisor, Dr. Spencer Smith is the product owner of the tool.
 They are responsible for providing the main features requested, as well has having the final say in the presentation and features of the tool during the team's weekly check-in.
-When the tool is live, they will also have administrative access and manages the access control of the tool.
+When the tool is live, they will also have administrative access and manages the access control of the tool. \\
+\textbf{Related Goals}: On top of the implied goal of having a completed tool, also concerned with \nameref{goal-collab} and \nameref{goal-central-data}
+
 \subsubsection{Research Subteam}\label{research_team}
 The research subteam will be actively using the tool. They are responsible for providing feedback to the product subteam on any pain points experienced while using the tool.
-As well as assessing if the tool makes the current data gathering process easier, as compared to the previous ad-hoc method of using excel. The research subteam will be alternating between the current students working on this project: Awurama Nyarko, Fei Xie, Ghena Hatoum, and Haniye Hamidizadeh.
+As well as assessing if the tool makes the current data gathering process easier, as compared to the previous ad-hoc method of using excel. The research subteam will be alternating between the current students working on this project: Awurama Nyarko, Fei Xie, Ghena Hatoum, and Haniye Hamidizadeh. \\
+\textbf{Related Goals}: \nameref{goal-auto-data}, \nameref{goal-data-table}, \nameref{goal-auto-ahp}, and \nameref{goal-visual}, 
+
 \subsection{Customer}
 The users of the tool.
 \subsubsection{Research Subteam}
@@ -105,14 +109,19 @@ See \hyperref[research_team]{Research Subteam}.
 See \hyperref[smith]{Dr. Spencer Smith}.
 \subsubsection{Ryan Fang}\label{ryan}
 A Master's student at McMaster University currently measuring the State of Best Practices for the Robotics Software domain.
-Once the tool is in a usable state, after the proof of concept demonstration, he will be onboarded to start using the tool for his research. He is responsible for providing feedback once he starts using the tool.
+Once the tool is in a usable state, after the proof of concept demonstration, he will be onboarded to start using the tool for his research. He is responsible for providing feedback once he starts using the tool. \\
+\textbf{Related Goals}: \nameref{goal-auto-data}, \nameref{goal-data-table}, \nameref{goal-auto-ahp}, and \nameref{goal-visual}, 
+
 \subsection{Other Stakeholders}
 Additional stakeholders for the development or maintenance of the tool.
 \subsubsection{Development Subteam}
 The development subteam will be alternating between the current students working on this project.
-They are responsible for the technical development portion of the project, including testing, system design, developing, and interacting with the client and customers (\hyperref[smith]{Dr. Spencer Smith}, \hyperref[research_team]{research subteam} and \hyperref[ryan]{Ryan Fang}).
+They are responsible for the technical development portion of the project, including testing, system design, developing, and interacting with the client and customers (\hyperref[smith]{Dr. Spencer Smith}, \hyperref[research_team]{research subteam} and \hyperref[ryan]{Ryan Fang}).\\
+\textbf{Related Goals:} Since the goals are structured from the perspective of the user, there are no explicitly listed goals for the development team, other than the completion of the project.
 \subsubsection{Dr. Lingyang Chu}\label{chu}
-The domain expert/consultant for the \hyperref[research_team]{research subteam} during their work on the paper. This person has deep domain knowledge but won't necessarily know the technical software aspects of the domain. He will be interested in the results that the research subteam discovered during their assessment of the domain.
+The domain expert/consultant for the \hyperref[research_team]{research subteam} during their work on the paper. This person has deep domain knowledge but won't necessarily know the technical software aspects of the domain. He will be interested in the results that the research subteam discovered during their assessment of the domain.\\
+\textbf{Related Goals}: \nameref{goal-data-table}, \nameref{goal-visual} and \nameref{goal-collab} 
+
 \subsection{Hands-On Users of the Project}
 Broader users of the tool.
 \subsubsection{Dr. Spencer Smith}
@@ -122,7 +131,9 @@ See \hyperref[research_team]{Research Subteam}.
 \subsubsection{Dr. Lingyang Chu}
 See \hyperref[chu]{Dr. Lingyang Chu}
 \subsubsection{Researchers/Industry Workers}
-These are people who are interested in seeing the results of the research results for a domain. They are responsible for accessing the usability of the tool in the context of a read-only experience, and provide feedback to the product subteam.
+These are people who are interested in seeing the results of the research results for a domain. They are responsible for accessing the usability of the tool in the context of a read-only experience, and provide feedback to the product subteam. \\
+\textbf{Related Goals}: \nameref{goal-data-table}, \nameref{goal-visual} and \nameref{goal-collab} 
+
 \subsection{Personas}
 Below are personas to help visualize the users of the tool.
 \subsubsection{Kevin - Master's Student at McMaster University}
