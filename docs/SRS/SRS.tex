@@ -52,6 +52,7 @@
 October 10, 2025 & Whole team & Initial v0 Draft\\
 \midrule
 December 28, 2025 & Fei & Update based on TA and Peer Review \href{https://github.com/thaafei/DomainX/pull/254}{feedback issues}\\
+March 30, 2026 & Fei & Final documentation update contained listed in this \href{https://github.com/thaafei/DomainX/issues/520}{Github issue}.\\
 \bottomrule
 \end{tabularx}
 \end{table}
@@ -501,9 +502,9 @@ What our tool must do, it's features and behaviours are listed below.
   \item The system must validate all user input upon addition or update (e.g., ensuring numeric fields are numbers, dates are valid, and text limits are met).	
   \\ \textbf{Rationale}: Input validation is required to ensure data correctness, consistency, and reliability for downstream analysis and visualization.
   \\ \textbf{Fit Criterion}: Invalid inputs are rejected at submission time with clear error messages, and only data that meets defined validation rules is saved to the system.
-  \item The system must allow an Admin to bulk upload library and metric data using a predefined Excel template. The system must report detailed errors for any records that fail validation, such as feature names not being in the scope or wrong data type for a column.
-  \\ \textbf{Rationale}: Reduces manual data entry effort and minimizes human error when working with large datasets.
-  \\ \textbf{Fit Criterion}: Admins can upload an Excel file that follows the predefined template, and the system successfully imports valid records while displaying a detailed error report for each invalid row and column.
+  \item The system must allow an Admin to trigger the automated metric data. The system must report detailed errors for any records that fail validation, such as feature names not being in the scope or wrong data type for a column.
+  \\ \textbf{Rationale}: Reduces manual data entry effort and minimizes human error when working with multiple libraries.
+  \\ \textbf{Fit Criterion}: Admins can enter a valid Github URL relating to a library, and the system successfully imports valid metrics while displaying a detailed error report for each invalid row and column.
   \item When a Researcher enters a public GitHub URL for a library, the system must call the GitHub API to automatically retrieve and populate specific data points, such as the Repository Creation Date and the Last Commit Date.
   \\ \textbf{Rationale}: Automatable repository metric data should be automatically extracted.
   \\ \textbf{Fit Criterion}: With a valid Github URL, system populates the corresponding rows and columns with the collected metrics, and displays errors for irretrievable data.
