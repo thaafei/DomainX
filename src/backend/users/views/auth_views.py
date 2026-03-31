@@ -1,30 +1,30 @@
 import hashlib
+
 from django.conf import settings
 from django.contrib.auth import authenticate
-from django.db import transaction
-from django.utils import timezone
-from rest_framework.views import APIView
-from rest_framework.response import Response
-from rest_framework import status
-from rest_framework.permissions import IsAuthenticated, AllowAny
-from rest_framework_simplejwt.tokens import RefreshToken
-from ..models import CustomUser, UserInvite, PasswordResetToken
-from api.database.domain.models import Domain
-from rest_framework_simplejwt.authentication import JWTAuthentication
-from rest_framework.exceptions import AuthenticationFailed
-from users.auth import CookieJWTAuthentication
-
 from django.contrib.auth.password_validation import validate_password
 from django.core.exceptions import ValidationError
-from ..tasks import send_email_task
+from django.db import transaction
+from django.utils import timezone
+from rest_framework import status
+from rest_framework.permissions import AllowAny, IsAuthenticated
+from rest_framework.response import Response
+from rest_framework.views import APIView
+from rest_framework_simplejwt.tokens import RefreshToken
+
+from api.database.domain.models import Domain
+from users.auth import CookieJWTAuthentication
+
+from ..models import CustomUser, PasswordResetToken, UserInvite
 from ..serializers import (
-    InviteUserSerializer,
     AcceptInviteSerializer,
+    ForgotPasswordSerializer,
+    InviteUserSerializer,
+    ResetPasswordSerializer,
     UserProfileSerializer,
     UserWithDomainsSerializer,
-    ForgotPasswordSerializer,
-    ResetPasswordSerializer,
 )
+from ..tasks import send_email_task
 
 
 def send_invitation_for_user(user, invited_by):
@@ -60,11 +60,15 @@ class LoginView(APIView):
 
         user = authenticate(request, username=login_value, password=password)
         if not user:
-            return Response({"error": "Invalid credentials"}, status=status.HTTP_401_UNAUTHORIZED)
+            return Response(
+                {"error": "Invalid credentials"}, status=status.HTTP_401_UNAUTHORIZED
+            )
 
         refresh = RefreshToken.for_user(user)
 
-        response = Response({"user": UserProfileSerializer(user).data}, status=status.HTTP_200_OK)
+        response = Response(
+            {"user": UserProfileSerializer(user).data}, status=status.HTTP_200_OK
+        )
 
         response.set_cookie(
             "access_token",
@@ -94,58 +98,59 @@ class MeView(APIView):
 class LogoutView(APIView):
     authentication_classes = [CookieJWTAuthentication]
     permission_classes = [IsAuthenticated]
+
     def post(self, request):
         response = Response({"message": "Logged out"}, status=200)
         response.delete_cookie("access_token", path="/")
         response.delete_cookie("refresh_token", path="/")
         return response
-    
+
+
 class RefreshTokenView(APIView):
     """
     Refreshes the access token using the refresh token cookie
     """
+
     permission_classes = [AllowAny]
-    
+
     def post(self, request):
         # Get refresh token from cookie
-        refresh_token = request.COOKIES.get('refresh_token')
-        
+        refresh_token = request.COOKIES.get("refresh_token")
+
         if not refresh_token:
             return Response(
-                {"error": "Refresh token not found"}, 
-                status=status.HTTP_401_UNAUTHORIZED
+                {"error": "Refresh token not found"},
+                status=status.HTTP_401_UNAUTHORIZED,
             )
-        
+
         try:
             # Create new refresh token object and get new access token
             refresh = RefreshToken(refresh_token)
             new_access_token = str(refresh.access_token)
-            
+
             # Create response
             response = Response(
-                {"message": "Token refreshed successfully"}, 
-                status=status.HTTP_200_OK
+                {"message": "Token refreshed successfully"}, status=status.HTTP_200_OK
             )
-            
+
             # Set the new access token cookie
             response.set_cookie(
-                "access_token", 
+                "access_token",
                 new_access_token,
-                httponly=True, 
-                secure=not settings.DEBUG, 
+                httponly=True,
+                secure=not settings.DEBUG,
                 samesite="Lax",
-                max_age=7200  # 2 hours in seconds
+                max_age=7200,  # 2 hours in seconds
             )
-            
+
             return response
-            
+
         except Exception as e:
             # Token is invalid or expired
             return Response(
-                {"error": "Invalid or expired refresh token"}, 
-                status=status.HTTP_401_UNAUTHORIZED
+                {"error": f"Invalid or expired refresh token, [{e}]"},
+                status=status.HTTP_401_UNAUTHORIZED,
             )
-
 
 
 class InviteUserView(APIView):
@@ -155,17 +160,21 @@ class InviteUserView(APIView):
         if request.user.role != "superadmin":
             return Response(
                 {"error": "You do not have permission to invite users."},
-                status=status.HTTP_403_FORBIDDEN
+                status=status.HTTP_403_FORBIDDEN,
             )
 
         serializer = InviteUserSerializer(data=request.data)
         if not serializer.is_valid():
-            return Response({"errors": serializer.errors}, status=status.HTTP_400_BAD_REQUEST)
+            return Response(
+                {"errors": serializer.errors}, status=status.HTTP_400_BAD_REQUEST
+            )
 
         data = serializer.validated_data
 
         with transaction.atomic():
-            user = CustomUser.objects.filter(email__iexact=data["email"].lower(), is_deleted=True).first()
+            user = CustomUser.objects.filter(
+                email__iexact=data["email"].lower(), is_deleted=True
+            ).first()
 
             if user:
                 user.email = data["email"].lower()
@@ -199,8 +208,7 @@ class InviteUserView(APIView):
             send_invitation_for_user(user=user, invited_by=request.user)
 
         return Response(
-            {"message": "Invitation sent successfully."},
-            status=status.HTTP_201_CREATED
+            {"message": "Invitation sent successfully."}, status=status.HTTP_201_CREATED
         )
 
 
@@ -211,20 +219,26 @@ class ResendInviteView(APIView):
         if request.user.role != "superadmin":
             return Response(
                 {"error": "You do not have permission to resend invites."},
-                status=status.HTTP_403_FORBIDDEN
+                status=status.HTTP_403_FORBIDDEN,
             )
 
         try:
             user = CustomUser.objects.get(id=user_id, is_deleted=False)
         except CustomUser.DoesNotExist:
-            return Response({"error": "User not found."}, status=status.HTTP_404_NOT_FOUND)
+            return Response(
+                {"error": "User not found."}, status=status.HTTP_404_NOT_FOUND
+            )
 
         if user.is_active:
-            return Response({"error": "User is already active."}, status=status.HTTP_400_BAD_REQUEST)
+            return Response(
+                {"error": "User is already active."}, status=status.HTTP_400_BAD_REQUEST
+            )
 
         send_invitation_for_user(user=user, invited_by=request.user)
 
-        return Response({"message": "Invitation resent successfully."}, status=status.HTTP_200_OK)
+        return Response(
+            {"message": "Invitation resent successfully."}, status=status.HTTP_200_OK
+        )
 
 
 class AcceptInviteView(APIView):
@@ -233,7 +247,9 @@ class AcceptInviteView(APIView):
     def post(self, request):
         serializer = AcceptInviteSerializer(data=request.data)
         if not serializer.is_valid():
-            return Response({"errors": serializer.errors}, status=status.HTTP_400_BAD_REQUEST)
+            return Response(
+                {"errors": serializer.errors}, status=status.HTTP_400_BAD_REQUEST
+            )
 
         token = serializer.validated_data["token"]
         password = serializer.validated_data["password"]
@@ -241,26 +257,36 @@ class AcceptInviteView(APIView):
         token_hash = hashlib.sha256(token.encode()).hexdigest()
 
         try:
-            invite = UserInvite.objects.select_related("user").get(token_hash=token_hash)
+            invite = UserInvite.objects.select_related("user").get(
+                token_hash=token_hash
+            )
         except UserInvite.DoesNotExist:
-            return Response({"error": "Invalid invite link."}, status=status.HTTP_400_BAD_REQUEST)
+            return Response(
+                {"error": "Invalid invite link."}, status=status.HTTP_400_BAD_REQUEST
+            )
 
         if invite.is_used():
-            return Response({"error": "This invite link has already been used."}, status=400)
+            return Response(
+                {"error": "This invite link has already been used."}, status=400
+            )
 
         if invite.user.is_active:
             return Response({"error": "Account already activated."}, status=400)
 
         if invite.is_expired():
             return Response(
-                {"error": "This invite link has expired. Please contact your administrator to request a new invitation."},
-                status=status.HTTP_400_BAD_REQUEST
+                {
+                    "error": "This invite link has expired. Please contact your administrator to request a new invitation."
+                },
+                status=status.HTTP_400_BAD_REQUEST,
             )
 
         try:
             validate_password(password, user=invite.user)
         except ValidationError as e:
-            return Response({"errors": {"password": e.messages}}, status=status.HTTP_400_BAD_REQUEST)
+            return Response(
+                {"errors": {"password": e.messages}}, status=status.HTTP_400_BAD_REQUEST
+            )
 
         user = invite.user
         user.set_password(password)
@@ -270,7 +296,9 @@ class AcceptInviteView(APIView):
         invite.used_at = timezone.now()
         invite.save(update_fields=["used_at"])
 
-        return Response({"message": "Account activated successfully."}, status=status.HTTP_200_OK)
+        return Response(
+            {"message": "Account activated successfully."}, status=status.HTTP_200_OK
+        )
 
 
 class UserListView(APIView):
@@ -281,11 +309,13 @@ class UserListView(APIView):
         if request.user.role != "superadmin":
             return Response(
                 {"error": "You do not have permission to access this resource."},
-                status=status.HTTP_403_FORBIDDEN
+                status=status.HTTP_403_FORBIDDEN,
             )
 
         role = request.query_params.get("role", None)
-        include_domains = request.query_params.get("include_domains", "false").lower() == "true"
+        include_domains = (
+            request.query_params.get("include_domains", "false").lower() == "true"
+        )
 
         users = CustomUser.objects.filter(is_deleted=False)
 
@@ -334,7 +364,9 @@ class UserUpdateView(APIView):
         domain_ids = request.data.get("domain_ids")
         if domain_ids is not None and (is_admin or is_super):
             if is_admin:
-                my_domains = set(request.user.created_domains.values_list("domain_ID", flat=True))
+                my_domains = set(
+                    request.user.created_domains.values_list("domain_ID", flat=True)
+                )
                 valid_ids = [d_id for d_id in domain_ids if d_id in my_domains]
             else:
                 valid_ids = domain_ids
@@ -347,11 +379,23 @@ class UserUpdateView(APIView):
                 except Domain.DoesNotExist:
                     continue
 
-        if CustomUser.objects.exclude(id=user_to_update.id).filter(email__iexact=user_to_update.email).exists():
-            return Response({"error": "A user with this email already exists."}, status=400)
+        if (
+            CustomUser.objects.exclude(id=user_to_update.id)
+            .filter(email__iexact=user_to_update.email)
+            .exists()
+        ):
+            return Response(
+                {"error": "A user with this email already exists."}, status=400
+            )
 
-        if CustomUser.objects.exclude(id=user_to_update.id).filter(username__iexact=user_to_update.username).exists():
-            return Response({"error": "A user with this username already exists."}, status=400)
+        if (
+            CustomUser.objects.exclude(id=user_to_update.id)
+            .filter(username__iexact=user_to_update.username)
+            .exists()
+        ):
+            return Response(
+                {"error": "A user with this username already exists."}, status=400
+            )
 
         user_to_update.save()
         return Response({"message": "Profile updated successfully"}, status=200)
@@ -368,7 +412,7 @@ class ChangePasswordView(APIView):
         if not is_owner and not is_superadmin:
             return Response(
                 {"error": "You do not have permission to change this password."},
-                status=status.HTTP_403_FORBIDDEN
+                status=status.HTTP_403_FORBIDDEN,
             )
 
         try:
@@ -393,7 +437,9 @@ class ChangePasswordView(APIView):
         target_user.set_password(new_password)
         target_user.save()
 
-        return Response({"message": "Password updated successfully."}, status=status.HTTP_200_OK)
+        return Response(
+            {"message": "Password updated successfully."}, status=status.HTTP_200_OK
+        )
 
 
 class UserDomainListView(APIView):
@@ -405,7 +451,10 @@ class UserDomainListView(APIView):
             user = CustomUser.objects.get(id=user_id)
             if user.role in ["admin", "superadmin"]:
                 domains = user.created_domains.all()
-                data = [{"domain_ID": str(d.domain_ID), "domain_name": d.domain_name} for d in domains]
+                data = [
+                    {"domain_ID": str(d.domain_ID), "domain_name": d.domain_name}
+                    for d in domains
+                ]
                 return Response(data, status=200)
             return Response([], status=200)
         except CustomUser.DoesNotExist:
@@ -424,7 +473,9 @@ class ValidateInviteView(APIView):
         token_hash = hashlib.sha256(token.encode()).hexdigest()
 
         try:
-            invite = UserInvite.objects.select_related("user").get(token_hash=token_hash)
+            invite = UserInvite.objects.select_related("user").get(
+                token_hash=token_hash
+            )
         except UserInvite.DoesNotExist:
             return Response({"valid": False}, status=200)
 
@@ -459,10 +510,11 @@ class DeactivateUserView(APIView):
             )
 
         if target_user.role == "superadmin":
-            remaining = CustomUser.objects.filter(
-                role="superadmin",
-                is_deleted=False
-            ).exclude(id=target_user.id).count()
+            remaining = (
+                CustomUser.objects.filter(role="superadmin", is_deleted=False)
+                .exclude(id=target_user.id)
+                .count()
+            )
 
             if remaining == 0:
                 return Response(
@@ -483,14 +535,18 @@ class ForgotPasswordView(APIView):
     def post(self, request):
         serializer = ForgotPasswordSerializer(data=request.data)
         if not serializer.is_valid():
-            return Response({"errors": serializer.errors}, status=status.HTTP_400_BAD_REQUEST)
+            return Response(
+                {"errors": serializer.errors}, status=status.HTTP_400_BAD_REQUEST
+            )
 
         email = serializer.validated_data["email"]
 
         user = CustomUser.objects.filter(email__iexact=email, is_deleted=False).first()
 
         if user and user.is_active:
-            reset, raw_token = PasswordResetToken.create_for_user(user=user, hours_valid=1)
+            reset, raw_token = PasswordResetToken.create_for_user(
+                user=user, hours_valid=1
+            )
 
             reset_url = f"{settings.FRONTEND_URL}/reset-password?token={raw_token}"
 
@@ -508,8 +564,10 @@ class ForgotPasswordView(APIView):
             send_email_task.delay(user.email, subject, body)
 
         return Response(
-            {"message": "If an account with that email exists, a password reset link has been sent."},
-            status=status.HTTP_200_OK
+            {
+                "message": "If an account with that email exists, a password reset link has been sent."
+            },
+            status=status.HTTP_200_OK,
         )
 
 
@@ -519,7 +577,9 @@ class ResetPasswordView(APIView):
     def post(self, request):
         serializer = ResetPasswordSerializer(data=request.data)
         if not serializer.is_valid():
-            return Response({"errors": serializer.errors}, status=status.HTTP_400_BAD_REQUEST)
+            return Response(
+                {"errors": serializer.errors}, status=status.HTTP_400_BAD_REQUEST
+            )
 
         token = serializer.validated_data["token"]
         password = serializer.validated_data["password"]
@@ -527,20 +587,32 @@ class ResetPasswordView(APIView):
         token_hash = hashlib.sha256(token.encode()).hexdigest()
 
         try:
-            reset = PasswordResetToken.objects.select_related("user").get(token_hash=token_hash)
+            reset = PasswordResetToken.objects.select_related("user").get(
+                token_hash=token_hash
+            )
         except PasswordResetToken.DoesNotExist:
-            return Response({"error": "Invalid reset link."}, status=status.HTTP_400_BAD_REQUEST)
+            return Response(
+                {"error": "Invalid reset link."}, status=status.HTTP_400_BAD_REQUEST
+            )
 
         if reset.is_used():
-            return Response({"error": "This reset link has already been used."}, status=status.HTTP_400_BAD_REQUEST)
+            return Response(
+                {"error": "This reset link has already been used."},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
 
         if reset.is_expired():
-            return Response({"error": "This reset link has expired."}, status=status.HTTP_400_BAD_REQUEST)
+            return Response(
+                {"error": "This reset link has expired."},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
 
         try:
             validate_password(password, user=reset.user)
         except ValidationError as e:
-            return Response({"errors": {"password": e.messages}}, status=status.HTTP_400_BAD_REQUEST)
+            return Response(
+                {"errors": {"password": e.messages}}, status=status.HTTP_400_BAD_REQUEST
+            )
 
         user = reset.user
         user.set_password(password)
@@ -549,7 +621,9 @@ class ResetPasswordView(APIView):
         reset.used_at = timezone.now()
         reset.save(update_fields=["used_at"])
 
-        return Response({"message": "Password reset successfully."}, status=status.HTTP_200_OK)
+        return Response(
+            {"message": "Password reset successfully."}, status=status.HTTP_200_OK
+        )
 
 
 class ValidateResetPasswordView(APIView):
@@ -564,7 +638,9 @@ class ValidateResetPasswordView(APIView):
         token_hash = hashlib.sha256(token.encode()).hexdigest()
 
         try:
-            reset = PasswordResetToken.objects.select_related("user").get(token_hash=token_hash)
+            reset = PasswordResetToken.objects.select_related("user").get(
+                token_hash=token_hash
+            )
         except PasswordResetToken.DoesNotExist:
             return Response({"valid": False}, status=200)
 

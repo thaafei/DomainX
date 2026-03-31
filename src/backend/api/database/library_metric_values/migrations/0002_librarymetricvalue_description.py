@@ -6,13 +6,13 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('library_metric_values', '0001_initial'),
+        ("library_metric_values", "0001_initial"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='librarymetricvalue',
-            name='description',
+            model_name="librarymetricvalue",
+            name="description",
             field=models.TextField(blank=True, null=True),
         ),
     ]

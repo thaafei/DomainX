@@ -38,7 +38,9 @@ class LibrarySerializer(serializers.ModelSerializer):
 
     def validate_github_url(self, value):
         if "github.com" not in value:
-            raise ValidationError("Only GitHub repository URLs are currently supported.")
+            raise ValidationError(
+                "Only GitHub repository URLs are currently supported."
+            )
         return value
 
     def validate(self, attrs):
@@ -57,9 +59,11 @@ class LibrarySerializer(serializers.ModelSerializer):
         ).exists()
 
         if duplicate_exists:
-            raise ValidationError({
-                "library_name": "A library with this name already exists. Please choose a different name."
-            })
+            raise ValidationError(
+                {
+                    "library_name": "A library with this name already exists. Please choose a different name."
+                }
+            )
 
         attrs["library_name"] = library_name
         return attrs
@@ -74,18 +78,29 @@ class LibraryUpdateSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Library
-        fields = ["library_name", "description", "github_url","url", "programming_language", "domain"]
+        fields = [
+            "library_name",
+            "description",
+            "github_url",
+            "url",
+            "programming_language",
+            "domain",
+        ]
         validators = []
 
     def validate_github_url(self, value):
         if value in (None, ""):
             return value
         if "github.com" not in value:
-            raise ValidationError("Only GitHub repository URLs are currently supported.")
+            raise ValidationError(
+                "Only GitHub repository URLs are currently supported."
+            )
         return value
 
     def validate(self, attrs):
-        library_name = (attrs.get("library_name") or self.instance.library_name or "").strip()
+        library_name = (
+            attrs.get("library_name") or self.instance.library_name or ""
+        ).strip()
         domain = attrs.get("domain") or self.instance.domain
 
         if not library_name:
@@ -104,9 +119,11 @@ class LibraryUpdateSerializer(serializers.ModelSerializer):
         )
 
         if duplicate_exists:
-            raise ValidationError({
-                "library_name": "A library with this name already exists. Please choose a different name."
-            })
+            raise ValidationError(
+                {
+                    "library_name": "A library with this name already exists. Please choose a different name."
+                }
+            )
 
         attrs["library_name"] = library_name
         return attrs

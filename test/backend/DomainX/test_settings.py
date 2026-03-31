@@ -17,7 +17,7 @@ if not django.apps.apps.ready:
 
 class DatabaseConfigurationTestCase(SimpleTestCase):
     """Test cases for database configuration based on IS_LOCAL flag."""
-    
+
     databases = {}
 
     @mock.patch.dict(os.environ, {
@@ -34,9 +34,9 @@ class DatabaseConfigurationTestCase(SimpleTestCase):
     def test_local_environment_uses_sqlite(self):
         """Test that local environment uses SQLite database."""
         from django.conf import settings
-        
+
         db_config = settings.DATABASES["default"]
-        
+
         self.assertEqual(db_config["ENGINE"], "django.db.backends.sqlite3")
         self.assertIn("db.sqlite3", str(db_config["NAME"]))
 
@@ -66,9 +66,9 @@ class DatabaseConfigurationTestCase(SimpleTestCase):
     def test_non_local_environment_uses_mysql(self):
         """Test that non-local environment uses MySQL database."""
         from django.conf import settings
-        
+
         db_config = settings.DATABASES["default"]
-        
+
         self.assertEqual(db_config["ENGINE"], "django.db.backends.mysql")
         self.assertEqual(db_config["NAME"], "test_db")
         self.assertEqual(db_config["USER"], "test_user")
@@ -87,6 +87,6 @@ class DatabaseConfigurationTestCase(SimpleTestCase):
     def test_only_one_default_database_configured(self):
         """Test that only one default database is configured."""
         from django.conf import settings
-        
+
         self.assertIn("default", settings.DATABASES)
         self.assertEqual(len(settings.DATABASES), 1)

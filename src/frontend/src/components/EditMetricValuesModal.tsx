@@ -267,7 +267,7 @@ const EditMetricValuesModal: React.FC<{
           >
             { metrics.map((m) => {
               const cellVal = row.metrics[m.metric_name];
-              const _ = row.metrics[m.metric_name + "_description"] || ""; 
+              const _ = row.metrics[m.metric_name + "_description"] || "";
               const fieldError = fieldErrors[m.metric_name];
               const staticDesc = (m.description || "").trim();
               return (
@@ -421,7 +421,7 @@ const EditMetricValuesModal: React.FC<{
             })}
           </div>
         </div>
-        )) 
+        ))
       };
       <div
         style={{

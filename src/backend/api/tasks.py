@@ -103,7 +103,9 @@ def analyze_repo_task(self, library_id: str, repo_url: str):
         lib.analysis_status = Library.ANALYSIS_SUCCESS
         lib.analysis_finished_at = timezone.now()
         lib.analysis_error = None
-        lib.save(update_fields=["analysis_status", "analysis_finished_at", "analysis_error"])
+        lib.save(
+            update_fields=["analysis_status", "analysis_finished_at", "analysis_error"]
+        )
 
         duration_ms = int((timezone.now() - start).total_seconds() * 1000)
 
@@ -120,13 +122,19 @@ def analyze_repo_task(self, library_id: str, repo_url: str):
             },
         )
 
-        return {"ok": True, "metrics_updated": updated_count, "metrics_skipped": skipped_count}
+        return {
+            "ok": True,
+            "metrics_updated": updated_count,
+            "metrics_skipped": skipped_count,
+        }
 
     except Exception:
         lib.analysis_status = Library.ANALYSIS_FAILED
         lib.analysis_error = "Analysis failed. Please check server logs."
         lib.analysis_finished_at = timezone.now()
-        lib.save(update_fields=["analysis_status", "analysis_error", "analysis_finished_at"])
+        lib.save(
+            update_fields=["analysis_status", "analysis_error", "analysis_finished_at"]
+        )
 
         logger.error(
             "Repo analysis failed",
@@ -192,7 +200,9 @@ def analyze_repo_gitstats_task(self, library_id: str, repo_url: str):
             return {"ok": True, "result": {"skipped": True}}
 
         analyzer = RepoAnalyzer(github_url=repo_url)
-        results = analyzer.run_gitstats_only(work_dir=work_dir, serve_dir=serve_dir, library_id=library_id)
+        results = analyzer.run_gitstats_only(
+            work_dir=work_dir, serve_dir=serve_dir, library_id=library_id
+        )
 
         lib.gitstats_report_path = f"/gitstats/{library_id}/git_stats/index.html"
         lib.gitstats_status = Library.GITSTATS_SUCCESS
@@ -224,7 +234,9 @@ def analyze_repo_gitstats_task(self, library_id: str, repo_url: str):
         lib.gitstats_status = Library.GITSTATS_FAILED
         lib.gitstats_error = "GitStats timed out. Please try again later."
         lib.gitstats_finished_at = timezone.now()
-        lib.save(update_fields=["gitstats_status", "gitstats_error", "gitstats_finished_at"])
+        lib.save(
+            update_fields=["gitstats_status", "gitstats_error", "gitstats_finished_at"]
+        )
 
         logger.error(
             "GitStats timed out",
@@ -236,7 +248,9 @@ def analyze_repo_gitstats_task(self, library_id: str, repo_url: str):
         lib.gitstats_status = Library.GITSTATS_FAILED
         lib.gitstats_error = "GitStats failed. Please check server logs."
         lib.gitstats_finished_at = timezone.now()
-        lib.save(update_fields=["gitstats_status", "gitstats_error", "gitstats_finished_at"])
+        lib.save(
+            update_fields=["gitstats_status", "gitstats_error", "gitstats_finished_at"]
+        )
 
         logger.error(
             "GitStats failed",

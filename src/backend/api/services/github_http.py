@@ -1,21 +1,24 @@
 import os
 import time
-import requests
-import jwt
 from pathlib import Path
-from urllib.parse import urlparse
+
+import jwt
+import requests
 
 API_BASE = "https://api.github.com"
 _APP_TOKEN_CACHE = {"token": None, "exp": 0}
 
+
 def _is_github_app_configured() -> bool:
     return bool(os.getenv("GITHUB_APP_ID") and os.getenv("GITHUB_APP_PRIVATE_KEY_PATH"))
+
 
 def _load_private_key() -> str:
     key_path = os.getenv("GITHUB_APP_PRIVATE_KEY_PATH")
     if not key_path:
         raise RuntimeError("GITHUB_APP_PRIVATE_KEY_PATH is not set.")
     return Path(key_path).read_text()
+
 
 def _make_app_jwt() -> str:
     app_id = os.getenv("GITHUB_APP_ID")
@@ -32,6 +35,7 @@ def _make_app_jwt() -> str:
     }
     return jwt.encode(payload, private_key, algorithm="RS256")
 
+
 def _get_installation_id(app_jwt: str) -> int:
     env_id = os.getenv("GITHUB_APP_INSTALLATION_ID")
     if env_id:
@@ -46,8 +50,11 @@ def _get_installation_id(app_jwt: str) -> int:
     resp.raise_for_status()
     installs = resp.json()
     if not installs:
-        raise RuntimeError("No installations found. Install the GitHub App on an account/org first.")
+        raise RuntimeError(
+            "No installations found. Install the GitHub App on an account/org first."
+        )
     return installs[0]["id"]
+
 
 def _get_installation_token() -> str:
     now = int(time.time())
@@ -74,6 +81,7 @@ def _get_installation_token() -> str:
     _APP_TOKEN_CACHE["exp"] = now + 55 * 60
     return token
 
+
 def _get_auth_token() -> str:
     if _is_github_app_configured():
         return _get_installation_token()
@@ -88,6 +96,7 @@ def _get_auth_token() -> str:
         "or\n"
         "- PAT: GITHUB_TOKEN"
     )
+
 
 def github_get(path: str, *, params=None, timeout=20):
     token = _get_auth_token()

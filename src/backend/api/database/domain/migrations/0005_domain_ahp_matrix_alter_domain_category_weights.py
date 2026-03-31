@@ -6,18 +6,18 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('domain', '0004_alter_domain_paper_name_alter_domain_paper_url'),
+        ("domain", "0004_alter_domain_paper_name_alter_domain_paper_url"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='domain',
-            name='ahp_matrix',
+            model_name="domain",
+            name="ahp_matrix",
             field=models.JSONField(blank=True, default=dict, null=True),
         ),
         migrations.AlterField(
-            model_name='domain',
-            name='category_weights',
+            model_name="domain",
+            name="category_weights",
             field=models.JSONField(blank=True, default=dict, null=True),
         ),
     ]

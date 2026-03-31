@@ -6,13 +6,13 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('libraries', '0006_library_url_alter_library_github_url_and_more'),
+        ("libraries", "0006_library_url_alter_library_github_url_and_more"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='library',
-            name='description',
+            model_name="library",
+            name="description",
             field=models.TextField(blank=True, null=True),
         ),
     ]

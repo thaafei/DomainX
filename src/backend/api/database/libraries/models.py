@@ -1,14 +1,19 @@
-from django.db import models
-from ..domain.models import Domain
 import uuid
+
+from django.db import models
+
+from ..domain.models import Domain
 
 
 class Library(models.Model):
     """
     Represents a GitHub repository or library (e.g. an open-source neural network).
     """
+
     library_ID = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
-    domain = models.ForeignKey(Domain, on_delete=models.CASCADE, related_name="libraries")
+    domain = models.ForeignKey(
+        Domain, on_delete=models.CASCADE, related_name="libraries"
+    )
     library_name = models.CharField(max_length=100)
     description = models.TextField(blank=True, null=True)
     ahp_results = models.JSONField(default=dict, blank=True)

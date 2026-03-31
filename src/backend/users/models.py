@@ -1,24 +1,26 @@
+import hashlib
+import secrets
+import uuid
+from datetime import timedelta
+
+from django.conf import settings
 from django.contrib.auth.models import AbstractUser
 from django.db import models
-import uuid
-import secrets
-import hashlib
-from datetime import timedelta
-from django.conf import settings
 from django.utils import timezone
+
 
 class CustomUser(AbstractUser):
     ROLE_CHOICES = (
-        ('user', 'User'),
-        ('admin', 'Admin'),
-        ('superadmin', 'Superadmin'),
+        ("user", "User"),
+        ("admin", "Admin"),
+        ("superadmin", "Superadmin"),
     )
 
     email = models.EmailField(unique=True)
-    role = models.CharField(max_length=20, choices=ROLE_CHOICES, default='admin')
+    role = models.CharField(max_length=20, choices=ROLE_CHOICES, default="admin")
     is_deleted = models.BooleanField(default=False)
-    USERNAME_FIELD = 'email'
-    REQUIRED_FIELDS = ['username']
+    USERNAME_FIELD = "email"
+    REQUIRED_FIELDS = ["username"]
 
     def save(self, *args, **kwargs):
         if self.email:
@@ -39,16 +41,14 @@ class CustomUser(AbstractUser):
 class UserInvite(models.Model):
     invite_ID = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     user = models.ForeignKey(
-        settings.AUTH_USER_MODEL,
-        on_delete=models.CASCADE,
-        related_name="invites"
+        settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name="invites"
     )
     invited_by = models.ForeignKey(
         settings.AUTH_USER_MODEL,
         on_delete=models.SET_NULL,
         null=True,
         blank=True,
-        related_name="sent_invites"
+        related_name="sent_invites",
     )
     token_hash = models.CharField(max_length=64, unique=True)
     expires_at = models.DateTimeField()
@@ -74,12 +74,13 @@ class UserInvite(models.Model):
         )
         return invite, raw_token
 
+
 class PasswordResetToken(models.Model):
     reset_ID = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     user = models.ForeignKey(
         settings.AUTH_USER_MODEL,
         on_delete=models.CASCADE,
-        related_name="password_reset_tokens"
+        related_name="password_reset_tokens",
     )
     token_hash = models.CharField(max_length=64, unique=True)
     expires_at = models.DateTimeField()

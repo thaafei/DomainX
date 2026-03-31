@@ -63,7 +63,7 @@ jobs:
         npm install
         npx playwright install --with-deps
     - name: Run Playwright Tests
-      run: | 
+      run: |
         cd test/frontend
         npx playwright test
     - uses: actions/upload-artifact@v4

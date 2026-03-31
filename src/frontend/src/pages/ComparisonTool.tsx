@@ -14,7 +14,7 @@ import {
 } from "lucide-react";
 import { useAuthStore } from "../store/useAuthStore";
 import {
-  headerCellStyle, 
+  headerCellStyle,
   clamp2Style,
   clamp3Style,
   compactButtonStyle,

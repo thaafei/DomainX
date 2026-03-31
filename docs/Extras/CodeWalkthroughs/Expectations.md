@@ -1,4 +1,4 @@
-**What is expected?** 
+**What is expected?**
 
 The code walkthrough should focus on the critical code in the project.  There
 will likely be multiple pieces of code that need to be considered.

@@ -10,28 +10,69 @@ class Migration(migrations.Migration):
     initial = True
 
     dependencies = [
-        ('domain', '0001_initial'),
+        ("domain", "0001_initial"),
     ]
 
     operations = [
         migrations.CreateModel(
-            name='Library',
+            name="Library",
             fields=[
-                ('library_ID', models.UUIDField(default=uuid.uuid4, editable=False, primary_key=True, serialize=False)),
-                ('library_name', models.CharField(max_length=100)),
-                ('ahp_results', models.JSONField(blank=True, default=dict)),
-                ('programming_language', models.CharField(blank=True, max_length=50, null=True)),
-                ('created_at', models.DateTimeField(auto_now_add=True)),
-                ('url', models.CharField(blank=True, max_length=500, null=True)),
-                ('analysis_status', models.CharField(choices=[('pending', 'Pending'), ('running', 'Running'), ('success', 'Success'), ('failed', 'Failed')], default='pending', max_length=20)),
-                ('analysis_task_id', models.CharField(blank=True, max_length=255, null=True)),
-                ('analysis_error', models.TextField(blank=True, null=True)),
-                ('analysis_started_at', models.DateTimeField(blank=True, null=True)),
-                ('analysis_finished_at', models.DateTimeField(blank=True, null=True)),
-                ('domain', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='libraries', to='domain.domain')),
+                (
+                    "library_ID",
+                    models.UUIDField(
+                        default=uuid.uuid4,
+                        editable=False,
+                        primary_key=True,
+                        serialize=False,
+                    ),
+                ),
+                ("library_name", models.CharField(max_length=100)),
+                ("ahp_results", models.JSONField(blank=True, default=dict)),
+                (
+                    "programming_language",
+                    models.CharField(blank=True, max_length=50, null=True),
+                ),
+                ("created_at", models.DateTimeField(auto_now_add=True)),
+                ("url", models.CharField(blank=True, max_length=500, null=True)),
+                (
+                    "analysis_status",
+                    models.CharField(
+                        choices=[
+                            ("pending", "Pending"),
+                            ("running", "Running"),
+                            ("success", "Success"),
+                            ("failed", "Failed"),
+                        ],
+                        default="pending",
+                        max_length=20,
+                    ),
+                ),
+                (
+                    "analysis_task_id",
+                    models.CharField(blank=True, max_length=255, null=True),
+                ),
+                ("analysis_error", models.TextField(blank=True, null=True)),
+                ("analysis_started_at", models.DateTimeField(blank=True, null=True)),
+                ("analysis_finished_at", models.DateTimeField(blank=True, null=True)),
+                (
+                    "domain",
+                    models.ForeignKey(
+                        on_delete=django.db.models.deletion.CASCADE,
+                        related_name="libraries",
+                        to="domain.domain",
+                    ),
+                ),
             ],
             options={
-                'constraints': [models.UniqueConstraint(fields=('domain', 'library_name'), name='uniq_library_name_per_domain'), models.UniqueConstraint(fields=('domain', 'url'), name='uniq_url_per_domain')],
+                "constraints": [
+                    models.UniqueConstraint(
+                        fields=("domain", "library_name"),
+                        name="uniq_library_name_per_domain",
+                    ),
+                    models.UniqueConstraint(
+                        fields=("domain", "url"), name="uniq_url_per_domain"
+                    ),
+                ],
             },
         ),
     ]

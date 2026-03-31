@@ -6,13 +6,13 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('metrics', '0005_remove_metric_possible_inputs_metric_scoring_dict'),
+        ("metrics", "0005_remove_metric_possible_inputs_metric_scoring_dict"),
     ]
 
     operations = [
         migrations.AlterField(
-            model_name='metric',
-            name='description',
+            model_name="metric",
+            name="description",
             field=models.TextField(blank=True, null=True),
         ),
     ]

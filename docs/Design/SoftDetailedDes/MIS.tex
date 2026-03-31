@@ -63,10 +63,10 @@ Jan 19, 2026 & Awurama & Rev 0 Based on feedback\\
 
 \section{Symbols, Abbreviations and Acronyms}
 
-See SRS Documentation at 
+See SRS Documentation at
 \href{https://github.com/thaafei/DomainX/blob/main/docs/SRS/SRS.pdf}{SRS Documentation}.
 
-This section records acronyms and abbreviations for easy reference. 
+This section records acronyms and abbreviations for easy reference.
 Additional terms specific to the Module Interface Specification (MIS) are included below.
 
 \begin{longtable}{@{}l p{0.72\textwidth}@{}}
@@ -144,11 +144,11 @@ CORS & Cross-Origin Resource Sharing, browser security mechanism controlling cro
 
 \section{Introduction}
 
-The following document details the \textbf{Module Interface Specifications (MIS)} for the 
-\textbf{Domain Assessment Tool}, a web-based system that automates data collection, 
-analysis, and visualization to evaluate different research domains. 
-The system enables users to systematically compare libraries, frameworks, or technologies 
-by applying a structured methodology that combines both quantitative metrics and 
+The following document details the \textbf{Module Interface Specifications (MIS)} for the
+\textbf{Domain Assessment Tool}, a web-based system that automates data collection,
+analysis, and visualization to evaluate different research domains.
+The system enables users to systematically compare libraries, frameworks, or technologies
+by applying a structured methodology that combines both quantitative metrics and
 qualitative insights.
 
 The Domain Assessment Tool is structured as a client-server system with a user interface,
@@ -158,32 +158,32 @@ framework choices are treated as design decisions captured in the MG and impleme
 artifacts, and are not required to interpret the module interfaces specified in this MIS.
 
 
-Complementary documents include the 
+Complementary documents include the
 \href{https://github.com/thaafei/DomainX/blob/main/docs/SRS/SRS.pdf}
-{System Requirements Specification (SRS)} and the 
+{System Requirements Specification (SRS)} and the
 \href{https://github.com/thaafei/DomainX/blob/main/docs/Design/SoftArchitecture/MG.pdf}
-{Module Guide (MG)}. 
-The full documentation and implementation are maintained in the project’s GitHub repository at 
+{Module Guide (MG)}.
+The full documentation and implementation are maintained in the project’s GitHub repository at
 \href{https://github.com/thaafei/DomainX}{DomainX}.
 
 
 \section{Notation}
 
-The \textbf{Module Interface Specification (MIS)} follows the notation and principles of 
-\citet{HoffmanAndStrooper1995}, with adaptations from \citet{GhezziEtAl2003}. 
-Mathematical conventions align with Chapter 3 of \citet{HoffmanAndStrooper1995} and 
-notations used in \textbf{SFWRENG 4G06 – Capstone Design Process}.  
+The \textbf{Module Interface Specification (MIS)} follows the notation and principles of
+\citet{HoffmanAndStrooper1995}, with adaptations from \citet{GhezziEtAl2003}.
+Mathematical conventions align with Chapter 3 of \citet{HoffmanAndStrooper1995} and
+notations used in \textbf{SFWRENG 4G06 – Capstone Design Process}.
 
 \subsection{General Conventions}
 
 \begin{itemize}
   \item \textbf{Assignment:} \texttt{x := e}
-  \item \textbf{Conditional rules:} 
+  \item \textbf{Conditional rules:}
         $(c_1 \Rightarrow r_1\ |\ c_2 \Rightarrow r_2\ |\ \dots\ |\ c_n \Rightarrow r_n)$
   \item \textbf{Parameter modes:} \texttt{in}, \texttt{out}
   \item \textbf{Optional parameter:} \texttt{[param]}
-  \item \textbf{Exceptions:} functions list \texttt{ExceptionName} in an 
-        \emph{Exceptions} column; raising an exception denotes a partial function 
+  \item \textbf{Exceptions:} functions list \texttt{ExceptionName} in an
+        \emph{Exceptions} column; raising an exception denotes a partial function
         on the exceptional domain.
   \item \textbf{Pre/postconditions:} \texttt{requires P} / \texttt{ensures Q}
   \item \textbf{Undefined value / error sentinel:} $\bot$
@@ -229,8 +229,8 @@ option / optional type & \texttt{Option(T)} & Either \texttt{Some(T)} or \texttt
 \subsection{Units and Identifiers}
 
 \begin{itemize}
-  \item \textbf{Timestamps:} use ISO 8601 (e.g., 2025-11-11T09:30:00Z).  
-  \item \textbf{Durations:} explicit units (e.g., \texttt{min}, \texttt{hrs}).  
+  \item \textbf{Timestamps:} use ISO 8601 (e.g., 2025-11-11T09:30:00Z).
+  \item \textbf{Durations:} explicit units (e.g., \texttt{min}, \texttt{hrs}).
   \item \textbf{Identifiers:} \texttt{domainID}, \texttt{metricID}, and \texttt{packageID} are opaque strings unless otherwise specified.
 \end{itemize}
 
@@ -240,7 +240,7 @@ These conventions are used to define interfaces, state variables, environment va
 
 \section{Module Decomposition}
 
-The following table (Table~\ref{tab:module-hierarchy}) summarizes the hierarchical organization of modules for the Domain Assessment Tool.  
+The following table (Table~\ref{tab:module-hierarchy}) summarizes the hierarchical organization of modules for the Domain Assessment Tool.
 Level 1 modules correspond to high-level abstraction layers, while Level 2 modules provide specific functionality within each layer.
 
 \begin{table}[H]
@@ -338,9 +338,9 @@ System API Gateway Module \\
 
 % \noindent \wss{accessProg}():
 % \begin{itemize}
-% \item transition: \wss{if appropriate} 
-% \item output: \wss{if appropriate} 
-% \item exception: \wss{if appropriate} 
+% \item transition: \wss{if appropriate}
+% \item output: \wss{if appropriate}
+% \item exception: \wss{if appropriate}
 % \end{itemize}
 
 % \wss{A module without environment variables or state variables is unlikely to
@@ -906,7 +906,7 @@ listAllRoles & -- & roleList & None \\
 \label{mis:UserPage}
 
 \subsubsection{Module}
-Implements the interactive user settings page in the DomainX web interface.  
+Implements the interactive user settings page in the DomainX web interface.
 This module displays and updates user account details (e.g., display name, email, password, notification preferences) by issuing requests through the System API Gateway (M10).
 
 
@@ -1017,7 +1017,7 @@ deleteAccount & authToken & successFlag & PermissionError \\
 \label{mis:AutomatedMetrics}
 
 \subsubsection{Module}
-Implements the logic for automated retrieval, calculation, and storage of quantitative metrics associated with repositories or packages.  
+Implements the logic for automated retrieval, calculation, and storage of quantitative metrics associated with repositories or packages.
 This module interacts with external APIs through M15 to gather data such as stars, forks, downloads, or commit frequency and stores them in the internal database for further ranking and analysis.
 
 \subsubsection{Uses}
@@ -1031,7 +1031,7 @@ Ranking Algorithm Module (M11) (\ref{mis:RankingAlgorithm})
 \begin{itemize}
   \item \textbf{UPDATE\_INTERVAL\_HOURS} = 24
   \item \textbf{MAX\_RETRIES} = 3
-  \item \textbf{SUPPORTED\_METRICS} = 
+  \item \textbf{SUPPORTED\_METRICS} =
  \item \textbf{SUPPORTED\_METRICS} =
 \begin{itemize}
   \item \textbf{GitHub API:} \{stars, forks, watchers, openPullRequests, closedPullRequests\}
@@ -1138,7 +1138,7 @@ metrics, and descriptions, and supports user-driven exploration and filtering
 through the defined system interfaces.
 
 \subsubsection{Uses}
-Configuration Module (M19)  (\ref{mis:Configuration})\\ 
+Configuration Module (M19)  (\ref{mis:Configuration})\\
 System API Gateway Module (M10)  (\ref{mis:SystemAPIGateway})\\
 Graphing Module (M12) (\ref{mis:GraphingModule})\\
 Ranking Algorithm Module (M11) (\ref{mis:RankingAlgorithm})\\
@@ -1238,14 +1238,14 @@ searchDomains & searchTerm & filteredList & None \\
 \label{mis:Comparison}
 
 \subsubsection{Module}
-Implements the logic that defines and manages comparison methods between software packages or domains.  
-This module allows users to compare entities based on quantitative metrics (e.g., stars, forks, commits, downloads) and qualitative attributes (e.g., documentation quality, update frequency).  
+Implements the logic that defines and manages comparison methods between software packages or domains.
+This module allows users to compare entities based on quantitative metrics (e.g., stars, forks, commits, downloads) and qualitative attributes (e.g., documentation quality, update frequency).
 It serves as a bridge between the user interface, ranking algorithm, and metrics data to compute and display meaningful comparisons.
 
 \subsubsection{Uses}
 Ranking Algorithm Module (M11) (\ref{mis:RankingAlgorithm})\\
 Graphing Module (M12)  (\ref{mis:GraphingModule})\\
-System API Gateway Module (M10)  (\ref{mis:SystemAPIGateway}) 
+System API Gateway Module (M10)  (\ref{mis:SystemAPIGateway})
 
 \subsubsection{Syntax}
 
@@ -1275,8 +1275,8 @@ visualizeComparison & comparisonTable, chartType & chartObject & RenderError \\
 
 \paragraph{State Variables}
 \begin{itemize}
-  \item \textbf{activeMethod}: string representing the currently selected comparison method.  
-  \item \textbf{comparisonResults}: cached dictionary holding the most recent comparison output.  
+  \item \textbf{activeMethod}: string representing the currently selected comparison method.
+  \item \textbf{comparisonResults}: cached dictionary holding the most recent comparison output.
 \end{itemize}
 
 \paragraph{State Invariant}
@@ -1303,37 +1303,37 @@ visualizeComparison & comparisonTable, chartType & chartObject & RenderError \\
 
 \noindent \textbf{selectComparisonMethod}(methodName):
 \begin{itemize}
-  \item transition: updates \texttt{activeMethod}.  
-  \item output: \texttt{successFlag} = true if method is supported.  
-  \item exception: \texttt{InvalidMethodError} if method not in \texttt{SUPPORTED\_METHODS}.  
+  \item transition: updates \texttt{activeMethod}.
+  \item output: \texttt{successFlag} = true if method is supported.
+  \item exception: \texttt{InvalidMethodError} if method not in \texttt{SUPPORTED\_METHODS}.
 \end{itemize}
 
 \noindent \textbf{computeComparison}(domainSet, metricWeights):
 \begin{itemize}
-  \item transition: requests required metric data via M10 and computes comparison results using the selected method; may delegate scoring/weighting to M11.  
-  \item output: \texttt{comparisonTable} containing ranked and weighted scores.  
-  \item exception: \texttt{ComputationError} if calculation fails or data incomplete.  
+  \item transition: requests required metric data via M10 and computes comparison results using the selected method; may delegate scoring/weighting to M11.
+  \item output: \texttt{comparisonTable} containing ranked and weighted scores.
+  \item exception: \texttt{ComputationError} if calculation fails or data incomplete.
 \end{itemize}
 
 \noindent \textbf{fetchComparisonData}(domainSet):
 \begin{itemize}
-  \item transition: none.  
+  \item transition: none.
   \item output: retrieves the metric data required to compare all entities in \texttt{domainSet}.
   \item exception: \texttt{DataAccessError} if data cannot be retrieved through M10.
 \end{itemize}
 
 \noindent \textbf{visualizeComparison}(comparisonTable, chartType):
 \begin{itemize}
-  \item transition: renders visual representation of results via M12.  
-  \item output: \texttt{chartObject} representing the visualization of \texttt{comparisonTable}. 
-  \item exception: \texttt{RenderError} if graph generation fails.  
+  \item transition: renders visual representation of results via M12.
+  \item output: \texttt{chartObject} representing the visualization of \texttt{comparisonTable}.
+  \item exception: \texttt{RenderError} if graph generation fails.
 \end{itemize}
 
 \paragraph{Local Functions}
 \begin{itemize}
-  \item \texttt{normalizeWeights()} — ensures weights sum to 1 before calculation.  
-  \item \texttt{computeAHPMatrix()} — performs pairwise comparisons for AHP method.  
-  \item \texttt{applyBWM()} — computes ranking scores using Best-Worst Method.  
+  \item \texttt{normalizeWeights()} — ensures weights sum to 1 before calculation.
+  \item \texttt{computeAHPMatrix()} — performs pairwise comparisons for AHP method.
+  \item \texttt{applyBWM()} — computes ranking scores using Best-Worst Method.
 \end{itemize}
 
 
@@ -1341,8 +1341,8 @@ visualizeComparison & comparisonTable, chartType & chartObject & RenderError \\
 \label{mis:Configuration}
 
 \subsubsection{Module}
-Implements the logic for storing, retrieving, and updating configuration data associated with each authenticated user.  
-This includes user preferences such as selected visualization settings, default domain filters, notification preferences, and saved comparison parameters.  
+Implements the logic for storing, retrieving, and updating configuration data associated with each authenticated user.
+This includes user preferences such as selected visualization settings, default domain filters, notification preferences, and saved comparison parameters.
 It interacts with M5 (User Authentication) to identify the active user and with M17 (Database Persistence Module) for persistent storage of configuration data.
 
 \subsubsection{Uses}
@@ -1378,7 +1378,7 @@ fetchAllConfigs & None & configList & DatabaseError \\
 
 \paragraph{State Variables}
 \begin{itemize}
-  \item \textbf{userConfigs}: dictionary mapping each userID to their saved configuration data.  
+  \item \textbf{userConfigs}: dictionary mapping each userID to their saved configuration data.
   \item \textbf{defaultSettings}: dictionary storing global default configuration values.
 \end{itemize}
 
@@ -1394,46 +1394,46 @@ environment configuration values.
 
 \paragraph{Assumptions}
 \begin{itemize}
-  \item Each userID exists and is validated through M5 before configuration access.  
-  \item Configuration data adheres to a predefined JSON schema.  
-  \item Default values are stored within this module and initialized at system startup.  
+  \item Each userID exists and is validated through M5 before configuration access.
+  \item Configuration data adheres to a predefined JSON schema.
+  \item Default values are stored within this module and initialized at system startup.
 \end{itemize}
 
 \paragraph{Access Routine Semantics}
 
 \noindent \textbf{getUserConfig}(userID):
 \begin{itemize}
-  \item transition: none.  
-  \item output: returns configuration settings for the given user.  
-  \item exception: \texttt{DataNotFoundError} if user has no stored configuration.  
+  \item transition: none.
+  \item output: returns configuration settings for the given user.
+  \item exception: \texttt{DataNotFoundError} if user has no stored configuration.
 \end{itemize}
 
 \noindent \textbf{updateUserConfig}(userID, configData):
 \begin{itemize}
-  \item transition: updates stored configuration for the given user in the database.  
-  \item output: \texttt{successFlag} = true if update is successful.  
-  \item exception: \texttt{WriteError} if database transaction fails.  
+  \item transition: updates stored configuration for the given user in the database.
+  \item output: \texttt{successFlag} = true if update is successful.
+  \item exception: \texttt{WriteError} if database transaction fails.
 \end{itemize}
 
 \noindent \textbf{resetToDefaults}(userID):
 \begin{itemize}
-  \item transition: resets all stored configuration to default values.  
-  \item output: \texttt{configData} reflecting the defaults.  
-  \item exception: none.  
+  \item transition: resets all stored configuration to default values.
+  \item output: \texttt{configData} reflecting the defaults.
+  \item exception: none.
 \end{itemize}
 
 \noindent \textbf{fetchAllConfigs}():
 \begin{itemize}
-  \item transition: none.  
-  \item output: list of all stored configuration records for administrative view.  
-  \item exception: \texttt{DatabaseError} if persistence retrieval fails. 
+  \item transition: none.
+  \item output: list of all stored configuration records for administrative view.
+  \item exception: \texttt{DatabaseError} if persistence retrieval fails.
 \end{itemize}
 
 \paragraph{Local Functions}
 \begin{itemize}
-  \item \texttt{validateConfigSchema()} — ensures submitted configuration matches the JSON schema.  
-  \item \texttt{mergeDefaults()} — merges user-provided configuration with stored defaults.  
-  \item \texttt{logConfigChange()} — records modification timestamps for audit purposes.  
+  \item \texttt{validateConfigSchema()} — ensures submitted configuration matches the JSON schema.
+  \item \texttt{mergeDefaults()} — merges user-provided configuration with stored defaults.
+  \item \texttt{logConfigChange()} — records modification timestamps for audit purposes.
 \end{itemize}
 
 
@@ -1507,9 +1507,9 @@ buildResponse & serviceOutput & response & SerializeError \\
 
 \paragraph{Assumptions}
 \begin{itemize}
-  \item All endpoints conform to REST conventions (GET, POST, PUT, DELETE).  
-  \item Network connections are encrypted via HTTPS.  
-  \item Frontend tokens are validated by M5 (User Authentication Module).  
+  \item All endpoints conform to REST conventions (GET, POST, PUT, DELETE).
+  \item Network connections are encrypted via HTTPS.
+  \item Frontend tokens are validated by M5 (User Authentication Module).
   \item The backend is executed using standard server entry points (development runner and WSGI/ASGI deployment interfaces).
 \end{itemize}
 
@@ -1608,8 +1608,8 @@ getTopPackages & normalizedTable, limit & rankedList & None \\
 
 \paragraph{State Variables}
 \begin{itemize}
-  \item \textbf{criteriaMatrix}: matrix of pairwise criteria comparisons.  
-  \item \textbf{normalizedScores}: vector of final ranking results.  
+  \item \textbf{criteriaMatrix}: matrix of pairwise criteria comparisons.
+  \item \textbf{normalizedScores}: vector of final ranking results.
 \end{itemize}
 
 \paragraph{State Invariant}
@@ -1624,9 +1624,9 @@ environment configuration values.
 
 \paragraph{Assumptions}
 \begin{itemize}
-  \item Criteria weights are positive and consistent within the threshold.  
-  \item All metric inputs are validated prior to ranking.  
-  \item The consistency ratio for pairwise comparisons does not exceed \texttt{CONSISTENCY\_THRESHOLD}.  
+  \item Criteria weights are positive and consistent within the threshold.
+  \item All metric inputs are validated prior to ranking.
+  \item The consistency ratio for pairwise comparisons does not exceed \texttt{CONSISTENCY\_THRESHOLD}.
 \end{itemize}
 
 \paragraph{Access Routine Semantics}
@@ -1634,36 +1634,36 @@ environment configuration values.
 \noindent \textbf{computeRankScores}(metricsTable, userWeights):
 \begin{itemize}
   \item transition: constructs a weighted decision matrix using the selected ranking method.
-  \item output: \texttt{rankTable} — ranked list of packages or domains.  
-  \item exception: \texttt{InvalidMetricError} if metrics missing or inconsistent.  
+  \item output: \texttt{rankTable} — ranked list of packages or domains.
+  \item exception: \texttt{InvalidMetricError} if metrics missing or inconsistent.
 \end{itemize}
 
 \noindent \textbf{applyAHPWeights}(criteriaMatrix):
 \begin{itemize}
-  \item transition: applies pairwise weights to compute priority vectors.  
-  \item output: \texttt{weightedMatrix}.  
-  \item exception: \texttt{MatrixError} if dimensions invalid or inconsistent.  
+  \item transition: applies pairwise weights to compute priority vectors.
+  \item output: \texttt{weightedMatrix}.
+  \item exception: \texttt{MatrixError} if dimensions invalid or inconsistent.
 \end{itemize}
 
 \noindent \textbf{normalizeScores}(rankTable):
 \begin{itemize}
-  \item transition: rescales scores so total weight = 1.  
-  \item output: normalized score table.  
-  \item exception: \texttt{NormalizationError} if division by 0 or invalid data.  
+  \item transition: rescales scores so total weight = 1.
+  \item output: normalized score table.
+  \item exception: \texttt{NormalizationError} if division by 0 or invalid data.
 \end{itemize}
 
 \noindent \textbf{getTopPackages}(normalizedTable, limit):
 \begin{itemize}
-  \item transition: none.  
-  \item output: top-\(n\) ranked packages.  
-  \item exception: none.  
+  \item transition: none.
+  \item output: top-\(n\) ranked packages.
+  \item exception: none.
 \end{itemize}
 
 \paragraph{Local Functions}
 \begin{itemize}
-  \item \texttt{checkConsistency()} — calculates consistency ratio for AHP matrices.  
-  \item \texttt{aggregateWeights()} — merges user-defined and default weight sets.  
-  \item \texttt{normalizeVector()} — scales weight vectors for comparison output.  
+  \item \texttt{checkConsistency()} — calculates consistency ratio for AHP matrices.
+  \item \texttt{aggregateWeights()} — merges user-defined and default weight sets.
+  \item \texttt{normalizeVector()} — scales weight vectors for comparison output.
 \end{itemize}
 
 
@@ -1711,8 +1711,8 @@ renderComparisonPlot & domainMetrics, metricType & comparisonImage & DataError \
 
 \paragraph{State Variables}
 \begin{itemize}
-  \item \textbf{currentGraph}: last generated Matplotlib figure object.  
-  \item \textbf{styleConfig}: dictionary storing current theme and formatting options.  
+  \item \textbf{currentGraph}: last generated Matplotlib figure object.
+  \item \textbf{styleConfig}: dictionary storing current theme and formatting options.
 \end{itemize}
 
 \paragraph{State Invariant}
@@ -1730,9 +1730,9 @@ renderComparisonPlot & domainMetrics, metricType & comparisonImage & DataError \
 
 \paragraph{Assumptions}
 \begin{itemize}
-  \item Input datasets contain numeric or categorical values compatible with Matplotlib.  
-  \item Configuration settings comply with Matplotlib formatting constraints.  
-  \item Graph generation occurs on the backend before transfer to the frontend for rendering.  
+  \item Input datasets contain numeric or categorical values compatible with Matplotlib.
+  \item Configuration settings comply with Matplotlib formatting constraints.
+  \item Graph generation occurs on the backend before transfer to the frontend for rendering.
 \end{itemize}
 
 \paragraph{Access Routine Semantics}
@@ -1740,36 +1740,36 @@ renderComparisonPlot & domainMetrics, metricType & comparisonImage & DataError \
 \noindent \textbf{generateGraph}(metricData, graphType, config):
 \begin{itemize}
   \item transition: generates a visualization according to \texttt{graphType} and \texttt{config}.
-  \item output: \texttt{graphImage} representing the rendered visualization. 
-  \item exception: \texttt{GraphError} if data invalid or plotting fails.  
+  \item output: \texttt{graphImage} representing the rendered visualization.
+  \item exception: \texttt{GraphError} if data invalid or plotting fails.
 \end{itemize}
 
 \noindent \textbf{updateGraphStyle}(styleParams):
 \begin{itemize}
-  \item transition: updates \texttt{styleConfig} (color scheme, font, size).  
-  \item output: \texttt{successFlag} = true if update applied.  
-  \item exception: \texttt{StyleError} if parameters are unsupported.  
+  \item transition: updates \texttt{styleConfig} (color scheme, font, size).
+  \item output: \texttt{successFlag} = true if update applied.
+  \item exception: \texttt{StyleError} if parameters are unsupported.
 \end{itemize}
 
 \noindent \textbf{exportGraph}(graphImage, format, fileName):
 \begin{itemize}
-  \item transition: writes \texttt{graphImage} to persistent storage in the requested format. 
-  \item output: \texttt{exportPath} of saved image.  
-  \item exception: \texttt{ExportError} if write operation fails.  
+  \item transition: writes \texttt{graphImage} to persistent storage in the requested format.
+  \item output: \texttt{exportPath} of saved image.
+  \item exception: \texttt{ExportError} if write operation fails.
 \end{itemize}
 
 \noindent \textbf{renderComparisonPlot}(domainMetrics, metricType):
 \begin{itemize}
-  \item transition: overlays multiple data series for comparative visualization.  
-  \item output: \texttt{comparisonImage} — rendered comparative plot.  
-  \item exception: \texttt{DataError} if inconsistent metric arrays are provided.  
+  \item transition: overlays multiple data series for comparative visualization.
+  \item output: \texttt{comparisonImage} — rendered comparative plot.
+  \item exception: \texttt{DataError} if inconsistent metric arrays are provided.
 \end{itemize}
 
 \paragraph{Local Functions}
 \begin{itemize}
-  \item \texttt{normalizeData()} — ensures all metric values are scaled before plotting.  
-  \item \texttt{applyTheme()} — applies style configuration globally.  
-  \item \texttt{cleanTemporaryArtifacts()} — removes temporary visualization artifacts after export. 
+  \item \texttt{normalizeData()} — ensures all metric values are scaled before plotting.
+  \item \texttt{applyTheme()} — applies style configuration globally.
+  \item \texttt{cleanTemporaryArtifacts()} — removes temporary visualization artifacts after export.
 \end{itemize}
 
 
@@ -1815,8 +1815,8 @@ getImportSummary & dataFrame & summaryDict & None \\
 
 \paragraph{State Variables}
 \begin{itemize}
-  \item \textbf{lastImportedFile}: path or identifier of the last processed file.  
-  \item \textbf{importStatus}: status flag indicating the most recent operation result.  
+  \item \textbf{lastImportedFile}: path or identifier of the last processed file.
+  \item \textbf{importStatus}: status flag indicating the most recent operation result.
 \end{itemize}
 
 \paragraph{State Invariant}
@@ -1834,9 +1834,9 @@ getImportSummary & dataFrame & summaryDict & None \\
 
 \paragraph{Assumptions}
 \begin{itemize}
-  \item Uploaded files conform to the system’s schema and naming conventions.  
-  \item File size and encoding are supported and within defined constraints.  
-  \item Invalid rows are filtered out and logged, not silently dropped.  
+  \item Uploaded files conform to the system’s schema and naming conventions.
+  \item File size and encoding are supported and within defined constraints.
+  \item Invalid rows are filtered out and logged, not silently dropped.
 \end{itemize}
 
 \paragraph{Access Routine Semantics}
@@ -1844,15 +1844,15 @@ getImportSummary & dataFrame & summaryDict & None \\
 \noindent \textbf{parseFile}(filePath, fileType):
 \begin{itemize}
   \item transition: reads the input file and transforms it into a structured dataset representation.
-  \item output: \texttt{dataFrame} containing structured data.  
-  \item exception: \texttt{ParseError} if the file cannot be opened or parsed.  
+  \item output: \texttt{dataFrame} containing structured data.
+  \item exception: \texttt{ParseError} if the file cannot be opened or parsed.
 \end{itemize}
 
 \noindent \textbf{validateImportedData}(dataFrame):
 \begin{itemize}
-  \item transition: checks for required fields and data-type consistency.  
-  \item output: Boolean indicating whether validation succeeded.  
-  \item exception: \texttt{ValidationError} if mandatory columns are missing or invalid types detected.  
+  \item transition: checks for required fields and data-type consistency.
+  \item output: Boolean indicating whether validation succeeded.
+  \item exception: \texttt{ValidationError} if mandatory columns are missing or invalid types detected.
 \end{itemize}
 
 \noindent \textbf{storeImportedData}(dataFrame):
@@ -1865,16 +1865,16 @@ getImportSummary & dataFrame & summaryDict & None \\
 
 \noindent \textbf{getImportSummary}(dataFrame):
 \begin{itemize}
-  \item transition: none.  
-  \item output: \texttt{summaryDict} — total rows processed, valid, invalid, and stored.  
-  \item exception: none.  
+  \item transition: none.
+  \item output: \texttt{summaryDict} — total rows processed, valid, invalid, and stored.
+  \item exception: none.
 \end{itemize}
 
 \paragraph{Local Functions}
 \begin{itemize}
-  \item \texttt{cleanColumnNames()} — standardizes column names to match system schema.  
-  \item \texttt{detectDelimiter()} — determines delimiter automatically for CSV files.  
-  \item \texttt{logImportActivity()} — records metadata of each file import for traceability.  
+  \item \texttt{cleanColumnNames()} — standardizes column names to match system schema.
+  \item \texttt{detectDelimiter()} — determines delimiter automatically for CSV files.
+  \item \texttt{logImportActivity()} — records metadata of each file import for traceability.
 \end{itemize}
 
 
@@ -1920,8 +1920,8 @@ getExportSummary & filePath & summaryDict & None \\
 
 \paragraph{State Variables}
 \begin{itemize}
-  \item \textbf{exportStatus}: status flag of the latest export operation.  
-  \item \textbf{lastExportFile}: file name of the most recently generated export.  
+  \item \textbf{exportStatus}: status flag of the latest export operation.
+  \item \textbf{lastExportFile}: file name of the most recently generated export.
 \end{itemize}
 
 \paragraph{State Invariant}
@@ -1937,9 +1937,9 @@ getExportSummary & filePath & summaryDict & None \\
 
 \paragraph{Assumptions}
 \begin{itemize}
-  \item Data requested for export is already validated and normalized.  
-  \item User export requests specify supported formats only.  
-  \item The file system path \texttt{EXPORT\_DIRECTORY} is writable by the application.  
+  \item Data requested for export is already validated and normalized.
+  \item User export requests specify supported formats only.
+  \item The file system path \texttt{EXPORT\_DIRECTORY} is writable by the application.
 \end{itemize}
 
 \paragraph{Access Routine Semantics}
@@ -1968,16 +1968,16 @@ getExportSummary & filePath & summaryDict & None \\
 
 \noindent \textbf{getExportSummary}(filePath):
 \begin{itemize}
-  \item transition: none.  
-  \item output: \texttt{summaryDict} — includes file name, record count, and format.  
-  \item exception: none.  
+  \item transition: none.
+  \item output: \texttt{summaryDict} — includes file name, record count, and format.
+  \item exception: none.
 \end{itemize}
 
 \paragraph{Local Functions}
 \begin{itemize}
-  \item \texttt{sanitizeFileName()} — ensures export file names are safe and standardized.  
-  \item \texttt{splitLargeExports()} — divides large datasets into multiple files if row limit exceeded.  
-  \item \texttt{logExportActivity()} — records export metadata for auditing.  
+  \item \texttt{sanitizeFileName()} — ensures export file names are safe and standardized.
+  \item \texttt{splitLargeExports()} — divides large datasets into multiple files if row limit exceeded.
+  \item \texttt{logExportActivity()} — records export metadata for auditing.
 \end{itemize}
 
 
@@ -1985,8 +1985,8 @@ getExportSummary & filePath & summaryDict & None \\
 \label{mis:RepositoryAPIModule}
 
 \subsubsection{Module}
-Provides an interface for interacting with external repository APIs such as GitHub, GitLab, and PyPI.  
-This module retrieves repository metadata and metric data (e.g., stars, forks, issues, commits) required for domain analysis.  
+Provides an interface for interacting with external repository APIs such as GitHub, GitLab, and PyPI.
+This module retrieves repository metadata and metric data (e.g., stars, forks, issues, commits) required for domain analysis.
 It handles authentication, rate limiting, and response parsing before returning validated data to internal modules.
 
 \subsubsection{Uses}
@@ -2020,8 +2020,8 @@ handleRateLimit & responseHeaders & delaySeconds & RateLimitError \\
 
 \paragraph{State Variables}
 \begin{itemize}
-  \item \textbf{authToken}: authentication key for accessing external APIs.  
-  \item \textbf{lastResponseStatus}: HTTP status code of the most recent request.  
+  \item \textbf{authToken}: authentication key for accessing external APIs.
+  \item \textbf{lastResponseStatus}: HTTP status code of the most recent request.
 \end{itemize}
 
 \paragraph{State Invariant}
@@ -2047,30 +2047,30 @@ handleRateLimit & responseHeaders & delaySeconds & RateLimitError \\
 
 \noindent \textbf{setAuthToken}(token):
 \begin{itemize}
-  \item transition: sets a new authentication token for subsequent API calls.  
-  \item output: \texttt{successFlag} = true if token successfully stored.  
-  \item exception: \texttt{AuthError} if token invalid or missing permissions.  
+  \item transition: sets a new authentication token for subsequent API calls.
+  \item output: \texttt{successFlag} = true if token successfully stored.
+  \item exception: \texttt{AuthError} if token invalid or missing permissions.
 \end{itemize}
 
 \noindent \textbf{fetchRepoMetadata}(packageID):
 \begin{itemize}
   \item transition: requests repository metadata from an external repository service.
-  \item output: \texttt{repoData} containing repository metadata attributes.    
-  \item exception: \texttt{APIError} if request fails or JSON malformed.  
+  \item output: \texttt{repoData} containing repository metadata attributes.
+  \item exception: \texttt{APIError} if request fails or JSON malformed.
 \end{itemize}
 
 \noindent \textbf{fetchRepoMetrics}(packageID, metricList):
 \begin{itemize}
   \item transition: requests the specified metrics for the repository from an external service.
   \item output: \texttt{metricsData} containing retrieved metric values.
-  \item exception: \texttt{APIError} if any metric endpoint fails or rate-limited.  
+  \item exception: \texttt{APIError} if any metric endpoint fails or rate-limited.
 \end{itemize}
 
 \noindent \textbf{handleRateLimit}(responseHeaders):
 \begin{itemize}
-  \item transition: calculates required delay based on rate-limit headers.  
-  \item output: \texttt{delaySeconds} = integer number of seconds to wait.  
-  \item exception: \texttt{RateLimitError} if headers missing or malformed.  
+  \item transition: calculates required delay based on rate-limit headers.
+  \item output: \texttt{delaySeconds} = integer number of seconds to wait.
+  \item exception: \texttt{RateLimitError} if headers missing or malformed.
 \end{itemize}
 
 \paragraph{Local Functions}
@@ -2262,9 +2262,9 @@ archiveLogs & None & successFlag & ArchiveError \\
 
 \paragraph{Assumptions}
 \begin{itemize}
-  \item File system permissions allow append and rotation of log files.  
-  \item Log directory structure already exists and is writable by the application.  
-  \item Critical events (ERROR, CRITICAL) are monitored through external observability tools if configured.  
+  \item File system permissions allow append and rotation of log files.
+  \item Log directory structure already exists and is writable by the application.
+  \item Critical events (ERROR, CRITICAL) are monitored through external observability tools if configured.
 \end{itemize}
 
 \paragraph{Project Configuration Note}
@@ -2279,9 +2279,9 @@ If \texttt{fileName = None}, the implementation shall use \texttt{app.log}.
 
 \noindent \textbf{initLogger}(logConfig):
 \begin{itemize}
-  \item transition: initializes the logger with parameters defined in logConfig.  
-  \item output: \texttt{successFlag} = true if initialization succeeds.  
-  \item exception: \texttt{ConfigError} if logConfig invalid or missing keys.  
+  \item transition: initializes the logger with parameters defined in logConfig.
+  \item output: \texttt{successFlag} = true if initialization succeeds.
+  \item exception: \texttt{ConfigError} if logConfig invalid or missing keys.
 \end{itemize}
 
 \noindent \textbf{logEvent}(message, level, context):
@@ -2309,9 +2309,9 @@ If \texttt{fileName = None}, the implementation shall use \texttt{app.log}.
 
 \noindent \textbf{archiveLogs}():
 \begin{itemize}
-  \item transition: compresses and rotates existing log files once they exceed \texttt{MAX\_LOG\_SIZE\_MB}.  
-  \item output: \texttt{successFlag} = true if archiving succeeds.  
-  \item exception: \texttt{ArchiveError} if file rotation fails.  
+  \item transition: compresses and rotates existing log files once they exceed \texttt{MAX\_LOG\_SIZE\_MB}.
+  \item output: \texttt{successFlag} = true if archiving succeeds.
+  \item exception: \texttt{ArchiveError} if file rotation fails.
 \end{itemize}
 
 \paragraph{Local Functions}
@@ -2353,42 +2353,42 @@ graduate attribute of Problem Analysis and Design.
 \input{../../Reflection.tex}
 
 \begin{enumerate}
-  \item What went well while writing this deliverable? 
-  
-  Awurama: We had a clear module hierarchy and strong alignment with the MG, 
+  \item What went well while writing this deliverable?
+
+  Awurama: We had a clear module hierarchy and strong alignment with the MG,
   which made structuring each MIS section easier. Collaboration and consistency across modules also improved clarity.
-  
+
   \item What pain points did you experience during this deliverable, and how
     did you resolve them?
-  
-  Awurama: Managing LaTeX formatting, especially tables and long text, was time-consuming. 
+
+  Awurama: Managing LaTeX formatting, especially tables and long text, was time-consuming.
   We fixed these by using the tabularx package and standardizing our template for all modules.
-  
+
   \item Which of your design decisions stemmed from speaking to your client(s)
   or a proxy (e.g. your peers, stakeholders, potential users)? For those that
   were not, why, and where did they come from?
-  
-  Awurama: Most design choices came from client discussions with Dr. Smith and feedback from peers. 
-  For example, decisions on automation scope, ranking algorithms, 
+
+  Awurama: Most design choices came from client discussions with Dr. Smith and feedback from peers.
+  For example, decisions on automation scope, ranking algorithms,
   and database structure came directly from those conversations.
-  
+
   \item While creating the design doc, what parts of your other documents (e.g.
   requirements, hazard analysis, etc), it any, needed to be changed, and why?
-  
+
   Awurama: We refined sections of the SRS and MG for consistency,
   mainly updating module responsibilities and interfaces to match the finalized MIS content.
-  
+
   \item What are the limitations of your solution?  Put another way, given
   unlimited resources, what could you do to make the project better? (LO\_ProbSolutions)
-  
-  Awurama: Limited time and resources meant we couldn’t build full scalability or advanced automation. 
+
+  Awurama: Limited time and resources meant we couldn’t build full scalability or advanced automation.
   With more resources, we’d expand integration testing, optimize APIs, and improve real-time analytics.
-  
+
   \item Give a brief overview of other design solutions you considered.  What
   are the benefits and tradeoffs of those other designs compared with the chosen
   design?  From all the potential options, why did you select the documented design?
-  
-  Awurama: We considered using a non-relational database and different frontend frameworks but chose Django/MySQL and React 
+
+  Awurama: We considered using a non-relational database and different frontend frameworks but chose Django/MySQL and React
   for reliability and maintainability. Alternatives offered flexibility but added complexity and reduced team familiarity.
 
   (LO\_Explores)
@@ -2398,25 +2398,25 @@ graduate attribute of Problem Analysis and Design.
 
   Implementing team 25's module was very manageable because the MIS clearly listed the exported constants and exported access
   programs which gave a strong starting point for the structure and naming. The most helpful part of the MIS was the access routine,
-  since it clearly stated the expected conversion approach (repeated division and remainder for decimal to dozenal, 
-  and the positional evaluation for dozenal to decimals). The main challenge i think however was that the MIS did not fully define the allowed 
-  digit-symbol mapping for the two extra dozenal digits beyond 0-9, so some of the implementation choices made required assumptions 
-  to a level (e.g., choosing \texttt{X} and \texttt{E} as canonical symbols and supporting alternate inputs). 
+  since it clearly stated the expected conversion approach (repeated division and remainder for decimal to dozenal,
+  and the positional evaluation for dozenal to decimals). The main challenge i think however was that the MIS did not fully define the allowed
+  digit-symbol mapping for the two extra dozenal digits beyond 0-9, so some of the implementation choices made required assumptions
+  to a level (e.g., choosing \texttt{X} and \texttt{E} as canonical symbols and supporting alternate inputs).
   Another difficulty was deciding how strict i should make normalization, especially around things like handling whitespace, casing, optional
-  plus signs, and the leading zeros. 
+  plus signs, and the leading zeros.
 
   To improve implementability, the MIS could include explicit examples of valid and invalid dozenal
   strings, plus sample inputs and outputs for each access program (including edge cases like 0, negative numbers, and error
-  strings). This process really helped to reinforce the importance of specifying specific or rather strict input validation rules and canonical formatting 
-  expectations inside the MIS so people implementing do not rely on interpretation or assumption (but i guess you always have to to some extent). 
+  strings). This process really helped to reinforce the importance of specifying specific or rather strict input validation rules and canonical formatting
+  expectations inside the MIS so people implementing do not rely on interpretation or assumption (but i guess you always have to to some extent).
   Overall, implementing this module helped confirm
   how small missing details in a specification can affect consistency across different implementations, but a good MIS can still make implementation manageable.
 
   \paragraph{Reflection on Another Team's Implementation (M18).}
-  Team 22's implementation of our M18 Logging Module mostly matched the MIS well (same exported access programs, exceptions, 
-  log levels, \texttt{LogEntry} fields, and the \texttt{logEvent} threshold behavior). The main issue 
+  Team 22's implementation of our M18 Logging Module mostly matched the MIS well (same exported access programs, exceptions,
+  log levels, \texttt{LogEntry} fields, and the \texttt{logEvent} threshold behavior). The main issue
   I noticed was around \texttt{archiveLogs()} when using \texttt{RotatingFileHandler}: rotation can happen automatically
-   during logging, which can make \texttt{archiveLogs()} do nothing afterward because \texttt{app.log} becomes small again. 
+   during logging, which can make \texttt{archiveLogs()} do nothing afterward because \texttt{app.log} becomes small again.
    This showed me that the MIS needs to be more explicit about how archiving should work with automatic rotation and how
     compression/retention should be handled (for example, whether compression happens during rollover, and how backups are
      kept and named).

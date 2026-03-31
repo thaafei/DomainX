@@ -1,5 +1,7 @@
-from django.db import models
 import uuid
+
+from django.db import models
+
 
 class Metric(models.Model):
     VALUE_TYPES = [
@@ -28,7 +30,9 @@ class Metric(models.Model):
     option_category = models.CharField(max_length=100, blank=True, null=True)
     rule = models.CharField(max_length=100, blank=True, null=True)
     value_type = models.CharField(max_length=10, choices=VALUE_TYPES, default="float")
-    source_type = models.CharField(max_length=20, choices=SOURCE_TYPES, default="manual")
+    source_type = models.CharField(
+        max_length=20, choices=SOURCE_TYPES, default="manual"
+    )
     metric_key = models.CharField(max_length=100, blank=True, null=True)
     created_at = models.DateTimeField(auto_now_add=True)
     scoring_dict = models.JSONField(default=dict, blank=True, null=True)

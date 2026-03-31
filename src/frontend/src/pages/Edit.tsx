@@ -270,7 +270,7 @@ const EditValuesPage: React.FC = () => {
 
     const isDescription = metric.endsWith("_description");
     const metricObj = metricList.find((m) => m.metric_name === metric);
-    
+
     if (metricObj && !isDescription && !isEvidence) {
       const error = validateMetricValue(metricObj, value);
       setFieldErrors((prev) => {
@@ -302,7 +302,7 @@ const EditValuesPage: React.FC = () => {
           headers: { "Content-Type": "application/json" },
           credentials: "include",
           body: JSON.stringify({
-            metrics: row.metrics, 
+            metrics: row.metrics,
           }),
         }
       );

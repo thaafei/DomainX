@@ -6,9 +6,9 @@ interface AuthLoaderProps {
   fallback?: React.ReactNode;
 }
 
-export const AuthLoader: React.FC<AuthLoaderProps> = ({ 
-  children, 
-  fallback = <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100vh', color: 'white' }}>Loading...</div> 
+export const AuthLoader: React.FC<AuthLoaderProps> = ({
+  children,
+  fallback = <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100vh', color: 'white' }}>Loading...</div>
 }) => {
   const { checkAuth, isLoading, user } = useAuthStore();
   const [initialCheckDone, setInitialCheckDone] = useState(false);
@@ -18,7 +18,7 @@ export const AuthLoader: React.FC<AuthLoaderProps> = ({
       await checkAuth();
       setInitialCheckDone(true);
     };
-    
+
     if (!initialCheckDone) {
       verifyAuth();
     }

@@ -70,7 +70,7 @@ October 6, 2025  & Whole team & Initial v0 Draft\\
 This Hazard Analysis identifies and evaluates potential risks associated with
 the Neural Network Libraries (NNL) Assessment Tool, a web-based application that
 automates evidence collection, data storage, and visualization for assessing
-open-source neural network libraries. 
+open-source neural network libraries.
 
 In this context, a hazard is defined as any condition, event, or design
 decision that could lead to loss of data integrity, software malfunction,
@@ -138,25 +138,25 @@ The following assumptions support hazard identification and mitigation:
     \item \textbf{Access to Public APIs:} It is assumed that GitHub API and other
     data sources will remain stable; however, if access limits or outages occur,
     fallback mechanisms (e.g., cached data, manual upload) will be implemented.
-    
+
     \item \textbf{McMaster Infrastructure Availability:} University servers will
     host the tool; if unavailable, contingency hosting (local or alternative
     cloud) will be explored.
-    
+
     \item \textbf{Stable Development Team:} All members remain active; if a
     member becomes unavailable, roles and documentation ensure continuity.
-    
+
     \item \textbf{Non-Safety-Critical Context:} Hazards relate to data and
     usability, not physical harm, but errors could still cause loss of
     credibility or project delays.
-    
+
     \item \textbf{Defined Scope and Requirements:} Requirements remain stable;
     changes will trigger re-assessment of risks.
-    
+
     \item \textbf{Version Control and Standards:} Git workflow reduces
     integration errors, though merge conflicts remain possible; peer reviews
     mitigate these.
-    
+
     \item \textbf{User Feedback Availability:} Testing feedback will be
     accessible; if delayed, internal testing will substitute temporarily.
 \end{itemize}
@@ -168,24 +168,24 @@ The following contain our Failure Mode and Effect Analysis table is a breakdown 
   \begin{longtable}{|p{2cm}|p{4cm}|p{4cm}|p{4cm}|p{4cm}|p{2cm}|p{2cm}|}
   \caption{Failure Mode and Effect Analysis} \label{FMEA}\\
   \hline
-   Component & Failure Modes & Effects of Failure & Causes of Failure & Recommended Action & SR & Ref.  \\ 
+   Component & Failure Modes & Effects of Failure & Causes of Failure & Recommended Action & SR & Ref.  \\
   \hline
   \endfirsthead
-  \multicolumn{7}{r}{Table \thetable\ Continued from previous page}\\ 
+  \multicolumn{7}{r}{Table \thetable\ Continued from previous page}\\
   \hline
-   Design Function & Failure Modes & Effects of Failure & Causes of Failure & Recommended Action & SR & Ref.  \\ 
+   Design Function & Failure Modes & Effects of Failure & Causes of Failure & Recommended Action & SR & Ref.  \\
   \hline
   \endhead
   \multicolumn{7}{r}{{Continued on next page}}\\
   \endfoot
   \multicolumn{7}{r}{{Concluded}}\\
   \endlastfoot
-  \multirow{7}{*}{User account} & 
+  \multirow{7}{*}{User account} &
   \begin{enumerate}[leftmargin=*]
     \item User can't login/sign-up.
     \item Cannot set correct role for user.
     \item User account information is leaked.
-  \end{enumerate} & 
+  \end{enumerate} &
   \begin{enumerate}[leftmargin=*]
     \item User cannot access their work.
     \item Refer to H1-1.
@@ -201,14 +201,14 @@ The following contain our Failure Mode and Effect Analysis table is a breakdown 
     \item Weak access controls, lack of encryption, or insecure credentials.
   \end{enumerate} &
   \begin{enumerate}[leftmargin=*]
-    \item 
+    \item
     \begin{enumerate}
         \item[a)] Implement automated daily system integration testing.
         \item[b)] Provide user feedback during user actions.
         \item[c)] Provide option for resetting credentials.
     \end{enumerate}
     \item Refer to H1-1.a, H1-1.b, H1-1.c.
-    \item 
+    \item
     \begin{enumerate}
         \item[a)] Implement authentication techniques and follow industry best practices for security.
         \item[b)] Validate inputs for common security vulnerabilities, such as SQL injections.
@@ -225,11 +225,11 @@ The following contain our Failure Mode and Effect Analysis table is a breakdown 
     \item H1-3
   \end{enumerate} \\
   \hline
-  \multirow{7}{*}{\makecell{Domain\\Creation}} & 
+  \multirow{7}{*}{\makecell{Domain\\Creation}} &
   \begin{enumerate}[leftmargin=*]
       \item Cannot create new domains
       \item Cannot edit existing domain
-  \end{enumerate} & 
+  \end{enumerate} &
   \begin{enumerate}[leftmargin=*]
     \item
     \begin{enumerate}
@@ -262,17 +262,17 @@ The following contain our Failure Mode and Effect Analysis table is a breakdown 
        \item H2-2
   \end{enumerate} \\
   \hline
-  \multirow{7}{*}{\makecell{Adding Data\\to a Domain}} & 
+  \multirow{7}{*}{\makecell{Adding Data\\to a Domain}} &
   \begin{enumerate}[leftmargin=*]
       \item User cannot add new data point
       \item User cannot update existing data point
       \item Automated process overwriting user data unknowingly
       \item Automated data input failure
-  \end{enumerate} & 
+  \end{enumerate} &
   \begin{enumerate}[leftmargin=*]
       \item Refer to H2-1.a, H2-1.b.
       \item Refer to H2-1.a, H2-1.b.
-      \item Refer to H2-1.a, H2-1.b 
+      \item Refer to H2-1.a, H2-1.b
       \begin{enumerate}
         \item[a)] Loss of user trust towards the tool
     \end{enumerate}
@@ -288,7 +288,7 @@ The following contain our Failure Mode and Effect Analysis table is a breakdown 
             \item[b)] Save conflict occurring when multiple users are trying to edit the same data point
         \end{enumerate}
        \item Refer to H1-1.a, H3-1.a, H3-1.b
-       \item 
+       \item
        \begin{enumerate}
             \item[a)] Lack of user training on how automated data points work
             \item[b)] Inadequate user feedback user during system processes
@@ -326,10 +326,10 @@ The following contain our Failure Mode and Effect Analysis table is a breakdown 
     \item H3-4
   \end{enumerate} \\
   \hline
-  \multirow{7}{*}{\makecell{Data\\Visualization}} & 
+  \multirow{7}{*}{\makecell{Data\\Visualization}} &
   \begin{enumerate}[leftmargin=*]
       \item Visualization method does not match data points
-  \end{enumerate} & 
+  \end{enumerate} &
   \begin{enumerate}[leftmargin=*]
       \item Refer to H2-1.b, H3-3.a.
   \end{enumerate} &
@@ -353,11 +353,11 @@ The following contain our Failure Mode and Effect Analysis table is a breakdown 
        \item H4-1
   \end{enumerate} \\
   \hline
-  \multirow{7}{*}{\makecell{Download\\Data}} & 
+  \multirow{7}{*}{\makecell{Download\\Data}} &
   \begin{enumerate}[leftmargin=*]
     \item User unable to download the data/visuals of a domain
     \item Downloaded data/visuals of a domain are corrupted and unusable
-  \end{enumerate} & 
+  \end{enumerate} &
   \begin{enumerate}[leftmargin=*]
       \item Refer to H2-1.b.
       \item Refer to H2-1.b, H3-3.a.
@@ -492,18 +492,18 @@ Some features will be added later as future improvements:
     deliverable, and which did you think of while doing this deliverable? For
     the latter ones (ones you thought of while doing the Hazard Analysis), how
     did they come about?}\\
-    One risk that we've discussed was having multiple people editing the database at the same time. One that we had not discussed before hand was the login failure,i came about since we were looking at all the steps the user will do. 
+    One risk that we've discussed was having multiple people editing the database at the same time. One that we had not discussed before hand was the login failure,i came about since we were looking at all the steps the user will do.
     \item \textbf{Other than the risk of physical harm (some projects may not have any
     appreciable risks of this form), list at least 2 other types of risk in
     software products. Why are they important to consider?} \\
     One of the risks is security, ensuring that only the people permitted to change the database are able to do so,  otherwise there would be no integrity and the project will be null.
-    Another risk is system crashing, this would mean that the system would not be available and in some cases it could mean losing a lot of data. 
+    Another risk is system crashing, this would mean that the system would not be available and in some cases it could mean losing a lot of data.
   \end{enumerate}
 
 \subsection*{Awurama}
 \begin{enumerate}
     \item \textbf{What went well while writing this deliverable?}\\
-    The Hazard Analysis helped me understand how system-level reliability, data integrity, and user experience are tightly connected. What went well was the process of breaking down each part of the system into components and identifying the possible failure modes that could arise from them. 
+    The Hazard Analysis helped me understand how system-level reliability, data integrity, and user experience are tightly connected. What went well was the process of breaking down each part of the system into components and identifying the possible failure modes that could arise from them.
     \item \textbf{What pain points did you experience during this deliverable, and how
     did you resolve them?}\\
     One challenge we faced was ensuring that each hazard was clearly differentiated, some issues such as API downtime or incorrect data imports, could easily overlap between design and operational hazards. We resolved this by mapping each hazard to its related system component and referring back to our FMEA table structure for consistency.
@@ -511,7 +511,7 @@ Some features will be added later as future improvements:
     deliverable, and which did you think of while doing this deliverable? For
     the latter ones (ones you thought of while doing the Hazard Analysis), how
     did they come about?}\\
-    Before starting this deliverable, we had already identified high-level risks such as user login failures, incorrect role assignment, and GitHub API limits. But while completing the Hazard Analysis, we realized that data overwriting during automation and corrupted exports could also cause serious integrity issues. 
+    Before starting this deliverable, we had already identified high-level risks such as user login failures, incorrect role assignment, and GitHub API limits. But while completing the Hazard Analysis, we realized that data overwriting during automation and corrupted exports could also cause serious integrity issues.
     \item \textbf{Other than the risk of physical harm (some projects may not have any
     appreciable risks of this form), list at least 2 other types of risk in
     software products. Why are they important to consider?} \\

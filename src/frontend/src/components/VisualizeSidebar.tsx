@@ -83,9 +83,9 @@ const VisualizeSidebar: React.FC<VisualizeSidebarProps> = ({
     >
       <button
         className="dx-btn dx-btn-outline"
-        style={{ 
-          width: "100%", 
-          fontSize: "0.85rem", 
+        style={{
+          width: "100%",
+          fontSize: "0.85rem",
           textAlign: "center",
           padding: "6px 12px",
           opacity: 0.7,
@@ -103,8 +103,8 @@ const VisualizeSidebar: React.FC<VisualizeSidebarProps> = ({
         <h4 className="dx-vis-title" style={{ paddingBottom: "5px", fontWeight: 600 }}>
           Data Selection
         </h4>
-        
-        
+
+
         <div style={{
           display: "flex",
           gap: 6,
@@ -343,7 +343,7 @@ const VisualizeSidebar: React.FC<VisualizeSidebarProps> = ({
       )}
 
       <div style={{ marginTop: "auto", display: "flex", flexDirection: "column", gap: 10 }}>
-        
+
         <button
           className="dx-btn dx-btn-primary"
           onClick={handleVisualize}

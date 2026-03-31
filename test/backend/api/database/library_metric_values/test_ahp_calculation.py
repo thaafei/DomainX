@@ -78,11 +78,11 @@ def test_ahp_calculations_success(api_client, ahp_qualities):
     # Assertions
     assert response.status_code == status.HTTP_200_OK
     data = response.json()
-    
+
     assert data["domain"] == "AHP Test Domain"
     assert "global_ranking" in data
     assert "TestLib" in data["global_ranking"]
-    
+
     # Verify the object was actually saved in the database
     library.refresh_from_db()
     assert library.ahp_results is not None
@@ -132,7 +132,7 @@ def test_ahp_calculations_with_weighted_categories(api_client, ahp_qualities):
         value_type="numeric",
         rule="default"
     )
-    
+
     library = Library.objects.create(domain=domain, library_name="TestLib")
 
     # Assign values
@@ -155,11 +155,11 @@ def test_ahp_calculations_with_weighted_categories(api_client, ahp_qualities):
     # Assertions
     assert response.status_code == 200
     data = response.json()
-    
+
     # Verify that the response includes details for both categories
     assert "Installability" in data["category_details"]
     assert "Maintainability" in data["category_details"]
-    
+
     # Check that results were saved to the library model
     library.refresh_from_db()
     assert library.ahp_results is not None
@@ -185,7 +185,7 @@ def test_ahp_calculations_with_single_package(api_client, ahp_qualities):
         value_type="numeric",
         rule="default"
     )
-    
+
     library = Library.objects.create(
         domain=domain,
         library_name="OnlyLib"
@@ -211,7 +211,7 @@ def test_ahp_calculations_with_single_package(api_client, ahp_qualities):
 
     assert response.status_code == 200
     data = response.json()
-    
+
     assert "global_ranking" in data
     assert "OnlyLib" in data["global_ranking"]
     # With a single package, the normalized score should be 1.0
@@ -248,7 +248,7 @@ def test_ahp_calculations_with_no_metrics(api_client, ahp_qualities):
 
     assert response.status_code == 200
     data = response.json()
-    
+
     assert "global_ranking" in data
     assert "EmptyLib" in data["global_ranking"]
     # With no metrics, the score should be 0.0
@@ -278,21 +278,21 @@ def test_ahp_calculations_with_equal_weights(api_client, ahp_qualities):
         value_type="numeric",
         rule="default"
     )
-    
+
     maintain_metric = Metric.objects.create(
         metric_name="Code Comments",
         category="Maintainability",
         value_type="numeric",
         rule="default"
     )
-    
+
     reuse_metric = Metric.objects.create(
         metric_name="Modularity",
         category="Reusability",
         value_type="numeric",
         rule="default"
     )
-    
+
     library = Library.objects.create(domain=domain, library_name="TestLib")
 
     # Assign equal values to all metrics
@@ -314,7 +314,7 @@ def test_ahp_calculations_with_equal_weights(api_client, ahp_qualities):
 
     assert response.status_code == 200
     data = response.json()
-    
+
     assert data["global_ranking"]["TestLib"] > 0
 
 
@@ -334,7 +334,7 @@ def test_ahp_calculations_response_structure(api_client, ahp_qualities):
         value_type="numeric",
         rule="default"
     )
-    
+
     library = Library.objects.create(
         domain=domain,
         library_name="TestLib"
@@ -360,18 +360,18 @@ def test_ahp_calculations_response_structure(api_client, ahp_qualities):
 
     assert response.status_code == 200
     data = response.json()
-    
+
     # Check required fields
     assert "domain" in data
     assert "global_ranking" in data
     assert "category_details" in data
-    
+
     # Check that category_details contains the category
     assert "Installability" in data["category_details"]
-    
+
     # Check that global_ranking has the library
     assert "TestLib" in data["global_ranking"]
-    
+
     # Check that values are numbers
     assert isinstance(data["global_ranking"]["TestLib"], (int, float))
 
@@ -385,12 +385,12 @@ def test_ahp_only_uses_paper_qualities(api_client):
         domain_name="AHP Filter Test",
         category_weights={}
     )
-    
+
     lib_a = Library.objects.create(domain=domain, library_name="PackageA")
     lib_b = Library.objects.create(domain=domain, library_name="PackageB")
-    
+
     ahp_qualities = AHPCalculations.PAPER_QUALITIES
-    
+
     ahp_metrics = {}
     for quality in ahp_qualities:
         metric = Metric.objects.create(
@@ -402,7 +402,7 @@ def test_ahp_only_uses_paper_qualities(api_client):
             scoring_dict={}
         )
         ahp_metrics[quality] = metric
-    
+
     non_ahp_qualities = [
         "Popularity",
         "Activity",
@@ -411,7 +411,7 @@ def test_ahp_only_uses_paper_qualities(api_client):
         "Raw Metrics (Measured via scc)",
         "Repo Metrics (Measured via GitHub)"
     ]
-    
+
     non_ahp_metrics = {}
     for quality in non_ahp_qualities:
         metric = Metric.objects.create(
@@ -423,14 +423,14 @@ def test_ahp_only_uses_paper_qualities(api_client):
             scoring_dict={}
         )
         non_ahp_metrics[quality] = metric
-    
+
     for quality, metric in ahp_metrics.items():
         LibraryMetricValue.objects.create(
             library=lib_a,
             metric=metric,
             value="yes"
         )
-    
+
     # Package B: Low scores on AHP qualities (use "no" to get score 0)
     for quality, metric in ahp_metrics.items():
         LibraryMetricValue.objects.create(
@@ -438,7 +438,7 @@ def test_ahp_only_uses_paper_qualities(api_client):
             metric=metric,
             value="no"
         )
-    
+
     for quality, metric in non_ahp_metrics.items():
         LibraryMetricValue.objects.create(
             library=lib_b,
@@ -450,63 +450,63 @@ def test_ahp_only_uses_paper_qualities(api_client):
             metric=metric,
             value="no"
         )
-    
+
     url = reverse("values-ahp", kwargs={"domain_id": domain.domain_ID})
     response = api_client.get(url)
-    
+
     assert response.status_code == status.HTTP_200_OK
     data = response.json()
-    
+
     print("\n=== Categories in response ===")
     print(f"AHP qualities expected: {len(ahp_qualities)}")
     print(f"Non-AHP qualities expected to be filtered: {len(non_ahp_qualities)}")
     print(f"Actual categories in response: {list(data['category_details'].keys())}")
-    
+
     for quality in ahp_qualities:
         assert quality in data["category_details"], \
             f"AHP quality '{quality}' should be in category_details"
-    
+
     for quality in non_ahp_qualities:
         assert quality not in data["category_details"], \
             f"Non-AHP quality '{quality}' should NOT be in category_details"
-    
+
     assert len(data["category_details"]) == len(ahp_qualities)
-    
+
     global_ranking = data["global_ranking"]
-    
+
     print(f"\n=== Global Ranking ===")
     print(f"PackageA: {global_ranking.get('PackageA', 0):.6f}")
     print(f"PackageB: {global_ranking.get('PackageB', 0):.6f}")
-    
+
     assert "PackageA" in global_ranking
     assert "PackageB" in global_ranking
-    
+
     assert global_ranking["PackageA"] > global_ranking["PackageB"], \
         f"PackageA ({global_ranking['PackageA']}) should rank higher than PackageB ({global_ranking['PackageB']})"
-    
+
     assert global_ranking["PackageA"] != global_ranking["PackageB"], \
         "Scores should not be equal - Package A should be better than Package B"
-    
+
     lib_a.refresh_from_db()
     lib_b.refresh_from_db()
-    
+
     print(f"\n=== Saved ahp_results ===")
     print(f"PackageA overall_score: {lib_a.ahp_results.get('overall_score', 0)}")
     print(f"PackageB overall_score: {lib_b.ahp_results.get('overall_score', 0)}")
-    
+
     for quality in ahp_qualities:
         assert quality in lib_a.ahp_results["category_scores"], \
             f"AHP quality '{quality}' should be in saved category_scores"
-    
+
     for quality in non_ahp_qualities:
         assert quality not in lib_a.ahp_results["category_scores"], \
             f"Non-AHP quality '{quality}' should NOT be in saved category_scores"
-    
+
     assert lib_a.ahp_results["overall_score"] > lib_b.ahp_results["overall_score"], \
         "Package A should have higher overall score than Package B in saved results"
-    
+
     score_ratio = global_ranking["PackageA"] / global_ranking["PackageB"]
     print(f"\nScore ratio (PackageA / PackageB): {score_ratio:.2f}")
     assert score_ratio > 1.5, f"Score ratio should be > 1.5, got {score_ratio:.2f}"
-    
+
     print("\n✅ All tests passed: Non-AHP qualities were correctly filtered out and did not affect rankings!")
