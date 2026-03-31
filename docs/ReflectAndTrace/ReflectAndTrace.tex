@@ -2,6 +2,7 @@
 
 \usepackage{tabularx}
 \usepackage{booktabs}
+\usepackage{multicol}
 
 \title{Reflection and Traceability Report on \progname}
 
@@ -18,6 +19,7 @@
 
 \section{Changes in Response to Feedback}
 The below sections are the feedback and response to the feedback throughout the course, grouped by the related documents. Note that feedback in relation to simple styling, spelling or syntax of the documents were excluded.
+
 \plt{Summarize the changes made over the course of the project in response to
 feedback from TAs, the instructor, teammates, other teams, the project
 supervisor (if present), and from user testers.}
@@ -58,10 +60,43 @@ low.}
 
 \section{Extras}
 
-\plt{Summarize the extras that were tackled by this project.  Extras
-can include usability testing, code walkthroughs, user documentation, formal
-proof, GenderMag personas, Design Thinking, etc.  Extras should have already
-been approved by the course instructor as included in your problem statement.}
+Our extra is a research paper on the \href{https://github.com/thaafei/DomainX/blob/main/docs/ResearchReport/StateOfPractice_NLP.pdf}{State of the Practice for Open-Source Neural Network Software}. In this research paper, we identified a shortlist of 28 open-source Neural Network (NN) software packages and measured them across 9 qualities to have a pair-wise comparison using the Analytical Hierarchy Process (AHP).
+\\The 28 libraries are:
+\begin{multicols}{3}
+\begin{itemize}
+    \item Apache MXNet
+    \item Caffe
+    \item Captum
+    \item CatBoost
+    \item Chainer
+    \item CNTK
+    \item cuDF
+    \item DeepLearning4J
+    \item Gensim
+    \item Hugging Face Transformers
+    \item JAX
+    \item Keras
+    \item LightGBM
+    \item MLflow
+    \item NeuroLab
+    \item NLTK
+    \item OpenCV
+    \item Optuna
+    \item PaddlePaddle
+    \item PyTensor
+    \item PyTorch
+    \item PyTorch Geometric
+    \item scikit-learn
+    \item SHAP
+    \item TensorBoard
+    \item TensorFlow
+    \item TorchVision
+    \item XGBoost
+\end{itemize}
+\end{multicols}
+We followed the steps outline in the \href{https://arxiv.org/pdf/2110.11575}{Methodology for Assessing the State of the
+Practice for Domain X} paper. Our addition to the methods outline in the paper was using our tool to accomplish the data collection and comparison portions.
+
 
 \section{Design Iteration (LO11 (PrototypeIterate))}
 
@@ -81,12 +116,17 @@ it led to.}
 
 \section{Economic Considerations (LO23)}
 
-\plt{Is there a market for your product? What would be involved in marketing your
-product? What is your estimate of the cost to produce a version that you could
-sell?  What would you charge for your product?  How many units would you have to
-sell to make money? If your product isn't something that would be sold, like an
-open source project, how would you go about attracting users?  How many potential
-users currently exist?}
+Our project is meant to be an open-source tool to be used for the research community, both active researchers and students.
+
+Currently, we already have one user, the master's student who is researching for the Robotics software domain.
+The number of potential users is at minimum the amount of people who would be researching a domain.
+
+Since our project is open source, marketing efforts would focus on raising awareness rather than selling a product. Strategies could include:
+\begin{enumerate}
+    \item Promoting through word-of-mouth by Dr. Spencer Smith, development team and past users of the tool.
+    \item Presenting our research paper that mentions the use of this tool at academic conferences.
+    \item Posting online about our tool for anyone who is interested in seeing the results of this type of research.
+\end{enumerate}
 
 \section{Reflection on Project Management (LO24)}
 
@@ -99,20 +139,27 @@ Our team mostly followed the \href{https://github.com/thaafei/DomainX/blob/main/
 \textbf{Team Member Roles: } The roles mostly stayed the same, the only change was the Team Leader moving from Ghena to Fei. \\
 \textbf{Workflow Plan: } At the start, the workflow plan wasn't followed as tightly. Members weren't properly creating issues for their work, or labeling the issues themselves. However, towards the second half of the project, the workflow plan was followed exactly. \\
 
-We followed the expected technology to build the web application, namely \href{https://react.dev/}{React} for frontend, \href{https://www.djangoproject.com/}{Django} for backend, and \href{https://www.mysql.com/}{MySQL} for database.
+We followed the expected technology to build the web application, namely \href{https://react.dev/}{React} for frontend, \href{https://www.djangoproject.com/}{Django} for backend, and \href{https://www.mysql.com/}{MySQL} for database. And implemented the linters \href{https://peps.python.org/pep-0008/}{PEP 8}, \href{https://github.com/psf/black}{Black},
+\href{https://pycqa.github.io/isort/}{isort}, and \href{https://flake8.pycqa.org/en/latest/}{Flake8}.
+
+Since McMaster actually deploys its application on-premise, we did not need to use a cloud platform like \href{https://aws.amazon.com/}{Amazon Web Services (AWS)}.
 
 \subsection{What Went Well?}
 
-\plt{What went well for your project management in terms of processes and
-technology?}
+With the implementation of GitHub workflows and Run \& Debug on VSCode, it was extremely easy to develop the application locally. Later on as we added testing frameworks and mandated the requirement that new features must have unit tests, and pull requests cannot be merged unless all unit test passes, it removed a lot of uncertainty that new changes would break existing systems.
+Furthermore, with pre-commit linting tools automating most syntax issues, the overall development was easy.
+
+On the infrastructure side, since we used docker containers, deploying new changes was very easy, since all we need was pull the updated GitHub code and recreate the containers.
+
+Being strict on documentation, particularly for development and infrastructure purposes reduced a lot of questions and helped get new members of the development team up and running quickly.
 
 \subsection{What Went Wrong?}
 
-\plt{What went wrong in terms of processes and technology?}
+Since everyone on the team was busy, there were times when team members had to wait for extended periods for their pull requests to be reviewed. Additionally, team members had different experiences and expectations regarding how issues should be structured. Some members weren’t creating issues for the tasks they were working on, while others were creating too many unnecessary issues. This was detrimental because the number of issues opened and closed was a key metric used to track team contributions.
 
-\subsection{What Would you Do Differently Next Time?}
+\subsection{What Would You Do Differently Next Time?}
 
-\plt{What will you do differently for your next project?}
+Next time, we would use the GitHub Project board more frequently. While it requires some effort to set up and maintain, it greatly improves transparency by making it easier to see what other team members are working on. Since we aren’t holding daily stand-up meetings, the board would help keep everyone on track and allow us to identify potential issues earlier.
 
 \section{Ethics and Equity (LO18)}
 We incorporated equity throughout the development process by establishing a team expectation plan that included clear communication and problem resolution guidelines. This created an environment where all team members could contribute ideas, provide feedback, and voice concerns safely and respectfully, ensuring that diverse perspectives were considered in decision-making.
@@ -132,7 +179,7 @@ Through this process, we gained valuable experience in balancing technical devel
 SFWRENG 4HC3: Human Computer Interfaces \\
 SFWRENG 3DB3: Databases \\
 
-The above two courses were particularly relevant to our capstone, due to our project being a web application with users.
+The above two courses were particularly relevant to our capstone, due to our project being a web application with users. SFWRENG 3DB3 was particularly helpful during the design process, when we had to design our database to accommodate our business logic.
 
 \subsection{Knowledge/Skills Outside of Courses}
 Web development and project management experience from past co-ops tremendously helped with the project. Since many members of the group was already familiar with certain tools, libraries and frameworks, we were able to play into our strengths and build our technology stack on what was already familiar.
