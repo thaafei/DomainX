@@ -175,7 +175,6 @@ const Visualize: React.FC = () => {
 
       const hasUncategorized = (Array.isArray(metricsData) ? metricsData : comparisonData.metrics || [])
         .some((m: Metric) => !m.category);
-
       const categoryList = hasUncategorized
         ? [...availableCategories, "Uncategorized"]
         : availableCategories;
@@ -252,7 +251,7 @@ const Visualize: React.FC = () => {
             },
             xaxis: {
               title: { text: "Libraries", standoff: 20 },
-              tickangle: -90,
+              tickangle: -45,
               automargin: true,
             },
             yaxis: {

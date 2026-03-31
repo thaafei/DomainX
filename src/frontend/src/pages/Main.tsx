@@ -127,16 +127,25 @@ const Main: React.FC = () => {
     );
   };
 
-  const downloadFormat = "svg";
-
   const categoryListForAhp = useMemo(() => {
     if (!ahpData?.category_details) return [];
     return Object.keys(ahpData.category_details);
   }, [ahpData]);
 
-  function buildChartLayout(metric: string, isExport: boolean = false): Partial<Layout> {
-    const fontColor = isExport ? "#000000" : "#ffffff";
-    const gridColor = isExport ? "rgba(0,0,0,0.1)" : "rgba(255,255,255,0.1)";
+  type ChartLayoutVariant = "display" | "export-black" | "export-white";
+
+  function buildChartLayout(
+    metric: string,
+    variant: ChartLayoutVariant | boolean = "display",
+  ): Partial<Layout> {
+    const resolved: ChartLayoutVariant =
+      typeof variant === "boolean"
+        ? variant
+          ? "export-black"
+          : "display"
+        : variant ?? "display";
+    const fontColor = resolved === "export-black" ? "#000000" : "#ffffff";
+    const gridColor = resolved === "export-black" ? "rgba(0,0,0,0.1)" : "rgba(255,255,255,0.1)";
 
     return {
       title: {
@@ -149,7 +158,7 @@ const Main: React.FC = () => {
         title: { text: "Libraries", font: { color: fontColor }, standoff: 20 },
         tickfont: { color: fontColor, size: 12 },
         gridcolor: gridColor,
-        tickangle: -90,
+        tickangle: -45,
         automargin: true,
       },
       yaxis: {
@@ -176,18 +185,22 @@ const Main: React.FC = () => {
     const dateStamp = new Date().toISOString().slice(0, 10);
 
     try {
-      const downloadPromises = plotlyCharts.map(async (chart) => {
+      const downloadPromises = plotlyCharts.flatMap((chart) => {
         const data = buildChartData(chart.rows);
-        const layout = buildChartLayout(chart.metric, true);
-
-        const dataUrl = await Plotly.toImage(
-          { data, layout },
-          { width: 1200, height: 800, format: 'svg' }
-        );
-
-        const blob = dataUrlToBlob(dataUrl as string);
         const safeName = chart.metric.replace(/[^\w\s]/gi, '').replace(/\s+/g, "_").toLowerCase();
-        zip.file(`${safeName}.svg`, blob);
+
+        return (["export-black", "export-white"] as const).flatMap((exportVariant) =>
+          (["svg", "png"] as const).map(async (format) => {
+            const layout = buildChartLayout(chart.metric, exportVariant);
+            const dataUrl = await Plotly.toImage(
+              { data, layout },
+              { width: 1200, height: 800, format },
+            );
+            const blob = dataUrlToBlob(dataUrl as string);
+            const suffix = exportVariant === "export-black" ? "black-text" : "white-text";
+            zip.file(`${safeName}_${suffix}.${format}`, blob);
+          }),
+        );
       });
 
       await Promise.all(downloadPromises);
