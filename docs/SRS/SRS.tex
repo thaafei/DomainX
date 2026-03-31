@@ -765,9 +765,9 @@ The system enforces role-based access control such that all users can view resul
 
   \item Editing or any other administrative actions must be available only to logged-in users with the \textbf{Contributor} role.
 
-  \item User roles (Viewer / Contributor) must be assigned and updated correctly at sign-up or by an admin so that permissions always reflect the intended access level. \textit{(From FMEA table, Hazard Analysis.)}
+  \item User roles (Viewer / Contributor) must be assigned and updated correctly at sign-up or by an admin so that permissions always reflect the intended access level. \textit{(From FMEA table, \href{https://github.com/thaafei/DomainX/blob/main/docs/HazardAnalysis/HazardAnalysis.pdf}{Hazard Analysis}.)}
 
-  \item The system must display clear error messages for login failures (e.g., invalid credentials, network errors) and provide a secure way for users to recover or reset their account credentials. \textit{(From FMEA table, Hazard Analysis.)}
+  \item The system must display clear error messages for login failures (e.g., invalid credentials, network errors) and provide a secure way for users to recover or reset their account credentials. \textit{(From FMEA table, \href{https://github.com/thaafei/DomainX/blob/main/docs/HazardAnalysis/HazardAnalysis.pdf}{Hazard Analysis}.)}
 
   \item API credentials such as keys or tokens for external services (e.g., repository APIs) must be stored securely outside the source code (e.g., in environment variables) and must never be exposed in the frontend or version control.
 
@@ -779,11 +779,11 @@ All user inputs are validated before storage, concurrent or conflicting edits ar
 \begin{enumerate}[label=SR-INT\arabic*]
 \item To ensure the accuracy and reliability of the collected data, all manually entered information into the interactive table must be checked before it is saved. For example, numbers must fall within valid ranges, and text must be cleaned so that it cannot be treated as code or scripts.
 \item The database must include safeguards so that if two users edit the same record at the same time, no changes are lost or overwritten.
-\item The system must detect simultaneous edits and either block one save or notify the users to resolve the conflict. \textit{(From FMEA table, Hazard Analysis.)}
-\item When automated data updates conflict with a user’s manual edits (if any are updated automatically), the system must warn the user or request confirmation before replacing existing data. \textit{(From FMEA table, Hazard Analysis.)}
+\item The system must detect simultaneous edits and either block one save or notify the users to resolve the conflict. \textit{(From FMEA table, \href{https://github.com/thaafei/DomainX/blob/main/docs/HazardAnalysis/HazardAnalysis.pdf}{Hazard Analysis}.)}
+\item When automated data updates conflict with a user’s manual edits (if any are updated automatically), the system must warn the user or request confirmation before replacing existing data. \textit{(From FMEA table, \href{https://github.com/thaafei/DomainX/blob/main/docs/HazardAnalysis/HazardAnalysis.pdf}{Hazard Analysis}.)}
 \item The system must also store the raw evidence, calculated scores, and final rankings in separate fields so that the original data and results cannot be accidentally modified.
-\item Publishing visualizations must not occur at the same time as data edits or automated refreshes. The system must either block publishing or enforce downtime until updates are complete. \textit{(From FMEA table, Hazard Analysis.)}
-\item If an export (e.g., CSV, PNG) fails or produces a corrupted file, the tool must alert the user and allow them to retry the download. \textit{(From FMEA table, Hazard Analysis.)}
+\item Publishing visualizations must not occur at the same time as data edits or automated refreshes. The system must either block publishing or enforce downtime until updates are complete. \textit{(From FMEA table, \href{https://github.com/thaafei/DomainX/blob/main/docs/HazardAnalysis/HazardAnalysis.pdf}{Hazard Analysis}.)}
+\item If an export (e.g., CSV, PNG) fails or produces a corrupted file, the tool must alert the user and allow them to retry the download. \textit{(From FMEA table, \href{https://github.com/thaafei/DomainX/blob/main/docs/HazardAnalysis/HazardAnalysis.pdf}{Hazard Analysis}.)}
 \end{enumerate}
 \subsection{Privacy Requirements}
 The tool mainly works with open-source repository data, so there is very little personal data involved.
