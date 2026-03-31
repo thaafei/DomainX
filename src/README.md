@@ -123,6 +123,16 @@ GITHUB_TOKEN=ghp_xxxxxxxxxxxxxxxxxxxxx
     ```
     The frontend application should open in your browser automatically at: `http://localhost:3000/`
 
+## 4. Install Linters
+ We use PEP8, flake8, black and isort for our development process. To start, make sure you have pre-commit installed
+ ```bash
+    pre-commit install
+```
+ Afterwards, you can run all the checks with
+  ```bash
+    pre-commit run --all-files
+```
+The above linters will also be ran as a workflow for every pull request.
 
 ## Finally Create Required Metrics
  To be able to see information coming from github repositories you need to create metrics with specified names.
@@ -241,3 +251,4 @@ python manage_local.py loaddata test_db
 ```
 
 If there are any errors, delete the db.sqlite3 file and rerun migrations and loaddata
+
