@@ -16,6 +16,7 @@ def run(cmd: list[str], env=None):
 def load_env():
     try:
         from dotenv import load_dotenv
+
         load_dotenv(BASE_DIR / ".env", override=True)
     except Exception:
         pass
@@ -25,7 +26,8 @@ def main():
     load_env()
 
     if len(sys.argv) < 2:
-        print("""
+        print(
+            """
 Usage:
   python manage_local.py migrate
   python manage_local.py runserver [host] [port]
@@ -36,7 +38,8 @@ Usage:
 
 - runserver defaults to 0.0.0.0:8000 (matches React proxy http://localhost:8000)
 - set DJANGO_RUN_PORT to override
-""".strip())
+""".strip()
+        )
         sys.exit(1)
 
     cmd = sys.argv[1]
@@ -54,13 +57,76 @@ Usage:
     if cmd == "worker":
         if not os.getenv("CELERY_BROKER_URL"):
             print("CELERY_BROKER_URL is not set. Check backend/.env")
-        run(["celery", "-A", "DomainX", "worker", "-l", "info", "-P", "solo", "-Q", "celery"])
+        run(
+            [
+                "celery",
+                "-A",
+                "DomainX",
+                "worker",
+                "-l",
+                "info",
+                "-P",
+                "solo",
+                "-Q",
+                "celery_analysis",
+            ]
+        )
         return
 
     if cmd == "worker_gitstats":
         if not os.getenv("CELERY_BROKER_URL"):
             print("CELERY_BROKER_URL is not set. Check backend/.env")
-        run(["celery", "-A", "DomainX", "worker", "-l", "info", "-P", "solo", "-Q", "gitstats"])
+        run(
+            [
+                "celery",
+                "-A",
+                "DomainX",
+                "worker",
+                "-l",
+                "info",
+                "-P",
+                "solo",
+                "-Q",
+                "gitstats",
+            ]
+        )
+        return
+    if cmd == "worker":
+        if not os.getenv("CELERY_BROKER_URL"):
+            print("CELERY_BROKER_URL is not set. Check backend/.env")
+        run(
+            [
+                "celery",
+                "-A",
+                "DomainX",
+                "worker",
+                "-l",
+                "info",
+                "-P",
+                "solo",
+                "-Q",
+                "analysis",
+            ]
+        )
+        return
+
+    if cmd == "email":
+        if not os.getenv("CELERY_BROKER_URL"):
+            print("CELERY_BROKER_URL is not set. Check backend/.env")
+        run(
+            [
+                "celery",
+                "-A",
+                "DomainX",
+                "worker",
+                "-l",
+                "info",
+                "-P",
+                "solo",
+                "-Q",
+                "email",
+            ]
+        )
         return
 
     if cmd == "loaddata":
@@ -73,7 +139,9 @@ Usage:
 
     if cmd == "dev":
         run([sys.executable, "manage.py", "migrate"])
-        run([sys.executable, "manage.py", "runserver", f"{DEFAULT_HOST}:{DEFAULT_PORT}"])
+        run(
+            [sys.executable, "manage.py", "runserver", f"{DEFAULT_HOST}:{DEFAULT_PORT}"]
+        )
         return
 
     print(f"Unknown command: {cmd}")

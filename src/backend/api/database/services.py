@@ -1,39 +1,28 @@
-from urllib.parse import urlparse
-import requests
-from urllib.parse import urlparse, parse_qs
-from api.services.github_http import github_get
-from datetime import datetime, timedelta
+import json
 import logging
 import os
-import json
 import shutil
-import tempfile
 import subprocess
+import tempfile
+from datetime import datetime, timedelta
+from urllib.parse import parse_qs, urlparse
+
+import requests
+from django.conf import settings
+
+from api.services.github_http import github_get
 
 logger = logging.getLogger("api.services.repo_analyzer")
 
+
+def load_auto_metric_definitions():
+    path = os.path.join(settings.BASE_DIR, "api", "database", "auto_metrics.json")
+    with open(path, "r") as f:
+        return json.load(f)
+
+
 # Define all target numerical metrics that can be calculated automatically
-TARGET_METRICS = {
-    'Stars Count': 'The total number of stargazers for the repository.',
-    'Forks Count': 'The total number of forks/copies of the repository.',
-    'Watchers Count': 'The number of users currently watching the repository.',
-    'Open Issues Count': 'The number of open issues in the repository.',
-    'Commit Count': 'The total number of commits in the repository history.',
-    'Branch Count': 'The number of branches in the repository.',
-    "Open PRs Count": "Number of open pull requests.",
-    "Closed PRs Count": "Number of closed pull requests.",
-    'Text Files': 'Number of non-binary files.',
-    'Binary Files': 'Number of binary files (images, executables, etc.).',
-    'Commits (Last 5 Years)': 'Commits made in the last 60 months.',
-    "Text Files (SCC)": "Number of text-based files (SCC).",
-    "Total Lines (SCC)": "Number of total lines in text-based files (SCC).",
-    "Code Lines (SCC)": "Number of code lines in text-based files (SCC).",
-    "Comment Lines (SCC)": "Number of comment lines in text-based files (SCC).",
-    "Blank Lines (SCC)": "Number of blank lines in text-based files (SCC).",
-    "GitStats Report": "1 if git_stats report generation succeeded.",
-
-}
-
+TARGET_METRICS = load_auto_metric_definitions()
 
 
 class RepoAnalyzer:
@@ -52,7 +41,9 @@ class RepoAnalyzer:
             owner = parts[0]
             repo = parts[1].replace(".git", "")
             return owner, repo
-        raise ValueError("Invalid GitHub URL format (expected github.com/<owner>/<repo>).")
+        raise ValueError(
+            "Invalid GitHub URL format (expected github.com/<owner>/<repo>)."
+        )
 
     def _parse_last_page_from_link(self, link_header: str) -> int | None:
         if not link_header:
@@ -61,7 +52,7 @@ class RepoAnalyzer:
         last_url = None
         for part in link_header.split(","):
             if 'rel="last"' in part:
-                last_url = part[part.find("<") + 1: part.find(">")]
+                last_url = part[part.find("<") + 1 : part.find(">")]
                 break
 
         if not last_url:
@@ -88,15 +79,11 @@ class RepoAnalyzer:
 
     def _get_commits_past_five_years(self) -> int:
         five_years_ago_dt = datetime.now() - timedelta(days=5 * 365)
-        since = five_years_ago_dt.strftime('%Y-%m-%dT%H:%M:%SZ')
-        until = datetime.now().strftime('%Y-%m-%dT%H:%M:%SZ')
+        since = five_years_ago_dt.strftime("%Y-%m-%dT%H:%M:%SZ")
+        until = datetime.now().strftime("%Y-%m-%dT%H:%M:%SZ")
         resp = github_get(
             f"/repos/{self.repo_owner}/{self.repo_name}/commits",
-            params={
-                "since": since,
-                "until": until,
-                "per_page": 1
-            },
+            params={"since": since, "until": until, "per_page": 1},
         )
 
         if resp.status_code == 409:
@@ -108,7 +95,6 @@ class RepoAnalyzer:
             return last_page
         data = resp.json()
         return 1 if data else 0
-
 
     def _get_file_type_counts(self, default_branch: str):
         resp = github_get(
@@ -127,29 +113,43 @@ class RepoAnalyzer:
         tree = resp.json().get("tree", [])
 
         binary_extensions = {
-            '.png', '.jpg', '.jpeg', '.gif', '.pdf', '.exe', '.bin', '.zip',
-            '.pyc', '.o', '.dat', '.dmg', '.iso', '.mp3', '.mp4'
+            ".png",
+            ".jpg",
+            ".jpeg",
+            ".gif",
+            ".pdf",
+            ".exe",
+            ".bin",
+            ".zip",
+            ".pyc",
+            ".o",
+            ".dat",
+            ".dmg",
+            ".iso",
+            ".mp3",
+            ".mp4",
         }
 
         text_count = 0
         binary_count = 0
 
         for item in tree:
-            if item['type'] == 'blob':  #only count files, not folders
-                path = item['path'].lower()
+            if item["type"] == "blob":  # only count files, not folders
+                path = item["path"].lower()
                 if any(path.endswith(ext) for ext in binary_extensions):
                     binary_count += 1
                 else:
                     text_count += 1
 
         return text_count, binary_count
+
     def _get_total_commit_count_via_api(self) -> int:
         resp = github_get(
             f"/repos/{self.repo_owner}/{self.repo_name}/commits",
             params={"per_page": 1},
         )
 
-        if resp.status_code == 409:  #empty repo
+        if resp.status_code == 409:  # empty repo
             return 0
 
         resp.raise_for_status()
@@ -167,7 +167,7 @@ class RepoAnalyzer:
             params={"per_page": 1},
         )
 
-        if resp.status_code == 409:  #empty repo
+        if resp.status_code == 409:  # empty repo
             return 0
 
         resp.raise_for_status()
@@ -189,20 +189,26 @@ class RepoAnalyzer:
             data = repo_resp.json()
             default_branch = data.get("default_branch", "main")
             text_files, binary_files = self._get_file_type_counts(default_branch)
-            logger.debug("File counts for %s/%s: text=%d binary=%d", self.repo_owner, self.repo_name, text_files, binary_files)
+            logger.debug(
+                "File counts for %s/%s: text=%d binary=%d",
+                self.repo_owner,
+                self.repo_name,
+                text_files,
+                binary_files,
+            )
 
             return {
-                "Stars Count": data.get("stargazers_count"),
-                "Forks Count": data.get("forks_count"),
-                "Watchers Count": data.get("subscribers_count"),
-                "Open Issues Count": self._get_open_issues_count(),
-                "Commit Count": self._get_total_commit_count_via_api(),
-                "Branch Count": self._get_branch_count_via_api(),
-                "Open PRs Count": self._get_open_prs_count(),
-                "Closed PRs Count": self._get_closed_prs_count(),
-                "Commits (Last 5 Years)": self._get_commits_past_five_years(),
-                "Text Files": text_files,
-                "Binary Files": binary_files
+                "stars_count": data.get("stargazers_count"),
+                "forks_count": data.get("forks_count"),
+                "watchers_count": data.get("subscribers_count"),
+                "open_issues_count": self._get_open_issues_count(),
+                "commit_count": self._get_total_commit_count_via_api(),
+                "branch_count": self._get_branch_count_via_api(),
+                "open_prs_count": self._get_open_prs_count(),
+                "closed_prs_count": self._get_closed_prs_count(),
+                "commits_last_5_years": self._get_commits_past_five_years(),
+                "text_files": text_files,
+                "binary_files": binary_files,
             }
         except requests.exceptions.RequestException as e:
             raise Exception(f"GitHub API Error: {e}") from e
@@ -223,7 +229,7 @@ class RepoAnalyzer:
                 stdout=subprocess.PIPE,
                 stderr=subprocess.PIPE,
                 text=True,
-                timeout=60*20,
+                timeout=60 * 20,
             )
             return tmp_root, repo_dir
         except subprocess.TimeoutExpired:
@@ -242,7 +248,7 @@ class RepoAnalyzer:
                 stdout=subprocess.PIPE,
                 stderr=subprocess.PIPE,
                 text=True,
-                timeout=60*20,
+                timeout=60 * 20,
             )
         except FileNotFoundError:
             raise Exception("scc is not installed or not on PATH.")
@@ -268,7 +274,12 @@ class RepoAnalyzer:
             return 0
 
         total_row = next(
-            (r for r in data if str(r.get("Name") or r.get("Language") or "").strip().lower() == "total"),
+            (
+                r
+                for r in data
+                if str(r.get("Name") or r.get("Language") or "").strip().lower()
+                == "total"
+            ),
             None,
         )
 
@@ -281,16 +292,25 @@ class RepoAnalyzer:
         comments = sum(pick_int(r, ["Comment", "Comments", "comments"]) for r in rows)
 
         if (blanks == 0 or comments == 0) and total_row is not None:
-            blanks = sum(pick_int(r, ["Blanks", "blanks", "Blank", "blank"]) for r in data)
-            comments = sum(pick_int(r, ["Comments", "comments", "Comment", "comment"]) for r in data)
-            files = sum(pick_int(r, ["Count", "Files", "files"]) for r in data) if files == 0 else files
+            blanks = sum(
+                pick_int(r, ["Blanks", "blanks", "Blank", "blank"]) for r in data
+            )
+            comments = sum(
+                pick_int(r, ["Comments", "comments", "Comment", "comment"])
+                for r in data
+            )
+            files = (
+                sum(pick_int(r, ["Count", "Files", "files"]) for r in data)
+                if files == 0
+                else files
+            )
 
         return {
-            "Text Files (SCC)": int(files),
-            "Total Lines (SCC)": int(lines),
-            "Blank Lines (SCC)": int(blanks),
-            "Comment Lines (SCC)": int(comments),
-            "Code Lines (SCC)": int(code),
+            "text_files_scc": int(files),
+            "total_lines_scc": int(lines),
+            "blank_lines_scc": int(blanks),
+            "comment_lines_scc": int(comments),
+            "code_lines_scc": int(code),
         }
 
     def _analyze_repo(self):
@@ -307,8 +327,7 @@ class RepoAnalyzer:
         merged = {**github_api_results, **scc_results}
 
         final_results = {
-            k: v for k, v in merged.items()
-            if k in TARGET_METRICS and v is not None and isinstance(v, int)
+            k: v for k, v in merged.items() if k in TARGET_METRICS and v is not None
         }
 
         logger.debug("GitHub API raw metrics: %s", github_api_results)
@@ -328,13 +347,14 @@ class RepoAnalyzer:
             metric_results = self._analyze_repo()
             logger.info("Analysis complete. Metrics found: %d", len(metric_results))
 
-
             return {
-                'repo_name': self.repo_name,
-                'metric_data': metric_results,
+                "repo_name": self.repo_name,
+                "metric_data": metric_results,
             }
         except Exception as e:
-            logger.exception("CRITICAL FAILURE in analysis for %s", self.github_url)
+            logger.exception(
+                "CRITICAL FAILURE in analysis for %s, [%s]", self.github_url, e
+            )
             raise
 
     def _run_gitstats(self, repo_dir: str, out_dir: str, library_id: str) -> dict:
@@ -384,12 +404,11 @@ class RepoAnalyzer:
             for r, _, fs in os.walk(dest):
                 if "index.html" in fs:
                     found.append(os.path.join(r, "index.html"))
-            raise Exception(f"git_stats index.html not found at expected location. Found: {found[:3]}")
+            raise Exception(
+                f"git_stats index.html not found at expected location. Found: {found[:3]}"
+            )
 
-        return {"GitStats Report": f"/gitstats/{library_id}/git_stats/index.html"}
-
-
-
+        return {"gitstats_report": f"/gitstats/{library_id}/git_stats/index.html"}
 
     def run_gitstats_only(self, work_dir: str, serve_dir: str, library_id: str) -> dict:
         work_dir = os.path.abspath(work_dir)
@@ -400,7 +419,9 @@ class RepoAnalyzer:
 
         try:
             repo_dir = self._clone_repo_to_dir(work_dir)
-            gitstats_results = self._run_gitstats(repo_dir, out_dir=serve_dir,library_id=library_id)
+            gitstats_results = self._run_gitstats(
+                repo_dir, out_dir=serve_dir, library_id=library_id
+            )
             return {"repo_name": self.repo_name, "metric_data": gitstats_results}
         finally:
             repo_path = os.path.join(work_dir, "repo")
@@ -429,5 +450,3 @@ class RepoAnalyzer:
             raise Exception("Clone timed out.")
         except subprocess.CalledProcessError as e:
             raise Exception(f"Clone failed: {e.stderr[-500:]}")
-
-

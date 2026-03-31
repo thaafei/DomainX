@@ -47,7 +47,7 @@ class ArchiveError(LoggingError):
 
 class ISO8601Formatter(logging.Formatter):
     """Formats timestamps as ISO 8601 (e.g. 2025-11-11T09:30:00.123Z)"""
-    
+
     def formatTime(self, record, datefmt=None):
         dt = datetime.fromtimestamp(record.created, tz=timezone.utc)
         return dt.strftime("%Y-%m-%dT%H:%M:%S.%f")[:-3] + "Z"
@@ -55,27 +55,27 @@ class ISO8601Formatter(logging.Formatter):
 def initLogger(logConfig):
     """Initialize the logger with the given config dict."""
     global _active_logger, _log_level, _log_file_path, _store_type
-    
+
     try:
         _store_type = logConfig.get('storeType', 'FILE')
         level_str = logConfig.get('level', DEFAULT_LEVEL)
         file_name = logConfig.get('fileName') or 'app.log'
-        
+
         _log_level = getattr(logging, level_str.upper(), logging.INFO)
-        
+
         # Create log directory if needed
         if not os.path.exists(LOG_DIR):
             os.makedirs(LOG_DIR)
-        
+
         _log_file_path = os.path.join(LOG_DIR, file_name)
-        
+
         _active_logger = logging.getLogger("DomainXLogger")
         _active_logger.setLevel(_log_level)
-        
+
         # Clear old handlers on reinit
         if _active_logger.hasHandlers():
             _active_logger.handlers.clear()
-        
+
         if _store_type == 'FILE':
             handler = RotatingFileHandler(
                 _log_file_path,
@@ -84,7 +84,7 @@ def initLogger(logConfig):
             )
             handler.setFormatter(ISO8601Formatter('%(asctime)s | %(levelname)s | %(message)s'))
             _active_logger.addHandler(handler)
-        
+
         return True
     except Exception as e:
         raise ConfigError(f"Failed to initialize logger: {str(e)}")
@@ -93,18 +93,18 @@ def initLogger(logConfig):
 def logEvent(message, level, context=None):
     """Log an event."""
     global _active_logger, _log_level
-    
+
     try:
         # Auto-init if needed
         if _active_logger is None:
             initLogger({'level': DEFAULT_LEVEL, 'storeType': 'FILE'})
-        
+
         numeric_level = getattr(logging, level.upper(), logging.INFO)
-        
+
         # Skip if below threshold
         if numeric_level < _log_level:
             return False
-        
+
         payload = {
             "message": message,
             "context": context or {}
@@ -119,32 +119,32 @@ def getRecentLogs(limit, log_filter=None):
     """Get recent log entries, newest first."""
     if _active_logger is None or _log_file_path is None:
         return []
-    
+
     if not os.path.exists(_log_file_path):
         return []
-    
+
     entries = []
     try:
         with open(_log_file_path, 'r') as f:
             lines = f.readlines()
-        
+
         # Process newest first
         for line in reversed(lines):
             if len(entries) >= limit:
                 break
-            
+
             line = line.strip()
             if not line:
                 continue
-            
+
             parts = line.split(' | ')
             if len(parts) < 3:
                 continue
-            
+
             timestamp = parts[0]
             level_name = parts[1]
             content = parts[2]
-            
+
             # Parse the JSON payload
             try:
                 data = json.loads(content)
@@ -153,7 +153,7 @@ def getRecentLogs(limit, log_filter=None):
             except json.JSONDecodeError:
                 message = content
                 context = {}
-            
+
             # Apply filters
             if log_filter:
                 min_level_str = log_filter.get("minLevel")
@@ -162,18 +162,18 @@ def getRecentLogs(limit, log_filter=None):
                     curr_value = getattr(logging, level_name.upper(), 0)
                     if curr_value < min_value:
                         continue
-                
+
                 contains_text = log_filter.get("containsText")
                 if contains_text and contains_text.lower() not in message.lower():
                     continue
-            
+
             entries.append({
                 "timestamp": timestamp,
                 "level": level_name,
                 "message": message,
                 "context": context
             })
-        
+
         return entries
     except Exception as e:
         raise ReadError(f"Failed to read log entries: {str(e)}")
@@ -183,12 +183,12 @@ def archiveLogs():
     """Force log rotation."""
     if _active_logger is None:
         raise ArchiveError("Logger not initialized. Call initLogger() first.")
-    
+
     try:
         for handler in _active_logger.handlers:
             if isinstance(handler, RotatingFileHandler):
                 handler.doRollover()
-        
+
         return True
     except Exception as e:
         raise ArchiveError(f"Failed to archive logs: {str(e)}")

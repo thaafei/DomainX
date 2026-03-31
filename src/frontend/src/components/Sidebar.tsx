@@ -77,7 +77,7 @@ const Sidebar: React.FC<SidebarProps> = ({
       <div style={{ flex: 1, overflowY: "auto" }}>
         {domains.map((d) => (
           <div
-            key={d.domain_ID} 
+            key={d.domain_ID}
             className="dx-side-item"
             onClick={() => {setSelectedDomain(d); getAHPRanking();}}
             style={{
@@ -85,14 +85,14 @@ const Sidebar: React.FC<SidebarProps> = ({
               cursor: "pointer",
               borderRadius: "8px",
               marginBottom: "6px",
-              transition: "all 0.2s ease",                
+              transition: "all 0.2s ease",
               backgroundColor: d.domain_ID === selectedDomain?.domain_ID
                 ? "rgba(255, 255, 255, 0.12)"
                 : "transparent",
-              border: d.domain_ID === selectedDomain?.domain_ID 
-                ? "1px solid rgba(255, 255, 255, 0.1)" 
+              border: d.domain_ID === selectedDomain?.domain_ID
+                ? "1px solid rgba(255, 255, 255, 0.1)"
                 : "1px solid transparent",
-              
+
               color: d.domain_ID === selectedDomain?.domain_ID ? "var(--accent)" : "var(--text-main)",
               fontWeight: d.domain_ID === selectedDomain?.domain_ID ? 600 : 400,
             }}
@@ -183,59 +183,59 @@ const Sidebar: React.FC<SidebarProps> = ({
               >
                 <h3>New Domain</h3>
                 {formError && (
-                  <div style={{ 
-                    color: '#ff4d4f', 
-                    backgroundColor: '#fff2f0', 
-                    border: '1px solid #ffccc7', 
-                    padding: '8px', 
-                    borderRadius: '4px', 
+                  <div style={{
+                    color: '#ff4d4f',
+                    backgroundColor: '#fff2f0',
+                    border: '1px solid #ffccc7',
+                    padding: '8px',
+                    borderRadius: '4px',
                     marginBottom: '12px',
-                    fontSize: '0.9rem' 
+                    fontSize: '0.9rem'
                   }}>
                     ⚠️ {formError}
                   </div>
                 )}
 
-                <input 
+                <input
                   className="dx-input"
-                  placeholder="Domain Name" 
+                  placeholder="Domain Name"
                   value={domainName}
                   onChange={(e) => {
                     setDomainName(e.target.value);
                     if (formError) setFormError("");
                   }}
-                  style={{ 
-                    width: '100%', 
-                    marginBottom: 12, 
-                    padding: 8, 
+                  style={{
+                    width: '100%',
+                    marginBottom: 12,
+                    padding: 8,
                     color: 'black',
                     border: formError && !domainName ? '1px solid red' : '1px solid #ccc'
                   }}
                 />
 
-                <textarea 
+                <textarea
                   className="dx-input"
-                  placeholder="Description" 
+                  placeholder="Description"
                   value={description}
                   onChange={(e) => {
                     setDescription(e.target.value);
                     if (formError) setFormError("");
                   }}
-                  style={{ 
-                    width: '100%', 
-                    marginBottom: 12, 
-                    padding: 8, 
-                    minHeight: 60, 
+                  style={{
+                    width: '100%',
+                    marginBottom: 12,
+                    padding: 8,
+                    minHeight: 60,
                     color: 'black',
-                    border: formError && !description ? '1px solid red' : '1px solid #ccc' 
+                    border: formError && !description ? '1px solid red' : '1px solid #ccc'
                   }}
                 />
 
                 <div style={{ marginBottom: 12 }}>
                   <label style={{ display: 'block', marginBottom: 6, fontWeight: 500 }}>Creators:</label>
-                  <div style={{ 
-                    maxHeight: '150px', 
-                    overflowY: 'auto', 
+                  <div style={{
+                    maxHeight: '150px',
+                    overflowY: 'auto',
                     border: formError && selectedCreatorIds.length === 0 ? '1px solid red' : '1px solid #ccc',
                     borderRadius: '4px',
                     padding: '8px'
@@ -244,16 +244,16 @@ const Sidebar: React.FC<SidebarProps> = ({
                       <div style={{ color: '#999', fontSize: '0.9rem' }}>Loading users...</div>
                     ) : (
                       adminUsers.map((user) => (
-                        <label 
-                          key={user.id} 
-                          style={{ 
-                            display: 'flex', 
-                            alignItems: 'center', 
+                        <label
+                          key={user.id}
+                          style={{
+                            display: 'flex',
+                            alignItems: 'center',
                             padding: '4px 0',
                             cursor: 'pointer'
                           }}
                         >
-                          <input 
+                          <input
                             type="checkbox"
                             checked={selectedCreatorIds.includes(user.id)}
                             onChange={(e) => {

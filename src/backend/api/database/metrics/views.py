@@ -1,13 +1,53 @@
+import json
+import os
+
+from django.conf import settings
 from rest_framework import generics, status
-from rest_framework.decorators import api_view
+from rest_framework.decorators import permission_classes  # noqa: F401
+from rest_framework.permissions import IsAuthenticatedOrReadOnly
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
-from django.conf import settings
-import json, os
-
 from .models import Metric
-from .serializers import MetricSerializer, FlatMetricSerializer
+from .serializers import FlatMetricSerializer, MetricSerializer
+
+
+def load_auto_metric_definitions():
+    path = os.path.join(settings.BASE_DIR, "api", "database", "auto_metrics.json")
+    with open(path, "r") as f:
+        return json.load(f)
+
+
+class AutoMetricOptionsView(APIView):
+    def get(self, request):
+        try:
+            data = load_auto_metric_definitions()
+
+            grouped = {}
+            for key, item in data.items():
+                source = item.get("source_type")
+                grouped.setdefault(source, []).append(
+                    {
+                        "key": key,
+                        "label": item.get("label"),
+                        "description": item.get("description"),
+                        "value_type": item.get("value_type"),
+                    }
+                )
+
+            return Response(grouped, status=status.HTTP_200_OK)
+
+        except FileNotFoundError:
+            return Response(
+                {"error": "auto_metrics.json not found"},
+                status=status.HTTP_404_NOT_FOUND,
+            )
+        except json.JSONDecodeError:
+            return Response(
+                {"error": "Error decoding auto_metrics.json"},
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            )
+
 
 class MetricRulesView(APIView):
     def get(self, request):
@@ -17,9 +57,15 @@ class MetricRulesView(APIView):
                 data = json.load(f)
             return Response(data, status=status.HTTP_200_OK)
         except FileNotFoundError:
-            return Response({"error": f"rules.json not found at {path}"}, status=status.HTTP_404_NOT_FOUND)
+            return Response(
+                {"error": f"rules.json not found at {path}"},
+                status=status.HTTP_404_NOT_FOUND,
+            )
         except json.JSONDecodeError:
-            return Response({"error": "Error decoding rules.json"}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+            return Response(
+                {"error": "Error decoding rules.json"},
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            )
 
 
 class MetricCategoryView(APIView):
@@ -30,14 +76,21 @@ class MetricCategoryView(APIView):
                 data = json.load(f)
             return Response(data, status=status.HTTP_200_OK)
         except FileNotFoundError:
-            return Response({"error": f"categories.json not found at {path}"}, status=status.HTTP_404_NOT_FOUND)
+            return Response(
+                {"error": f"categories.json not found at {path}"},
+                status=status.HTTP_404_NOT_FOUND,
+            )
         except json.JSONDecodeError:
-            return Response({"error": "Error decoding categories.json"}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+            return Response(
+                {"error": "Error decoding categories.json"},
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            )
 
 
 class MetricListCreateView(generics.ListCreateAPIView):
     queryset = Metric.objects.all().order_by("metric_name")
     serializer_class = MetricSerializer
+    permission_classes = [IsAuthenticatedOrReadOnly]  # noqa: F811
 
 
 class MetricRetrieveUpdateDestroyView(generics.RetrieveUpdateDestroyAPIView):
@@ -45,27 +98,38 @@ class MetricRetrieveUpdateDestroyView(generics.RetrieveUpdateDestroyAPIView):
     serializer_class = MetricSerializer
     lookup_field = "metric_ID"
     lookup_url_kwarg = "metric_id"
+    permission_classes = [IsAuthenticatedOrReadOnly]  # noqa: F811
 
 
 class MetricUpdateWeightView(APIView):
+    permission_classes = [IsAuthenticatedOrReadOnly]  # noqa: F811
+
     def patch(self, request, metric_id):
         try:
             metric = Metric.objects.get(metric_ID=metric_id)
         except Metric.DoesNotExist:
-            return Response({"error": "Metric not found"}, status=status.HTTP_404_NOT_FOUND)
+            return Response(
+                {"error": "Metric not found"}, status=status.HTTP_404_NOT_FOUND
+            )
 
         new_weight = request.data.get("weight")
         if new_weight is None:
-            return Response({"error": "Weight field is required"}, status=status.HTTP_400_BAD_REQUEST)
+            return Response(
+                {"error": "Weight field is required"},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
 
         metric.weight = new_weight
         metric.save()
 
-        return Response({
-            "message": f"Weight updated successfully to {new_weight}",
-            "metric_id": str(metric.metric_ID),
-            "metric_name": metric.metric_name,
-        })
+        return Response(
+            {
+                "message": f"Weight updated successfully to {new_weight}",
+                "metric_id": str(metric.metric_ID),
+                "metric_name": metric.metric_name,
+            }
+        )
+
 
 class MetricListFlatView(generics.ListAPIView):
     serializer_class = FlatMetricSerializer

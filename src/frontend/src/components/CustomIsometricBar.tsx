@@ -7,12 +7,12 @@ interface IsometricBarProps {
   height?: number;
   fill?: string;
   // Recharts passes the total height of the chart area via 'background' or we can infer it
-  background?: { y: number; height: number }; 
+  background?: { y: number; height: number };
 }
 
 const CustomIsometricBar: React.FC<IsometricBarProps> = (props) => {
   const { x = 0, y = 0, width = 0, height = 0, fill = '#8884d8', background } = props;
-  
+
   if (!height || height <= 0) return null;
 
   // 1. DIMENSIONS: Make bar thinner
@@ -31,8 +31,8 @@ const CustomIsometricBar: React.FC<IsometricBarProps> = (props) => {
   return (
     <g>
       {/* --- STEP 1: BACKGROUND PILLAR (Shadow) --- */}
-      <rect 
-        x={leftX} y={fullY} width={barWidth} height={fullHeight} 
+      <rect
+        x={leftX} y={fullY} width={barWidth} height={fullHeight}
         fill="rgba(255, 255, 255, 0.05)" // Very subtle white/gray shadow
       />
       <path
@@ -42,11 +42,11 @@ const CustomIsometricBar: React.FC<IsometricBarProps> = (props) => {
 
       {/* --- STEP 2: ACTIVE 3D BAR --- */}
       {/* Main Pillar */}
-      <rect 
-        x={leftX} y={y} width={barWidth} height={height} 
-        fill={fill} fillOpacity={0.9} 
+      <rect
+        x={leftX} y={y} width={barWidth} height={height}
+        fill={fill} fillOpacity={0.9}
       />
-      
+
       {/* 3D Top Diamond */}
       <path
         d={`M ${leftX} ${y} L ${centerX} ${y - topHeight} L ${rightX} ${y} L ${centerX} ${y + topHeight} Z`}

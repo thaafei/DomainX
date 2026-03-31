@@ -9,7 +9,8 @@
         "weighted 2": {"yes": 2, "no": 0},
         "weighted 3": {"yes": 3, "no": 0},
         "reliability_inv": {"yes": 0, "no": 5},
-        "weighted 4": {"yes": 4, "no": 0}
+        "weighted 4": {"yes": 4, "no": 0},
+        "weighted 5": {"yes": 5, "no": 0}
       }
     },
     "yes_no_na": {
@@ -17,10 +18,14 @@
       "options": ["yes", "no", "n/a"],
       "templates": {
         "standard_na": {"yes": 1, "no": 0, "n/a": 0},
+        "inclusive": {"yes": 1, "no": 0, "n/a": 1},
         "recovery": {"yes": 5, "no": 0, "n/a": 0},
         "robustness": {"yes": 5, "no": 0, "n/a": 5},
+        "failure_penalty": {"yes": 0, "no": 5, "n/a": 0},
         "error_msg": {"yes": 0, "no": -2, "n/a": 1},
-        "tutorial": {"yes": 3, "no": 0, "n/a": 0}
+        "tutorial": {"yes": 3, "no": 0, "n/a": 0},
+        "weighted_yes_2": {"yes": 2, "no": 0, "n/a": 0}
+
       }
     },
     "yes_no_unclear": {
@@ -45,6 +50,13 @@
         "vcs_check": {"any": 2, "nothing": 0}
       }
     },
+    "yes_no_unavail": {
+      "display_name": "Yes / No / Unavailable",
+      "options": ["yes", "no", "unavail"],
+      "templates": {
+        "strict": {"yes": 0, "no": 1, "unavail": 1}
+      }
+    },
     "provided_nothing": {
       "display_name": "Provided / Nothing",
       "options": ["provided", "nothing"],
@@ -62,7 +74,7 @@
       }
     },
     "step_thresholds": {
-      "display_name": "<10 / >=10", 
+      "display_name": "<10 / >=10",
       "options": ["<10", ">=10"],
       "templates": {
         "install_steps": {"<10": 1, ">=10": 0}
@@ -81,6 +93,25 @@
       "options": ["nothing", "private", "public"],
       "templates": {
       "tool_quality": {"nothing": 0, "private": 1, "public": 2}
+      }
+    }
+  },
+  "int": {
+    "score_0_2": {
+      "display_name": "0 / 1 / 2",
+      "options": ["0", "1", "2"],
+      "templates": {
+        "standard": {
+          "0": 0,
+          "1": 1,
+          "2": 2
+        }
+      }
+    },
+    "other": {
+      "display_name": "Other Integer",
+      "templates": {
+        "free": {}
       }
     }
   }

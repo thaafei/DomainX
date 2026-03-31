@@ -3,16 +3,16 @@ on:
   workflow_dispatch:
     inputs:
         pdf_path:
-            description: "The path to the pdf, not including the docs/ and file extension. For Example to update SRS: SRS-Volere/SRS" 
+            description: "The path to the pdf, not including the docs/ and file extension. For Example to update SRS: SRS-Volere/SRS"
             required: true
             type: string
 env:
-    BRANCH_NAME: ${{ github.head_ref || github.ref_name }} 
+    BRANCH_NAME: ${{ github.head_ref || github.ref_name }}
 
 jobs:
   update-pdfs:
     runs-on: ubuntu-latest
-    if: ${{ inputs.pdf_path }} 
+    if: ${{ inputs.pdf_path }}
     steps:
     - name: Checkout
       uses: actions/checkout@v4

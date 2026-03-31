@@ -19,7 +19,7 @@
 \usepackage{longtable}
 
 \captionsetup{font=small,labelfont=bf}
-\newcolumntype{Y}{>{\raggedright\arraybackslash}X} 
+\newcolumntype{Y}{>{\raggedright\arraybackslash}X}
 \newcolumntype{Z}{>{\centering\arraybackslash}p{1.6cm}}
 \hypersetup{
     bookmarks=true,         % show bookmarks bar?
@@ -37,10 +37,10 @@
 
 \begin{document}
 
-\title{Software Requirements Specification for \progname: DomainX} 
+\title{Software Requirements Specification for \progname: DomainX}
 \author{\authname}
 \date{\today}
-	
+
 \maketitle
 
 \pagenumbering{roman}
@@ -71,21 +71,21 @@ The reason for building Domain Comparison Tool can be found in the sections belo
 The “methodology to assess the state of best practice for Domain X” paper \cite{MethodologyPaper}, outlines a series of systematic steps to assess the state of best practice for a particular domain.
 However, the process of data gathering is dependent on the student themselves. Current practice involves numerous Excel sheets, and ad-hoc scripts to compile and generate the required tables and graphs.
 This method is extremely tedious, with lots of manual data entering, and information on prior domains are scattered, with no dedicated central storage.
-To assist in the creation of this paper, we will create a reusable tool, whose main purpose is to simplify the process of gathering, visualizing and storing the data. This tool will then be reusable for future domains. 
+To assist in the creation of this paper, we will create a reusable tool, whose main purpose is to simplify the process of gathering, visualizing and storing the data. This tool will then be reusable for future domains.
 \subsection{Goals of the Project}
 The tool will make the data gathering process faster and more efficient for the current paper used to pilot the project. Future papers will then be able to use the tool to assist in their own data gathering for their domain.\\
 See below for our goals, listed in their order of importance.
-\subsubsection{G1: Centralized Domain Data Location}\label{goal-central-data}
-The tool should be the centralized location where users can view completed data gathered from a domain assessment, as well as create and edit new domains. 
-\subsubsection{G2: Automated Data Collection}\label{goal-auto-data}
+\subsubsection{Centralized Domain Data Location}
+The tool should be the centralized location where users can view completed data gathered from a domain assessment, as well as create and edit new domains.
+\subsubsection{Automated Data Collection}
 The tool must be able to extract the repository based metrics automatically, to eliminate the need for user to manually enter this information. At least 80\% of the accessed packages should have these types of metrics automatically filled without error.
 \subsubsection{G3: Interactive Data Table}\label{goal-data-table}
 The tool's data table should be intuitive to use, and be similar to pre-existing industry standard spreadsheet tools such as Excel. Users with prior experience using Excel should automatically be able to use the tool for inputting data.
 \subsubsection{G4: Automated Analytic Hierarchy Process}\label{goal-auto-ahp}
 The tool will implement an automated AHP to compare libraries, guiding users through pairwise comparisons to weigh criteria and evaluate alternatives. It should match what the user would calculate exactly if they were to do it manually.
-\subsubsection{G5: Data Visualization and Download}\label{goal-visual}
-The tool should allow users to export tables and visuals relating to the domain they want, based on the data gathered in that domain. 
-\subsubsection{G6: Collaboration and Access Control}\label{goal-collab}
+\subsubsection{Data Visualization and Download}
+The tool should allow users to export tables and visuals relating to the domain they want, based on the data gathered in that domain.
+\subsubsection{Collaboration and Access Control}
 The tool should allow for multiple users to use the tool simultaneously and contain multiple access levels.
 \section{Stakeholders}
 The following section contains the stakeholders of the project.
@@ -100,7 +100,7 @@ When the tool is live, they will also have administrative access and manages the
 \subsubsection{Research Subteam}\label{research_team}
 The research subteam will be actively using the tool. They are responsible for providing feedback to the product subteam on any pain points experienced while using the tool.
 As well as assessing if the tool makes the current data gathering process easier, as compared to the previous ad-hoc method of using excel. The research subteam will be alternating between the current students working on this project: Awurama Nyarko, Fei Xie, Ghena Hatoum, and Haniye Hamidizadeh. \\
-\textbf{Related Goals}: \nameref{goal-auto-data}, \nameref{goal-data-table}, \nameref{goal-auto-ahp}, and \nameref{goal-visual}, 
+\textbf{Related Goals}: \nameref{goal-auto-data}, \nameref{goal-data-table}, \nameref{goal-auto-ahp}, and \nameref{goal-visual},
 
 \subsection{Customer}
 The users of the tool.
@@ -111,7 +111,7 @@ See \hyperref[smith]{Dr. Spencer Smith}.
 \subsubsection{Ryan Fang}\label{ryan}
 A Master's student at McMaster University currently measuring the State of Best Practices for the Robotics Software domain.
 Once the tool is in a usable state, after the proof of concept demonstration, he will be onboarded to start using the tool for his research. He is responsible for providing feedback once he starts using the tool. \\
-\textbf{Related Goals}: \nameref{goal-auto-data}, \nameref{goal-data-table}, \nameref{goal-auto-ahp}, and \nameref{goal-visual}, 
+\textbf{Related Goals}: \nameref{goal-auto-data}, \nameref{goal-data-table}, \nameref{goal-auto-ahp}, and \nameref{goal-visual},
 
 \subsection{Other Stakeholders}
 Additional stakeholders for the development or maintenance of the tool.
@@ -121,7 +121,7 @@ They are responsible for the technical development portion of the project, inclu
 \textbf{Related Goals:} Since the goals are structured from the perspective of the user, there are no explicitly listed goals for the development team, other than the completion of the project.
 \subsubsection{Dr. Lingyang Chu}\label{chu}
 The domain expert/consultant for the \hyperref[research_team]{research subteam} during their work on the paper. This person has deep domain knowledge but won't necessarily know the technical software aspects of the domain. He will be interested in the results that the research subteam discovered during their assessment of the domain.\\
-\textbf{Related Goals}: \nameref{goal-data-table}, \nameref{goal-visual} and \nameref{goal-collab} 
+\textbf{Related Goals}: \nameref{goal-data-table}, \nameref{goal-visual} and \nameref{goal-collab}
 
 \subsection{Hands-On Users of the Project}
 Broader users of the tool.
@@ -133,7 +133,7 @@ See \hyperref[research_team]{Research Subteam}.
 See \hyperref[chu]{Dr. Lingyang Chu}
 \subsubsection{Researchers/Industry Workers}
 These are people who are interested in seeing the results of the research results for a domain. They are responsible for accessing the usability of the tool in the context of a read-only experience, and provide feedback to the product subteam. \\
-\textbf{Related Goals}: \nameref{goal-data-table}, \nameref{goal-visual} and \nameref{goal-collab} 
+\textbf{Related Goals}: \nameref{goal-data-table}, \nameref{goal-visual} and \nameref{goal-collab}
 
 \subsection{Personas}
 Below are personas to help visualize the users of the tool.
@@ -172,7 +172,7 @@ The person responsible for updating the tool with new features, or fixing any ex
 \textbf{Infrastructure Team} \\
 The infrastructure team at McMaster University will be responsible for hosting the project, and should ensure that the application is available for use and maintains data integrity of their database servers.
 \section{Mandated Constraints}
-Constraints on the eventual design of the tool. 
+Constraints on the eventual design of the tool.
 \subsection{Solution Constraints}
 Constraints on a particular way the tool should solve and behave.
 \begin{itemize}
@@ -293,22 +293,22 @@ The following table shows all business events to which the work responds. Busine
 \textbf{Event Name} & \textbf{Input \& Output} & \textbf{Summary of BUC} \\ \hline
 
 New Library/Package Added for Assessment &
-\textbf{Input:} Research subteam enters GitHub link or package name.  
+\textbf{Input:} Research subteam enters GitHub link or package name.
 \textbf{Output:} Tool retrieves metadata (stars, forks, releases, last commit) via API. &
 System automatically fetches repository metrics from GitHub and stores them in the database for analysis and visualization. \\ \hline
 
 Library Becomes Archived / Deleted / Restricted &
-\textbf{Input:} API request fails or returns error.  
+\textbf{Input:} API request fails or returns error.
 \textbf{Output:} Error log generated; library flagged for manual review. &
 System detects inaccessible data and notifies research team to investigate and update records. \\ \hline
 
 Domain Expert Revises Library List &
-\textbf{Input:} Feedback from domain expert on selected packages.  
+\textbf{Input:} Feedback from domain expert on selected packages.
 \textbf{Output:} Updated list of libraries for assessment. &
 System allows easy modification of included libraries; re-runs analysis with updated list. \\ \hline
 
 Assessment Cycle Completed &
-\textbf{Input:} All data collected and validated.  
+\textbf{Input:} All data collected and validated.
 \textbf{Output:} Generated dashboards, ranking reports, and exportable visualizations. &
 System computes AHP-based scores and produces comparative visualizations and reports for research publication. \\ \hline
 
@@ -487,7 +487,7 @@ Visualize \& Export Results (\nameref{goal-visual}) & General User / Researcher 
 \subsection{Individual Product Use Cases (PUC's)}
 Important things to keep in mind when looking at the Use Case Diagram:
 \begin{itemize}
-  \item Include: A include B means, if A is executed that means B will be executed as well. 
+  \item Include: A include B means, if A is executed that means B will be executed as well.
   \begin{itemize}
     \item Update Data include Login, if user wanted to Update Data they must Login.
     \item Login include Verify Account, when user tries login the system will verify account.
@@ -506,7 +506,7 @@ Important things to keep in mind when looking at the Use Case Diagram:
 
 
 \section{Functional Requirements}
-What our tool must do, it's features and behaviours are listed below.   
+What our tool must do, it's features and behaviours are listed below.
 \begin{enumerate}[label=FR\arabic*]
   \item The Admin will be able to extend an invitation to new researchers via the website, using the researcher's email address.
   \\ \textbf{Rationale}: The tool should handle all required functionality for use, without requiring users to go off site.
@@ -527,14 +527,8 @@ What our tool must do, it's features and behaviours are listed below.
   \\ \textbf{Rationale}: To allow for domains to be in different stages, and for open access once completed.
   \\ \textbf{Fit Criterion}: Unpublished domains cannot be seen by users. Published domains can be seen by users.
   \item Researchers can add/modify data/libraries of existing domains, and download data/graphs regardless of completion status.
-  \\ \textbf{Rationale}: Researchers must be able to continuously update and analyze domain data throughout the research lifecycle, including before a domain is finalized or published.
-  \\ \textbf{Fit Criterion}: Researchers can create, edit, and delete libraries and associated metric data within domains they have access to, and can download datasets and generated graphs whether the domain is published or unpublished.
-  \item The system must validate all user input upon addition or update (e.g., ensuring numeric fields are numbers, dates are valid, and text limits are met).	
-  \\ \textbf{Rationale}: Input validation is required to ensure data correctness, consistency, and reliability for downstream analysis and visualization.
-  \\ \textbf{Fit Criterion}: Invalid inputs are rejected at submission time with clear error messages, and only data that meets defined validation rules is saved to the system.
-  \item The system must allow an Admin to trigger the automated metric data. The system must report detailed errors for any records that fail validation, such as feature names not being in the scope or wrong data type for a column.
-  \\ \textbf{Rationale}: Reduces manual data entry effort and minimizes human error when working with multiple libraries.
-  \\ \textbf{Fit Criterion}: Admins can enter a valid Github URL relating to a library, and the system successfully imports valid metrics while displaying a detailed error report for each invalid row and column.
+  \item The system must validate all user input upon addition or update (e.g., ensuring numeric fields are numbers, dates are valid, and text limits are met).
+  \item The system must allow a Admin to bulk upload library and metric data using a predefined Excel template. The system must report detailed errors for any records that fail validation, such as feature names not being in the scope or wrong data type for a column.
   \item When a Researcher enters a public GitHub URL for a library, the system must call the GitHub API to automatically retrieve and populate specific data points, such as the Repository Creation Date and the Last Commit Date.
   \\ \textbf{Rationale}: Automatable repository metric data should be automatically extracted.
   \\ \textbf{Fit Criterion}: With a valid Github URL, system populates the corresponding rows and columns with the collected metrics, and displays errors for irretrievable data.
@@ -1254,7 +1248,7 @@ Security, accessibility. \\
 %\lips
 
 \section{Costs}
-There is no development cost for this project, due to the nature of this being a capstone project. 
+There is no development cost for this project, due to the nature of this being a capstone project.
 \\
 The costs of hosting the required services, such as the database and the web application will depend on McMaster University's existing infrastructure.
 \\
@@ -1267,7 +1261,7 @@ Assuming around a maximum usage of 20 Hours/Month, the total cost of hosting is 
 \toprule
 \textbf{Name} & \textbf{Configuration} & \textbf{Estimated Usage} & \textbf{Total Cost} \\
 \midrule
-RDS for MySQL & Two vCPU and 8GB of Memory & 20 Hours/Month & 9.76 CAD/Month \\ 
+RDS for MySQL & Two vCPU and 8GB of Memory & 20 Hours/Month & 9.76 CAD/Month \\
 EC2 & t4g.large Instance & 20 Hours/Month & 1.87 USD/Month \\
 \bottomrule
 \end{tabularx}

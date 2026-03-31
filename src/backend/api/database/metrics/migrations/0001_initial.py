@@ -8,22 +8,48 @@ class Migration(migrations.Migration):
 
     initial = True
 
-    dependencies = [
-    ]
+    dependencies = []
 
     operations = [
         migrations.CreateModel(
-            name='Metric',
+            name="Metric",
             fields=[
-                ('metric_ID', models.UUIDField(default=uuid.uuid4, editable=False, primary_key=True, serialize=False)),
-                ('metric_name', models.CharField(max_length=100, unique=True)),
-                ('description', models.CharField(blank=True, max_length=255, null=True)),
-                ('category', models.CharField(blank=True, max_length=50, null=True)),
-                ('weight', models.FloatField(default=1.0)),
-                ('option_category', models.CharField(blank=True, max_length=100, null=True)),
-                ('rule', models.CharField(blank=True, max_length=100, null=True)),
-                ('value_type', models.CharField(choices=[('float', 'Float'), ('int', 'Integer'), ('bool', 'Boolean'), ('range', 'Range'), ('text', 'Text')], default='float', max_length=10)),
-                ('created_at', models.DateTimeField(auto_now_add=True)),
+                (
+                    "metric_ID",
+                    models.UUIDField(
+                        default=uuid.uuid4,
+                        editable=False,
+                        primary_key=True,
+                        serialize=False,
+                    ),
+                ),
+                ("metric_name", models.CharField(max_length=100, unique=True)),
+                (
+                    "description",
+                    models.CharField(blank=True, max_length=255, null=True),
+                ),
+                ("category", models.CharField(blank=True, max_length=50, null=True)),
+                ("weight", models.FloatField(default=1.0)),
+                (
+                    "option_category",
+                    models.CharField(blank=True, max_length=100, null=True),
+                ),
+                ("rule", models.CharField(blank=True, max_length=100, null=True)),
+                (
+                    "value_type",
+                    models.CharField(
+                        choices=[
+                            ("float", "Float"),
+                            ("int", "Integer"),
+                            ("bool", "Boolean"),
+                            ("range", "Range"),
+                            ("text", "Text"),
+                        ],
+                        default="float",
+                        max_length=10,
+                    ),
+                ),
+                ("created_at", models.DateTimeField(auto_now_add=True)),
             ],
         ),
     ]

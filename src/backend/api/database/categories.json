@@ -1,19 +1,19 @@
 {
     "Categories": [
-        "Installability", 
+        "Installability",
         "Popularity",
         "Activity",
         "Quality",
-        "Correctness and Verifiability", 
-        "Surface Reliability", 
-        "Surface Robustness", 
-        "Surface Usability", 
-        "Maintenance", 
-        "Reusability", 
-        "Visibility/Transparency", 
+        "Correctness and Verifiability",
+        "Surface Reliability",
+        "Surface Robustness",
+        "Surface Usability",
+        "Maintainability",
+        "Reusability",
+        "Visibility/Transparency",
         "Surface Understandability",
         "Raw Metrics (Measured via git_stats)",
-        "Raw Metrics (Measured via scc)", 
+        "Raw Metrics (Measured via scc)",
         "Repo Metrics (Measured via GitHub)"
     ]
 

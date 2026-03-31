@@ -10,39 +10,46 @@ For the full list of settings and their values, see
 https://docs.djangoproject.com/en/5.2/ref/settings/
 """
 
-from pathlib import Path
-import pymysql
 import os
+from datetime import timedelta
 from pathlib import Path
+
+import pymysql
 from dotenv import load_dotenv
 from kombu import Queue
-
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 load_dotenv(BASE_DIR / ".env", override=False)
 STATIC_ROOT = BASE_DIR / "staticfiles"
-CSRF_TRUSTED_ORIGINS = [o.strip() for o in os.getenv("DJANGO_CSRF_TRUSTED_ORIGINS","").split(",") if o.strip()]
+CSRF_TRUSTED_ORIGINS = [
+    o.strip()
+    for o in os.getenv("DJANGO_CSRF_TRUSTED_ORIGINS", "").split(",")
+    if o.strip()
+]
 
 
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/5.2/howto/deployment/checklist/
 
-#Changed Secret Key to Prod Secret Key for deployment
+# Changed Secret Key to Prod Secret Key for deployment
 SECRET_KEY = os.getenv("DJANGO_SECRET_KEY")
 if not SECRET_KEY:
     raise RuntimeError("DJANGO_SECRET_KEY is not set")
 
-#Changed to env variable
+
+# Changed to env variable
 def env_bool(name: str, default: bool = False) -> bool:
     v = os.getenv(name)
     if v is None:
         return default
     return v.strip().lower() in ("1", "true", "t", "yes", "y", "on")
 
+
 DEBUG = env_bool("DJANGO_DEBUG", default=False)
 IS_LOCAL = env_bool("DJANGO_LOCAL", default=True)
+IS_TEST = env_bool("DJANGO_TEST", default=False)
 
-if not DEBUG and not IS_LOCAL:
+if not IS_LOCAL:
     SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
     SESSION_COOKIE_SECURE = True
     CSRF_COOKIE_SECURE = True
@@ -52,10 +59,13 @@ else:
     SESSION_COOKIE_SECURE = False
     CSRF_COOKIE_SECURE = False
 
-ALLOWED_HOSTS = [h.strip() for h in os.getenv("DJANGO_ALLOWED_HOSTS", "127.0.0.1,localhost").split(",") if h.strip()]
-
-
-
+ALLOWED_HOSTS = [
+    h.strip()
+    for h in os.getenv("DJANGO_ALLOWED_HOSTS", "127.0.0.1,localhost").split(",")
+    if h.strip()
+]
+SESSION_COOKIE_AGE = 60 * 60 * 24 * 14
+SESSION_SAVE_EVERY_REQUEST = True
 
 
 CELERY_TASK_QUEUES = (
@@ -66,73 +76,76 @@ CELERY_TASK_QUEUES = (
 CELERY_TASK_ROUTES = {
     "api.tasks.analyze_repo_gitstats_task": {"queue": "gitstats"},
 }
-GITSTATS_WORK_DIR = os.getenv("GITSTATS_WORK_DIR", str(BASE_DIR / "tmp" / "gitstats_work"))
-GITSTATS_SERVE_DIR = os.getenv("GITSTATS_SERVE_DIR", str(BASE_DIR / "data" / "gitstats"))
+GITSTATS_WORK_DIR = os.getenv(
+    "GITSTATS_WORK_DIR", str(BASE_DIR / "tmp" / "gitstats_work")
+)
+GITSTATS_SERVE_DIR = os.getenv(
+    "GITSTATS_SERVE_DIR", str(BASE_DIR / "data" / "gitstats")
+)
 
 # Application definition
 pymysql.install_as_MySQLdb()
 INSTALLED_APPS = [
-    'django.contrib.admin',
-    'django.contrib.auth',
-    'django.contrib.contenttypes',
-    'django.contrib.sessions',
-    'django.contrib.messages',
-    'django.contrib.staticfiles',
-    'rest_framework',
-    'corsheaders',
-    'users',
-    'api.apps.ApiConfig',
-
-    'api.database.libraries.apps.LibrariesConfig',
-    'api.database.metrics.apps.MetricsConfig',
-    'api.database.library_metric_values.apps.LibraryMetricValuesConfig',
-    'api.database.domain.apps.DomainConfig',
-    'django_celery_results',
-    'django_extensions',
-    'api.database.edit_history.apps.EditHistoryConfig',
-    'api.database.backup_logs.apps.BackupLogsConfig',
+    "django.contrib.admin",
+    "django.contrib.auth",
+    "django.contrib.contenttypes",
+    "django.contrib.sessions",
+    "django.contrib.messages",
+    "django.contrib.staticfiles",
+    "rest_framework",
+    "corsheaders",
+    "users",
+    "api.apps.ApiConfig",
+    "api.database.libraries.apps.LibrariesConfig",
+    "api.database.metrics.apps.MetricsConfig",
+    "api.database.library_metric_values.apps.LibraryMetricValuesConfig",
+    "api.database.domain.apps.DomainConfig",
+    "django_celery_results",
+    "django_extensions",
+    "api.database.edit_history.apps.EditHistoryConfig",
+    "api.database.backup_logs.apps.BackupLogsConfig",
 ]
-AUTH_USER_MODEL = 'users.CustomUser'
+AUTH_USER_MODEL = "users.CustomUser"
 REST_FRAMEWORK = {
-    'DEFAULT_AUTHENTICATION_CLASSES': (
-        'users.auth.CookieJWTAuthentication',
+    "DEFAULT_AUTHENTICATION_CLASSES": (
+        "users.auth.CookieJWTAuthentication",
+        "rest_framework_simplejwt.authentication.JWTAuthentication",
     ),
 }
 
 AUTHENTICATION_BACKENDS = [
-    'users.backends.EmailOrUsernameBackend',
-    'django.contrib.auth.backends.ModelBackend',
+    "users.backends.EmailOrUsernameBackend",
+    "django.contrib.auth.backends.ModelBackend",
 ]
 
 MIDDLEWARE = [
-    'corsheaders.middleware.CorsMiddleware',
-    'django.middleware.security.SecurityMiddleware',
-    'django.contrib.sessions.middleware.SessionMiddleware',
-    'django.middleware.common.CommonMiddleware',
-    'django.middleware.csrf.CsrfViewMiddleware',
-    'django.contrib.auth.middleware.AuthenticationMiddleware',
-    'django.contrib.messages.middleware.MessageMiddleware',
-    'django.middleware.clickjacking.XFrameOptionsMiddleware',
-
+    "corsheaders.middleware.CorsMiddleware",
+    "django.middleware.security.SecurityMiddleware",
+    "django.contrib.sessions.middleware.SessionMiddleware",
+    "django.middleware.common.CommonMiddleware",
+    "django.middleware.csrf.CsrfViewMiddleware",
+    "django.contrib.auth.middleware.AuthenticationMiddleware",
+    "django.contrib.messages.middleware.MessageMiddleware",
+    "django.middleware.clickjacking.XFrameOptionsMiddleware",
 ]
 
-ROOT_URLCONF = 'DomainX.urls'
+ROOT_URLCONF = "DomainX.urls"
 TEMPLATES = [
     {
-        'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [],
-        'APP_DIRS': True,
-        'OPTIONS': {
-            'context_processors': [
-                'django.template.context_processors.request',
-                'django.contrib.auth.context_processors.auth',
-                'django.contrib.messages.context_processors.messages',
+        "BACKEND": "django.template.backends.django.DjangoTemplates",
+        "DIRS": [],
+        "APP_DIRS": True,
+        "OPTIONS": {
+            "context_processors": [
+                "django.template.context_processors.request",
+                "django.contrib.auth.context_processors.auth",
+                "django.contrib.messages.context_processors.messages",
             ],
         },
     },
 ]
 
-WSGI_APPLICATION = 'DomainX.wsgi.application'
+WSGI_APPLICATION = "DomainX.wsgi.application"
 
 
 # Database
@@ -145,6 +158,13 @@ if IS_LOCAL:
         "default": {
             "ENGINE": "django.db.backends.sqlite3",
             "NAME": BASE_DIR / "db.sqlite3",
+        }
+    }
+elif IS_TEST:
+    DATABASES = {
+        "default": {
+            "ENGINE": "django.db.backends.sqlite3",
+            "NAME": BASE_DIR / "test_db.sqlite3",
         }
     }
 else:
@@ -179,23 +199,24 @@ CELERY_WORKER_PREFETCH_MULTIPLIER = 1
 CELERY_BROKER_TRANSPORT_OPTIONS = {"visibility_timeout": 60 * 60 * 24}
 
 
-
-
 # Password validation
 # https://docs.djangoproject.com/en/5.2/ref/settings/#auth-password-validators
 
 AUTH_PASSWORD_VALIDATORS = [
     {
-        'NAME': 'django.contrib.auth.password_validation.UserAttributeSimilarityValidator',
+        "NAME": "django.contrib.auth.password_validation.UserAttributeSimilarityValidator",
     },
     {
-        'NAME': 'django.contrib.auth.password_validation.MinimumLengthValidator',
+        "NAME": "django.contrib.auth.password_validation.MinimumLengthValidator",
     },
     {
-        'NAME': 'django.contrib.auth.password_validation.CommonPasswordValidator',
+        "NAME": "django.contrib.auth.password_validation.CommonPasswordValidator",
     },
     {
-        'NAME': 'django.contrib.auth.password_validation.NumericPasswordValidator',
+        "NAME": "django.contrib.auth.password_validation.NumericPasswordValidator",
+    },
+    {
+        "NAME": "users.password_validators.StrongPasswordValidator",
     },
 ]
 LOGGING = {
@@ -226,7 +247,6 @@ LOGGING = {
             "handlers": ["console"],
             "level": "INFO",
         },
-
         "api": {
             "handlers": ["console"],
             "level": "DEBUG",
@@ -239,9 +259,9 @@ LOGGING = {
 # Internationalization
 # https://docs.djangoproject.com/en/5.2/topics/i18n/
 
-LANGUAGE_CODE = 'en-us'
+LANGUAGE_CODE = "en-us"
 
-TIME_ZONE = 'UTC'
+TIME_ZONE = "UTC"
 
 USE_I18N = True
 
@@ -251,16 +271,36 @@ USE_TZ = True
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/5.2/howto/static-files/
 CORS_ALLOW_ALL_ORIGINS = False
-if IS_LOCAL:
+if IS_LOCAL or IS_TEST:
     CORS_ALLOWED_ORIGINS = ["http://localhost:3000", "http://127.0.0.1:3000"]
 else:
     CORS_ALLOWED_ORIGINS = []
 
 CORS_ALLOW_CREDENTIALS = True
+SIMPLE_JWT = {
+    "ACCESS_TOKEN_LIFETIME": timedelta(hours=2),
+    "REFRESH_TOKEN_LIFETIME": timedelta(days=14),
+    "ROTATE_REFRESH_TOKENS": True,
+    "BLACKLIST_AFTER_ROTATION": False,
+}
+FRONTEND_URL = os.getenv("FRONTEND_URL", "http://localhost:3000")
 
-STATIC_URL = 'static/'
+EMAIL_BACKEND = os.getenv(
+    "EMAIL_BACKEND", "django.core.mail.backends.console.EmailBackend"
+)
+
+DEFAULT_FROM_EMAIL = os.getenv("DEFAULT_FROM_EMAIL", "accounts@domainx.local")
+
+EMAIL_HOST = os.getenv("EMAIL_HOST", "")
+EMAIL_PORT = int(os.getenv("EMAIL_PORT", 587))
+EMAIL_HOST_USER = os.getenv("EMAIL_HOST_USER", "")
+EMAIL_HOST_PASSWORD = os.getenv("EMAIL_HOST_PASSWORD", "")
+EMAIL_USE_TLS = env_bool("EMAIL_USE_TLS", default=True)
+EMAIL_USE_SSL = env_bool("EMAIL_USE_SSL", default=False)
+
+STATIC_URL = "static/"
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/5.2/ref/settings/#default-auto-field
 
-DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"

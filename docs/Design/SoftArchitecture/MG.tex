@@ -35,7 +35,7 @@
 
 \begin{document}
 
-\title{Module Guide for \progname{}} 
+\title{Module Guide for \progname{}}
 \author{\authname}
 \date{\today}
 
@@ -66,10 +66,10 @@ This section records information for easy reference.
 \subsection{Abbreviations and Acronyms}
 
 \renewcommand{\arraystretch}{1.2}
-\begin{tabular}{l l} 
-  \toprule		
+\begin{tabular}{l l}
+  \toprule
   \textbf{symbol} & \textbf{description}\\
-  \midrule 
+  \midrule
   AC & Anticipated Change\\
   DAG & Directed Acyclic Graph \\
   M & Module \\
@@ -80,11 +80,11 @@ This section records information for easy reference.
   SRS & Software Requirements Specification\\
   \progname & Software Engineering Capstone Project\\
   UC & Unlikely Change \\
-  AHP & Analytical Hierarchy Process \\ 
+  AHP & Analytical Hierarchy Process \\
   BWM & Best-Worst Method \\
-  SSB & Skew-Symmetric Bilinear \\ 
+  SSB & Skew-Symmetric Bilinear \\
   Domain & Research Software Domain \\
-  Packages & Software Packages \\  
+  Packages & Software Packages \\
   API & Application Programming Interface \\
   ADT & Abstract Data Type\\
   POC & Proof of Concept\\
@@ -112,7 +112,7 @@ based on the principle of information hiding~\citep{Parnas1972a}.  This
 principle supports design for change, because the ``secrets'' that each module
 hides represent likely future changes.  Design for change is valuable in SC,
 where modifications are frequent, especially during initial development as the
-solution space is explored.  
+solution space is explored.
 
 Our design follows the rules layed out by \citet{ParnasEtAl1984}, as follows:
 \begin{itemize}
@@ -266,8 +266,8 @@ the SRS. In this stage, the system is decomposed into modules. The connection
 between requirements and modules is listed in Table~\ref{tb_fr_modules}.
 
 On a boarder scope all the functional requirements are covered by one module.
-In cases where multiple modules covers a single functional requirement, it is due to the required functionality requiring multiple layers of system processes. 
-For example, FR5 "Admin can create domains, using a unique domain name and optionally a short description.", the modules needed to fulfill the requirement is \mref{mDomainsPage} and \mref{mUserMgm}. 
+In cases where multiple modules covers a single functional requirement, it is due to the required functionality requiring multiple layers of system processes.
+For example, FR5 "Admin can create domains, using a unique domain name and optionally a short description.", the modules needed to fulfill the requirement is \mref{mDomainsPage} and \mref{mUserRole}.
 Since the domains' page is visible to all users, but only Admin users can create domains, we require the two modules to work simultaneously to achieve this requirement.
 
 \section{Module Decomposition} \label{SecMD}
@@ -319,14 +319,14 @@ to be implemented.
 \subsubsection{ Application UI Module (\mref{mAppUI})}
 \begin{description}
 \item[Secrets:] The data structures and algorithms to display all visuals.
-\item[Services:] Displays and renders the interactive user interface elements. 
+\item[Services:] Displays and renders the interactive user interface elements.
 \item[Implemented By:] \href{https://react.dev/}{React}
 \item[Type of Module:] ADT
 \end{description}
 
 \subsubsection{ Data Edit Module (\mref{mDataEdit})}
 \begin{description}
-\item[Secrets:] The data structures and algorithms to edit domain data. 
+\item[Secrets:] The data structures and algorithms to edit domain data.
 \item[Services:]  Handles and validates user inputs of domain/package/metric data from user-inputted data and allows editing of automated data. Provides error checking for each metric based on their requirements.
 \item[Implemented By:] \projname
 \item[Type of Module:] ADT
@@ -335,7 +335,7 @@ to be implemented.
 \subsubsection{ User Authentication Module (\mref{mUserAuth})}
 \begin{description}
 \item[Secrets:] The data structures and algorithms used to securely store, validate and manage user credentials.
-\item[Services:] Provides user registration, login, and session management services. 
+\item[Services:] Provides user registration, login, and session management services.
 \item[Implemented By:] \href{https://www.djangoproject.com/}{Django}
 \item[Type of Module:] Abstract Object
 \end{description}
@@ -378,7 +378,7 @@ to be implemented.
   facts, or programming considerations. The secrets of this module are
   \emph{not} described in the SRS.
 \item[Services:] Includes data structure and algorithms used in the system that
-  do not provide direct interaction with the user. 
+  do not provide direct interaction with the user.
   % Changes in these modules are more likely to be motivated by a desire to
   % improve performance than by externally imposed changes.
 \item[Implemented By:] --
@@ -556,6 +556,10 @@ SR-IM4 & Not Relevant \\
 CU-CR1 & \mref{mAppUI}\\
 CU-CR2 & \mref{mAppUI}\\
 CU-CR3 & \mref{mAppUI}\\
+CU-CR4 & Not Relevant \\
+CR-LR1 & Not Relevant \\
+CR-LR2 & Not Relevant \\
+CR-LR3 & Not Relevant \\
 \bottomrule
 \caption{Trace Between Non-Functional Requirements and Modules}
 \label{tnf_modules}

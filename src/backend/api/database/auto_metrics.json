@@ -1,0 +1,87 @@
+{
+  "stars_count": {
+    "label": "Stars Count",
+    "source_type": "github_api",
+    "description": "The total number of stargazers for the repository.",
+    "value_type": "int"
+  },
+  "forks_count": {
+    "label": "Forks Count",
+    "source_type": "github_api",
+    "description": "The total number of forks/copies of the repository.",
+    "value_type": "int"
+  },
+  "watchers_count": {
+    "label": "Watchers Count",
+    "source_type": "github_api",
+    "description": "The number of users currently watching the repository.",
+    "value_type": "int"
+  },
+  "open_issues_count": {
+    "label": "Open Issues Count",
+    "source_type": "github_api",
+    "description": "The number of open issues in the repository.",
+    "value_type": "int"
+  },
+  "commit_count": {
+    "label": "Commit Count",
+    "source_type": "github_api",
+    "description": "The total number of commits in the repository history.",
+    "value_type": "int"
+  },
+  "branch_count": {
+    "label": "Branch Count",
+    "source_type": "github_api",
+    "description": "The number of branches in the repository.",
+    "value_type": "int"
+  },
+  "open_prs_count": {
+    "label": "Open PRs Count",
+    "source_type": "github_api",
+    "description": "Number of open pull requests.",
+    "value_type": "int"
+  },
+  "closed_prs_count": {
+    "label": "Closed PRs Count",
+    "source_type": "github_api",
+    "description": "Number of closed pull requests.",
+    "value_type": "int"
+  },
+
+  "text_files_scc": {
+    "label": "Text Files (SCC)",
+    "source_type": "scc",
+    "description": "Number of text-based files (SCC).",
+    "value_type": "int"
+  },
+  "total_lines_scc": {
+    "label": "Total Lines (SCC)",
+    "source_type": "scc",
+    "description": "Number of total lines in text-based files (SCC).",
+    "value_type": "int"
+  },
+  "code_lines_scc": {
+    "label": "Code Lines (SCC)",
+    "source_type": "scc",
+    "description": "Number of code lines in text-based files (SCC).",
+    "value_type": "int"
+  },
+  "comment_lines_scc": {
+    "label": "Comment Lines (SCC)",
+    "source_type": "scc",
+    "description": "Number of comment lines in text-based files (SCC).",
+    "value_type": "int"
+  },
+  "blank_lines_scc": {
+    "label": "Blank Lines (SCC)",
+    "source_type": "scc",
+    "description": "Number of blank lines in text-based files (SCC).",
+    "value_type": "int"
+  },
+  "gitstats_report": {
+    "label": "GitStats Report",
+    "source_type": "gitstats",
+    "description": "Path to generated GitStats report.",
+    "value_type": "text"
+  }
+}

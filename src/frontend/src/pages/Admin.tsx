@@ -3,7 +3,8 @@ import { useNavigate } from "react-router-dom";
 import { apiUrl } from "../config/api";
 import { useAuthStore } from "../store/useAuthStore";
 import SuccessNotification from "../components/SuccessNotification";
-
+import { ArrowLeft } from "lucide-react";
+import AuthTransition from "../components/AuthTransition";
 interface Domain {
   domain_ID: string;
   domain_name: string;
@@ -17,15 +18,18 @@ interface User {
   first_name: string;
   last_name: string;
   full_name: string | null;
+  is_active: boolean;
   domains?: Domain[];
 }
 
 const AdminPage: React.FC = () => {
   const navigate = useNavigate();
-  const { user } = useAuthStore();
+  const { user, isLoading } = useAuthStore();
+
   const [users, setUsers] = useState<User[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [editingUser, setEditingUser] = useState<User | null>(null);
   const [editFormData, setEditFormData] = useState({
@@ -36,10 +40,31 @@ const AdminPage: React.FC = () => {
     email: "",
     domain_ids: [] as string[],
   });
+
+  const [isInviteModalOpen, setIsInviteModalOpen] = useState(false);
+  const [inviteFormData, setInviteFormData] = useState({
+    first_name: "",
+    last_name: "",
+    role: "admin",
+    user_name: "",
+    email: "",
+    domain_ids: [] as string[],
+  });
+
+  const [isDeactivateModalOpen, setIsDeactivateModalOpen] = useState(false);
+  const [userToDeactivate, setUserToDeactivate] = useState<User | null>(null);
+  const [deactivateLoading, setDeactivateLoading] = useState(false);
+
   const [allDomains, setAllDomains] = useState<Domain[]>([]);
   const [updateLoading, setUpdateLoading] = useState(false);
   const [updateError, setUpdateError] = useState<string | null>(null);
   const [showUpdateSuccess, setShowUpdateSuccess] = useState(false);
+
+  const [inviteLoading, setInviteLoading] = useState(false);
+  const [inviteError, setInviteError] = useState<string | null>(null);
+  const [showInviteSuccess, setShowInviteSuccess] = useState(false);
+
+  const [resendLoadingUserId, setResendLoadingUserId] = useState<number | null>(null);
 
   useEffect(() => {
     if (showUpdateSuccess) {
@@ -49,17 +74,31 @@ const AdminPage: React.FC = () => {
   }, [showUpdateSuccess]);
 
   useEffect(() => {
-    if (user === undefined) {
+    if (showInviteSuccess) {
+      const timer = setTimeout(() => setShowInviteSuccess(false), 3000);
+      return () => clearTimeout(timer);
+    }
+  }, [showInviteSuccess]);
+
+  // Handle authentication and authorization
+  useEffect(() => {
+    if (isLoading) return;
+    // If not logged in, redirect to login
+    if (!user) {
+      navigate("/login", { state: { from: "/admin" } });
       return;
     }
-    if (!user || user.role !== "superadmin") {
-      navigate("/main");
+    // If logged in but not superadmin, redirect to home
+    if (user.role !== "superadmin") {
+      navigate("/");
       return;
     }
 
+    // Only fetch data if user is superadmin
+    document.title = "DomainX – Admin";
     fetchUsers();
     fetchAllDomains();
-  }, [user, navigate]);
+  }, [user, isLoading, navigate]);
 
   const fetchAllDomains = async () => {
     try {
@@ -106,9 +145,9 @@ const AdminPage: React.FC = () => {
       first_name: u.first_name || "",
       last_name: u.last_name || "",
       role: u.role,
-      domain_ids: u.domains?.map(d => d.domain_ID) || [],
+      domain_ids: u.domains?.map((d) => d.domain_ID) || [],
       user_name: u.username,
-      email: u.email
+      email: u.email,
     });
     setUpdateError(null);
     setIsEditModalOpen(true);
@@ -118,6 +157,35 @@ const AdminPage: React.FC = () => {
     setIsEditModalOpen(false);
     setEditingUser(null);
     setUpdateError(null);
+  };
+
+  const openInviteModal = () => {
+    setInviteFormData({
+      first_name: "",
+      last_name: "",
+      role: "admin",
+      user_name: "",
+      email: "",
+      domain_ids: [],
+    });
+    setInviteError(null);
+    setIsInviteModalOpen(true);
+  };
+
+  const closeInviteModal = () => {
+    setIsInviteModalOpen(false);
+    setInviteError(null);
+  };
+
+  const openDeactivateModal = (u: User) => {
+    setUserToDeactivate(u);
+    setIsDeactivateModalOpen(true);
+  };
+
+  const closeDeactivateModal = () => {
+    if (deactivateLoading) return;
+    setUserToDeactivate(null);
+    setIsDeactivateModalOpen(false);
   };
 
   const handleUpdateUser = async () => {
@@ -149,20 +217,144 @@ const AdminPage: React.FC = () => {
     }
   };
 
+  const handleInviteUser = async () => {
+    if (!inviteFormData.email.trim()) {
+      setInviteError("Email is required.");
+      return;
+    }
+
+    try {
+      setInviteLoading(true);
+      setInviteError(null);
+
+      const response = await fetch(apiUrl("/users/invite/"), {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        credentials: "include",
+        body: JSON.stringify({
+          first_name: inviteFormData.first_name,
+          last_name: inviteFormData.last_name,
+          role: inviteFormData.role,
+          username: inviteFormData.user_name,
+          email: inviteFormData.email,
+          domain_ids: inviteFormData.domain_ids,
+        }),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(
+          data.error ||
+            data.errors?.email?.[0] ||
+            data.errors?.username?.[0] ||
+            "Failed to invite user"
+        );
+      }
+
+      setShowInviteSuccess(true);
+      closeInviteModal();
+      void fetchUsers();
+    } catch (err) {
+      setInviteError(err instanceof Error ? err.message : "An error occurred");
+    } finally {
+      setInviteLoading(false);
+    }
+  };
+
+  const handleResendInvite = async (u: User) => {
+    try {
+      setResendLoadingUserId(u.id);
+      setError(null);
+
+      const response = await fetch(apiUrl(`/users/${u.id}/resend-invite/`), {
+        method: "POST",
+        credentials: "include",
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.error || "Failed to resend invite");
+      }
+
+      setShowInviteSuccess(true);
+      await fetchUsers();
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "An error occurred");
+    } finally {
+      setResendLoadingUserId(null);
+    }
+  };
+
+  const handleDeactivateUser = async () => {
+    if (!userToDeactivate) return;
+
+    try {
+      setDeactivateLoading(true);
+      setError(null);
+
+      const response = await fetch(
+        apiUrl(`/users/${userToDeactivate.id}/deactivate/`),
+        {
+          method: "PATCH",
+          credentials: "include",
+        }
+      );
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.error || "Failed to deactivate user");
+      }
+
+      await fetchUsers();
+      setShowUpdateSuccess(true);
+      closeDeactivateModal();
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "An error occurred");
+    } finally {
+      setDeactivateLoading(false);
+    }
+  };
+
   const toggleDomain = (domainId: string) => {
-    setEditFormData(prev => ({
+    setEditFormData((prev) => ({
       ...prev,
       domain_ids: prev.domain_ids.includes(domainId)
-        ? prev.domain_ids.filter(id => id !== domainId)
-        : [...prev.domain_ids, domainId]
+        ? prev.domain_ids.filter((id) => id !== domainId)
+        : [...prev.domain_ids, domainId],
     }));
   };
+
+  const toggleInviteDomain = (domainId: string) => {
+    setInviteFormData((prev) => ({
+      ...prev,
+      domain_ids: prev.domain_ids.includes(domainId)
+        ? prev.domain_ids.filter((id) => id !== domainId)
+        : [...prev.domain_ids, domainId],
+    }));
+  };
+
+  // Show loading while checking auth
+  if (isLoading) {
+    return (
+      <AuthTransition message="Checking Authentication..." />
+    );
+  }
+
+  // Don't render anything while redirecting
+  if (!user || user.role !== "superadmin") {
+    return null;
+  }
 
   if (loading) {
     return (
       <div className="dx-bg" style={{ display: "flex", height: "100vh" }}>
         <div className="stars"></div>
-        <div style={{ margin: "auto", color: "white", fontSize: "1.5rem" }}>Loading...</div>
+        <div style={{ margin: "auto", color: "white", fontSize: "1.5rem" }}>
+          Loading...
+        </div>
       </div>
     );
   }
@@ -171,9 +363,19 @@ const AdminPage: React.FC = () => {
     return (
       <div className="dx-bg" style={{ display: "flex", height: "100vh" }}>
         <div className="stars"></div>
-        <div style={{ margin: "auto", color: "var(--danger)", fontSize: "1.5rem" }}>
+        <div
+          style={{
+            margin: "auto",
+            color: "var(--danger)",
+            fontSize: "1.5rem",
+          }}
+        >
           Error: {error}
-          <button className="dx-btn dx-btn-primary" onClick={fetchUsers} style={{ marginLeft: "20px" }}>
+          <button
+            className="dx-btn dx-btn-primary"
+            onClick={fetchUsers}
+            style={{ marginLeft: "20px" }}
+          >
             Retry
           </button>
         </div>
@@ -182,7 +384,10 @@ const AdminPage: React.FC = () => {
   }
 
   return (
-    <div className="dx-bg" style={{ display: "flex", height: "100vh", minWidth: "450px" }}>
+    <div
+      className="dx-bg"
+      style={{ display: "flex", height: "100vh", minWidth: "450px" }}
+    >
       <div
         style={{
           flex: 1,
@@ -197,16 +402,26 @@ const AdminPage: React.FC = () => {
       >
         <div className="stars"></div>
 
-        <div style={{ color: "white", display: "flex", flexDirection: "column", flex: 1, minHeight: 0 }}>
+        <div
+          style={{
+            color: "white",
+            display: "flex",
+            flexDirection: "column",
+            flex: 1,
+            minHeight: 0,
+          }}
+        >
           <button
             className="dx-btn dx-btn-outline"
             style={{ width: "fit-content", fontSize: "1rem", marginBottom: 20 }}
-            onClick={() => navigate("/main")}
+            onClick={() => navigate("/")}
           >
-            ← Back
+            <ArrowLeft size={18} /> Back
           </button>
-          
-          <h1 style={{ color: "var(--accent)", marginBottom: 14 }}>Manage Users</h1>
+
+          <h1 style={{ color: "var(--accent)", marginBottom: 10 }}>
+            Manage Users
+          </h1>
 
           <div
             className="dx-card"
@@ -218,6 +433,12 @@ const AdminPage: React.FC = () => {
               flexDirection: "column",
             }}
           >
+            <div style={{ marginBottom: 10 }}>
+              <button className="dx-btn dx-btn-primary" onClick={openInviteModal}>
+                + Invite New User
+              </button>
+            </div>
+
             <div className="dx-table-wrap dx-table-scroll" style={{ flex: 1, minHeight: 0 }}>
               <table className="dx-table" style={{ tableLayout: "auto" }}>
                 <thead>
@@ -229,96 +450,259 @@ const AdminPage: React.FC = () => {
                     <th className="dx-th-sticky">Last Name</th>
                     <th className="dx-th-sticky">Role</th>
                     <th className="dx-th-sticky">Associated Domains</th>
+                    <th className="dx-th-sticky">Status</th>
                   </tr>
                 </thead>
 
                 <tbody>
                   {users.length === 0 ? (
                     <tr>
-                      <td colSpan={6} style={{ textAlign: "center", padding: "40px", color: "var(--text-dim)" }}>
+                      <td
+                        colSpan={8}
+                        style={{
+                          textAlign: "center",
+                          padding: "40px",
+                          color: "var(--text-dim)",
+                        }}
+                      >
                         No users found
                       </td>
                     </tr>
                   ) : (
-                    users.map((u) => (
-                      <tr key={u.id} style={{ borderBottom: "1px solid rgba(255,255,255,0.08)" }}>
-                        <td style={{ minWidth: 80, whiteSpace: "normal", wordWrap: "break-word" }}>
-                          <button
-                            className="dx-btn dx-btn-outline"
-                            onClick={() => openEditModal(u)}
-                            style={{ fontSize: "0.85rem", padding: "6px 15px", justifySelf: "center"}}
-                          >
-                            Edit
-                          </button>
-                        </td>
-                        <td style={{ minWidth: 200, maxWidth: 300, whiteSpace: "normal", wordWrap: "break-word", overflowWrap: "anywhere" }}>{u.email}</td>
-                        <td style={{ minWidth: 120, maxWidth: 200, whiteSpace: "normal", wordWrap: "break-word" }}>{u.username}</td>
-                        <td style={{ minWidth: 100, maxWidth: 150, whiteSpace: "normal", wordWrap: "break-word" }}>{u.first_name || "—"}</td>
-                        <td style={{ minWidth: 100, maxWidth: 150, whiteSpace: "normal", wordWrap: "break-word" }}>{u.last_name || "—"}</td>
-                        <td style={{ minWidth: 120, whiteSpace: "normal", wordWrap: "break-word" }}>
-                          <span
+                    users.map((u) => {
+                      const canDeactivate = !!user && u.is_active && u.id !== user.id;
+                      const canResendInvite = !u.is_active;
+
+                      return (
+                        <tr
+                          key={u.id}
+                          style={{ borderBottom: "1px solid rgba(255,255,255,0.08)" }}
+                        >
+                          <td style={{ minWidth: 270 }}>
+                            <div
+                              style={{
+                                display: "flex",
+                                alignItems: "center",
+                                gap: 8,
+                                flexWrap: "wrap",
+                              }}
+                            >
+                              <button
+                                className="dx-btn dx-btn-outline"
+                                onClick={() => openEditModal(u)}
+                                style={{
+                                  fontSize: "0.85rem",
+                                  padding: "6px 16px",
+                                  borderRadius: 999,
+                                  minWidth: 72,
+                                }}
+                              >
+                                Edit
+                              </button>
+
+                              {canResendInvite && (
+                                <button
+                                  type="button"
+                                  className="dx-btn dx-btn-outline"
+                                  onClick={() => handleResendInvite(u)}
+                                  disabled={resendLoadingUserId === u.id}
+                                  style={{
+                                    fontSize: "0.85rem",
+                                    padding: "6px 16px",
+                                    borderRadius: 999,
+                                    minWidth: 122,
+                                    borderColor: "rgba(167, 139, 250, 0.55)",
+                                    color: "#a78bfa",
+                                    opacity: resendLoadingUserId === u.id ? 0.7 : 1,
+                                  }}
+                                >
+                                  {resendLoadingUserId === u.id ? "Sending..." : "Resend Invite"}
+                                </button>
+                              )}
+
+                              {canDeactivate && (
+                                <button
+                                  type="button"
+                                  onClick={() => openDeactivateModal(u)}
+                                  style={{
+                                    background: "rgba(239, 68, 68, 0.12)",
+                                    color: "#f87171",
+                                    border: "1px solid rgba(239, 68, 68, 0.35)",
+                                    borderRadius: 999,
+                                    fontSize: "0.82rem",
+                                    padding: "6px 12px",
+                                    cursor: "pointer",
+                                    lineHeight: 1.2,
+                                  }}
+                                >
+                                  Deactivate
+                                </button>
+                              )}
+                            </div>
+                          </td>
+
+                          <td
                             style={{
-                              padding: "4px 12px",
-                              borderRadius: "8px",
-                              fontSize: "0.85rem",
-                              fontWeight: "500",
-                              backgroundColor:
-                                u.role === "superadmin"
-                                  ? "rgba(251, 191, 36, 0.2)"
-                                  : u.role === "admin"
-                                  ? "rgba(96, 165, 250, 0.2)"
-                                  : "rgba(156, 163, 175, 0.2)",
-                              color:
-                                u.role === "superadmin"
-                                  ? "#fbbf24"
-                                  : u.role === "admin"
-                                  ? "#60a5fa"
-                                  : "#9ca3af",
+                              minWidth: 200,
+                              maxWidth: 300,
+                              whiteSpace: "normal",
+                              wordWrap: "break-word",
+                              overflowWrap: "anywhere",
                             }}
                           >
-                            {u.role}
-                          </span>
-                        </td>
-                        <td style={{ minWidth: 200, maxWidth: 300, whiteSpace: "normal", wordWrap: "break-word" }}>
-                          {u.role === "admin" || u.role === "superadmin" ? (
-                            u.domains && u.domains.length > 0 ? (
-                              <div style={{ display: "flex", flexWrap: "wrap", gap: "6px" }}>
-                                {u.domains.map((domain) => (
-                                  <span
-                                    key={domain.domain_ID}
-                                    style={{
-                                      padding: "4px 10px",
-                                      backgroundColor: "rgba(139, 92, 246, 0.2)",
-                                      color: "#a78bfa",
-                                      borderRadius: "6px",
-                                      fontSize: "0.8rem",
-                                      fontWeight: "500",
-                                    }}
-                                  >
-                                    {domain.domain_name}
-                                  </span>
-                                ))}
-                              </div>
+                            {u.email}
+                          </td>
+
+                          <td
+                            style={{
+                              minWidth: 120,
+                              maxWidth: 200,
+                              whiteSpace: "normal",
+                              wordWrap: "break-word",
+                            }}
+                          >
+                            {u.username}
+                          </td>
+
+                          <td
+                            style={{
+                              minWidth: 100,
+                              maxWidth: 150,
+                              whiteSpace: "normal",
+                              wordWrap: "break-word",
+                            }}
+                          >
+                            {u.first_name || "—"}
+                          </td>
+
+                          <td
+                            style={{
+                              minWidth: 100,
+                              maxWidth: 150,
+                              whiteSpace: "normal",
+                              wordWrap: "break-word",
+                            }}
+                          >
+                            {u.last_name || "—"}
+                          </td>
+
+                          <td
+                            style={{
+                              minWidth: 120,
+                              whiteSpace: "normal",
+                              wordWrap: "break-word",
+                            }}
+                          >
+                            <span
+                              style={{
+                                padding: "4px 12px",
+                                borderRadius: "8px",
+                                fontSize: "0.85rem",
+                                fontWeight: "500",
+                                backgroundColor:
+                                  u.role === "superadmin"
+                                    ? "rgba(251, 191, 36, 0.2)"
+                                    : u.role === "admin"
+                                    ? "rgba(96, 165, 250, 0.2)"
+                                    : "rgba(156, 163, 175, 0.2)",
+                                color:
+                                  u.role === "superadmin"
+                                    ? "#fbbf24"
+                                    : u.role === "admin"
+                                    ? "#60a5fa"
+                                    : "#9ca3af",
+                              }}
+                            >
+                              {u.role}
+                            </span>
+                          </td>
+
+                          <td
+                            style={{
+                              minWidth: 200,
+                              maxWidth: 300,
+                              whiteSpace: "normal",
+                              wordWrap: "break-word",
+                            }}
+                          >
+                            {u.role === "admin" || u.role === "superadmin" ? (
+                              u.domains && u.domains.length > 0 ? (
+                                <div style={{ display: "flex", flexWrap: "wrap", gap: "6px" }}>
+                                  {u.domains.map((domain) => (
+                                    <span
+                                      key={domain.domain_ID}
+                                      style={{
+                                        padding: "4px 10px",
+                                        backgroundColor: "rgba(139, 92, 246, 0.2)",
+                                        color: "#a78bfa",
+                                        borderRadius: "6px",
+                                        fontSize: "0.8rem",
+                                        fontWeight: "500",
+                                      }}
+                                    >
+                                      {domain.domain_name}
+                                    </span>
+                                  ))}
+                                </div>
+                              ) : (
+                                <span
+                                  style={{ color: "var(--text-dim)", fontSize: "0.9rem" }}
+                                >
+                                  No domains
+                                </span>
+                              )
                             ) : (
-                              <span style={{ color: "var(--text-dim)", fontSize: "0.9rem" }}>No domains</span>
-                            )
-                          ) : (
-                            <span style={{ color: "var(--text-dim)", fontSize: "0.9rem" }}>N/A</span>
-                          )}
-                        </td>
-                      </tr>
-                    ))
+                              <span style={{ color: "var(--text-dim)", fontSize: "0.9rem" }}>
+                                N/A
+                              </span>
+                            )}
+                          </td>
+
+                          <td
+                            style={{
+                              minWidth: 120,
+                              whiteSpace: "normal",
+                              wordWrap: "break-word",
+                            }}
+                          >
+                            <span
+                              style={{
+                                padding: "4px 12px",
+                                borderRadius: "8px",
+                                fontSize: "0.85rem",
+                                fontWeight: "500",
+                                backgroundColor: u.is_active
+                                  ? "rgba(34, 197, 94, 0.2)"
+                                  : "rgba(251, 191, 36, 0.2)",
+                                color: u.is_active ? "#22c55e" : "#fbbf24",
+                              }}
+                            >
+                              {u.is_active ? "Active" : "Pending Invite"}
+                            </span>
+                          </td>
+                        </tr>
+                      );
+                    })
                   )}
                 </tbody>
               </table>
             </div>
 
-            <div style={{ marginTop: 14, paddingTop: 14, borderTop: "1px solid rgba(255,255,255,0.08)", color: "var(--text-dim)", fontSize: "0.9rem" }}>
+            <div
+              style={{
+                marginTop: 14,
+                paddingTop: 14,
+                borderTop: "1px solid rgba(255,255,255,0.08)",
+                color: "var(--text-dim)",
+                fontSize: "0.9rem",
+              }}
+            >
               <div style={{ display: "flex", gap: 24 }}>
                 <span>Total Users: {users.length}</span>
                 <span>Admins: {users.filter((u) => u.role === "admin").length}</span>
-                <span>Superadmins: {users.filter((u) => u.role === "superadmin").length}</span>
-                <span>Regular Users: {users.filter((u) => u.role === "user").length}</span>
+                <span>
+                  Superadmins: {users.filter((u) => u.role === "superadmin").length}
+                </span>
               </div>
             </div>
           </div>
@@ -339,23 +723,38 @@ const AdminPage: React.FC = () => {
             justifyContent: "center",
             zIndex: 1000,
           }}
-          onClick={closeEditModal}
         >
           <div
             className="dx-card"
             style={{
-                width: "min(900px, 50vw)",
-                maxHeight: "85vh",
-                overflow: "auto",
-                padding: 18,
-                position: "relative",
-                background: "rgba(18, 18, 26, 0.98)",
-                border: "1px solid rgba(255,255,255,0.08)",
-                borderRadius: 16,
-                boxShadow: "0px 10px 25px rgba(0, 0, 0, 0.2)",
+              width: "min(900px, 50vw)",
+              maxHeight: "85vh",
+              overflow: "auto",
+              padding: 18,
+              position: "relative",
+              background: "rgba(18, 18, 26, 0.98)",
+              border: "1px solid rgba(255,255,255,0.08)",
+              borderRadius: 16,
+              boxShadow: "0px 10px 25px rgba(0, 0, 0, 0.2)",
             }}
             onClick={(e) => e.stopPropagation()}
           >
+            <button
+              onClick={closeEditModal}
+              style={{
+                position: "absolute",
+                top: 10,
+                right: 14,
+                background: "transparent",
+                border: "none",
+                color: "white",
+                fontSize: "20px",
+                cursor: "pointer",
+              }}
+            >
+              ×
+            </button>
+
             <h2 style={{ color: "var(--accent)", marginBottom: 20 }}>
               Edit User: {editingUser.email}
             </h2>
@@ -419,7 +818,7 @@ const AdminPage: React.FC = () => {
                   onChange={(e) =>
                     setEditFormData({ ...editFormData, user_name: e.target.value })
                   }
-                  placeholder="Last name"
+                  placeholder="Username"
                 />
               </div>
 
@@ -435,7 +834,7 @@ const AdminPage: React.FC = () => {
                   onChange={(e) =>
                     setEditFormData({ ...editFormData, email: e.target.value })
                   }
-                  placeholder="Last name"
+                  placeholder="Email"
                 />
               </div>
 
@@ -451,9 +850,12 @@ const AdminPage: React.FC = () => {
                   }
                   style={{ width: "100%" }}
                 >
-                  <option className="dx-input-select" value="user">User</option>
-                  <option className="dx-input-select" value="admin">Admin</option>
-                  <option className="dx-input-select" value="superadmin">Superadmin</option>
+                  <option className="dx-input-select" value="admin">
+                    Admin
+                  </option>
+                  <option className="dx-input-select" value="superadmin">
+                    Superadmin
+                  </option>
                 </select>
               </div>
 
@@ -529,7 +931,336 @@ const AdminPage: React.FC = () => {
         </div>
       )}
 
-      <SuccessNotification show={showUpdateSuccess} message="User updated successfully!" />
+      {isInviteModalOpen && (
+        <div
+          style={{
+            position: "fixed",
+            top: 0,
+            left: 0,
+            right: 0,
+            bottom: 0,
+            backgroundColor: "rgba(0, 0, 0, 0.7)",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            zIndex: 1000,
+          }}
+        >
+          <div
+            className="dx-card"
+            style={{
+              width: "min(900px, 50vw)",
+              maxHeight: "85vh",
+              overflow: "auto",
+              padding: 18,
+              position: "relative",
+              background: "rgba(18, 18, 26, 0.98)",
+              border: "1px solid rgba(255,255,255,0.08)",
+              borderRadius: 16,
+              boxShadow: "0px 10px 25px rgba(0, 0, 0, 0.2)",
+            }}
+            onClick={(e) => e.stopPropagation()}
+          >
+            <button
+              onClick={closeInviteModal}
+              style={{
+                position: "absolute",
+                top: 10,
+                right: 14,
+                background: "transparent",
+                border: "none",
+                color: "white",
+                fontSize: "20px",
+                cursor: "pointer",
+              }}
+            >
+              ×
+            </button>
+
+            <h2 style={{ color: "var(--accent)", marginBottom: 20 }}>
+              Invite New User
+            </h2>
+
+            {inviteError && (
+              <div
+                style={{
+                  padding: "12px",
+                  backgroundColor: "rgba(239, 68, 68, 0.2)",
+                  color: "#f87171",
+                  borderRadius: "8px",
+                  marginBottom: 16,
+                }}
+              >
+                {inviteError}
+              </div>
+            )}
+
+            <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
+              <div>
+                <label style={{ display: "block", marginBottom: 8, color: "var(--text-main)" }}>
+                  First Name
+                </label>
+                <input
+                  className="dx-input"
+                  style={{ width: "95%" }}
+                  type="text"
+                  value={inviteFormData.first_name}
+                  onChange={(e) =>
+                    setInviteFormData({ ...inviteFormData, first_name: e.target.value })
+                  }
+                  placeholder="First name"
+                />
+              </div>
+
+              <div>
+                <label style={{ display: "block", marginBottom: 8, color: "var(--text-main)" }}>
+                  Last Name
+                </label>
+                <input
+                  className="dx-input"
+                  style={{ width: "95%" }}
+                  type="text"
+                  value={inviteFormData.last_name}
+                  onChange={(e) =>
+                    setInviteFormData({ ...inviteFormData, last_name: e.target.value })
+                  }
+                  placeholder="Last name"
+                />
+              </div>
+
+              <div>
+                <label style={{ display: "block", marginBottom: 8, color: "var(--text-main)" }}>
+                  Username <span style={{ color: "#f87171" }}>*</span>
+                </label>
+                <input
+                  className="dx-input"
+                  style={{ width: "95%" }}
+                  type="text"
+                  required
+                  value={inviteFormData.user_name}
+                  onChange={(e) =>
+                    setInviteFormData({ ...inviteFormData, user_name: e.target.value })
+                  }
+                  placeholder="Username"
+                />
+              </div>
+
+              <div>
+                <label style={{ display: "block", marginBottom: 8, color: "var(--text-main)" }}>
+                  Email <span style={{ color: "#f87171" }}>*</span>
+                </label>
+                <input
+                  className="dx-input"
+                  style={{ width: "95%" }}
+                  type="email"
+                  required
+                  value={inviteFormData.email}
+                  onChange={(e) =>
+                    setInviteFormData({ ...inviteFormData, email: e.target.value })
+                  }
+                  placeholder="Email"
+                />
+              </div>
+
+              <div>
+                <label style={{ display: "block", marginBottom: 8, color: "var(--text-main)" }}>
+                  Role
+                </label>
+                <select
+                  className="dx-input"
+                  value={inviteFormData.role}
+                  onChange={(e) =>
+                    setInviteFormData({ ...inviteFormData, role: e.target.value })
+                  }
+                  style={{ width: "100%" }}
+                >
+                  <option className="dx-input-select" value="admin">
+                    Admin
+                  </option>
+                  <option className="dx-input-select" value="superadmin">
+                    Superadmin
+                  </option>
+                </select>
+              </div>
+
+              <div>
+                <label style={{ display: "block", marginBottom: 8, color: "var(--text-main)" }}>
+                  Associated Domains
+                </label>
+                <div
+                  style={{
+                    maxHeight: "200px",
+                    overflow: "auto",
+                    border: "1px solid rgba(255,255,255,0.1)",
+                    borderRadius: "8px",
+                    padding: "12px",
+                  }}
+                >
+                  {allDomains.length === 0 ? (
+                    <div style={{ color: "var(--text-dim)" }}>No domains available</div>
+                  ) : (
+                    allDomains.map((domain) => (
+                      <label
+                        key={domain.domain_ID}
+                        style={{
+                          display: "flex",
+                          alignItems: "center",
+                          padding: "8px",
+                          cursor: "pointer",
+                          borderRadius: "6px",
+                          marginBottom: "4px",
+                        }}
+                        onMouseEnter={(e) => {
+                          e.currentTarget.style.backgroundColor = "rgba(255,255,255,0.05)";
+                        }}
+                        onMouseLeave={(e) => {
+                          e.currentTarget.style.backgroundColor = "transparent";
+                        }}
+                      >
+                        <input
+                          type="checkbox"
+                          checked={inviteFormData.domain_ids.includes(domain.domain_ID)}
+                          onChange={() => toggleInviteDomain(domain.domain_ID)}
+                          style={{ marginRight: "10px", cursor: "pointer" }}
+                        />
+                        <span style={{ color: "var(--text-main)" }}>{domain.domain_name}</span>
+                      </label>
+                    ))
+                  )}
+                </div>
+              </div>
+
+              <div style={{ display: "flex", gap: 12, marginTop: 8 }}>
+                <button
+                  className="dx-btn dx-btn-primary"
+                  onClick={handleInviteUser}
+                  disabled={inviteLoading || !inviteFormData.email.trim()}
+                  style={{ flex: 1 }}
+                >
+                  {inviteLoading ? "Sending..." : "Send Invite"}
+                </button>
+                <button
+                  className="dx-btn dx-btn-outline"
+                  onClick={closeInviteModal}
+                  disabled={inviteLoading}
+                  style={{ flex: 1 }}
+                >
+                  Cancel
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {isDeactivateModalOpen && userToDeactivate && (
+        <div
+          style={{
+            position: "fixed",
+            top: 0,
+            left: 0,
+            right: 0,
+            bottom: 0,
+            backgroundColor: "rgba(0, 0, 0, 0.7)",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            zIndex: 1100,
+          }}
+        >
+          <div
+            className="dx-card"
+            style={{
+              width: "min(520px, 92vw)",
+              padding: 22,
+              position: "relative",
+              background: "rgba(18, 18, 26, 0.98)",
+              border: "1px solid rgba(255,255,255,0.08)",
+              borderRadius: 16,
+              boxShadow: "0px 10px 25px rgba(0, 0, 0, 0.2)",
+            }}
+            onClick={(e) => e.stopPropagation()}
+          >
+            <button
+              onClick={closeDeactivateModal}
+              disabled={deactivateLoading}
+              style={{
+                position: "absolute",
+                top: 10,
+                right: 14,
+                background: "transparent",
+                border: "none",
+                color: "white",
+                fontSize: "20px",
+                cursor: deactivateLoading ? "default" : "pointer",
+                opacity: deactivateLoading ? 0.5 : 1,
+              }}
+            >
+              ×
+            </button>
+
+            <h2 style={{ color: "#f87171", marginBottom: 14 }}>
+              Deactivate User
+            </h2>
+
+            <div
+              style={{
+                color: "var(--text-main)",
+                lineHeight: 1.6,
+                marginBottom: 20,
+              }}
+            >
+              Are you sure you want to deactivate:
+              <div
+                style={{
+                  marginTop: 8,
+                  padding: "10px 12px",
+                  borderRadius: 10,
+                  background: "rgba(255,255,255,0.04)",
+                  wordBreak: "break-word",
+                  color: "white",
+                  fontWeight: 600,
+                }}
+              >
+                {userToDeactivate.email}
+              </div>
+              <div style={{ marginTop: 10, color: "var(--text-dim)", fontSize: "0.92rem" }}>
+                This user will be removed from the active admin list.
+              </div>
+            </div>
+
+            <div style={{ display: "flex", gap: 12 }}>
+              <button
+                className="dx-btn dx-btn-outline"
+                onClick={closeDeactivateModal}
+                disabled={deactivateLoading}
+                style={{ flex: 1 }}
+              >
+                Cancel
+              </button>
+
+              <button
+                className="dx-btn"
+                onClick={handleDeactivateUser}
+                disabled={deactivateLoading}
+                style={{
+                  flex: 1,
+                  background: "rgba(239, 68, 68, 0.16)",
+                  color: "#f87171",
+                  border: "1px solid rgba(239, 68, 68, 0.4)",
+                }}
+              >
+                {deactivateLoading ? "Deactivating..." : "Deactivate"}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      <>
+        <SuccessNotification show={showUpdateSuccess} message="User updated successfully!" />
+        <SuccessNotification show={showInviteSuccess} message="Invitation sent successfully!" />
+      </>
     </div>
   );
 };
