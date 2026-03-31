@@ -1,7 +1,7 @@
-import React, { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import React, { useState, useEffect } from "react";
 import { useAuthStore } from "../store/useAuthStore";
 import { apiUrl } from "../config/api";
+import { useNavigate, useLocation } from "react-router-dom";
 const Login: React.FC = () => {
   const [loginValue, setLoginValue] = useState("");
   const [password, setPassword] = useState("");
@@ -9,6 +9,10 @@ const Login: React.FC = () => {
   const [error, setError] = useState<string | null>(null);
   const navigate = useNavigate();
   const { setUser } = useAuthStore();
+  const location = useLocation();
+  useEffect(() => {
+    document.title = "DomainX – Login";
+  }, []);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -26,13 +30,15 @@ const Login: React.FC = () => {
       if (!response.ok) throw new Error(data.error || "Login failed");
 
       setUser(data.user);
-      navigate("/main");
+      const from = (location.state as any)?.from || "/main";
+      navigate(from);
     } catch (err: any) {
       setError(err.message);
     }
 
     setLoading(false);
   };
+
 
   return (
     <div className="home-bg dx-auth-bg">
@@ -75,15 +81,14 @@ const Login: React.FC = () => {
               <button className="dx-btn dx-btn-primary" type="submit" disabled={loading}>
                 {loading ? "Signing in..." : "Sign in"}
               </button>
-              <div style={{ marginTop: 10, textAlign: "center" }}>
-                Don’t have an account?{" "}
-                <span
-                  style={{ color: "var(--accent)", cursor: "pointer" }}
-                  onClick={() => navigate("/signup")}
-                >
-                  Sign up
-                </span>
-              </div>
+             <div style={{ marginTop: 10, textAlign: "right" }}>
+              <span
+                style={{ color: "var(--accent)", cursor: "pointer", fontSize: "0.9rem" }}
+                onClick={() => navigate("/forgot-password")}
+              >
+                Forgot password?
+              </span>
+            </div>
 
             </form>
 

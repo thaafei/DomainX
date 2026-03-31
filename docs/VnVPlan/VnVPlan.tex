@@ -34,10 +34,10 @@
 
 \begin{document}
 
-\title{System Verification and Validation Plan for \progname{}} 
+\title{System Verification and Validation Plan for \progname{}}
 \author{\authname}
 \date{\today}
-	
+
 \maketitle
 
 \pagenumbering{roman}
@@ -87,10 +87,10 @@ March 7, 2026  & Haniye & Updated Functional Requirement Plan Section\\
 \section{Symbols, Abbreviations, and Acronyms}
 
 % \renewcommand{\arraystretch}{1.2}
-% \begin{tabular}{l l} 
-%   \toprule		
+% \begin{tabular}{l l}
+%   \toprule
 %   \textbf{symbol} & \textbf{description}\\
-%   \midrule 
+%   \midrule
 %   T & Test\\
 %   \bottomrule
 % \end{tabular}\\
@@ -189,15 +189,15 @@ will be verified and validated throughout its lifecycle.
 %   ``demonstrate adequate usability.'' etc.  You won't list all of the qualities,
 %   just those that are most important.}
 
-% \wss{You should also list the objectives that are out of scope.  You don't have 
-% the resources to do everything, so what will you be leaving out.  For instance, 
-% if you are not going to verify the quality of usability, state this.  It is also 
+% \wss{You should also list the objectives that are out of scope.  You don't have
+% the resources to do everything, so what will you be leaving out.  For instance,
+% if you are not going to verify the quality of usability, state this.  It is also
 % worthwhile to justify why the objectives are left out.}
 
-% \wss{The objectives are important because they highlight that you are aware of 
-% limitations in your resources for verification and validation.  You can't do everything, 
-% so what are you going to prioritize?  As an example, if your system depends on an 
-% external library, you can explicitly state that you will assume that external library 
+% \wss{The objectives are important because they highlight that you are aware of
+% limitations in your resources for verification and validation.  You can't do everything,
+% so what are you going to prioritize?  As an example, if your system depends on an
+% external library, you can explicitly state that you will assume that external library
 % has already been verified by its implementation team.}
 The objectives of this V\&V Plan are to:
 
@@ -269,7 +269,7 @@ inspection checklists as defined in the \href{https://github.com/thaafei/DomainX
 
 % \citet{SRS}
 
-% \wss{Don't just list the other documents.  You should explain why they are relevant and 
+% \wss{Don't just list the other documents.  You should explain why they are relevant and
 % how they relate to your VnV efforts.}
 \begin{table}[H]
 \centering
@@ -326,7 +326,7 @@ combining automated pipelines with peer-driven inspections.
 %   You should do more than list names.  You should say what each person's role is
 %   for the project's verification.  A table is a good way to summarize this information.}
 \begin{center}
-\footnotesize 
+\footnotesize
 \rowcolors{3}{white}{white}
 \begin{longtable}{|>{\raggedright\arraybackslash}p{0.24\textwidth}|
                     >{\raggedright\arraybackslash}p{0.28\textwidth}|
@@ -629,12 +629,12 @@ the repository.
 % the requirements document captures the right requirements.  Maybe task based
 % inspection?}
 
-% \wss{For those capstone teams with an external supervisor, the Rev 0 demo should 
-% be used as an opportunity to validate the requirements.  You should plan on 
-% demonstrating your project to your supervisor shortly after the scheduled Rev 0 demo.  
+% \wss{For those capstone teams with an external supervisor, the Rev 0 demo should
+% be used as an opportunity to validate the requirements.  You should plan on
+% demonstrating your project to your supervisor shortly after the scheduled Rev 0 demo.
 % The feedback from your supervisor will be very useful for improving your project.}
 
-% \wss{For teams without an external supervisor, user testing can serve the same purpose 
+% \wss{For teams without an external supervisor, user testing can serve the same purpose
 % as a Rev 0 demo for the supervisor.}
 
 % \wss{This section might reference back to the SRS verification section.}
@@ -1063,21 +1063,21 @@ Also aligns with \href{https://github.com/thaafei/DomainX/blob/main/docs/HazardA
 %   document) has been completed.}
 
 % \wss{Reference your MIS (detailed design document) and explain your overall
-% philosophy for test case selection.}  
+% philosophy for test case selection.}
 
-% \wss{To save space and time, it may be an option to provide less detail in this section.  
-% For the unit tests you can potentially layout your testing strategy here.  That is, you 
-% can explain how tests will be selected for each module.  For instance, your test building 
-% approach could be test cases for each access program, including one test for normal behaviour 
-% and as many tests as needed for edge cases.  Rather than create the details of the input 
-% and output here, you could point to the unit testing code.  For this to work, you code 
+% \wss{To save space and time, it may be an option to provide less detail in this section.
+% For the unit tests you can potentially layout your testing strategy here.  That is, you
+% can explain how tests will be selected for each module.  For instance, your test building
+% approach could be test cases for each access program, including one test for normal behaviour
+% and as many tests as needed for edge cases.  Rather than create the details of the input
+% and output here, you could point to the unit testing code.  For this to work, you code
 % needs to be well-documented, with meaningful names for all of the tests.}
 
 We use \href{https://docs.pytest.org/en/stable/}{pytest} to implement unit tests for the system. All tests are done automatically through github actions, unless otherwise stated.
 Unit tests will be located in the \href{https://github.com/thaafei/DomainX/tree/main/test}{test} subfolder of the project. More detailed reports of the unit tests can be found in the \href{https://github.com/thaafei/DomainX/blob/main/docs/VnVReport/VnVReport.pdf}{VnVReport} under the Unit Test section.
 
 \subsection{Unit Testing Scope}
-The scope of the unit tests will only be focused on modules developed by the DomainX team, which are: 
+The scope of the unit tests will only be focused on modules developed by the DomainX team, which are:
 \begin{multicols}{2}
   \begin{enumerate}
     \item Domains Page Module
@@ -1106,7 +1106,7 @@ Our testing philosophy is to consider the general use case of the user, with the
   Tests for this module checks that data is being stored correctly in the backend and that our validation and filtering mechanisms are working correctly so that we catch incorrect payloads.
   \begin{enumerate}
     \item \texttt{test\_list\_libraries\_returns\_only\_domain\_libraries}: Test if the API endpoint \texttt{/api/libraries/by\_domain/\{domain\_ID\}/} returns only the libraries belonging to the specific domain. As different domains can contain the same library, this function validates that it will return the correct associated data.
-    \item \texttt{test\_create\_library\_requires\_domain}: API endpoint \texttt{/api/libraries/} to libraries can only create a new library if it is associated with a domain. 
+    \item \texttt{test\_create\_library\_requires\_domain}: API endpoint \texttt{/api/libraries/} to libraries can only create a new library if it is associated with a domain.
     \item \texttt{test\_create\_library\_invalid\_domain}: If a request to create a library is sent, there should be validations in place that the associated domain actually exists.
     \item \texttt{test\_create\_library\_success\_sets\_pending\_and\_returns\_task\_id}: When a new library is created, it automatically start an analysis of automated metrics.
     \item \texttt{test\_create\_library\_enqueue\_raises\_marks\_failed\_and\_task\_id\_none}: There should be proper user feedback for a created library that has a failed analysis.
@@ -1149,7 +1149,7 @@ Our testing philosophy is to consider the general use case of the user, with the
     \begin{enumerate}
       \item \texttt{test\_ahp\_calculations\_success}: The base case, when we use the AHP calculations it should process the passed in data in the manner we expect.
       \item \texttt{test\_ahp\_calculations\_not\_found}: Calling the comparison endpoint with an invalid domain id should return an error response, instead of failing.
-      \item \texttt{test\_ahp\_calculations\_with\_weighted\_categories}: Using AHP calculations and adjusting the weight of categories, we should see the expected results based on the rules set. 
+      \item \texttt{test\_ahp\_calculations\_with\_weighted\_categories}: Using AHP calculations and adjusting the weight of categories, we should see the expected results based on the rules set.
       \item \texttt{test\_domain\_comparison\_returns\_metrics\_and\_rows\_with\_values\_and\_evidence}: We have a multitude of data gathered for each library in a domain. We should be able to retrieve all of them successfully with their corresponding evidence (for the automated ones) in order to be displayed.
     \end{enumerate}
   \subsection{Database Persistence Module}
@@ -1163,24 +1163,89 @@ Our testing philosophy is to consider the general use case of the user, with the
       \end{enumerate}
     \end{multicols}
 
-    The rational for these tests are to ensure data is properly validated and stored, and validates the business logic and restrictions associated with the models.
-    This is crucial for modules upstream which will depend on the data.
-    An example set of such tests for the domain model are:
-    \begin{enumerate}
-      \item \texttt{test\_domain\_str\_returns\_name}: Tests if calling a domain object will return domain name instead of domain id.
-      \item \texttt{test\_get\_domain\_id\_returns\_string\_uuid}: Tests that the get\_domain\_id function returns the uuid of the domain. 
-      \item \texttt{test\_defaults\_and\_blank\_fields}: Tests the creation of a domain object with only required fields, and check if blank fields are populated with the expected values.
-    \end{enumerate}
+% Type: \wss{Functional, Dynamic, Manual, Automatic, Static etc. Most will
+%   be automatic}
 
-\subsection{Visualization Module}
-  Since this module mainly consists of frontend components that calls the previously mentioned modules in order to render data for users, the following tests will be dynamic, since we have to run the code in order to test the output.
-  \begin{enumerate}
-    \item \texttt{test\_library\_raw\_values\_appear}: The raw values of the metric values should appear for the associated metrics across selected libraries. This tests that we are properly retrieving the correct information from the backend and database.
-    \item \texttt{test\_missing\_metric\_values}: There should be user feedback when some libraries don't have the metric values filled for the selected metrics to visualize.
-    \item \texttt{test\_error\_shown\_when\_less\_then\_two\_libraries\_are\_selected}: Comparing visualizations requires at minimum two libraries to be selected for a metric. There should be feedback if there are less than two.
-    \item \texttt{test\_only\_display\_non\-text\_metrics}: There is no feasible way to display metrics that are text-based, we should filter these out so users can't select them.
-    \item \texttt{test\_download\_visualizations}: Users should be able to successfully download all visualizations they currently have displayed.
-  \end{enumerate} 
+% Initial State:
+
+% Input:
+
+% Output: \wss{The expected result for the given inputs}
+
+% Test Case Derivation: \wss{Justify the expected value given in the Output field}
+
+% How test will be performed:
+
+% \item{test-id2\\}
+
+% Type: \wss{Functional, Dynamic, Manual, Automatic, Static etc. Most will
+%   be automatic}
+
+% Initial State:
+
+% Input:
+
+% Output: \wss{The expected result for the given inputs}
+
+% Test Case Derivation: \wss{Justify the expected value given in the Output field}
+
+% How test will be performed:
+
+% \item{...\\}
+
+% \end{enumerate}
+
+% \subsubsection{Module 2}
+
+% ...
+
+% \subsection{Tests for Nonfunctional Requirements}
+
+% \wss{If there is a module that needs to be independently assessed for
+%   performance, those test cases can go here.  In some projects, planning for
+%   nonfunctional tests of units will not be that relevant.}
+
+% \wss{These tests may involve collecting performance data from previously
+%   mentioned functional tests.}
+
+% \subsubsection{Module ?}
+
+% \begin{enumerate}
+
+% \item{test-id1\\}
+
+% Type: \wss{Functional, Dynamic, Manual, Automatic, Static etc. Most will
+%   be automatic}
+
+% Initial State:
+
+% Input/Condition:
+
+% Output/Result:
+
+% How test will be performed:
+
+% \item{test-id2\\}
+
+% Type: Functional, Dynamic, Manual, Static etc.
+
+% Initial State:
+
+% Input:
+
+% Output:
+
+% How test will be performed:
+
+% \end{enumerate}
+
+% \subsubsection{Module ?}
+
+% ...
+
+% \subsection{Traceability Between Test Cases and Modules}
+
+% \wss{Provide evidence that all of the modules have been considered.}
 \section{References}
 
 \begin{enumerate}
@@ -1283,7 +1348,7 @@ Likert scale (1 = Very Easy, 5 = Very Difficult) based on the difficulty it is t
 \section*{Appendix --- Reflection}
 
 The information in this section will be used to evaluate the team members on the
-graduate attribute of Lifelong Learning. 
+graduate attribute of Lifelong Learning.
 
 
 \input{../Reflection.tex}
@@ -1292,35 +1357,35 @@ For the case of the VnVPlan only \textbf{Awurama Nyarko} was in charge of this d
 and so will be the only reflection given.
 
 \begin{enumerate}
-  \item What went well while writing this deliverable? 
-  
-  The document came together clearly and consistently. The structure followed the template well, and referencing between sections was organized and traceable. 
+  \item What went well while writing this deliverable?
+
+  The document came together clearly and consistently. The structure followed the template well, and referencing between sections was organized and traceable.
   As well as referencing SRS requirements.
-  
+
   \item What pain points did you experience during this deliverable, and how
     did you resolve them?
-     
-  Creating long tables for test cases and mapping all SRS requirements to verification activities was time-consuming and required careful formatting. 
-  Aligning the tables with LaTeX syntax and ensuring traceability across all sections was challenging. 
+
+  Creating long tables for test cases and mapping all SRS requirements to verification activities was time-consuming and required careful formatting.
+  Aligning the tables with LaTeX syntax and ensuring traceability across all sections was challenging.
   This was resolved by breaking the tables into smaller parts, rechecking references, and using consistent labels and formatting commands.
-  
+
   \item What knowledge and skills will the team collectively need to acquire to
     successfully complete the verification and validation of your project?
     Examples of possible knowledge and skills include dynamic testing knowledge,
     static testing knowledge, specific tool usage, Valgrind etc.  You should look to
     identify at least one item for each team member.
- 
-  Although I was the only person who worked on this document, 
-  the team collectively needs to strengthen our knowledge of automated testing frameworks (e.g., PyTest) and LaTeX documentation for technical reporting. 
+
+  Although I was the only person who worked on this document,
+  the team collectively needs to strengthen our knowledge of automated testing frameworks (e.g., PyTest) and LaTeX documentation for technical reporting.
   We also need to deepen our understanding of continuous integration workflows and test coverage tools to support comprehensive verification.
-  
+
   \item For each of the knowledge areas and skills identified in the previous
     question, what are at least two approaches to acquiring the knowledge or
     mastering the skill?  Of the identified approaches, which will each team
     member pursue, and why did they make this choice?
-  
-  For automated testing, the team will use online tutorials, official PyTest documentation, and hands-on practice through the project’s CI pipeline. 
-  For LaTeX and documentation skills, we will review McMaster’s templates, share formatting tips, and collaborate through Overleaf to maintain consistency. 
+
+  For automated testing, the team will use online tutorials, official PyTest documentation, and hands-on practice through the project’s CI pipeline.
+  For LaTeX and documentation skills, we will review McMaster’s templates, share formatting tips, and collaborate through Overleaf to maintain consistency.
   These approaches were chosen because they combine practical application with easily accessible learning resources that directly support the project’s verification and reporting needs.
 \end{enumerate}
 

@@ -2,7 +2,8 @@ import React, { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { apiUrl } from "../config/api";
 import SuccessNotification from "../components/SuccessNotification";
-
+import { ArrowLeft } from "lucide-react";
+import AuthTransition from "../components/AuthTransition";
 const EditDomain: React.FC = () => {
   const { domain_id } = useParams<{ domain_id: string }>();
   const navigate = useNavigate();
@@ -53,6 +54,7 @@ const EditDomain: React.FC = () => {
             });
           }
         }
+        document.title = "DomainX – EditDomain";
       } catch (err: any) {
         setError(err.message);
       } finally {
@@ -112,7 +114,7 @@ const EditDomain: React.FC = () => {
 
       if (response.ok) {
         setSuccess(true);
-        setTimeout(() => navigate("/main"), 2000);
+        setTimeout(() => navigate("/"), 2000);
       } else {
         const data = await response.json();
         setError(data.error || "Failed to update domain.");
@@ -137,7 +139,7 @@ const EditDomain: React.FC = () => {
         try {
           localStorage.removeItem("dx:lastDomainId");
         } catch {}
-        setTimeout(() => navigate("/main"), 2000);
+        setTimeout(() => navigate("/"), 2000);
       } else {
         const data = await response.json();
         setError(data.error || "Failed to delete domain.");
@@ -151,12 +153,7 @@ const EditDomain: React.FC = () => {
 
   if (loading)
     return (
-      <div
-        className="dx-bg"
-        style={{ display: "flex", height: "100vh", alignItems: "center", justifyContent: "center" }}
-      >
-        <div style={{ color: "white" }}>Loading...</div>
-      </div>
+      <AuthTransition message="Loading..." />
     );
 
   return (
@@ -175,9 +172,9 @@ const EditDomain: React.FC = () => {
         <button
           className="dx-btn dx-btn-outline"
           style={{ width: "100%", fontSize: "1rem", textAlign: "center" }}
-          onClick={() => navigate("/main")}
+          onClick={() => navigate("/")}
         >
-          ← Back
+          <ArrowLeft size={18} /> Back
         </button>
       </div>
 
@@ -296,7 +293,7 @@ const EditDomain: React.FC = () => {
                 <button
                   type="button"
                   className="dx-btn dx-btn-outline"
-                  onClick={() => navigate("/main")}
+                  onClick={() => navigate("/")}
                 >
                   Cancel
                 </button>
@@ -307,7 +304,7 @@ const EditDomain: React.FC = () => {
                   Save Changes
                 </button>
               </div>
-              
+
               <button
                 type="button"
                 className="dx-btn delete-domain-btn"
@@ -354,9 +351,9 @@ const EditDomain: React.FC = () => {
                     <>
                       <h3 style={{ marginTop: 0 }}>Domain Deletion in Process</h3>
                       <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
-                        <div style={{ 
-                          width: 24, 
-                          height: 24, 
+                        <div style={{
+                          width: 24,
+                          height: 24,
                           border: "3px solid var(--text-main)",
                           borderTop: "3px solid var(--accent)",
                           borderRadius: "50%",

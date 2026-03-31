@@ -1,0 +1,19 @@
+{
+  "name": "frontend",
+  "version": "1.0.0",
+  "main": "index.js",
+  "scripts": {},
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "description": "",
+  "devDependencies": {
+    "@playwright/test": "^1.58.2",
+    "@types/node": "^25.3.0",
+    "wait-on": "^9.0.4"
+  },
+  "dependencies": {
+    "dotenv": "^17.3.1",
+    "path": "^0.12.7"
+  }
+}

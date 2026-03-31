@@ -2,9 +2,10 @@ import json
 from unittest.mock import Mock
 
 import pytest
-from django.utils import timezone
 from rest_framework import status
 from rest_framework.test import APIRequestFactory
+from django.contrib.auth import get_user_model
+from rest_framework.test import force_authenticate
 
 from api.database.domain.models import Domain
 from api.database.libraries.models import Library
@@ -19,6 +20,20 @@ def rf():
 
 
 @pytest.fixture()
+def user_factory():
+    def _factory(email: str, username: str, role: str = "admin"):
+        User = get_user_model()
+        return User.objects.create_user(
+            username=username,
+            email=email,
+            password="password123",
+            role=role,
+        )
+
+    return _factory
+
+
+@pytest.fixture()
 def domain():
     return Domain.objects.create(domain_name="D1", description="desc", category_weights={})
 
@@ -30,35 +45,405 @@ def domain2():
 
 @pytest.fixture()
 def lib_a(domain):
-    return Library.objects.create(domain=domain, library_name="A", url="https://a", programming_language="Python")
+    return Library.objects.create(
+        domain=domain,
+        library_name="A",
+        github_url="https://a",
+        programming_language="Python",
+    )
 
 
 @pytest.fixture()
 def lib_b(domain):
-    return Library.objects.create(domain=domain, library_name="B", url="https://b", programming_language="JS")
+    return Library.objects.create(
+        domain=domain,
+        library_name="B",
+        github_url="https://b",
+        programming_language="JS",
+    )
 
 
 @pytest.fixture()
 def lib_c(domain2):
-    return Library.objects.create(domain=domain2, library_name="C", url="https://c", programming_language="Go")
+    return Library.objects.create(
+        domain=domain2,
+        library_name="C",
+        github_url="https://c",
+        programming_language="Go",
+    )
 
 
 @pytest.fixture()
 def metric_stars():
-    return Metric.objects.create(metric_name="Stars Count")
+    return Metric.objects.create(
+        metric_name="Stars Count",
+        metric_key="stars_count",
+        value_type="int",
+        scoring_dict={},
+    )
 
 
 @pytest.fixture()
 def metric_forks():
-    return Metric.objects.create(metric_name="Forks Count")
+    return Metric.objects.create(
+        metric_name="Forks Count",
+        metric_key="forks_count",
+        value_type="int",
+        scoring_dict={},
+    )
+
+
+@pytest.fixture()
+def metric_float():
+    return Metric.objects.create(
+        metric_name="Coverage",
+        metric_key="coverage",
+        value_type="float",
+        scoring_dict={},
+    )
+
+
+@pytest.fixture()
+def metric_text():
+    return Metric.objects.create(
+        metric_name="Notes",
+        metric_key="notes",
+        value_type="text",
+        scoring_dict={},
+    )
+
+
+@pytest.fixture()
+def metric_date():
+    return Metric.objects.create(
+        metric_name="Release Date",
+        metric_key="release_date",
+        value_type="date",
+        scoring_dict={},
+    )
+
+
+@pytest.fixture()
+def metric_time():
+    return Metric.objects.create(
+        metric_name="Review Time",
+        metric_key="review_time",
+        value_type="time",
+        scoring_dict={},
+    )
+
+
+@pytest.fixture()
+def metric_datetime():
+    return Metric.objects.create(
+        metric_name="Published At",
+        metric_key="published_at",
+        value_type="datetime",
+        scoring_dict={},
+    )
+
+
+@pytest.fixture()
+def metric_scored():
+    return Metric.objects.create(
+        metric_name="License Type",
+        metric_key="license_type",
+        value_type="text",
+        scoring_dict={"MIT": 5, "Apache-2.0": 4},
+    )
+
+
+@pytest.fixture()
+def metric_gitstats_report():
+    return Metric.objects.create(
+        metric_name="GitStats Report",
+        metric_key="gitstats_report",
+        value_type="text",
+        scoring_dict={},
+    )
+
+
+@pytest.fixture()
+def metric_int_bounded():
+    return Metric.objects.create(
+        metric_name="Maturity Score",
+        metric_key=None,
+        value_type="int",
+        option_category="scale_1_10",
+        rule="bounded",
+        scoring_dict={},
+    )
+
+
+@pytest.fixture()
+def metric_int_other():
+    return Metric.objects.create(
+        metric_name="Commit Count",
+        metric_key=None,
+        value_type="int",
+        option_category="other",
+        rule="free",
+        scoring_dict={},
+    )
 
 
 @pytest.mark.django_db
-def test_analyze_library_success_202(rf, lib_a, monkeypatch):
+def test_validate_metric_value_blank_returns_none(metric_stars):
+    error, value = views_module.validate_metric_value(metric_stars, "")
+    assert error is None
+    assert value is None
+
+    error, value = views_module.validate_metric_value(metric_stars, None)
+    assert error is None
+    assert value is None
+
+
+@pytest.mark.django_db
+def test_validate_metric_value_rejects_gitstats_report(metric_gitstats_report):
+    error, value = views_module.validate_metric_value(metric_gitstats_report, "abc")
+    assert error == "This metric is read-only and cannot be edited manually."
+    assert value is None
+
+
+@pytest.mark.django_db
+def test_validate_metric_value_scoring_dict_accepts_allowed_value(metric_scored):
+    error, value = views_module.validate_metric_value(metric_scored, "MIT")
+    assert error is None
+    assert value == "MIT"
+
+
+@pytest.mark.django_db
+def test_validate_metric_value_scoring_dict_rejects_invalid_value(metric_scored):
+    error, value = views_module.validate_metric_value(metric_scored, "GPL")
+    assert error == "License Type must be one of: MIT, Apache-2.0."
+    assert value is None
+
+
+@pytest.mark.django_db
+def test_validate_metric_value_parses_int(metric_stars):
+    error, value = views_module.validate_metric_value(metric_stars, "42")
+    assert error is None
+    assert value == 42
+
+
+@pytest.mark.django_db
+def test_validate_metric_value_rejects_invalid_int(metric_stars):
+    error, value = views_module.validate_metric_value(metric_stars, "4.2")
+    assert error == "Stars Count must be a whole number."
+    assert value is None
+
+
+@pytest.mark.django_db
+def test_validate_metric_value_accepts_bounded_int_in_range(metric_int_bounded, monkeypatch, tmp_path):
+    rules = {
+        "bool": {},
+        "range": {},
+        "int": {
+            "scale_1_10": {
+                "display_name": "1 to 10",
+                "templates": {
+                    "bounded": {
+                        "min": 1,
+                        "max": 10,
+                    }
+                },
+            },
+            "other": {
+                "display_name": "Other Integer",
+                "templates": {
+                    "free": {}
+                },
+            },
+        },
+    }
+
+    (tmp_path / "api" / "database").mkdir(parents=True, exist_ok=True)
+    (tmp_path / "api" / "database" / "rules.json").write_text(json.dumps(rules))
+    monkeypatch.setattr(views_module.settings, "BASE_DIR", str(tmp_path))
+
+    error, value = views_module.validate_metric_value(metric_int_bounded, "7")
+    assert error is None
+    assert value == 7
+
+
+@pytest.mark.django_db
+def test_validate_metric_value_rejects_bounded_int_below_min(metric_int_bounded, monkeypatch, tmp_path):
+    rules = {
+        "bool": {},
+        "range": {},
+        "int": {
+            "scale_1_10": {
+                "display_name": "1 to 10",
+                "templates": {
+                    "bounded": {
+                        "min": 1,
+                        "max": 10,
+                    }
+                },
+            },
+            "other": {
+                "display_name": "Other Integer",
+                "templates": {
+                    "free": {}
+                },
+            },
+        },
+    }
+
+    (tmp_path / "api" / "database").mkdir(parents=True, exist_ok=True)
+    (tmp_path / "api" / "database" / "rules.json").write_text(json.dumps(rules))
+    monkeypatch.setattr(views_module.settings, "BASE_DIR", str(tmp_path))
+
+    error, value = views_module.validate_metric_value(metric_int_bounded, "0")
+    assert error == "Maturity Score must be >= 1."
+    assert value is None
+
+
+@pytest.mark.django_db
+def test_validate_metric_value_rejects_bounded_int_above_max(metric_int_bounded, monkeypatch, tmp_path):
+    rules = {
+        "bool": {},
+        "range": {},
+        "int": {
+            "scale_1_10": {
+                "display_name": "1 to 10",
+                "templates": {
+                    "bounded": {
+                        "min": 1,
+                        "max": 10,
+                    }
+                },
+            },
+            "other": {
+                "display_name": "Other Integer",
+                "templates": {
+                    "free": {}
+                },
+            },
+        },
+    }
+
+    (tmp_path / "api" / "database").mkdir(parents=True, exist_ok=True)
+    (tmp_path / "api" / "database" / "rules.json").write_text(json.dumps(rules))
+    monkeypatch.setattr(views_module.settings, "BASE_DIR", str(tmp_path))
+
+    error, value = views_module.validate_metric_value(metric_int_bounded, "11")
+    assert error == "Maturity Score must be <= 10."
+    assert value is None
+
+
+@pytest.mark.django_db
+def test_validate_metric_value_accepts_free_int(metric_int_other, monkeypatch, tmp_path):
+    rules = {
+        "bool": {},
+        "range": {},
+        "int": {
+            "scale_1_10": {
+                "display_name": "1 to 10",
+                "templates": {
+                    "bounded": {
+                        "min": 1,
+                        "max": 10,
+                    }
+                },
+            },
+            "other": {
+                "display_name": "Other Integer",
+                "templates": {
+                    "free": {}
+                },
+            },
+        },
+    }
+
+    (tmp_path / "api" / "database").mkdir(parents=True, exist_ok=True)
+    (tmp_path / "api" / "database" / "rules.json").write_text(json.dumps(rules))
+    monkeypatch.setattr(views_module.settings, "BASE_DIR", str(tmp_path))
+
+    error, value = views_module.validate_metric_value(metric_int_other, "2120234324")
+    assert error is None
+    assert value == 2120234324
+
+
+@pytest.mark.django_db
+def test_validate_metric_value_parses_float(metric_float):
+    error, value = views_module.validate_metric_value(metric_float, "91.7")
+    assert error is None
+    assert value == 91.7
+
+
+@pytest.mark.django_db
+def test_validate_metric_value_rejects_invalid_float(metric_float):
+    error, value = views_module.validate_metric_value(metric_float, "abc")
+    assert error == "Coverage must be a valid number."
+    assert value is None
+
+
+@pytest.mark.django_db
+def test_validate_metric_value_text_passthrough(metric_text):
+    error, value = views_module.validate_metric_value(metric_text, "hello")
+    assert error is None
+    assert value == "hello"
+
+
+@pytest.mark.django_db
+def test_validate_metric_value_accepts_valid_date(metric_date):
+    error, value = views_module.validate_metric_value(metric_date, "2026-03-18")
+    assert error is None
+    assert value == "2026-03-18"
+
+
+@pytest.mark.django_db
+def test_validate_metric_value_rejects_invalid_date(metric_date):
+    error, value = views_module.validate_metric_value(metric_date, "2026-99-99")
+    assert error == "Release Date must be a valid date in YYYY-MM-DD format."
+    assert value is None
+
+
+@pytest.mark.django_db
+def test_validate_metric_value_accepts_valid_time(metric_time):
+    error, value = views_module.validate_metric_value(metric_time, "14:30")
+    assert error is None
+    assert value == "14:30"
+
+
+@pytest.mark.django_db
+def test_validate_metric_value_accepts_valid_time_with_seconds(metric_time):
+    error, value = views_module.validate_metric_value(metric_time, "14:30:15")
+    assert error is None
+    assert value == "14:30:15"
+
+
+@pytest.mark.django_db
+def test_validate_metric_value_rejects_invalid_time(metric_time):
+    error, value = views_module.validate_metric_value(metric_time, "25:61")
+    assert error == "Review Time must be a valid time in HH:MM or HH:MM:SS format."
+    assert value is None
+
+
+@pytest.mark.django_db
+def test_validate_metric_value_accepts_valid_datetime(metric_datetime):
+    error, value = views_module.validate_metric_value(metric_datetime, "2026-03-18T14:30")
+    assert error is None
+    assert value == "2026-03-18T14:30"
+
+
+@pytest.mark.django_db
+def test_validate_metric_value_rejects_invalid_datetime(metric_datetime):
+    error, value = views_module.validate_metric_value(metric_datetime, "2026-03-18 14:30")
+    assert error == "Published At must be a valid date and time in YYYY-MM-DDTHH:MM format."
+    assert value is None
+
+
+@pytest.mark.django_db
+def test_analyze_library_success_202(rf, lib_a, monkeypatch, user_factory):
+    user = user_factory("test@example.com", "testuser")
+
     fake_enqueue = Mock(return_value={"analysis_task_id": "t1", "gitstats_task_id": "g1"})
     monkeypatch.setattr(views_module, "enqueue_library_analysis", fake_enqueue)
 
     req = rf.post("/x", {}, format="json")
+    force_authenticate(req, user=user)
     resp = views_module.analyze_library(req, library_id=str(lib_a.library_ID))
 
     assert resp.status_code == status.HTTP_202_ACCEPTED
@@ -71,7 +456,8 @@ def test_analyze_library_success_202(rf, lib_a, monkeypatch):
 
 
 @pytest.mark.django_db
-def test_analyze_library_enqueue_returns_none_400(rf, lib_a, monkeypatch):
+def test_analyze_library_enqueue_returns_none_400(rf, lib_a, monkeypatch, user_factory):
+    user = user_factory("test@example.com", "testuser")
     lib_a.analysis_error = "bad"
     lib_a.save(update_fields=["analysis_error"])
 
@@ -79,6 +465,7 @@ def test_analyze_library_enqueue_returns_none_400(rf, lib_a, monkeypatch):
     monkeypatch.setattr(views_module, "enqueue_library_analysis", fake_enqueue)
 
     req = rf.post("/x", {}, format="json")
+    force_authenticate(req, user=user)
     resp = views_module.analyze_library(req, library_id=str(lib_a.library_ID))
 
     assert resp.status_code == status.HTTP_400_BAD_REQUEST
@@ -87,11 +474,13 @@ def test_analyze_library_enqueue_returns_none_400(rf, lib_a, monkeypatch):
 
 
 @pytest.mark.django_db
-def test_analyze_library_enqueue_raises_500_and_marks_failed(rf, lib_a, monkeypatch):
+def test_analyze_library_enqueue_raises_500_and_marks_failed(rf, lib_a, monkeypatch, user_factory):
+    user = user_factory("test@example.com", "testuser")
     fake_enqueue = Mock(side_effect=RuntimeError("boom"))
     monkeypatch.setattr(views_module, "enqueue_library_analysis", fake_enqueue)
 
     req = rf.post("/x", {}, format="json")
+    force_authenticate(req, user=user)
     resp = views_module.analyze_library(req, library_id=str(lib_a.library_ID))
 
     assert resp.status_code == status.HTTP_500_INTERNAL_SERVER_ERROR
@@ -103,7 +492,9 @@ def test_analyze_library_enqueue_raises_500_and_marks_failed(rf, lib_a, monkeypa
 
 
 @pytest.mark.django_db
-def test_analyze_domain_libraries_mixed_results(rf, domain, lib_a, lib_b, monkeypatch):
+def test_analyze_domain_libraries_mixed_results(rf, domain, lib_a, lib_b, monkeypatch, user_factory):
+    user = user_factory("test@example.com", "testuser")
+
     def fake_enqueue(lib):
         if lib.library_name == "A":
             return {"analysis_task_id": "tA", "gitstats_task_id": "gA"}
@@ -116,6 +507,7 @@ def test_analyze_domain_libraries_mixed_results(rf, domain, lib_a, lib_b, monkey
     monkeypatch.setattr(views_module, "enqueue_library_analysis", fake_enqueue)
 
     req = rf.post("/x", {}, format="json")
+    force_authenticate(req, user=user)
     resp = views_module.analyze_domain_libraries(req, domain_id=str(domain.domain_ID))
 
     assert resp.status_code == status.HTTP_202_ACCEPTED
@@ -137,15 +529,17 @@ def test_analyze_domain_libraries_mixed_results(rf, domain, lib_a, lib_b, monkey
 
 
 @pytest.mark.django_db
-def test_analyze_domain_libraries_exception_marks_failed(rf, domain, lib_a, lib_b, monkeypatch):
+def test_analyze_domain_libraries_exception_marks_failed(rf, domain, lib_a, lib_b, monkeypatch, user_factory):
     def fake_enqueue(lib):
         if lib.library_name == "A":
             raise RuntimeError("explode")
         return {"analysis_task_id": "tB", "gitstats_task_id": "gB"}
 
+    user = user_factory("test@example.com", "testuser")
     monkeypatch.setattr(views_module, "enqueue_library_analysis", fake_enqueue)
 
     req = rf.post("/x", {}, format="json")
+    force_authenticate(req, user=user)
     resp = views_module.analyze_domain_libraries(req, domain_id=str(domain.domain_ID))
 
     assert resp.status_code == status.HTTP_202_ACCEPTED
@@ -165,16 +559,21 @@ def test_analyze_domain_libraries_exception_marks_failed(rf, domain, lib_a, lib_
 
 @pytest.mark.django_db
 def test_domain_comparison_returns_metrics_and_rows_with_values_and_evidence(
-    rf, domain, lib_a, lib_b, metric_stars, metric_forks
+    rf, domain, lib_a, lib_b, metric_stars, metric_forks, user_factory
 ):
+    metric_stars.option_category = "other"
+    metric_stars.rule = "free"
+    metric_stars.save(update_fields=["option_category", "rule"])
+
     LibraryMetricValue.objects.create(library=lib_a, metric=metric_stars, value=10, evidence="srcA")
     LibraryMetricValue.objects.create(library=lib_a, metric=metric_forks, value=2, evidence="srcB")
     LibraryMetricValue.objects.create(library=lib_b, metric=metric_stars, value=None, evidence=None)
 
     lib_a.gitstats_status = Library.GITSTATS_SUCCESS
     lib_a.save(update_fields=["gitstats_status"])
-
+    user = user_factory("test@example.com", "testuser")
     req = rf.get("/x")
+    force_authenticate(req, user=user)
     resp = views_module.domain_comparison(req, domain_id=str(domain.domain_ID))
 
     assert resp.status_code == status.HTTP_200_OK
@@ -182,6 +581,10 @@ def test_domain_comparison_returns_metrics_and_rows_with_values_and_evidence(
 
     assert isinstance(body["metrics"], list)
     assert {m["metric_name"] for m in body["metrics"]} == {"Stars Count", "Forks Count"}
+
+    stars_metric = next(m for m in body["metrics"] if m["metric_name"] == "Stars Count")
+    assert stars_metric["option_category"] == "other"
+    assert stars_metric["rule"] == "free"
 
     libs = body["libraries"]
     assert isinstance(libs, list)
@@ -204,9 +607,11 @@ def test_domain_comparison_returns_metrics_and_rows_with_values_and_evidence(
 
 
 @pytest.mark.django_db
-def test_library_metric_value_update_requires_metrics_dict(rf, lib_a):
+def test_library_metric_value_update_requires_metrics_dict(rf, lib_a, user_factory):
     view = views_module.LibraryMetricValueUpdateView.as_view()
+    user = user_factory("test@example.com", "testuser")
     req = rf.post("/x", {"metrics": ["bad"]}, format="json")
+    force_authenticate(req, user=user)
     resp = view(req, library_id=str(lib_a.library_ID))
 
     assert resp.status_code == status.HTTP_400_BAD_REQUEST
@@ -214,7 +619,8 @@ def test_library_metric_value_update_requires_metrics_dict(rf, lib_a):
 
 
 @pytest.mark.django_db
-def test_library_metric_value_update_creates_value_and_evidence(rf, lib_a, metric_stars, metric_forks):
+def test_library_metric_value_update_creates_value_and_evidence(rf, lib_a, metric_stars, metric_forks, user_factory):
+    user = user_factory("test@example.com", "testuser")
     view = views_module.LibraryMetricValueUpdateView.as_view()
 
     req = rf.post(
@@ -230,6 +636,7 @@ def test_library_metric_value_update_creates_value_and_evidence(rf, lib_a, metri
         },
         format="json",
     )
+    force_authenticate(req, user=user)
     resp = view(req, library_id=str(lib_a.library_ID))
 
     assert resp.status_code == status.HTTP_200_OK
@@ -243,13 +650,263 @@ def test_library_metric_value_update_creates_value_and_evidence(rf, lib_a, metri
     assert forks.value is None
     assert forks.evidence is None
 
-    assert LibraryMetricValue.objects.filter(library=lib_a, metric__metric_name="Unknown Metric").count() == 0
+    assert LibraryMetricValue.objects.filter(
+        library=lib_a,
+        metric__metric_name="Unknown Metric",
+    ).count() == 0
 
 
 @pytest.mark.django_db
-def test_metric_value_bulk_update_rejects_non_list(rf):
+def test_library_metric_value_update_accepts_valid_date(rf, lib_a, metric_date, user_factory):
+    view = views_module.LibraryMetricValueUpdateView.as_view()
+    user = user_factory("test@example.com", "testuser")
+    req = rf.post(
+        "/x",
+        {"metrics": {"Release Date": "2026-03-18"}},
+        format="json",
+    )
+    force_authenticate(req, user=user)
+    resp = view(req, library_id=str(lib_a.library_ID))
+
+    assert resp.status_code == status.HTTP_200_OK
+    value = LibraryMetricValue.objects.get(library=lib_a, metric=metric_date)
+    assert value.value == "2026-03-18"
+
+
+@pytest.mark.django_db
+def test_library_metric_value_update_rejects_invalid_date(rf, lib_a, metric_date, user_factory):
+    view = views_module.LibraryMetricValueUpdateView.as_view()
+    user = user_factory("test@example.com", "testuser")
+    req = rf.post(
+        "/x",
+        {"metrics": {"Release Date": "2026-13-50"}},
+        format="json",
+    )
+    force_authenticate(req, user=user)
+    resp = view(req, library_id=str(lib_a.library_ID))
+
+    assert resp.status_code == status.HTTP_400_BAD_REQUEST
+    assert "Release Date must be a valid date in YYYY-MM-DD format." in resp.data["error"]
+
+
+@pytest.mark.django_db
+def test_library_metric_value_update_accepts_valid_time(rf, lib_a, metric_time, user_factory):
+    view = views_module.LibraryMetricValueUpdateView.as_view()
+    user = user_factory("test@example.com", "testuser")
+    req = rf.post(
+        "/x",
+        {"metrics": {"Review Time": "14:30"}},
+        format="json",
+    )
+    force_authenticate(req, user=user)
+    resp = view(req, library_id=str(lib_a.library_ID))
+
+    assert resp.status_code == status.HTTP_200_OK
+    value = LibraryMetricValue.objects.get(library=lib_a, metric=metric_time)
+    assert value.value == "14:30"
+
+
+@pytest.mark.django_db
+def test_library_metric_value_update_rejects_invalid_time(rf, lib_a, metric_time, user_factory):
+    view = views_module.LibraryMetricValueUpdateView.as_view()
+    user = user_factory("test@example.com", "testuser")
+    req = rf.post(
+        "/x",
+        {"metrics": {"Review Time": "99:99"}},
+        format="json",
+    )
+    force_authenticate(req, user=user)
+    resp = view(req, library_id=str(lib_a.library_ID))
+
+    assert resp.status_code == status.HTTP_400_BAD_REQUEST
+    assert "Review Time must be a valid time in HH:MM or HH:MM:SS format." in resp.data["error"]
+
+
+@pytest.mark.django_db
+def test_library_metric_value_update_accepts_valid_datetime(rf, lib_a, metric_datetime, user_factory):
+    view = views_module.LibraryMetricValueUpdateView.as_view()
+    user = user_factory("test@example.com", "testuser")
+    req = rf.post(
+        "/x",
+        {"metrics": {"Published At": "2026-03-18T14:30"}},
+        format="json",
+    )
+    force_authenticate(req, user=user)
+    resp = view(req, library_id=str(lib_a.library_ID))
+
+    assert resp.status_code == status.HTTP_200_OK
+    value = LibraryMetricValue.objects.get(library=lib_a, metric=metric_datetime)
+    assert value.value == "2026-03-18T14:30"
+
+
+@pytest.mark.django_db
+def test_library_metric_value_update_rejects_invalid_datetime(rf, lib_a, metric_datetime, user_factory):
+    view = views_module.LibraryMetricValueUpdateView.as_view()
+    user = user_factory("test@example.com", "testuser")
+    req = rf.post(
+        "/x",
+        {"metrics": {"Published At": "2026-03-18 14:30"}},
+        format="json",
+    )
+    force_authenticate(req, user=user)
+    resp = view(req, library_id=str(lib_a.library_ID))
+
+    assert resp.status_code == status.HTTP_400_BAD_REQUEST
+    assert "Published At must be a valid date and time in YYYY-MM-DDTHH:MM format." in resp.data["error"]
+
+
+@pytest.mark.django_db
+def test_library_metric_value_update_rejects_invalid_int(rf, lib_a, metric_stars, user_factory):
+    view = views_module.LibraryMetricValueUpdateView.as_view()
+    user = user_factory("test@example.com", "testuser")
+    req = rf.post(
+        "/x",
+        {"metrics": {"Stars Count": "not-an-int"}},
+        format="json",
+    )
+    force_authenticate(req, user=user)
+    resp = view(req, library_id=str(lib_a.library_ID))
+
+    assert resp.status_code == status.HTTP_400_BAD_REQUEST
+    assert "Stars Count must be a whole number." in resp.data["error"]
+    assert LibraryMetricValue.objects.filter(library=lib_a, metric=metric_stars).count() == 0
+
+
+@pytest.mark.django_db
+def test_library_metric_value_update_rejects_bounded_int_out_of_range(
+    rf, lib_a, metric_int_bounded, monkeypatch, tmp_path, user_factory
+):
+    rules = {
+        "bool": {},
+        "range": {},
+        "int": {
+            "scale_1_10": {
+                "display_name": "1 to 10",
+                "templates": {
+                    "bounded": {
+                        "min": 1,
+                        "max": 10,
+                    }
+                },
+            },
+            "other": {
+                "display_name": "Other Integer",
+                "templates": {
+                    "free": {}
+                },
+            },
+        },
+    }
+
+    (tmp_path / "api" / "database").mkdir(parents=True, exist_ok=True)
+    (tmp_path / "api" / "database" / "rules.json").write_text(json.dumps(rules))
+    monkeypatch.setattr(views_module.settings, "BASE_DIR", str(tmp_path))
+
+    view = views_module.LibraryMetricValueUpdateView.as_view()
+    user = user_factory("test@example.com", "testuser")
+    req = rf.post(
+        "/x",
+        {"metrics": {"Maturity Score": "11"}},
+        format="json",
+    )
+    force_authenticate(req, user=user)
+    resp = view(req, library_id=str(lib_a.library_ID))
+
+    assert resp.status_code == status.HTTP_400_BAD_REQUEST
+    assert "Maturity Score must be <= 10." in resp.data["error"]
+    assert LibraryMetricValue.objects.filter(library=lib_a, metric=metric_int_bounded).count() == 0
+
+
+@pytest.mark.django_db
+def test_library_metric_value_update_accepts_free_int(
+    rf, lib_a, metric_int_other, monkeypatch, tmp_path, user_factory
+):
+    rules = {
+        "bool": {},
+        "range": {},
+        "int": {
+            "scale_1_10": {
+                "display_name": "1 to 10",
+                "templates": {
+                    "bounded": {
+                        "min": 1,
+                        "max": 10,
+                    }
+                },
+            },
+            "other": {
+                "display_name": "Other Integer",
+                "templates": {
+                    "free": {}
+                },
+            },
+        },
+    }
+
+    (tmp_path / "api" / "database").mkdir(parents=True, exist_ok=True)
+    (tmp_path / "api" / "database" / "rules.json").write_text(json.dumps(rules))
+    monkeypatch.setattr(views_module.settings, "BASE_DIR", str(tmp_path))
+
+    view = views_module.LibraryMetricValueUpdateView.as_view()
+    user = user_factory("test@example.com", "testuser")
+    req = rf.post(
+        "/x",
+        {"metrics": {"Commit Count": "2120234324"}},
+        format="json",
+    )
+    force_authenticate(req, user=user)
+    resp = view(req, library_id=str(lib_a.library_ID))
+
+    assert resp.status_code == status.HTTP_200_OK
+    value = LibraryMetricValue.objects.get(library=lib_a, metric=metric_int_other)
+    assert value.value == 2120234324
+
+
+@pytest.mark.django_db
+def test_library_metric_value_update_rejects_invalid_scored_value(rf, lib_a, metric_scored, user_factory):
+    view = views_module.LibraryMetricValueUpdateView.as_view()
+    user = user_factory("test@example.com", "testuser")
+    req = rf.post(
+        "/x",
+        {"metrics": {"License Type": "GPL"}},
+        format="json",
+    )
+    force_authenticate(req, user=user)
+    resp = view(req, library_id=str(lib_a.library_ID))
+
+    assert resp.status_code == status.HTTP_400_BAD_REQUEST
+    assert "License Type must be one of: MIT, Apache-2.0." in resp.data["error"]
+    assert LibraryMetricValue.objects.filter(library=lib_a, metric=metric_scored).count() == 0
+
+
+@pytest.mark.django_db
+def test_library_metric_value_update_skips_gitstats_report_metric(rf, lib_a, metric_gitstats_report, user_factory):
+    view = views_module.LibraryMetricValueUpdateView.as_view()
+    user = user_factory("test@example.com", "testuser")
+    req = rf.post(
+        "/x",
+        {
+            "metrics": {
+                "GitStats Report": "manual value",
+                "GitStats Report_evidence": "manual evidence",
+            }
+        },
+        format="json",
+    )
+    force_authenticate(req, user=user)
+    resp = view(req, library_id=str(lib_a.library_ID))
+
+    assert resp.status_code == status.HTTP_200_OK
+    assert resp.data["success"] is True
+    assert LibraryMetricValue.objects.filter(library=lib_a, metric=metric_gitstats_report).count() == 0
+
+
+@pytest.mark.django_db
+def test_metric_value_bulk_update_rejects_non_list(rf, user_factory):
     view = views_module.MetricValueBulkUpdateView.as_view()
+    user = user_factory("test@example.com", "testuser")
     req = rf.post("/x", {"a": 1}, format="json")
+    force_authenticate(req, user=user)
     resp = view(req)
 
     assert resp.status_code == status.HTTP_400_BAD_REQUEST
@@ -257,9 +914,11 @@ def test_metric_value_bulk_update_rejects_non_list(rf):
 
 
 @pytest.mark.django_db
-def test_metric_value_bulk_update_empty_list_returns_200(rf):
+def test_metric_value_bulk_update_empty_list_returns_200(rf, user_factory):
     view = views_module.MetricValueBulkUpdateView.as_view()
+    user = user_factory("test@example.com", "testuser")
     req = rf.post("/x", [], format="json")
+    force_authenticate(req, user=user)
     resp = view(req)
 
     assert resp.status_code == status.HTTP_200_OK
@@ -267,7 +926,7 @@ def test_metric_value_bulk_update_empty_list_returns_200(rf):
 
 
 @pytest.mark.django_db
-def test_metric_value_bulk_update_success(rf, lib_a, metric_stars, metric_forks):
+def test_metric_value_bulk_update_success(rf, lib_a, metric_stars, metric_forks, user_factory):
     view = views_module.MetricValueBulkUpdateView.as_view()
 
     updates = [
@@ -275,8 +934,9 @@ def test_metric_value_bulk_update_success(rf, lib_a, metric_stars, metric_forks)
         {"library_id": str(lib_a.library_ID), "metric_id": str(metric_forks.metric_ID), "value": ""},
         {"library_id": None, "metric_id": str(metric_forks.metric_ID), "value": 1},
     ]
-
+    user = user_factory("test@example.com", "testuser")
     req = rf.post("/x", updates, format="json")
+    force_authenticate(req, user=user)
     resp = view(req)
 
     assert resp.status_code == status.HTTP_200_OK
@@ -290,9 +950,236 @@ def test_metric_value_bulk_update_success(rf, lib_a, metric_stars, metric_forks)
 
 
 @pytest.mark.django_db
-def test_ahp_calculations_basic(rf, domain, lib_a, lib_b, monkeypatch, tmp_path):
-    rules = {"range": {}, "bool": {}, "options": {}}
-    categories = {"Categories": ["Quality"]}
+def test_metric_value_bulk_update_accepts_valid_date(rf, lib_a, metric_date, user_factory):
+    view = views_module.MetricValueBulkUpdateView.as_view()
+
+    updates = [
+        {"library_id": str(lib_a.library_ID), "metric_id": str(metric_date.metric_ID), "value": "2026-03-18"},
+    ]
+    user = user_factory("test@example.com", "testuser")
+    req = rf.post("/x", updates, format="json")
+    force_authenticate(req, user=user)
+    resp = view(req)
+
+    assert resp.status_code == status.HTTP_200_OK
+    value = LibraryMetricValue.objects.get(library=lib_a, metric=metric_date)
+    assert value.value == "2026-03-18"
+
+
+@pytest.mark.django_db
+def test_metric_value_bulk_update_rejects_invalid_date(rf, lib_a, metric_date, user_factory):
+    view = views_module.MetricValueBulkUpdateView.as_view()
+
+    updates = [
+        {"library_id": str(lib_a.library_ID), "metric_id": str(metric_date.metric_ID), "value": "2026-15-99"},
+    ]
+    user = user_factory("test@example.com", "testuser")
+    req = rf.post("/x", updates, format="json")
+    force_authenticate(req, user=user)
+    resp = view(req)
+
+    assert resp.status_code == status.HTTP_400_BAD_REQUEST
+    assert resp.data["error"] == "Release Date must be a valid date in YYYY-MM-DD format."
+
+
+@pytest.mark.django_db
+def test_metric_value_bulk_update_accepts_valid_time(rf, lib_a, metric_time, user_factory):
+    view = views_module.MetricValueBulkUpdateView.as_view()
+
+    updates = [
+        {"library_id": str(lib_a.library_ID), "metric_id": str(metric_time.metric_ID), "value": "14:30"},
+    ]
+    user = user_factory("test@example.com", "testuser")
+    req = rf.post("/x", updates, format="json")
+    force_authenticate(req, user=user)
+    resp = view(req)
+
+    assert resp.status_code == status.HTTP_200_OK
+    value = LibraryMetricValue.objects.get(library=lib_a, metric=metric_time)
+    assert value.value == "14:30"
+
+
+@pytest.mark.django_db
+def test_metric_value_bulk_update_rejects_invalid_time(rf, lib_a, metric_time, user_factory):
+    view = views_module.MetricValueBulkUpdateView.as_view()
+
+    updates = [
+        {"library_id": str(lib_a.library_ID), "metric_id": str(metric_time.metric_ID), "value": "77:88"},
+    ]
+    user = user_factory("test@example.com", "testuser")
+    req = rf.post("/x", updates, format="json")
+    force_authenticate(req, user=user)
+    resp = view(req)
+
+    assert resp.status_code == status.HTTP_400_BAD_REQUEST
+    assert resp.data["error"] == "Review Time must be a valid time in HH:MM or HH:MM:SS format."
+
+
+@pytest.mark.django_db
+def test_metric_value_bulk_update_accepts_valid_datetime(rf, lib_a, metric_datetime, user_factory):
+    view = views_module.MetricValueBulkUpdateView.as_view()
+
+    updates = [
+        {"library_id": str(lib_a.library_ID), "metric_id": str(metric_datetime.metric_ID), "value": "2026-03-18T14:30"},
+    ]
+    user = user_factory("test@example.com", "testuser")
+    req = rf.post("/x", updates, format="json")
+    force_authenticate(req, user=user)
+    resp = view(req)
+
+    assert resp.status_code == status.HTTP_200_OK
+    value = LibraryMetricValue.objects.get(library=lib_a, metric=metric_datetime)
+    assert value.value == "2026-03-18T14:30"
+
+
+@pytest.mark.django_db
+def test_metric_value_bulk_update_rejects_invalid_datetime(rf, lib_a, metric_datetime, user_factory):
+    view = views_module.MetricValueBulkUpdateView.as_view()
+
+    updates = [
+        {"library_id": str(lib_a.library_ID), "metric_id": str(metric_datetime.metric_ID), "value": "2026/03/18 14:30"},
+    ]
+    user = user_factory("test@example.com", "testuser")
+    req = rf.post("/x", updates, format="json")
+    force_authenticate(req, user=user)
+    resp = view(req)
+
+    assert resp.status_code == status.HTTP_400_BAD_REQUEST
+    assert resp.data["error"] == "Published At must be a valid date and time in YYYY-MM-DDTHH:MM format."
+
+
+@pytest.mark.django_db
+def test_metric_value_bulk_update_rejects_invalid_int(rf, lib_a, metric_stars, user_factory):
+    view = views_module.MetricValueBulkUpdateView.as_view()
+
+    updates = [
+        {"library_id": str(lib_a.library_ID), "metric_id": str(metric_stars.metric_ID), "value": "abc"},
+    ]
+    user = user_factory("test@example.com", "testuser")
+    req = rf.post("/x", updates, format="json")
+    force_authenticate(req, user=user)
+    resp = view(req)
+
+    assert resp.status_code == status.HTTP_400_BAD_REQUEST
+    assert resp.data["error"] == "Stars Count must be a whole number."
+    assert LibraryMetricValue.objects.filter(library=lib_a, metric=metric_stars).count() == 0
+
+
+@pytest.mark.django_db
+def test_metric_value_bulk_update_rejects_bounded_int_out_of_range(
+    rf, lib_a, metric_int_bounded, monkeypatch, tmp_path, user_factory
+):
+    rules = {
+        "bool": {},
+        "range": {},
+        "int": {
+            "scale_1_10": {
+                "display_name": "1 to 10",
+                "templates": {
+                    "bounded": {
+                        "min": 1,
+                        "max": 10,
+                    }
+                },
+            },
+            "other": {
+                "display_name": "Other Integer",
+                "templates": {
+                    "free": {}
+                },
+            },
+        },
+    }
+
+    (tmp_path / "api" / "database").mkdir(parents=True, exist_ok=True)
+    (tmp_path / "api" / "database" / "rules.json").write_text(json.dumps(rules))
+    monkeypatch.setattr(views_module.settings, "BASE_DIR", str(tmp_path))
+
+    view = views_module.MetricValueBulkUpdateView.as_view()
+
+    updates = [
+        {"library_id": str(lib_a.library_ID), "metric_id": str(metric_int_bounded.metric_ID), "value": "11"},
+    ]
+    user = user_factory("test@example.com", "testuser")
+    req = rf.post("/x", updates, format="json")
+    force_authenticate(req, user=user)
+    resp = view(req)
+
+    assert resp.status_code == status.HTTP_400_BAD_REQUEST
+    assert resp.data["error"] == "Maturity Score must be <= 10."
+    assert LibraryMetricValue.objects.filter(library=lib_a, metric=metric_int_bounded).count() == 0
+
+
+@pytest.mark.django_db
+def test_metric_value_bulk_update_accepts_free_int(
+    rf, lib_a, metric_int_other, monkeypatch, tmp_path, user_factory
+):
+    rules = {
+        "bool": {},
+        "range": {},
+        "int": {
+            "scale_1_10": {
+                "display_name": "1 to 10",
+                "templates": {
+                    "bounded": {
+                        "min": 1,
+                        "max": 10,
+                    }
+                },
+            },
+            "other": {
+                "display_name": "Other Integer",
+                "templates": {
+                    "free": {}
+                },
+            },
+        },
+    }
+
+    (tmp_path / "api" / "database").mkdir(parents=True, exist_ok=True)
+    (tmp_path / "api" / "database" / "rules.json").write_text(json.dumps(rules))
+    monkeypatch.setattr(views_module.settings, "BASE_DIR", str(tmp_path))
+
+    view = views_module.MetricValueBulkUpdateView.as_view()
+
+    updates = [
+        {"library_id": str(lib_a.library_ID), "metric_id": str(metric_int_other.metric_ID), "value": "2120234324"},
+    ]
+    user = user_factory("test@example.com", "testuser")
+    req = rf.post("/x", updates, format="json")
+    force_authenticate(req, user=user)
+    resp = view(req)
+
+    assert resp.status_code == status.HTTP_200_OK
+    value = LibraryMetricValue.objects.get(library=lib_a, metric=metric_int_other)
+    assert value.value == 2120234324
+
+
+@pytest.mark.django_db
+def test_metric_value_bulk_update_skips_gitstats_report_metric(rf, lib_a, metric_gitstats_report, user_factory):
+    view = views_module.MetricValueBulkUpdateView.as_view()
+
+    updates = [
+        {
+            "library_id": str(lib_a.library_ID),
+            "metric_id": str(metric_gitstats_report.metric_ID),
+            "value": "manual value",
+        },
+    ]
+    user = user_factory("test@example.com", "testuser")
+    req = rf.post("/x", updates, format="json")
+    force_authenticate(req, user=user)
+    resp = view(req)
+
+    assert resp.status_code == status.HTTP_200_OK
+    assert resp.data["status"] == "Successfully updated 1 metric values."
+    assert LibraryMetricValue.objects.filter(library=lib_a, metric=metric_gitstats_report).count() == 0
+
+
+@pytest.mark.django_db
+def test_ahp_calculations_basic(rf, domain, lib_a, lib_b, monkeypatch, tmp_path, user_factory):
+    rules = {"range": {}, "bool": {}, "options": {}, "int": {}}
+    categories = {"Categories": ["Installability"]}  # Changed from "Quality"
 
     (tmp_path / "api" / "database").mkdir(parents=True, exist_ok=True)
     (tmp_path / "api" / "database" / "rules.json").write_text(json.dumps(rules))
@@ -300,13 +1187,23 @@ def test_ahp_calculations_basic(rf, domain, lib_a, lib_b, monkeypatch, tmp_path)
 
     monkeypatch.setattr(views_module.settings, "BASE_DIR", str(tmp_path))
 
-    m = Metric.objects.create(metric_name="Score", category="Quality", option_category=None, value_type="range", rule="")
+    m = Metric.objects.create(
+        metric_name="Score",
+        metric_key="score",
+        category="Installability",
+        option_category=None,
+        value_type="range",
+        rule="",
+        scoring_dict={},
+    )
 
     LibraryMetricValue.objects.create(library=lib_a, metric=m, value=10)
     LibraryMetricValue.objects.create(library=lib_b, metric=m, value=5)
 
     view = views_module.AHPCalculations.as_view()
+    user = user_factory("test@example.com", "testuser")
     req = rf.get("/x")
+    force_authenticate(req, user=user)
     resp = view(req, domain_id=str(domain.domain_ID))
 
     assert resp.status_code == status.HTTP_200_OK
@@ -317,7 +1214,8 @@ def test_ahp_calculations_basic(rf, domain, lib_a, lib_b, monkeypatch, tmp_path)
 
     lib_a.refresh_from_db()
     lib_b.refresh_from_db()
-    assert "overall_score" in lib_a.ahp_results
+
+    assert lib_a.ahp_results is not None
+    assert lib_a.ahp_results != {}
     assert "category_scores" in lib_a.ahp_results
-    assert "overall_score" in lib_b.ahp_results
-    assert "category_scores" in lib_b.ahp_results
+    assert lib_a.ahp_results["category_scores"].get("Installability", 0) > 0

@@ -1,0 +1,31 @@
+name: Backend lint (pre-commit)
+
+on:
+  pull_request:
+
+jobs:
+  backend-lint:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Cache pip
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/pip
+          key: ${{ runner.os }}-pip-${{ hashFiles('src/backend/requirements.txt') }}
+
+      - name: Install backend + pre-commit deps
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r src/backend/requirements.txt
+
+      - name: Run pre-commit (backend only)
+        run: |
+          pre-commit run --all-files --show-diff-on-failure

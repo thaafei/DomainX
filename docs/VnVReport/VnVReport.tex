@@ -23,10 +23,10 @@
 
 \begin{document}
 
-\title{Verification and Validation Report: \progname} 
+\title{Verification and Validation Report: \progname}
 \author{\authname}
 \date{\today}
-	
+
 \maketitle
 
 \pagenumbering{roman}
@@ -45,24 +45,11 @@ March 6 & Rev 1 & First copy of VnV Report done by the whole team\\
 \section{Symbols, Abbreviations and Acronyms}
 
 \renewcommand{\arraystretch}{1.2}
-\begin{tabular}{l p{10cm}} 
-  \toprule		
-  \textbf{Symbol} & \textbf{Description}\\
-  \midrule 
-    AHP & Analytic Hierarchy Process \\
-    API & Application Programming Interface \\
-    CR & Consistency Ratio (AHP) \\
-    DB & Database \\
-    FR & Functional Requirement \\
-    NFR & Non-Functional Requirement \\
-    ORM & Object-Relational Mapping (e.g., Django ORM) \\
-    SRS & Software Requirements Specification \\
-    T & Test Case Identifier \\
-    VnV & Verification and Validation \\
-    JSON & JavaScript Object Notation \\
-    SRS & Software Requirements Specification \\
-    UUID   & Universally Unique Identifier \\
-    PATCH / POST / PUT & Standard HTTP methods used for updating, creating, and replacing resources, respectively.\\
+\begin{tabular}{l l}
+  \toprule
+  \textbf{symbol} & \textbf{description}\\
+  \midrule
+  T & Test\\
   \bottomrule
 \end{tabular}\\
 
@@ -719,522 +706,16 @@ under outages, but highlights a gap in user-facing fault messaging and offline
 fallback behavior.
 
 \subsection{Usability}
-\label{sec:nfr-usability}
 
-This subsection reports Revision~0 results for the usability evaluation
-(T--NF3).  The VnV Plan defines a one-to-five usability scale where higher
-values indicate better usability and uses a mean rating $\geq 4.0$ as the
-success criterion.  For Revision~0, available evidence consists of a pilot
-task-based proxy evaluation (n = 1), reported below as preliminary evidence.
+\subsection{Performance}
 
-\subsubsection{Test Case Summary (T--NF3: Usability Pilot)}
-\begin{table}[H]
-  \centering
-  \caption{T--NF3 usability pilot: test case summary (Rev0).}
-  \label{tab:tnf3-summary}
-  \begin{tabular}{@{}p{0.22\textwidth}p{0.73\textwidth}@{}}
-    \toprule
-    \textbf{Test Case ID} &
-      T--NF3 (Usability) \\
-    \textbf{Initial State} &
-      System deployed and accessible; tester starts unauthenticated; no
-      pre-existing domain required. \\
-    \textbf{Input} &
-      Tester completes eight core tasks (account creation/login, create domain,
-      add metrics, add libraries, fill manual metrics, export data, visualize
-      and export raw metrics, visualize and export AHP results) and records
-      task ratings plus qualitative comments. \\
-    \textbf{Expected Output} &
-      Core tasks are discoverable and completable without developer assistance;
-      charts and exports are understandable; required inputs are supported by
-      clear feedback and error messaging (saving does not fail silently). \\
-    \textbf{Actual Output} &
-      All eight tasks were completed.  Two tasks showed reduced ease due to
-      discoverability and feedback issues: adding metrics and locating manual
-      metric fields. \\
-    \textbf{Expected vs.\ Actual Match} &
-      Partial (workflow completion succeeded; specific usability issues were
-      identified). \\
-    \bottomrule
-  \end{tabular}
-\end{table}
+\subsection{etc.}
 
-\subsubsection{Method (Rev0 Pilot)}
-A proxy user (Ryan) completed a structured, asynchronous worksheet to reduce
-developer influence.  The worksheet captured task \emph{difficulty} on a
-one-to-five scale where 1 = Very Easy and 5 = Very Hard.
-
-Because the VnV Plan convention is higher = better usability, we also report a
-converted task \emph{ease} score using:
-\[
-  \text{EaseScore} = 6 - \text{DifficultyScore}.
-\]
-This conversion preserves the raw ratings while aligning the pilot results
-with the plan's direction.
-
-\subsubsection{Results}
-Table~\ref{tab:usability-pilot} summarizes the proxy user's task ratings and
-key observations.  Both the raw difficulty score and the converted ease score
-are reported.
-
-\begin{table}[H]
-  \centering
-  \caption{Pilot usability task results (n = 1 proxy user).}
-  \label{tab:usability-pilot}
-  \begin{tabular}{@{}p{0.52\textwidth}p{0.10\textwidth}p{0.10\textwidth}%
-                  p{0.22\textwidth}@{}}
-    \toprule
-    \textbf{Task} & \textbf{Diff.} & \textbf{Ease} & \textbf{Key observation} \\
-    \midrule
-    Create an account and login &
-      1 & 5 &
-      No email confirmation after registration. \\
-    Create a new domain &
-      1 & 5 &
-      Straightforward. \\
-    Add metrics to the domain &
-      3 & 3 &
-      Entry point not obvious; saving blocked without a clear warning. \\
-    Add two libraries to the domain &
-      1 & 5 &
-      Easy to complete. \\
-    Fill out manually added metrics &
-      3 & 3 &
-      Difficult to locate fields due to dense inputs and scrolling. \\
-    Export gathered data as a CSV &
-      1 & 5 &
-      Easy export. \\
-    Visualize and export raw metric values &
-      1 & 5 &
-      Easy to use; visualization perceived as useful. \\
-    Visualize and export AHP calculations &
-      1 & 5 &
-      Easy to find and download. \\
-    \bottomrule
-  \end{tabular}
-\end{table}
-
-Summary statistics for the pilot:
-\begin{itemize}
-  \item Mean task difficulty: $3/2$ (1.5); median difficulty: 1.
-  \item Mean converted ease: $9/2$ (4.5); median converted ease: 5.
-  \item Lowest ease tasks (converted): add metrics; fill manual metrics (3/5).
-\end{itemize}
-
-\subsubsection{Analysis and Traceability}
-The converted ease mean of 4.5/5.0 suggests the workflow is generally usable
-in the pilot.  However, two targeted usability risks were identified:
-(1) discoverability and feedback during metric creation, and
-(2) navigational friction when locating manual metric fields among dense
-inputs.  These issues map directly to the traceability targets for clear
-feedback and efficient navigation.
-
-Table~\ref{tab:usability-trace} summarizes traceability between usability
-requirements and pilot evidence.
-
-\begin{table}[H]
-  \centering
-  \caption{Usability traceability summary (Rev0 pilot).}
-  \label{tab:usability-trace}
-  \begin{tabular}{@{}p{0.18\textwidth}p{0.25\textwidth}p{0.50\textwidth}@{}}
-    \toprule
-    \textbf{Req.\ ID} & \textbf{Intent} & \textbf{Pilot evidence} \\
-    \midrule
-    UH-UP3 &
-      Clear feedback and error messages &
-      Saving was blocked during metric creation without a clear warning,
-      increasing confusion and trial-and-error. \\
-    UH-EU1 &
-      Efficient navigation for core actions &
-      Manual metric fields were difficult to locate among many inputs, which
-      suggests increased clicks and time-on-task. \\
-    LF-SR2 &
-      Clear, minimalist graph design &
-      Visualization and export of raw metrics and AHP results were rated very
-      easy and described as useful. \\
-    LF-AR2 &
-      Responsiveness across screens &
-      Not explicitly evaluated in the Rev0 pilot; pending in the full study. \\
-    UH-AR1 &
-      Font scalability/accessibility &
-      Not explicitly evaluated in the Rev0 pilot; pending in the full study. \\
-    \bottomrule
-  \end{tabular}
-\end{table}
-
-Additional improvement opportunities were noted by the proxy user, including
-providing registration confirmation feedback and supporting bulk import of
-libraries and automatic suggestion of repository URLs to reduce manual effort.
-
-\subsubsection{Limitations and Next Steps}
-The Revision~0 usability evidence is a pilot result with a single proxy user.
-The Appendix~B usability survey with multiple participants will be executed in
-the next revision to evaluate the plan's survey-based success criterion.
-The pilot findings above will be converted into tracked usability issues and
-re-tested after implementing improved discoverability for metric creation and
-clearer save-time feedback for required fields.
-
-\noindent \textbf{Evidence:} Pilot usability worksheet (Ryan), stored in the
-project repository at \texttt{/test/reports/usability/UserTesting-Ryan.pdf}.
-
-\subsection{Computational Accuracy}
-\label{sec:nfr-comp-accuracy}
-
-This subsection reports Revision~0 results for the computational-accuracy
-evaluation (T--NF4).  The purpose is to confirm that (1) AHP category
-priorities produced by the tool are stable and consistent with the configured
-pairwise comparisons, and (2) a spot check of auto-filled repository fields
-matches externally verifiable values (GitHub).
-
-\subsubsection{Test Case Summary (T--NF4: Computational Accuracy)}
-\begin{table}[ht]
-  \centering
-  \caption{T--NF4 computational accuracy: test case summary (Rev0).}
-  \label{tab:tnf4-summary}
-  \begin{tabular}{@{}p{0.22\textwidth}p{0.73\textwidth}@{}}
-    \toprule
-    \textbf{Test Case ID} &
-      T--NF4 (Computational Accuracy) \\
-    \textbf{Initial State} &
-      User is authenticated; a domain exists with at least two libraries; the
-      Category Weights (AHP) configuration and repo-metric views are
-      accessible. \\
-    \textbf{Input} &
-      (1) Configure AHP pairwise comparisons and record the computed category
-      priorities and consistency indicator shown by the tool.
-      (2) Select a small sample of libraries and cross-check key auto-filled
-      repository fields against GitHub (e.g., last commit date). \\
-    \textbf{Expected Output} &
-      Tool computes and displays a stable priority vector consistent with the
-      configured comparisons.  Auto-filled repository fields match GitHub for
-      the sampled libraries, or discrepancies are identified for correction. \\
-    \textbf{Actual Output} &
-      AHP priorities were computed and recorded
-      (Table~\ref{tab:tnf4-priorities}).  For the sampled libraries, the
-      checked repository field(s) matched GitHub (spot check). \\
-    \textbf{Expected vs.\ Actual Match} &
-      Pass for observed checks (Rev0), with additional quantitative
-      comparisons planned (see limitations). \\
-    \bottomrule
-  \end{tabular}
-\end{table}
-
-\subsubsection{Method (Rev0)}
-Two complementary checks were performed.
-
-\paragraph{AHP priority computation (tool output capture).}
-A category-weight configuration was entered in the AHP interface.  The
-\emph{Calculated Priorities} panel was used to record the resulting priority
-percentages exactly as displayed.  The consistency ratio (CR) value shown by
-the tool UI was also recorded.
-
-\paragraph{Repository-field spot check (external verification).}
-For a small sample of libraries, a key automatically populated repository
-field (e.g., last commit date) was compared against the corresponding value
-shown on GitHub.
-
-\subsubsection{Results}
-
-\paragraph{AHP priorities produced by the tool.}
-Table~\ref{tab:tnf4-priorities} lists the computed priorities recorded from
-the tool.
-
-\begin{table}[ht]
-  \centering
-  \caption{Computed AHP priorities recorded from the tool (Rev0).}
-  \label{tab:tnf4-priorities}
-  \begin{tabular}{@{}p{0.68\textwidth}p{0.18\textwidth}@{}}
-    \toprule
-    \textbf{Category} & \textbf{Priority} \\
-    \midrule
-    Installability & 25.6\% \\
-    Quality & 15.1\% \\
-    Correctness and Verifiability & 9.6\% \\
-    Surface Reliability & 5.0\% \\
-    Surface Robustness & 5.0\% \\
-    Surface Usability & 5.0\% \\
-    Reusability & 5.0\% \\
-    Visibility/Transparency & 5.0\% \\
-    Surface Understandability & 5.0\% \\
-    Raw Metrics (Measured via git\_stats) & 5.0\% \\
-    Raw Metrics (Measured via scc) & 5.0\% \\
-    Repo Metrics (Measured via GitHub) & 5.0\% \\
-    Uncategorized & 5.0\% \\
-    \bottomrule
-  \end{tabular}
-\end{table}
-
-During this run, the tool displayed the consistency ratio (CR) as
-\texttt{NaN\%} in the UI while still producing the priority vector above.
-
-\paragraph{Repository-field spot check.}
-For the sampled libraries, the checked repository field(s) (e.g., last commit
-date) matched GitHub during the manual cross-check.
-
-\subsubsection{Analysis and Discussion}
-The recorded priority vector reflects the intended ordering in which
-\emph{Installability}, \emph{Quality}, and \emph{Correctness and Verifiability}
-receive higher weights than the remaining categories, which are weighted
-equally in this configuration.
-
-The repository-field spot check provides preliminary evidence that the
-auto-filled repository values are consistent with GitHub for the sampled
-cases.
-
-\subsubsection{Limitations and Next Steps}
-Revision~0 evidence is limited to (1) capturing the tool's computed priorities
-from a single configuration and (2) a small manual spot check of repository
-fields.  The full VnV Plan method for T--NF4 includes manual AHP computation
-and relative-error checks with a $2\%$ threshold; these quantitative checks
-are planned for the next revision.  Specifically, we will:
-\begin{itemize}
-  \item Prepare a small AHP matrix and compute expected pairwise weights
-        manually (or using a trusted reference implementation), then run the
-        same inputs through the tool and compare priorities.
-  \item Calculate relative error (\%) for each compared value and flag any
-        deviation greater than $2\%$.
-  \item Expand the repository-field verification to additional fields
-        (e.g., repository creation date and last commit date) across a larger
-        library sample.
-  \item Investigate the \texttt{NaN\%} CR display to determine whether it is an
-        expected UI behavior for the given comparison pattern or a defect in
-        the consistency calculation display.
-\end{itemize}
-
-\noindent \textbf{Traceability:} PR-PA1 (auto-filled data accuracy) and FR12
-(AHP ranking computation).
-
-\subsection{Security and Access Control}
-\label{sec:nfr-security}
-
-This subsection reports Revision~0 results for security and access control.
-The goal is to validate that credentials and permissions are handled securely
-and that unauthorized actions are prevented.
-
-\subsubsection{Test Case Summary (T--NF5: Security and Access Control)}
-\begin{table}[H]
-  \centering
-  \caption{T--NF5 security and access control: test case summary (Rev0).}
-  \label{tab:tnf5-summary}
-  \begin{tabular}{@{}p{0.22\textwidth}p{0.73\textwidth}@{}}
-    \toprule
-    \textbf{Test Case ID} &
-      T--NF5 (Security and Access Control) \\
-    \textbf{Traceability} &
-      PR-SC1--PR-SC3, SR-AC6, SR-IM1, SR-AU1. \\
-    \textbf{Initial State} &
-      System deployed and accessible; both non-privileged and privileged user
-      accounts available. \\
-    \textbf{Input} &
-      (1) Static review of backend authentication configuration and security
-      settings.  (2) Dynamic check of restricted UI features using a
-      non-privileged account. \\
-    \textbf{Expected Output} &
-      Authentication uses secure mechanisms (hashed password storage, validated
-      password policy, secure cookies in production).  Unauthorized actions are
-      blocked and do not modify system state. \\
-    \textbf{Actual Output} &
-      Static inspection shows a custom user model
-      (\texttt{AUTH\_USER\_MODEL = users.CustomUser}) and DRF authentication via
-      \texttt{users.auth.CookieJWTAuthentication}.  Password validation is
-      enabled using Django's built-in validators (similarity, minimum length,
-      common password, numeric password checks).  Deployment security settings
-      use environment-based configuration for \texttt{SECRET\_KEY}, and enable
-      \texttt{SESSION\_COOKIE\_SECURE}, \texttt{CSRF\_COOKIE\_SECURE}, and
-      \texttt{SECURE\_SSL\_REDIRECT} when not in debug/local mode.  Backend
-      logging is configured via \texttt{LOGGING} with console output and
-      enabled loggers for \texttt{django}, \texttt{celery}, and \texttt{api}.
-      Dynamic testing with a non-privileged user showed restricted admin
-      features are hidden in the UI and were not accessible via normal
-      navigation. \\
-    \textbf{Expected vs.\ Actual Match} &
-      Partial (authentication, logging configuration, and access control
-      evidenced; lockout and session timeout behavior not fully verified in
-      Rev0). \\
-    \bottomrule
-  \end{tabular}
-\end{table}
-
-\subsubsection{Results}
-\begin{table}[H]
-  \centering
-  \caption{Security and access control results (Rev0).}
-  \label{tab:tnf5-results}
-  \begin{tabular}{@{}p{0.46\textwidth}p{0.14\textwidth}p{0.32\textwidth}@{}}
-    \toprule
-    \textbf{Scenario} & \textbf{Result} & \textbf{Notes} \\
-    \midrule
-    Authentication mechanism review &
-      Pass &
-      DRF uses \texttt{CookieJWTAuthentication}; custom user model configured. \\
-    Password policy validation review &
-      Pass &
-      \texttt{AUTH\_PASSWORD\_VALIDATORS} enabled with Django validators. \\
-    Production cookie / HTTPS settings review &
-      Pass &
-      Secure cookies and SSL redirect enabled when not debug/local. \\
-    Unauthorized feature access (UI) &
-      Pass &
-      Admin-only buttons hidden for non-privileged user. \\
-    Server logging configuration review &
-      Pass &
-      \texttt{LOGGING} configured with console handler; \texttt{django},
-      \texttt{celery}, and \texttt{api} loggers enabled (INFO/DEBUG). \\
-    Session timeout / lockout verification &
-      Pending &
-      \texttt{SESSION\_COOKIE\_AGE} not configured explicitly; lockout not
-      verified in Rev0. \\
-    \bottomrule
-  \end{tabular}
-\end{table}
-
-\subsubsection{Analysis}
-Revision~0 evidence indicates the system uses framework-aligned security
-practices: password validation is enabled through Django's built-in validators,
-authentication is enforced through a cookie-based JWT mechanism, and production
-deployments enable secure cookies and HTTPS redirection.  Access control is
-also supported through UI-level restriction of admin-only functionality for
-non-privileged users.
-
-Server logging is configured via the Django \texttt{LOGGING} setting with a
-console handler; however, persistence/retention as a long-term audit trail was
-not verified in Revision~0.
-
-The main remaining gap for Rev0 is confirmation of session timeout and account
-lockout behavior.  These should be validated in the next revision through
-explicit tests (e.g., unauthorized route attempts observed as 401/403 and
-confirmation of logging retention, plus lockout/timeout configuration where
-required).
-
-\subsubsection{Limitations and Next Steps}
-Next steps include (1) verifying unauthorized route access returns 401/403 and
-does not modify state, (2) confirming whether security-relevant events are
-persisted beyond console output (e.g., centralized log retention or audit
-tables), and (3) explicitly configuring and testing session timeout and lockout
-behavior if required by the VnV Plan.
-
-\noindent \textbf{Evidence:} Backend configuration in
-\texttt{src/backend/DomainX/settings.py} (\texttt{AUTH\_USER\_MODEL},
-\texttt{REST\_FRAMEWORK}, \texttt{AUTH\_PASSWORD\_VALIDATORS},
-deployment secure-cookie/HTTPS settings, and \texttt{LOGGING}); authentication
-module \\
-\texttt{users.auth.CookieJWTAuthentication}; UI observation that
-admin-only buttons are hidden for non-privileged users.
-
-\subsection{Maintainability}
-\label{sec:nfr-maintainability}
-
-This subsection reports Revision~0 results for maintainability.  Evidence is
-taken from automated GitHub Actions runs and repository documentation related
-to testing.  The evaluation targets MS-MR1--MS-MR6 (maintainability standards:
-style compliance, modularity, testability, and documentation).
-
-\subsubsection{Test Case Summary (T--NF6: Maintainability)}
-\begin{table}[H]
-  \centering
-  \caption{T--NF6 maintainability: test case summary (Rev0).}
-  \label{tab:tnf6-summary}
-  \begin{tabular}{@{}p{0.22\textwidth}p{0.73\textwidth}@{}}
-    \toprule
-    \textbf{Test Case ID} &
-      T--NF6 (Maintainability) \\
-    \textbf{Initial State} &
-      Repository contains an automated test workflow in GitHub Actions and a
-      dedicated \texttt{test/} directory with documentation. \\
-    \textbf{Input} &
-      Trigger the \texttt{tests.yml} workflow via a pull request update and
-      inspect the run status, logs, and artifacts.  Inspect \texttt{test/}
-      documentation to confirm test execution instructions are provided. \\
-    \textbf{Expected Output} &
-      Automated tests execute successfully; a CI coverage summary is produced
-      and meets the target (planned $\geq 80\%$); test documentation exists for
-      developers to run tests locally. \\
-    \textbf{Actual Output} &
-      The \texttt{tests.yml} workflow executed successfully with separate
-      \texttt{backend-test} and \texttt{frontend-test} jobs.  Backend tests ran
-      with coverage and produced TOTAL backend coverage of 73\%.  A coverage
-      HTML artifact (\texttt{coverage-html}) was uploaded.  The repository
-      includes \texttt{test/README.md} documenting how to run tests locally. \\
-    \textbf{Expected vs.\ Actual Match} &
-      Partial (tests and reporting present; coverage below 80\% target;
-      documentation present). \\
-    \bottomrule
-  \end{tabular}
-\end{table}
-
-\subsubsection{Results}
-Table~\ref{tab:maint-results} summarizes maintainability evidence for Rev0.
-The workflow run selected for evidence is the most recent successful run at
-the time of reporting.
-
-\begin{table}[H]
-  \centering
-  \caption{Maintainability evidence summary (Rev0).}
-  \label{tab:maint-results}
-  \begin{tabular}{@{}p{0.34\textwidth}p{0.18\textwidth}p{0.40\textwidth}@{}}
-    \toprule
-    \textbf{Item} & \textbf{Observed} & \textbf{Notes} \\
-    \midrule
-    Automated CI tests (GitHub Actions) &
-      Yes &
-      \texttt{tests.yml} runs on pull requests with backend and frontend jobs. \\
-    Backend tests &
-      Pass &
-      \texttt{pytest} executed in CI; tests passed (with warnings). \\
-    Frontend tests &
-      Pass &
-      Frontend job executed in CI (Playwright-based). \\
-    Coverage reporting enabled &
-      Yes &
-      Coverage printed in logs; HTML report uploaded as artifact. \\
-    Overall backend coverage &
-      73\% &
-      Below planned target of $\geq 80\%$. \\
-    Test execution documentation &
-      Yes &
-      \texttt{test/README.md} documents setup and running \texttt{pytest}. \\
-    Lint/format automation &
-      Not observed &
-      No CI evidence of flake8/black in the sampled workflow logs. \\
-    \bottomrule
-  \end{tabular}
-\end{table}
-
-\subsubsection{Analysis and Traceability}
-The existence of an automated test workflow integrated into pull requests
-supports maintainability through testability and regression resistance.  The
-workflow runs backend and frontend tests and produces a coverage report, which
-enables repeatable inspection of covered and uncovered code paths.  The
-presence of \texttt{test/README.md} further supports maintainability by
-documenting how developers can run the test suite locally.
-
-The observed overall backend coverage (73\%) does not meet the planned
-$\geq 80\%$ target for Rev0.  This indicates that additional tests should be
-added, particularly for modules with low coverage, to increase confidence in
-future refactors and to align with MS-MR testability expectations.
-
-This evaluation traces to MS-MR1--MS-MR6.  Rev0 evidence most directly
-supports testability and documentation.  Explicit evidence for style
-compliance via automated lint/format checks remains to be captured.
-
-\subsubsection{Limitations and Next Steps}
-In the next revision, maintainability will be strengthened by:
-(1) increasing automated test coverage to reach the $\geq 80\%$ target,
-(2) adding or capturing explicit lint/format checks in CI if required by the
-VnV Plan, and
-(3) recording a brief team code walkthrough note summarizing modular structure
-and documentation completeness, with follow-up items tracked in GitHub issues.
-
-\noindent \textbf{Evidence:}
-GitHub Actions \texttt{tests.yml} workflow and latest successful run
-(\texttt{backend-test} and \texttt{frontend-test}), including coverage output
-(TOTAL coverage) and the \texttt{coverage-html} artifact; repository test
-documentation at \texttt{/test/README.md}.
-	
+\section{Comparison to Existing Implementation}
 
 
 \section{Unit Testing}
-The following unit tests concern behaviour-hiding modules that are implemented by the tool. Modules implemented by external libraries are assumed to be tested themselves and therefore don't need to be unit tested. 
+The following unit tests concern behaviour-hiding modules that are implemented by the tool. Modules implemented by external libraries are assumed to be tested themselves and therefore don't need to be unit tested.
 \subsection{Data Edit Module}
   \begin{enumerate}
     \item \texttt{test\_list\_libraries\_returns\_only\_domain\_libraries} \label{test-list-libraries-returns-only-domain-libraries}
@@ -1384,7 +865,7 @@ The following unit tests concern behaviour-hiding modules that are implemented b
     \\Input: User changes their own password with correct old password
     \\Expected Output: HTTP 200 OK and password updated
     \\Actual Output: \texttt{set\_password()} called and response 200 OK
-    \\Result: Pass      
+    \\Result: Pass
   \end{enumerate}
 \subsection{Automated Metrics Module}
   \begin{enumerate}
@@ -1790,167 +1271,16 @@ The following unit tests concern behaviour-hiding modules that are implemented b
 
 \section{Changes Due to Testing}
 
-\subsection{AHP Methodology Alignment}
-Following the feedback from the Rev 0 meeting, we identified a discrepancy between our initial implementation and the established research methodology.
-\begin{itemize}
-  \item \textbf{Previous Iteration:} AHP was only applied to calculate the ``Local Weights'' of libraries within a single criterion. Users were then asked to manually assign a flat percentage to each overarching criterion.
-  \item \textbf{The Revision:} To align with the formal AHP framework, we transitioned to a Pairwise Comparison Matrix for criterion weighting. Users now compare the relative importance of categories (e.g., Usability vs. Reliability) using the Saaty 1--9 scale. The system then mathematically derives the global weights and validates the results via a Consistency Ratio (CR) check, ensuring the data is scientifically sound.
-\end{itemize}
-
-\subsection{Visualization and Data Density}
-We addressed the limitations regarding how library rankings were displayed to improve transparency.
-
-\begin{itemize}
-  \item \textbf{Graph Scalability:} Previously, the dashboard was limited to the top 10 libraries to avoid overcrowding. However, to provide a comprehensive view of the domain, we have redesigned the visualization format to clearly accommodate and display all libraries simultaneously.
-  \item \textbf{Tabular Data:} Based on user recommendations, we have introduced a Ranking Table to complement the graphical data. This allows users to view precise numerical scores and rankings alongside the visual trends.
-\end{itemize}
-
-\subsection{Data Integrity and Input Validation}
-To reduce user error, we refined the data entry process. We replaced open-ended text fields with context-aware inputs. The system now provides dropdown menus for Booleans and Ranges, preventing invalid data types from corrupting the AHP calculations.
-\textit{Note: No changes were required based on current unit testing results, as the core logic remains stable.}
+\wss{This section should highlight how feedback from the users and from
+the supervisor (when one exists) shaped the final product.  In particular
+the feedback from the Rev 0 demo to the supervisor (or to potential users)
+should be highlighted.}
 
 \section{Automated Testing}
 
-Pytest and the \texttt{pytest-django} ecosystem serve as the foundation for our automated testing suite, which offers a high-performance, adaptable framework for verifying environment setups and application logic. To ensure that model-level constraints are carefully enforced before code reaches production, we use specialized decorators like \texttt{@pytest.mark.django\_db} to safely communicate with a temporary test database. We can swiftly find and fix errors in our fundamental business logic, such the concatenation rules for user profiles, by utilizing Pytest's sophisticated assertion introspection.
-
-Using Django's \texttt{SimpleTestCase} and the \texttt{unittest.mock} module, we developed a strong configuration testing method in addition to standard data validation. This enables us to test that our settings dynamically swap between SQLite and MySQL engines as planned by programmatically simulating various deployment scenarios (e.g., Local vs. Production). We make sure the application stays stable and properly configured across different infrastructure states without having to manually review environment files by simulating environment variables and altering settings within our tests.		
 \section{Trace to Requirements}
-Table~\ref{tab:trace} presents the traceability between the
-system test cases and the requirements defined in the Software Requirements
-Specification (SRS). The table indicates which test cases provide verification
-evidence for each requirement implemented in the system.
-		
-\begin{table}[H]
-\centering
-\caption{Traceability Between Requirements and System Test Cases}
-\label{tab:trace}
-\resizebox{\textwidth}{!}{
-\begin{tabular}{|l|c|c|c|c|c|c|c|c|c|c|c|c|c|c|c|c|}
-\hline
-Requirement & T-AC-1 & T-AC-2 & T-AC-3 & T-AC-4 & T-AC-5 & T-DM-1 & T-DM-2 & T-DM-3 & T-DM-4 & T-DM-5 & T-VR-1 & T-VR-2 & T-VR-3 & T-VR-4 & T-VR-5 & T-VR-6 \\ \hline
 
-FR2  & X &  &  &  &  &  &  &  &  &  &  &  &  &  &  &  \\ \hline
-FR3  &  & X & X &  &  &  &  &  &  &  &  &  &  &  &  &  \\ \hline
-FR4  &  &  &  & X &  &  &  &  &  &  &  &  &  &  &  &  \\ \hline
-FR5  &  &  &  &  &  & X &  &  &  &  &  &  &  &  &  &  \\ \hline
-FR7  &  &  &  &  &  &  & X & X &  &  &  &  &  &  &  &  \\ \hline
-FR10 &  &  &  &  &  &  & X &  &  &  &  &  &  &  &  &  \\ \hline
-FR11 &  &  &  &  &  &  &  &  &  &  &  &  &  &  &  & X \\ \hline
-FR12 &  &  &  &  &  &  &  & X &  &  & X &  &  &  &  &  \\ \hline
-FR13 &  &  &  &  &  &  &  &  &  &  & X & X &  &  &  &  \\ \hline
-FR14 &  &  &  &  &  &  &  &  &  & X &  &  &  &  &  &  \\ \hline
-FR15 &  &  &  &  &  &  &  &  &  &  &  &  & X &  &  &  \\ \hline
-
-SR-AC4 &  &  &  &  & X &  &  &  &  &  &  &  &  &  &  &  \\ \hline
-SR-AC5 & X & X & X & X &  &  &  &  &  &  &  &  &  &  &  &  \\ \hline
-
-SR-VIS1 &  &  &  &  &  &  &  &  &  &  & X &  &  &  &  &  \\ \hline
-SR-VIS2 &  &  &  &  &  &  &  &  &  &  &  & X &  &  &  &  \\ \hline
-
-PR-RFT1 &  &  &  &  &  &  &  &  & X &  &  &  &  &  & X &  \\ \hline
-SR-INT5 &  &  &  &  &  &  &  &  & X &  &  &  &  &  & X &  \\ \hline
-
-LF-AR2 &  &  &  &  &  &  &  &  &  &  &  &  &  & X &  &  \\ \hline
-LF-AR3 &  &  &  &  &  &  &  &  &  &  &  &  &  &  &  & X \\ \hline
-LF-SR2 &  &  &  &  &  &  &  &  &  &  &  &  &  & X &  &  \\ \hline
-
-UH-AR1 &  &  &  &  &  &  &  &  &  &  &  &  &  & X &  &  \\ \hline
-
-OE-PR4 &  &  &  &  &  &  &  &  &  & X &  &  & X &  &  &  \\ \hline
-
-\end{tabular}
-}
-\end{table}
-
-The tests listed in this report were primarily designed to verify
-functional requirements. However, some of these tests also provide
-evidence related to certain non-functional requirements, which is why
-those requirements appear in the traceability matrix. Requirements that
-were still under development or removed from the final project scope are
-not included in the table and are discussed earlier in the
-\textit{Features Currently in Progress} subsection of the
-\textit{Functional Requirements Evaluation} section.
-
-\section{Trace to Requirements (Nonfunctional)}
-\label{sec:trace-nfr}
-
-Table~\ref{tab:trace-nfr} summarizes traceability between nonfunctional
-requirements (NFR-related requirement IDs from the SRS) and the nonfunctional
-test cases (T--NF1 through T--NF6) defined in the VnV Plan.
-
-\begin{table}[H]
-\centering
-\caption{Nonfunctional Requirements Traceability Matrix}
-\label{tab:trace-nfr}
-\resizebox{\textwidth}{!}{
-\begin{tabular}{|l|c|c|c|c|c|c|}
-\hline
-\textbf{Requirement ID} & \textbf{T--NF1} & \textbf{T--NF2} & \textbf{T--NF3} &
-\textbf{T--NF4} & \textbf{T--NF5} & \textbf{T--NF6} \\ \hline
-PR--SL1   & X &   &   &   &   &   \\ \hline
-PR--RFT1  &   & X &   &   &   &   \\ \hline
-PR--RFT2  &   & X &   &   &   &   \\ \hline
-PR--RFT3  &   & X &   &   &   &   \\ \hline
-SR--INT5  &   & X &   &   &   &   \\ \hline
-UH--EU1   &   &   & X &   &   &   \\ \hline
-LF--AR2   &   &   & X &   &   &   \\ \hline
-UH--UP3   &   &   & X &   &   &   \\ \hline
-LF--SR2   &   &   & X &   &   &   \\ \hline
-PR--PA1   &   &   &   & X &   &   \\ \hline
-FR12      &   &   &   & X &   &   \\ \hline
-PR--SC1   &   &   &   &   & X &   \\ \hline
-PR--SC2   &   &   &   &   & X &   \\ \hline
-PR--SC3   &   &   &   &   & X &   \\ \hline
-SR--AC6   &   &   &   &   & X &   \\ \hline
-SR--IM1   &   &   &   &   & X &   \\ \hline
-SR--AU1   &   &   &   &   & X &   \\ \hline
-MS--MR1   &   &   &   &   &   & X \\ \hline
-MS--MR2   &   &   &   &   &   & X \\ \hline
-MS--MR3   &   &   &   &   &   & X \\ \hline
-MS--MR4   &   &   &   &   &   & X \\ \hline
-MS--MR5   &   &   &   &   &   & X \\ \hline
-MS--MR6   &   &   &   &   &   & X \\ \hline
-\end{tabular}
-}
-\end{table}
-
-The tests listed in this section were designed to provide verification evidence
-for the nonfunctional requirements in the SRS. An ``X'' indicates that the
-corresponding test case contributes evidence for that requirement. Note that
-evidence may include Pass, Partial, or Pending outcomes as reported in the
-nonfunctional requirements evaluation section.
-
-\section{Trace to Modules}		
-Table~\ref{tab:trace} presents the traceability between the system test cases and the software modules defined in the system architecture. The table indicates which test cases provide verification evidence for each module implemented in the system.
-\begin{table}[H]
-\centering
-\caption{Traceability Between Modules and System Test Cases}
-\label{tab:trace}
-\resizebox{\textwidth}{!}{
-\begin{tabular}{|l|c|c|c|c|c|c|c|c|c|c|c|c|c|c|c|c|c|c|}
-\hline
-\textbf{Module} & \textbf{T-AC-1} & \textbf{T-AC-2} & \textbf{T-AC-3} & \textbf{T-AC-4} & \textbf{T-AC-5} & \textbf{T-AC-6} & \textbf{T-AC-7} & \textbf{T-DM-1} & \textbf{T-DM-2} & \textbf{T-DM-3} & \textbf{T-DM-4} & \textbf{T-DM-5} & \textbf{T-VR-1} & \textbf{T-VR-2} & \textbf{T-VR-3} & \textbf{T-VR-4} & \textbf{T-VR-5} & \textbf{T-VR-6} \\ \hline
-M2  &   &   &   &   &   &   &   &   &   &   &   &   &   &   &   & X &   &   \\ \hline
-M3  &   &   &   &   & X &   & X &   &   & X &   & X &   &   & X & X &   & X \\ \hline
-M4  &   &   &   &   &   & X &   & X & X & X &   &   &   &   &   &   &   &   \\ \hline
-M5  & X & X &   &   &   &   & X &   &   &   &   &   &   &   &   &   &   &   \\ \hline
-M6  &   &   & X & X &   & X &   & X &   &   &   &   &   &   &   &   &   &   \\ \hline
-M7  & X &   &   &   &   &   &   &   &   &   &   &   &   &   &   &   &   &   \\ \hline
-M8  &   &   &   &   &   &   &   &   & X &   &   &   &   &   &   &   &   &   \\ \hline
-M9  &   &   &   &   &   &   &   & X &   &   &   &   &   &   &   &   &   & X \\ \hline
-M10 &   &   &   &   &   &   &   &   &   &   & X & X &   &   & X & X & X & X \\ \hline
-M11 &   &   &   &   &   &   &   &   &   & X &   &   & X &   &   &   &   &   \\ \hline
-M12 &   &   &   &   &   &   &   &   &   &   &   &   & X & X & X & X &   & X \\ \hline
-M14 &   &   &   &   &   & X &   &   & X & X &   & X &   &   & X &   &   &   \\ \hline
-M15 &   &   &   &   &   &   &   &   & X &   &   &   &   &   &   &   &   &   \\ \hline
-M16 &   &   &   &   &   &   &   &   &   & X &   &   & X & X &   &   &   &   \\ \hline
-M17 &   &   &   &   &   & X &   &   & X & X & X &   & X &   &   &   & X &   \\ \hline
-M18 &   &   &   &   &   &   &   &   &   &   & X &   &   &   &   &   & X &   \\ \hline
-M19 &   &   &   &   &   &   &   & X &   &   &   &   &   &   &   &   &   &   \\ \hline
-\end{tabular}
-}
-\end{table}
-	
+\section{Trace to Modules}
 
 \section{Code Coverage Metrics}
 The following report is automatically generated by pytest. We obtained a total coverage of 73\%. The actual coverage should be slightly higher since some files that contain no logic are being counted towards the percentage (i.e. \href{https://github.com/thaafei/DomainX/blob/main/src/backend/api/database/edit_history/views.py}{edit\_history/views}).
@@ -1958,12 +1288,12 @@ The following report is automatically generated by pytest. We obtained a total c
   \begin{longtable}{|p{10cm}|c|c|c|c|}
     \caption{Backend Code Coverage Report} \\
     \hline
-    \textbf{File} & \textbf{Statements} & \textbf{Missing} & \textbf{Excluded} & \textbf{Coverage} \\ 
+    \textbf{File} & \textbf{Statements} & \textbf{Missing} & \textbf{Excluded} & \textbf{Coverage} \\
     \hline
     \endfirsthead
 
     \hline
-    \textbf{File} & \textbf{Statements} & \textbf{Missing} & \textbf{Excluded} & \textbf{Coverage} \\ 
+    \textbf{File} & \textbf{Statements} & \textbf{Missing} & \textbf{Excluded} & \textbf{Coverage} \\
     \hline
     \endhead
       \textbf{\path{src/backend/api/database/backup_logs/admin.py}} & 1 & 0 & 0 & 100\% \\ \hline
@@ -2015,16 +1345,7 @@ graduate attribute of Reflection.
 \input{../Reflection.tex}
 
 \begin{enumerate}
-  \item What went well while writing this deliverable?\\
-
-  \textbf{Haniye:} One aspect that went well while writing this deliverable was that many of the test scenarios were already clear from the development process. While implementing features such as domain management, metric editing, and visualization, the system was frequently tested to verify correct behaviour. As a result, when preparing the VnV report it was easier to define the test inputs and expected outcomes because the implemented features had already been validated during development.    \textbf{Fei:} I was responsible for the unit test portion. Since we decided to write unit test as we develop, instead of all at the end, writing this portion was much simpler as I just had to compile what we had into a report format.\\
-
-  \textbf{Fei:} I was responsible for the unit test portion. Since we decided to write unit test as we develop, instead of all at the end, writing this portion was much simpler as I just had to compile what we had into a report format.\\
-  
-  \textbf{Ghena:} A lot of test cases were already written and used throughout the development process, making sure that any ant changes to the code follows the logic of the requirements. This made the document easy to write since a lot of it was alreadt built.
-
-  \textbf{Awurama}: Converting our real testing into a consistent structure (summary to method to results to analysis to next steps) worked well. We reused concrete evidence (timings, UI observations, CI output, and code excerpts) and traceability was straightforward because the VnV Plan already mapped each T--NF test to requirement IDs.
-
+  \item What went well while writing this deliverable?
   \item What pain points did you experience during this deliverable, and how
     did you resolve them?\\
 
@@ -2044,17 +1365,17 @@ graduate attribute of Reflection.
 
   \item Which parts of this document stemmed from speaking to your client(s) or
   a proxy (e.g. your peers)? Which ones were not, and why?\\
-  
+
   \textbf{Haniye:} Some parts of this document were influenced by discussions
     with the project supervisor. For example, the bulk data upload feature was removed from the project scope after supervisor feedback
     indicated that it would not be necessary for the final tool. The
     supervisor also suggested removing the public sign-up feature and
     instead allowing a Super Admin to create user accounts directly, with
     users updating their password afterward.
-   
+
   \textbf{Fei:} N/A\\
-  
-  \textbf{Ghena:} All of the changes made due to testing came from the our client/stackholder meetings. However The specific direct mapping (e.g., tracing T–AC–1 to M5 and M7) didn't stem from those meetings. 
+
+  \textbf{Ghena:} All of the changes made due to testing came from the our client/stackholder meetings. However The specific direct mapping (e.g., tracing T–AC–1 to M5 and M7) didn't stem from those meetings.
 
   \textbf{Awurama}: The usability section (T--NF3) stems from a proxy user worksheet with task ratings and comments. The remaining NFR sections were primarily tool/code/CI-based verification (performance timing, offline fault injection and recovery, repo-field spot checks, security configuration review, CI maintainability evidence), so they did not require client input in Rev0.
 
@@ -2066,7 +1387,7 @@ graduate attribute of Reflection.
   predict a feasible amount of effort and the right tasks needed to build the
   evidence that demonstrates the required quality?  (It is expected that most
   teams will have had to deviate from their original VnV Plan.)\\
-  
+
   \textbf{Haniye:} Most of the verification and validation activities followed
     the original VnV Plan. Some small differences occurred due to time
     constraints and changes in project priorities. For example, the bulk data
@@ -2083,7 +1404,7 @@ graduate attribute of Reflection.
     planning additional tests for integration and deployment scenarios.
 
   \textbf{Fei:} The changes I had to make to the unit test portion was the modules. As we developed the tool, we ended up condensing a few modules together since that made more sense during the development. This just meant combining the related unit tests of the combined modules into one. For future projects, I don't think we can mitigate it completely. Since we designed the project before development, during development new insights arises which results in changes to the theoretical plan.\\
-  
+
   \textbf{Ghena:} The final VnV activities deviated from the plan primarily because the AHP Calculation Module (M11) required restructuring to align with the methodology in the assigned research paper, replacing an initial simplified model. These changes could have been avoided had the module been revised more properly during the initial design phase. Additionally, features like Excel bulk upload (FR9) were removed to prioritize core stability. While some scope reductions are manageable, predicting the future requirements of this project proved difficult and would remain a challenge in future iterations.
 
   \textbf{Awurama}: Rev0 deviated from the plan mainly due to feasibility and environment constraints: performance used available domains (2 and 10 libraries) with manual timing instead of 5/10/20/40 and automated measurement; reliability used offline-mode fault injection since 429 was not reproducible and caching/warnings were not observable; computational accuracy captured tool priorities plus a GitHub spot check but did not complete the full manual AHP computation with $2\%$ error checks; security verified settings/auth/logging but did not confirm lockout/session timeout (no explicit configuration found); maintainability used CI evidence but coverage did not meet the planned target and lint automation was not observed. These changes occurred because data, reproducible fault triggers, and infra access were limited in Rev0. In future projects, we can anticipate these risks and plan mitigations (early dataset prep, instrumentation for timing, fault-injection hooks, and explicit Rev0 vs.\ Rev1 evidence expectations).

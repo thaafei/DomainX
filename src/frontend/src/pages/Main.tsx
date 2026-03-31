@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo } from "react";
+import React, { useState, useEffect, useMemo, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuthStore } from "../store/useAuthStore";
 import CustomIsometricBar from '../components/CustomIsometricBar';
@@ -13,13 +13,65 @@ import {
   LabelList,
   Cell,
 } from "recharts";
+import Plot from 'react-plotly.js';
 import { apiUrl } from "../config/api";
 import DomainsList from "../components/DomainsList";
 import DomainInfo from "../components/DomainInfo";
-// 1. Helper for dynamic pastels
+import JSZip from 'jszip';
+import { saveAs } from 'file-saver';
+import Plotly, { Data, Layout } from "plotly.js-dist-min";
+import AuthTransition from "../components/AuthTransition";
+
+const dataUrlToBlob = (data: string) => {
+  if (!data) return new Blob();
+
+  if (data.startsWith('<svg') || data.startsWith('<?xml')) {
+    return new Blob([data], { type: 'image/svg+xml;charset=utf-8' });
+  }
+
+  if (data.startsWith('data:')) {
+    const [header, body] = data.split(',');
+
+    if (header.includes('base64')) {
+      const bin = window.atob(body);
+      const arr = new Uint8Array(bin.length).map((_, i) => bin.charCodeAt(i));
+      return new Blob([arr], { type: header.split(':')[1].split(';')[0] });
+    } else {
+      return new Blob([decodeURIComponent(body)], { type: 'image/svg+xml;charset=utf-8' });
+    }
+  }
+
+  return new Blob([data], { type: 'text/plain' });
+};
+
 const getPastelColor = (index: number) => {
-  const hue = (index * 137.5) % 360; 
+  const hue = (index * 137.5) % 360;
   return `hsl(${hue}, 60%, 70%)`;
+};
+
+interface LibraryRow {
+  library_ID: string;
+  library_name: string;
+  metrics: { [metricName: string]: string | number | null };
+}
+
+interface AhpData {
+  global_ranking: Record<string, number>;
+  category_details: Record<string, Record<string, number>>;
+}
+
+const downloadConfig: any = {
+  responsive: true,
+  displayModeBar: true,
+  modeBarButtonsToRemove: ['select2d', 'lasso2d', 'zoomIn2d', 'zoomOut2d'],
+  toImageButtonOptions: {
+    format: 'png',
+    filename: 'domainx_analysis',
+    height: 500,
+    width: 700,
+    scale: 2,
+    setBackground: 'transparent'
+  }
 };
 
 const Main: React.FC = () => {
@@ -62,6 +114,131 @@ const Main: React.FC = () => {
   });
 
   const [showSuccess, setShowSuccess] = useState(false);
+  const [ahpData, setAhpData] = useState<AhpData | null>(null);
+  const [libraries, setLibraries] = useState<LibraryRow[]>([]);
+  const [selectedIndividualAhpCategories, setSelectedIndividualAhpCategories] = useState<string[]>([]);
+  const [plotlyCharts, setPlotlyCharts] = useState<{ metric: string; rows: { label: string; value: number }[] }[]>([]);
+  const [showCategoryDropdown, setShowCategoryDropdown] = useState(false);
+  const dropdownRef = useRef<HTMLDivElement | null>(null);
+
+  const toggleIndividualAhpCategory = (category: string) => {
+    setSelectedIndividualAhpCategories(prev =>
+      prev.includes(category) ? prev.filter(x => x !== category) : [...prev, category]
+    );
+  };
+
+  const downloadFormat = "svg";
+
+  const categoryListForAhp = useMemo(() => {
+    if (!ahpData?.category_details) return [];
+    return Object.keys(ahpData.category_details);
+  }, [ahpData]);
+
+  function buildChartLayout(metric: string, isExport: boolean = false): Partial<Layout> {
+    const fontColor = isExport ? "#000000" : "#ffffff";
+    const gridColor = isExport ? "rgba(0,0,0,0.1)" : "rgba(255,255,255,0.1)";
+
+    return {
+      title: {
+        text: metric,
+        font: { size: 18, color: fontColor },
+      },
+      paper_bgcolor: "rgba(0,0,0,0)",
+      plot_bgcolor: "rgba(0,0,0,0)",
+      xaxis: {
+        title: { text: "Libraries", font: { color: fontColor }, standoff: 20 },
+        tickfont: { color: fontColor, size: 12 },
+        gridcolor: gridColor,
+        tickangle: -90,
+        automargin: true,
+      },
+      yaxis: {
+        title: { text: metric, font: { color: fontColor } },
+        tickfont: { color: fontColor },
+        gridcolor: gridColor,
+        automargin: true,
+      },
+      margin: { t: 80, l: 60, r: 60, b: 170 },
+      autosize: true,
+    };
+  }
+
+  const buildChartData = (rows: { label: string; value: number }[]): Data[] => [{
+    x: rows.map(r => r.label),
+    y: rows.map(r => r.value),
+    type: "bar",
+    marker: { color: "#4facfe" }
+  }];
+
+  const handleDownloadAll = async () => {
+    if (!plotlyCharts.length) return;
+    const zip = new JSZip();
+    const dateStamp = new Date().toISOString().slice(0, 10);
+
+    try {
+      const downloadPromises = plotlyCharts.map(async (chart) => {
+        const data = buildChartData(chart.rows);
+        const layout = buildChartLayout(chart.metric, true);
+
+        const dataUrl = await Plotly.toImage(
+          { data, layout },
+          { width: 1200, height: 800, format: 'svg' }
+        );
+
+        const blob = dataUrlToBlob(dataUrl as string);
+        const safeName = chart.metric.replace(/[^\w\s]/gi, '').replace(/\s+/g, "_").toLowerCase();
+        zip.file(`${safeName}.svg`, blob);
+      });
+
+      await Promise.all(downloadPromises);
+      const content = await zip.generateAsync({ type: "blob" });
+      saveAs(content, `DomainX_Analysis_${dateStamp}.zip`);
+    } catch (error) {
+      console.error("Export failed:", error);
+    }
+  };
+
+  useEffect(() => {
+    if (selectedDomain && ahpData) {
+      generatePlotlyCharts();
+    }
+  }, [selectedIndividualAhpCategories, selectedDomain, ahpData]);
+
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
+        setShowCategoryDropdown(false);
+      }
+    };
+
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, []);
+
+  const generatePlotlyCharts = () => {
+    const globalChart = {
+      metric: "Global AHP Ranking",
+      rows: chartData.map(d => ({ label: d.name, value: d.score / 100 }))
+    };
+
+    const categoryCharts = selectedIndividualAhpCategories.map(cat => {
+      const categoryScores = ahpData?.category_details[cat];
+      if (!categoryScores) return null;
+
+      const rows = libraries.map(l => ({
+        label: l.library_name,
+        value: Number(categoryScores[l.library_name]) || 0
+      })).sort((a, b) => b.value - a.value);
+
+      return { metric: `${cat} Score`, rows };
+    }).filter((chart): chart is { metric: string; rows: { label: string; value: number }[] } =>
+      chart !== null
+    );
+
+    setPlotlyCharts([globalChart, ...categoryCharts]);
+  };
 
   const handleUpdateUser = async () => {
     if (!user) return;
@@ -82,7 +259,6 @@ const Main: React.FC = () => {
       if (response.ok) {
         await fetchCurrentUser();
         setShowSuccess(true);
-        // Automatically hide the message and close modal after 2 seconds
         setTimeout(() => {
           setShowSuccess(false);
           setIsEditModalOpen(false);
@@ -108,10 +284,15 @@ const Main: React.FC = () => {
 
       if (response.ok) {
         const data = await response.json();
+        setAhpData(data);
+        const libraryRows: LibraryRow[] = Object.keys(data.global_ranking).map(name => ({
+          library_ID: name,
+          library_name: name,
+          metrics: {}
+        }));
+        setLibraries(libraryRows);
         setGlobalRanking(data.global_ranking || {});
-        
-        // Transform category_details for the table
-        // data.category_details looks like: { "Popularity": { "React": 0.2, "Vue": 0.1 }, ... }
+
         const libraries = Object.keys(data.global_ranking);
         const rows = libraries.map(lib => ({
           name: lib,
@@ -121,7 +302,7 @@ const Main: React.FC = () => {
             return acc;
           }, {})
         }));
-        
+
         setTableData(rows);
         setGraph(true);
       } else {
@@ -132,6 +313,7 @@ const Main: React.FC = () => {
       setGraph(false);
     }
   };
+
   const requestSort = (key: string) => {
     let direction: "asc" | "desc" = "desc";
     if (sortConfig && sortConfig.key === key && sortConfig.direction === "desc") {
@@ -146,11 +328,11 @@ const Main: React.FC = () => {
     const bVal = b[sortConfig.key];
     return sortConfig.direction === "asc" ? aVal - bVal : bVal - aVal;
   });
+
   const activeCategories = useMemo(() => {
     if (!categories || !tableData.length) return [];
 
-    // Filter categories: keep only those where at least one row has a valid number
-    return categories.filter((cat: string) => 
+    return categories.filter((cat: string) =>
       tableData.some(row => {
         const val = row[cat];
         return typeof val === 'number' && !isNaN(val) && val !== 0;
@@ -164,7 +346,8 @@ const Main: React.FC = () => {
       score: parseFloat(((score as number) * 100).toFixed(2)),
       color: getPastelColor(index),
     }))
-    .sort((a, b) => b.score - a.score).slice(0, 10);;
+    .sort((a, b) => b.score - a.score);
+
   const fetchCurrentUser = async () => {
     try {
       const response = await fetch(apiUrl("/me/"), {
@@ -196,27 +379,6 @@ const Main: React.FC = () => {
     }
   };
 
-  // const getAHPRanking = async (domainId: string) => {
-  //   try {
-  //     const response = await fetch(apiUrl(`/library_metric_values/ahp/${domainId}/`), {
-  //       method: "GET",
-  //       headers: { "Content-Type": "application/json" },
-  //       credentials: "include",
-  //     });
-
-  //     if (response.ok) {
-  //       const data = await response.json();
-  //       setGlobalRanking(data.global_ranking || {});
-  //       setGraph(true);
-  //     } else {
-  //       setGraph(false);
-  //     }
-  //   } catch (err) {
-  //     console.error("AHP fetch failed:", err);
-  //     setGraph(false);
-  //   }
-  // };
-
   const fetchWeights = async (domainId: string) => {
     try {
       const res = await fetch(apiUrl(`/domain/${domainId}/category-weights/`), {
@@ -241,27 +403,42 @@ const Main: React.FC = () => {
 
       if (response.ok) {
         const data = await response.json();
+
         setDomains(data);
 
         if (data.length > 0) {
           const savedId = localStorage.getItem("dx:lastDomainId");
-          const domainToSelect = savedId
-            ? data.find((d: any) => String(d.domain_ID) === String(savedId)) || data[0]
-            : data[0];
+
+          let domainToSelect;
+
+          if (user) {
+            domainToSelect = data.find((d: any) => String(d.domain_ID) === String(savedId)) || data[0];
+          } else {
+            const publishedDomains = data.filter((d: any) => d.is_published);
+
+            if (publishedDomains.length > 0) {
+              domainToSelect = publishedDomains[0];
+            } else {
+              domainToSelect = null;
+            }
+          }
 
           setSelectedDomain(domainToSelect);
 
-          await getAHPRanking(domainToSelect.domain_ID);
+          if (domainToSelect) {
+            await getAHPRanking(domainToSelect.domain_ID);
+          }
         }
       }
     } catch (error) {
-      console.log("Error fetching domains:", error);
+      console.error("Error fetching domains:", error);
     } finally {
       setLoading(false);
     }
   };
 
   useEffect(() => {
+    document.title = "DomainX - Home";
     const fetchRules = async () => {
       try {
         const response = await fetch(apiUrl("/metrics/categories/"), {
@@ -327,9 +504,14 @@ const Main: React.FC = () => {
     }
   };
 
-  if (loading) return <div>Loading...</div>;
+  if (loading) return <AuthTransition message="Loading..." />;
 
   const handleLogout = async () => {
+    if (!user) {
+      navigate("/login");
+      return;
+    }
+
     try {
       await fetch(apiUrl("/logout/"), {
         method: "POST",
@@ -337,7 +519,7 @@ const Main: React.FC = () => {
         credentials: "include",
       });
       logout();
-      navigate("/login");
+      navigate("/");
     } catch (err: any) {
       console.log(err);
     }
@@ -367,7 +549,7 @@ const Main: React.FC = () => {
         credentials: "include",
         body: JSON.stringify({
           domain_name: domainName,
-          description: description,
+          description,
           creator_ids: selectedCreatorIds,
         }),
       });
@@ -377,7 +559,7 @@ const Main: React.FC = () => {
         setDomainName("");
         setDescription("");
         setSelectedCreatorIds([]);
-        await fetchDomains(); // refresh list
+        await fetchDomains();
       } else {
         setFormError("Failed to create domain. Please try again.");
       }
@@ -417,18 +599,22 @@ const Main: React.FC = () => {
         updateLoading={updateLoading}
         updateError={updateError}
         showSuccess={showSuccess}
+        isLoggedIn={!!user}
+        isAdmin={user?.role === 'admin' || user?.role === 'superadmin'}
       />
 
-      <div style={{ flex: 1, display: "flex", flexDirection: "column", alignItems: "center", gap: "20px", overflowY: "auto" }}>
-        {/* Tab Toggle */}
-        <div style={{ 
-          display: "inline-flex", 
-          background: "#161b22", 
-          padding: "4px", 
-          borderRadius: "10px", 
+      <div style={{ flex: 1, display: "flex", flexDirection: "column", alignItems: "center", position: "relative", overflow: "hidden" }}>
+        <div className="stars"></div>
+
+        <div style={{
+          display: "inline-flex",
+          background: "#161b22",
+          padding: "4px",
+          borderRadius: "10px",
           border: "1px solid #30363d",
-          marginBottom: "30px",
-          boxShadow: "0 4px 10px rgba(0,0,0,0.3)"
+          marginTop: "30px",
+          marginBottom: "10px",
+          zIndex: 10
         }}>
           {["graph", "table"].map((tab) => (
             <button
@@ -441,92 +627,196 @@ const Main: React.FC = () => {
                 cursor: "pointer",
                 fontSize: "0.9rem",
                 fontWeight: "600",
-                textTransform: "uppercase",
-                letterSpacing: "0.5px",
-                transition: "all 0.2s cubic-bezier(0.4, 0, 0.2, 1)",
                 background: activeTab === tab ? "#4facfe" : "transparent",
                 color: activeTab === tab ? "#fff" : "#8b949e",
                 minWidth: "120px"
               }}
-              onMouseEnter={(e) => {
-                if (activeTab !== tab) e.currentTarget.style.color = "#fff";
-              }}
-              onMouseLeave={(e) => {
-                if (activeTab !== tab) e.currentTarget.style.color = "#8b949e";
-              }}
             >
-              {tab} View
+              {tab.toUpperCase()} VIEW
             </button>
           ))}
         </div>
 
-        {graph && activeTab === "graph" && (
-          <div className="dx-card" style={{ padding: "30px", width: "95%", maxWidth: "1000px", background: "transparent", border: "none" }}>
-            <h3 style={{ color: "white", marginBottom: "40px", textAlign: "left", fontSize: "1.5rem", fontWeight: "300" }}>
-              Global AHP Ranking
-            </h3>
-
-            <div style={{ width: "100%", height: 450 }}>
-              <ResponsiveContainer width="100%" height="100%">
-                <BarChart data={chartData} margin={{ top: 60, right: 30, left: 20, bottom: 60 }}>
-                  <XAxis 
-                    dataKey="name" 
-                    axisLine={false} 
-                    tickLine={false} 
-                    tick={{ fill: "#666", fontSize: 12 }} 
-                  />
-                  <YAxis hide domain={[0, 110]} />
-                  
-                  <Bar 
-                    dataKey="score" 
-                    shape={<CustomIsometricBar />}
-                    background={{ fill: 'transparent' }} // This allows the shape to receive height info
+        {activeTab === "graph" && (
+          <div className="dx-card" style={{
+            padding: "24px",
+            width: "95%",
+            maxWidth: "1200px",
+            height: "calc(100vh - 150px)",
+            overflowY: "auto",
+            display: "flex",
+            flexDirection: "column",
+            background: "rgba(13, 17, 23, 0.8)"
+          }}>
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-end", marginBottom: "24px", gap: "20px" }}>
+              <div style={{ flex: 1 }}>
+                <h3 style={{ color: "white", marginBottom: "12px" }}>Detailed Analysis Filters</h3>
+                <div ref={dropdownRef} style={{ position: "relative", display: "inline-block", minWidth: "320px", maxWidth: "420px", width: "100%" }}>
+                  <button
+                    type="button"
+                    onClick={() => setShowCategoryDropdown(prev => !prev)}
+                    style={{
+                      width: "100%",
+                      padding: "10px 14px",
+                      borderRadius: "10px",
+                      border: "1px solid #30363d",
+                      background: "#161b22",
+                      color: "white",
+                      cursor: "pointer",
+                      fontSize: "0.9rem",
+                      textAlign: "left",
+                      display: "flex",
+                      justifyContent: "space-between",
+                      alignItems: "center"
+                    }}
                   >
-                    {chartData.map((entry, index) => (
-                      <Cell key={`cell-${index}`} fill={entry.color} />
-                    ))}
-                    
-                    <LabelList 
-                      dataKey="score" 
-                      position="top" 
-                      offset={25} 
-                      fill="#fff"
-                      style={{ fontWeight: 'bold' }}
-                      formatter={(val: any) => `${val}%`} 
-                    />
-                  </Bar>
-                </BarChart>
-              </ResponsiveContainer>
-              
-              {/* Ranking Sub-labels (No.1, No.2, etc.) */}
-              <div style={{ display: "flex", justifyContent: "space-around", marginTop: "-50px", paddingLeft: "40px", paddingRight: "30px" }}>
-                {chartData.map((_, i) => (
-                  <span key={i} style={{ color: "#4facfe", fontSize: "10px", fontWeight: "bold" }}>No.{i+1}</span>
-                ))}
+                    <span style={{ overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+                      {selectedIndividualAhpCategories.length > 0
+                        ? `${selectedIndividualAhpCategories.length} filter${selectedIndividualAhpCategories.length > 1 ? "s" : ""} selected`
+                        : "Select analysis filters"}
+                    </span>
+                    <span style={{ marginLeft: "12px", fontSize: "0.8rem", color: "#8b949e" }}>
+                      {showCategoryDropdown ? "▲" : "▼"}
+                    </span>
+                  </button>
+
+                  {showCategoryDropdown && (
+                    <div
+                      style={{
+                        position: "absolute",
+                        top: "calc(100% + 8px)",
+                        left: 0,
+                        width: "100%",
+                        maxHeight: "260px",
+                        overflowY: "auto",
+                        background: "#0d1117",
+                        border: "1px solid #30363d",
+                        borderRadius: "12px",
+                        boxShadow: "0 8px 24px rgba(0,0,0,0.35)",
+                        zIndex: 100
+                      }}
+                    >
+                      <div style={{ padding: "10px", borderBottom: "1px solid #21262d", display: "flex", gap: "8px", flexWrap: "wrap" }}>
+                        <button
+                          type="button"
+                          onClick={() => setSelectedIndividualAhpCategories(categoryListForAhp)}
+                          style={{
+                            padding: "6px 10px",
+                            borderRadius: "8px",
+                            border: "1px solid #30363d",
+                            background: "#161b22",
+                            color: "white",
+                            cursor: "pointer",
+                            fontSize: "0.8rem"
+                          }}
+                        >
+                          Select All
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => setSelectedIndividualAhpCategories([])}
+                          style={{
+                            padding: "6px 10px",
+                            borderRadius: "8px",
+                            border: "1px solid #30363d",
+                            background: "#161b22",
+                            color: "white",
+                            cursor: "pointer",
+                            fontSize: "0.8rem"
+                          }}
+                        >
+                          Clear
+                        </button>
+                      </div>
+
+                      <div style={{ padding: "8px" }}>
+                        {categoryListForAhp.map((cat) => {
+                          const checked = selectedIndividualAhpCategories.includes(cat);
+
+                          return (
+                            <label
+                              key={cat}
+                              style={{
+                                display: "flex",
+                                alignItems: "center",
+                                gap: "10px",
+                                padding: "10px 12px",
+                                borderRadius: "8px",
+                                cursor: "pointer",
+                                color: "white"
+                              }}
+                            >
+                              <input
+                                type="checkbox"
+                                checked={checked}
+                                onChange={() => toggleIndividualAhpCategory(cat)}
+                                style={{ cursor: "pointer" }}
+                              />
+                              <span style={{ fontSize: "0.9rem" }}>{cat}</span>
+                            </label>
+                          );
+                        })}
+                      </div>
+                    </div>
+                  )}
+                </div>
               </div>
+
+              {plotlyCharts.length > 0 && (
+                <button
+                  className="dx-btn dx-btn-outline"
+                  onClick={handleDownloadAll}
+                  disabled={plotlyCharts.length === 0}
+                >
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                    <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/>
+                  </svg>
+                  Download (.zip)
+                </button>
+              )}
+            </div>
+
+            <div style={{ flex: 1, overflowY: "auto", paddingRight: "10px" }}>
+              {plotlyCharts.length > 0 ? (
+                plotlyCharts.map((chart) => (
+                  <div key={chart.metric} style={{ marginBottom: "25px", background: "rgba(22, 27, 34, 0.5)", padding: "20px", borderRadius: "12px", border: "1px solid #30363d" }}>
+                    <Plot
+                      data={buildChartData(chart.rows)}
+                      layout={buildChartLayout(chart.metric)}
+                      config={downloadConfig}
+                      style={{ width: "100%", height: "520px" }}
+                    />
+                  </div>
+                ))
+              ) : (
+                <div style={{ textAlign: "center", padding: "60px", color: "#8b949e", border: "2px dashed #30363d", borderRadius: "12px" }}>
+                  Select domain
+                </div>
+              )}
             </div>
           </div>
         )}
+
         {graph && activeTab === "table" && (
           <div className="dx-card" style={{ width: "95%", maxWidth: "1200px", background: "#161b22", padding: "20px", borderRadius: "12px", border: "1px solid #30363d", overflowX: "auto", display: "block" }}>
             <table style={{ width: "100%", borderCollapse: "collapse", color: "#c9d1d9", textAlign: "left", minWidth: "800px" }}>
               <thead>
                 <tr style={{ borderBottom: "1px solid #30363d" }}>
                   <th style={{ padding: "12px" }}>Library</th>
-                  <th 
-                    onClick={() => requestSort("overall")} 
+                  <th
+                    onClick={() => requestSort("overall")}
                     style={{ padding: "12px", cursor: "pointer", color: sortConfig?.key === "overall" ? "#4facfe" : "inherit" }}
                   >
                     Overall {sortConfig?.key === "overall" ? (sortConfig.direction === "asc" ? "↑" : "↓") : ""}
                   </th>
                   {activeCategories.map((cat: string) => (
-                    <th 
+                    <th
                       key={cat}
                       onClick={() => requestSort(cat)}
-                      style={{ 
-                        padding: "12px", 
-                        cursor: "pointer", 
-                        color: sortConfig?.key === cat ? "#4facfe" : "inherit" 
+                      style={{
+                        padding: "12px",
+                        cursor: "pointer",
+                        color: sortConfig?.key === cat ? "#4facfe" : "inherit"
                       }}
                     >
                       {cat} {sortConfig?.key === cat ? (sortConfig.direction === "asc" ? "↑" : "↓") : ""}
@@ -556,6 +846,7 @@ const Main: React.FC = () => {
           </div>
         )}
       </div>
+
       <DomainInfo selectedDomain={selectedDomain} sidebarOpen={moreInfoSidebarOpen} setSidebarOpen={setMoreInfoSidebarOpen} />
     </div>
   );

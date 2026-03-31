@@ -2,13 +2,56 @@ import React, { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { apiUrl } from "../config/api";
 import SuccessNotification from "../components/SuccessNotification";
+import { ArrowLeft } from "lucide-react";
+import { useAuthStore } from "../store/useAuthStore";
 
 interface Library {
   library_ID: string;
   library_name: string;
+  description: string | null;
+  github_url: string | null;
   url: string | null;
   programming_language: string;
 }
+
+const clamp2Style: React.CSSProperties = {
+  display: "-webkit-box",
+  WebkitLineClamp: 2,
+  WebkitBoxOrient: "vertical",
+  overflow: "hidden",
+};
+
+const clamp3Style: React.CSSProperties = {
+  display: "-webkit-box",
+  WebkitLineClamp: 3,
+  WebkitBoxOrient: "vertical",
+  overflow: "hidden",
+};
+
+const cellBaseStyle: React.CSSProperties = {
+  padding: "9px 10px",
+  verticalAlign: "top",
+  fontSize: 13.5,
+  lineHeight: 1.4,
+  overflowWrap: "anywhere",
+};
+
+const metricCellStyle: React.CSSProperties = {
+  ...cellBaseStyle,
+  color: "rgba(255,255,255,0.9)",
+};
+
+const headerCellStyle: React.CSSProperties = {
+  textAlign: "left",
+  padding: "10px 10px",
+  fontSize: 13,
+  lineHeight: 1.3,
+  fontWeight: 700,
+  color: "rgba(255,255,255,0.92)",
+  background: "rgba(20, 24, 38, 0.96)",
+  borderBottom: "1px solid rgba(255,255,255,0.08)",
+  overflowWrap: "anywhere",
+};
 
 const ErrorNotification: React.FC<{ show: boolean; message: string }> = ({
   show,
@@ -44,13 +87,17 @@ const AddLibraryPage: React.FC = () => {
   const { domainId } = useParams<{ domainId: string }>();
   const DOMAIN_ID = domainId;
   const navigate = useNavigate();
+  const { user, isLoading } = useAuthStore();
 
   const [libraries, setLibraries] = useState<Library[]>([]);
   const [pageError, setPageError] = useState<string>("");
+  const [loading, setLoading] = useState(true);
 
   const [modalOpen, setModalOpen] = useState(false);
   const [formError, setFormError] = useState<string>("");
   const [name, setName] = useState("");
+  const [description, setDescription] = useState("");
+  const [githubUrl, setGithubUrl] = useState("");
   const [url, setUrl] = useState("");
   const [language, setLanguage] = useState("");
 
@@ -60,6 +107,22 @@ const AddLibraryPage: React.FC = () => {
   const [successMessage, setSuccessMessage] = useState("");
   const [fail, setFail] = useState(false);
   const [failMessage, setFailMessage] = useState("");
+
+  useEffect(() => {
+    if (isLoading) return;
+
+    if (!user) {
+      navigate("/login", {
+        state: { from: `/libraries/${domainId}` },
+      });
+    }
+  }, [user, isLoading, navigate, domainId]);
+
+  useEffect(() => {
+    if (!DOMAIN_ID || !user) return;
+    document.title = "DomainX – Libraries";
+    loadLibraries();
+  }, [DOMAIN_ID, user]);
 
   const showSuccess = (msg: string) => {
     setSuccessMessage(msg);
@@ -73,15 +136,53 @@ const AddLibraryPage: React.FC = () => {
     setTimeout(() => setFail(false), 2200);
   };
 
-  useEffect(() => {
-    if (!DOMAIN_ID) return;
-    loadLibraries();
-  }, [DOMAIN_ID]);
+  if (!user) {
+    return null;
+  }
+
+  const getErrorMessage = (data: any, fallback: string) => {
+    if (!data) return fallback;
+
+    if (typeof data === "string") return data;
+    if (data.detail) return data.detail;
+    if (data.error) return data.error;
+
+    if (data.library_name) {
+      return Array.isArray(data.library_name)
+        ? data.library_name[0]
+        : data.library_name;
+    }
+
+    if (data.github_url) {
+      return Array.isArray(data.github_url)
+        ? data.github_url[0]
+        : data.github_url;
+    }
+
+    if (data.url) {
+      return Array.isArray(data.url) ? data.url[0] : data.url;
+    }
+
+    if (data.domain) {
+      return Array.isArray(data.domain) ? data.domain[0] : data.domain;
+    }
+
+    const firstKey = Object.keys(data)[0];
+    if (firstKey) {
+      const value = data[firstKey];
+      if (Array.isArray(value)) return value[0];
+      if (typeof value === "string") return value;
+    }
+
+    return fallback;
+  };
 
   const closeModal = () => {
     setModalOpen(false);
     setFormError("");
     setName("");
+    setDescription("");
+    setGithubUrl("");
     setUrl("");
     setLanguage("");
     setEditingId(null);
@@ -90,6 +191,8 @@ const AddLibraryPage: React.FC = () => {
   const openCreateModal = () => {
     setFormError("");
     setName("");
+    setDescription("");
+    setGithubUrl("");
     setUrl("");
     setLanguage("");
     setEditingId(null);
@@ -99,6 +202,8 @@ const AddLibraryPage: React.FC = () => {
   const openEditModal = (lib: Library) => {
     setFormError("");
     setName(lib.library_name || "");
+    setDescription(lib.description || "");
+    setGithubUrl(lib.github_url || "");
     setUrl(lib.url || "");
     setLanguage(lib.programming_language || "");
     setEditingId(lib.library_ID);
@@ -107,6 +212,7 @@ const AddLibraryPage: React.FC = () => {
 
   const loadLibraries = async () => {
     try {
+      setLoading(true);
       setPageError("");
 
       const res = await fetch(apiUrl(`/libraries/by_domain/${DOMAIN_ID}/`), {
@@ -122,6 +228,8 @@ const AddLibraryPage: React.FC = () => {
       console.error(err);
       setPageError("Failed to load libraries.");
       showFail("Failed to load libraries.");
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -130,19 +238,29 @@ const AddLibraryPage: React.FC = () => {
       setFormError("Library name is required.");
       return false;
     }
-    if (!url.trim()) {
-      setFormError("Github URL is required.");
+
+    if (!githubUrl.trim()) {
+      setFormError("GitHub URL is required.");
       return false;
     }
 
     const githubRepoRegex =
       /^(https?:\/\/)?(www\.)?github\.com\/[A-Za-z0-9_.-]+\/[A-Za-z0-9_.-]+\/?$/;
 
-    if (!githubRepoRegex.test(url.trim())) {
+    if (!githubRepoRegex.test(githubUrl.trim())) {
       setFormError(
-        "URL must be a valid GitHub repository (e.g., https://github.com/user/repo)."
+        "GitHub URL must be a valid GitHub repository (e.g., https://github.com/user/repo)."
       );
       return false;
+    }
+
+    if (url.trim()) {
+      try {
+        new URL(url.trim());
+      } catch {
+        setFormError("URL must be a valid website link.");
+        return false;
+      }
     }
 
     return true;
@@ -153,6 +271,8 @@ const AddLibraryPage: React.FC = () => {
 
     const payload = {
       library_name: name.trim(),
+      description: description.trim() || null,
+      github_url: githubUrl.trim() || null,
       url: url.trim() || null,
       programming_language: language.trim(),
       domain: DOMAIN_ID,
@@ -175,7 +295,7 @@ const AddLibraryPage: React.FC = () => {
       } catch {}
 
       if (!res.ok) {
-        const msg = data?.detail || data?.error || "Create failed.";
+        const msg = getErrorMessage(data, "Create failed.");
         setFormError(msg);
         return;
       }
@@ -202,6 +322,8 @@ const AddLibraryPage: React.FC = () => {
 
     const payload = {
       library_name: name.trim(),
+      description: description.trim() || null,
+      github_url: githubUrl.trim() || null,
       url: url.trim() || null,
       programming_language: language.trim(),
       domain: DOMAIN_ID,
@@ -224,7 +346,7 @@ const AddLibraryPage: React.FC = () => {
       } catch {}
 
       if (!res.ok) {
-        const msg = data?.detail || data?.error || "Update failed.";
+        const msg = getErrorMessage(data, "Update failed.");
         setFormError(msg);
         return;
       }
@@ -292,14 +414,15 @@ const AddLibraryPage: React.FC = () => {
           style={{ width: "100%", fontSize: "1rem", textAlign: "center" }}
           onClick={() => navigate(`/comparison-tool/${domainId}`)}
         >
-          ← Back
+          <ArrowLeft size={18} />
+          Back
         </button>
       </div>
 
       <div
         style={{
           flex: 1,
-          padding: "40px 60px",
+          padding: "28px 32px",
           color: "white",
           overflow: "hidden",
           display: "flex",
@@ -353,7 +476,9 @@ const AddLibraryPage: React.FC = () => {
             style={{
               display: "flex",
               justifyContent: "flex-start",
-              marginBottom: 6,
+              marginBottom: 10,
+              flexWrap: "wrap",
+              gap: 10,
             }}
           >
             <button className="dx-btn dx-btn-primary" onClick={openCreateModal}>
@@ -367,84 +492,157 @@ const AddLibraryPage: React.FC = () => {
           >
             <table
               className="dx-table"
-              style={{ tableLayout: "fixed", width: "100%" }}
+              style={{
+                tableLayout: "fixed",
+                width: "100%",
+                borderCollapse: "separate",
+                borderSpacing: 0,
+              }}
             >
               <thead>
                 <tr>
                   <th
                     className="dx-th-sticky"
-                    style={{ textAlign: "left", width: 280 }}
+                    style={{
+                      ...headerCellStyle,
+                      width: 200,
+                      minWidth: 200,
+                      maxWidth: 200,
+                    }}
                   >
                     Name
                   </th>
                   <th
                     className="dx-th-sticky"
-                    style={{ textAlign: "left", width: 180 }}
+                    style={{
+                      ...headerCellStyle,
+                      width: 280,
+                      minWidth: 280,
+                      maxWidth: 280,
+                    }}
+                  >
+                    Description
+                  </th>
+                  <th
+                    className="dx-th-sticky"
+                    style={{
+                      ...headerCellStyle,
+                      width: 130,
+                      minWidth: 130,
+                      maxWidth: 130,
+                    }}
                   >
                     Language
                   </th>
                   <th
                     className="dx-th-sticky"
                     style={{
-                      textAlign: "left",
-                      whiteSpace: "normal",
-                      wordBreak: "break-word",
+                      ...headerCellStyle,
+                      width: 240,
+                      minWidth: 240,
+                      maxWidth: 240,
+                    }}
+                  >
+                    GitHub URL
+                  </th>
+                  <th
+                    className="dx-th-sticky"
+                    style={{
+                      ...headerCellStyle,
+                      width: 240,
+                      minWidth: 240,
+                      maxWidth: 240,
                     }}
                   >
                     URL
                   </th>
-                  <th className="dx-th-sticky" style={{ width: 220 }} />
+                  <th
+                    className="dx-th-sticky"
+                    style={{
+                      ...headerCellStyle,
+                      width: 140,
+                      minWidth: 140,
+                      maxWidth: 140,
+                    }}
+                  />
                 </tr>
               </thead>
 
               <tbody>
-                {libraries.map((lib) => (
+                {libraries.map((lib, index) => (
                   <tr
                     key={lib.library_ID}
-                    style={{ borderBottom: "1px solid rgba(255,255,255,0.08)" }}
+                    style={{
+                      borderBottom: "1px solid rgba(255,255,255,0.08)",
+                      background:
+                        index % 2 === 0
+                          ? "rgba(255,255,255,0.01)"
+                          : "rgba(255,255,255,0.025)",
+                    }}
                   >
                     <td
                       style={{
-                        padding: 10,
-                        fontWeight: 600,
-                        whiteSpace: "normal",
-                        wordBreak: "break-word",
-                        verticalAlign: "top",
+                        ...cellBaseStyle,
+                        fontWeight: 700,
+                        fontSize: 14.5,
+                        lineHeight: 1.35,
                       }}
                       title={lib.library_name}
                     >
-                      {lib.library_name}
+                      <div style={clamp2Style}>{lib.library_name}</div>
                     </td>
 
                     <td
-                      style={{
-                        padding: 10,
-                        whiteSpace: "normal",
-                        wordBreak: "break-word",
-                        verticalAlign: "top",
-                      }}
+                      style={metricCellStyle}
+                      title={lib.description || "—"}
                     >
-                      {lib.programming_language || "—"}
+                      <div style={clamp3Style}>{lib.description || "—"}</div>
                     </td>
 
                     <td
-                      style={{
-                        padding: 10,
-                        whiteSpace: "normal",
-                        wordBreak: "break-word",
-                        verticalAlign: "top",
-                      }}
-                      title={lib.url || ""}
+                      style={metricCellStyle}
+                      title={lib.programming_language || "—"}
                     >
-                      {lib.url || "—"}
+                      <div style={clamp2Style}>{lib.programming_language || "—"}</div>
                     </td>
 
-                    <td style={{ padding: 10, verticalAlign: "top" }}>
+                    <td style={metricCellStyle} title={lib.github_url || "—"}>
+                      <div style={clamp3Style}>
+                        {lib.github_url ? (
+                          <a
+                            href={lib.github_url}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            style={{ color: "#4a9eff", textDecoration: "none" }}
+                          >
+                            {lib.github_url}
+                          </a>
+                        ) : "—"}
+                      </div>
+                    </td>
+
+                    <td style={metricCellStyle} title={lib.url || "—"}>
+                      <div style={clamp3Style}>
+                        {lib.url ? (
+                          <a
+                            href={lib.url}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            style={{ color: "#4a9eff", textDecoration: "none" }}
+                          >
+                            {lib.url}
+                          </a>
+                        ) : "—"}
+                      </div>
+                    </td>
+
+                    <td style={{ ...cellBaseStyle, paddingTop: 8, paddingBottom: 8 }}>
                       <div
                         style={{
                           display: "flex",
                           justifyContent: "flex-end",
                           gap: 8,
+                          flexWrap: "wrap",
                         }}
                       >
                         <button
@@ -470,9 +668,28 @@ const AddLibraryPage: React.FC = () => {
               </tbody>
             </table>
 
-            {libraries.length === 0 && (
-              <div style={{ padding: 20, opacity: 0.6 }}>No libraries yet.</div>
-            )}
+            {loading ? (
+              <div
+                style={{
+                  padding: "40px 20px",
+                  opacity: 0.7,
+                  color: "rgba(255,255,255,0.75)",
+                  textAlign: "center",
+                }}
+              >
+                Just a moment
+              </div>
+            ) : libraries.length === 0 ? (
+              <div
+                style={{
+                  padding: "40px 20px",
+                  opacity: 0.6,
+                  textAlign: "center",
+                }}
+              >
+                No libraries yet.
+              </div>
+            ) : null}
           </div>
         </div>
 
@@ -512,7 +729,7 @@ const AddLibraryPage: React.FC = () => {
                 gap: 14,
               }}
             >
-              <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+              <div style={{ display: "flex", alignItems: "center", gap: 12, minWidth: 0 }}>
                 <h2
                   style={{ margin: 0, color: "var(--accent)", fontSize: "1.25rem" }}
                 >
@@ -560,7 +777,7 @@ const AddLibraryPage: React.FC = () => {
               >
                 <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
                   <label style={{ fontSize: "0.9rem", color: "var(--text-dim)" }}>
-                    Library Name
+                    Library Name *
                   </label>
                   <input
                     className="dx-input"
@@ -607,7 +824,64 @@ const AddLibraryPage: React.FC = () => {
                   }}
                 >
                   <label style={{ fontSize: "0.9rem", color: "var(--text-dim)" }}>
-                    Repository URL
+                    Description
+                  </label>
+                  <textarea
+                    className="dx-input"
+                    value={description}
+                    onChange={(e) => {
+                      setDescription(e.target.value);
+                      if (formError) setFormError("");
+                    }}
+                    placeholder="Brief description of the library..."
+                    rows={3}
+                    style={{
+                      color: "white",
+                      background: "rgba(255,255,255,0.06)",
+                      border: "1px solid rgba(255,255,255,0.18)",
+                      fontFamily: "inherit",
+                      resize: "vertical",
+                    }}
+                  />
+                </div>
+
+                <div
+                  style={{
+                    gridColumn: "1 / -1",
+                    display: "flex",
+                    flexDirection: "column",
+                    gap: 6,
+                  }}
+                >
+                  <label style={{ fontSize: "0.9rem", color: "var(--text-dim)" }}>
+                    GitHub Repository URL *
+                  </label>
+                  <input
+                    className="dx-input"
+                    value={githubUrl}
+                    onChange={(e) => {
+                      setGithubUrl(e.target.value);
+                      if (formError) setFormError("");
+                    }}
+                    placeholder="https://github.com/..."
+                    style={{
+                      color: "white",
+                      background: "rgba(255,255,255,0.06)",
+                      border: "1px solid rgba(255,255,255,0.18)",
+                    }}
+                  />
+                </div>
+
+                <div
+                  style={{
+                    gridColumn: "1 / -1",
+                    display: "flex",
+                    flexDirection: "column",
+                    gap: 6,
+                  }}
+                >
+                  <label style={{ fontSize: "0.9rem", color: "var(--text-dim)" }}>
+                    URL
                   </label>
                   <input
                     className="dx-input"
@@ -616,7 +890,7 @@ const AddLibraryPage: React.FC = () => {
                       setUrl(e.target.value);
                       if (formError) setFormError("");
                     }}
-                    placeholder="https://github.com/..."
+                    placeholder="https://pytorch.org/projects/pytorch/"
                     style={{
                       color: "white",
                       background: "rgba(255,255,255,0.06)",
@@ -632,6 +906,7 @@ const AddLibraryPage: React.FC = () => {
                   gap: 10,
                   justifyContent: "flex-end",
                   marginTop: 6,
+                  flexWrap: "wrap",
                 }}
               >
                 <button className="dx-btn dx-btn-outline" onClick={closeModal}>

@@ -15,7 +15,7 @@ from .database.services import RepoAnalyzer
 logger = get_task_logger("api.tasks.analyze_repo")
 
 
-@shared_task(bind=True)
+@shared_task(bind=True, queue="analysis")
 def analyze_repo_task(self, library_id: str, repo_url: str):
     task_id = getattr(self.request, "id", None)
 
@@ -45,16 +45,16 @@ def analyze_repo_task(self, library_id: str, repo_url: str):
         results = analyzer.run_analysis_and_get_data()
         metrics_data = results.get("metric_data", {}) or {}
 
-        metric_names = list(metrics_data.keys())
-        metrics = Metric.objects.filter(metric_name__in=metric_names)
-        metrics_by_name = {m.metric_name: m for m in metrics}
+        metric_keys = list(metrics_data.keys())
+        metrics = Metric.objects.filter(metric_key__in=metric_keys)
+        metrics_by_key = {m.metric_key: m for m in metrics}
 
         updated_count = 0
         skipped_count = 0
 
         with transaction.atomic():
-            for metric_name, value in metrics_data.items():
-                metric_obj = metrics_by_name.get(metric_name)
+            for metric_key, value in metrics_data.items():
+                metric_obj = metrics_by_key.get(metric_key)
                 if not metric_obj:
                     skipped_count += 1
                     logger.debug(
@@ -62,22 +62,30 @@ def analyze_repo_task(self, library_id: str, repo_url: str):
                         extra={
                             "library_id": library_id,
                             "task_id": task_id,
-                            "metric_name": metric_name,
+                            "metric_key": metric_key,
                         },
                     )
                     continue
 
                 try:
-                    int_value = int(value)
+                    if metric_obj.value_type == "int":
+                        stored_value = int(value)
+                    elif metric_obj.value_type == "float":
+                        stored_value = float(value)
+                    elif metric_obj.value_type == "bool":
+                        stored_value = bool(value)
+                    else:
+                        stored_value = str(value)
                 except (TypeError, ValueError):
                     skipped_count += 1
                     logger.debug(
-                        "Metric value not an int; skipping",
+                        "Metric value could not be converted; skipping",
                         extra={
                             "library_id": library_id,
                             "task_id": task_id,
-                            "metric_name": metric_name,
+                            "metric_key": metric_key,
                             "value": value,
+                            "value_type": metric_obj.value_type,
                         },
                     )
                     continue
@@ -86,7 +94,7 @@ def analyze_repo_task(self, library_id: str, repo_url: str):
                     library=lib,
                     metric=metric_obj,
                     defaults={
-                        "value": int_value,
+                        "value": stored_value,
                         "evidence": f"Auto-calculated via GitHub API/SCC on {timezone.now().isoformat()}",
                     },
                 )
@@ -95,7 +103,9 @@ def analyze_repo_task(self, library_id: str, repo_url: str):
         lib.analysis_status = Library.ANALYSIS_SUCCESS
         lib.analysis_finished_at = timezone.now()
         lib.analysis_error = None
-        lib.save(update_fields=["analysis_status", "analysis_finished_at", "analysis_error"])
+        lib.save(
+            update_fields=["analysis_status", "analysis_finished_at", "analysis_error"]
+        )
 
         duration_ms = int((timezone.now() - start).total_seconds() * 1000)
 
@@ -112,13 +122,19 @@ def analyze_repo_task(self, library_id: str, repo_url: str):
             },
         )
 
-        return {"ok": True, "metrics_updated": updated_count, "metrics_skipped": skipped_count}
+        return {
+            "ok": True,
+            "metrics_updated": updated_count,
+            "metrics_skipped": skipped_count,
+        }
 
     except Exception:
         lib.analysis_status = Library.ANALYSIS_FAILED
         lib.analysis_error = "Analysis failed. Please check server logs."
         lib.analysis_finished_at = timezone.now()
-        lib.save(update_fields=["analysis_status", "analysis_error", "analysis_finished_at"])
+        lib.save(
+            update_fields=["analysis_status", "analysis_error", "analysis_finished_at"]
+        )
 
         logger.error(
             "Repo analysis failed",
@@ -170,7 +186,7 @@ def analyze_repo_gitstats_task(self, library_id: str, repo_url: str):
                 ]
             )
 
-            metric = Metric.objects.filter(metric_name="GitStats Report").first()
+            metric = Metric.objects.filter(metric_key="gitstats_report").first()
             if metric:
                 LibraryMetricValue.objects.update_or_create(
                     library=lib,
@@ -184,7 +200,9 @@ def analyze_repo_gitstats_task(self, library_id: str, repo_url: str):
             return {"ok": True, "result": {"skipped": True}}
 
         analyzer = RepoAnalyzer(github_url=repo_url)
-        results = analyzer.run_gitstats_only(work_dir=work_dir, serve_dir=serve_dir, library_id=library_id)
+        results = analyzer.run_gitstats_only(
+            work_dir=work_dir, serve_dir=serve_dir, library_id=library_id
+        )
 
         lib.gitstats_report_path = f"/gitstats/{library_id}/git_stats/index.html"
         lib.gitstats_status = Library.GITSTATS_SUCCESS
@@ -199,7 +217,7 @@ def analyze_repo_gitstats_task(self, library_id: str, repo_url: str):
             ]
         )
 
-        metric = Metric.objects.filter(metric_name="GitStats Report").first()
+        metric = Metric.objects.filter(metric_key="gitstats_report").first()
         if metric:
             LibraryMetricValue.objects.update_or_create(
                 library=lib,
@@ -216,7 +234,9 @@ def analyze_repo_gitstats_task(self, library_id: str, repo_url: str):
         lib.gitstats_status = Library.GITSTATS_FAILED
         lib.gitstats_error = "GitStats timed out. Please try again later."
         lib.gitstats_finished_at = timezone.now()
-        lib.save(update_fields=["gitstats_status", "gitstats_error", "gitstats_finished_at"])
+        lib.save(
+            update_fields=["gitstats_status", "gitstats_error", "gitstats_finished_at"]
+        )
 
         logger.error(
             "GitStats timed out",
@@ -228,7 +248,9 @@ def analyze_repo_gitstats_task(self, library_id: str, repo_url: str):
         lib.gitstats_status = Library.GITSTATS_FAILED
         lib.gitstats_error = "GitStats failed. Please check server logs."
         lib.gitstats_finished_at = timezone.now()
-        lib.save(update_fields=["gitstats_status", "gitstats_error", "gitstats_finished_at"])
+        lib.save(
+            update_fields=["gitstats_status", "gitstats_error", "gitstats_finished_at"]
+        )
 
         logger.error(
             "GitStats failed",
