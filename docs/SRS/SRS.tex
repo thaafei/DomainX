@@ -16,6 +16,7 @@
 \usepackage{xcolor,colortbl}
 \usepackage{placeins}
 \usepackage{pdflscape}
+\usepackage{longtable}
 
 \captionsetup{font=small,labelfont=bf}
 \newcolumntype{Y}{>{\raggedright\arraybackslash}X} 
@@ -458,19 +459,30 @@ The system will provide the following core functionality:
 
 \subsection{Product Use Case Table}
 Summary of all the interfaces between the product and other systems.\\
-\begin{tabularx}{\textwidth}{|p{2cm}|p{2cm}|p{2cm}|X|} \hline
+
+\begin{longtable}{|p{2cm}|p{2cm}|p{2cm}|p{7cm}|}
+\caption{Product Use Case} \\ \hline
 \toprule
 \textbf{Use Case (Goal)} & \textbf{Primary Actor} & \textbf{Secondary Actor(s)} & \textbf{Key Functional Requirements (FRs)} \\ \hline
 \midrule
-Invite New Users & Admin & Researcher & Admin can input a new user email. New user will receive an email with a link that will allow them to setup an account, password, and username. \\  \hline
-Domain Creation \& Setup & Admin & Researcher & Create new Domain (must validate unique name). Optional: Add description to the domain. \\  \hline
-Publish Domain & Researcher & General Users & Once the data collection is finished, allow anyone to see it (General Users). \\  \hline
-Automation Library Data & Researcher & System & Auto-fill fields (e.g., creation date, commit date) upon entering a public URL. Check for and flag missing data that was expected to be collected. \\  \hline
-Manually Input/Update Data & Researcher & System & Add missing data through the data table. Missing data must be highlighted in red. Only allow user to input right format (e.g., numbers, text). Maintain an audit trail of changes. \\  \hline
-Ranking (AHP) & Researcher & System & System will run the integrated AHP tool using input quality scores and expert pairwise comparisons to automatically calculate the final package rankings. Run process automatically when the table is filled and updated. \\  \hline
-Visualize \& Export Results & General User / Researcher / Admin & System & Allow selection of domain, libraries, and metrics to 2D graphs. Allow download of collected data (JSON/Excel). Allow download of graphs (PNG/LaTeX). \\  \hline
+\endfirsthead
+\hline
+\toprule
+\textbf{Use Case (Goal)} & \textbf{Primary Actor} & \textbf{Secondary Actor(s)} & \textbf{Key Functional Requirements (FRs)} \\ \hline
+\midrule
+\endhead
+\hline
+\endfoot
 \bottomrule
-\end{tabularx}
+\endlastfoot
+Invite New Users  (\nameref{goal-collab}) & Admin & Researcher & Admin can input a new user email. New user will receive an email with a link that will allow them to setup an account, password, and username. \\  \hline
+Domain Creation \& Setup  (\nameref{goal-central-data}) & Admin & Researcher & Create new Domain (must validate unique name). Optional: Add description to the domain. \\  \hline
+Publish Domain  (\nameref{goal-central-data}) & Researcher & General Users & Once the data collection is finished, allow anyone to see it (General Users). \\  \hline
+Automation Library Data (\nameref{goal-auto-data})  & Researcher & System & Auto-fill fields (e.g., creation date, commit date) upon entering a public URL. Check for and flag missing data that was expected to be collected. \\  \hline
+Manually Input/Update Data  (\nameref{goal-data-table}) & Researcher & System & Add missing data through the data table. Missing data must be highlighted in red. Only allow user to input right format (e.g., numbers, text). Maintain an audit trail of changes. \\  \hline
+Ranking AHP (\nameref{goal-auto-ahp})  & Researcher & System & System will run the integrated AHP tool using input quality scores and expert pairwise comparisons to automatically calculate the final package rankings. Run process automatically when the table is filled and updated. \\  \hline
+Visualize \& Export Results (\nameref{goal-visual}) & General User / Researcher / Admin & System & Allow selection of domain, libraries, and metrics to 2D graphs. Allow download of collected data (JSON/Excel). Allow download of graphs (PNG/LaTeX). \\  \hline
+\end{longtable}
 
 \subsection{Individual Product Use Cases (PUC's)}
 Important things to keep in mind when looking at the Use Case Diagram:
@@ -488,6 +500,7 @@ Important things to keep in mind when looking at the Use Case Diagram:
 \end{itemize}
 \begin{figure}[H]
     \centering
+    \caption{Use Case Diagram}
     \includegraphics[scale=0.45] {images/usecase.png}
 \end{figure}
 
