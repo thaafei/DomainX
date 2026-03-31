@@ -6,13 +6,13 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('metrics', '0003_alter_metric_value_type'),
+        ("metrics", "0003_alter_metric_value_type"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='metric',
-            name='possible_inputs',
+            model_name="metric",
+            name="possible_inputs",
             field=models.JSONField(blank=True, default=list, null=True),
         ),
     ]

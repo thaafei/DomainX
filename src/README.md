@@ -118,13 +118,13 @@ GITHUB_TOKEN=ghp_xxxxxxxxxxxxxxxxxxxxx
 3.  Start the frontend:
     ```bash
     npm start
-    # OR 
+    # OR
     npm run dev
     ```
     The frontend application should open in your browser automatically at: `http://localhost:3000/`
 
 
-## Finally Create Required Metrics  
+## Finally Create Required Metrics
  To be able to see information coming from github repositories you need to create metrics with specified names.
 
 Start backend + frontend normally, then:
@@ -132,7 +132,7 @@ Start backend + frontend normally, then:
 1. Navigate to **Edit Metrics** page
 2. Create metrics with the following names:
 
-- Stars Count 
+- Stars Count
 - Forks Count
 - Watchers Count
 - Open Issues Count
@@ -156,7 +156,7 @@ This repo is deployed with Docker Compose.
 
 ---
 
-### 1) Simple deployment 
+### 1) Simple deployment
 Use this when you just pulled changes and **no new dependencies** were added.
 
 ```bash
@@ -169,9 +169,9 @@ docker compose ps
 
 docker compose logs --tail=200 backend
 ```
-### 2) Deployment with database changes 
+### 2) Deployment with database changes
 Use this when backend code includes **model changes / migrations**.
-``` 
+```
 git pull
 
 docker compose build backend
@@ -201,7 +201,7 @@ docker compose build web
 
 docker compose up -d --no-deps --force-recreate web
 ```
-### 5) Backend + Frontend Changed (Without Disturbing Celery+Redis tasks already running) 
+### 5) Backend + Frontend Changed (Without Disturbing Celery+Redis tasks already running)
 ```
 git pull
 
@@ -236,7 +236,7 @@ To populate local database with mock data, a test_db fixture is provided. To app
 python manage_local.py migrate
 ```
 3. Load the fixture
-```bash 
+```bash
 python manage_local.py loaddata test_db
 ```
 

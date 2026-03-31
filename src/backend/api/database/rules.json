@@ -74,7 +74,7 @@
       }
     },
     "step_thresholds": {
-      "display_name": "<10 / >=10", 
+      "display_name": "<10 / >=10",
       "options": ["<10", ">=10"],
       "templates": {
         "install_steps": {"<10": 1, ">=10": 0}

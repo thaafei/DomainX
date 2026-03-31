@@ -10,21 +10,43 @@ class Migration(migrations.Migration):
     initial = True
 
     dependencies = [
-        ('libraries', '0001_initial'),
-        ('metrics', '0001_initial'),
+        ("libraries", "0001_initial"),
+        ("metrics", "0001_initial"),
     ]
 
     operations = [
         migrations.CreateModel(
-            name='LibraryMetricValue',
+            name="LibraryMetricValue",
             fields=[
-                ('value_ID', models.UUIDField(default=uuid.uuid4, editable=False, primary_key=True, serialize=False)),
-                ('value', models.JSONField(blank=True, null=True)),
-                ('evidence', models.TextField(blank=True, null=True)),
-                ('collected_by', models.CharField(blank=True, max_length=100, null=True)),
-                ('last_modified', models.DateTimeField(auto_now=True)),
-                ('library', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to='libraries.library')),
-                ('metric', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to='metrics.metric')),
+                (
+                    "value_ID",
+                    models.UUIDField(
+                        default=uuid.uuid4,
+                        editable=False,
+                        primary_key=True,
+                        serialize=False,
+                    ),
+                ),
+                ("value", models.JSONField(blank=True, null=True)),
+                ("evidence", models.TextField(blank=True, null=True)),
+                (
+                    "collected_by",
+                    models.CharField(blank=True, max_length=100, null=True),
+                ),
+                ("last_modified", models.DateTimeField(auto_now=True)),
+                (
+                    "library",
+                    models.ForeignKey(
+                        on_delete=django.db.models.deletion.CASCADE,
+                        to="libraries.library",
+                    ),
+                ),
+                (
+                    "metric",
+                    models.ForeignKey(
+                        on_delete=django.db.models.deletion.CASCADE, to="metrics.metric"
+                    ),
+                ),
             ],
         ),
     ]

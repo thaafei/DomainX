@@ -6,13 +6,26 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('metrics', '0007_metric_metric_key_metric_source_type'),
+        ("metrics", "0007_metric_metric_key_metric_source_type"),
     ]
 
     operations = [
         migrations.AlterField(
-            model_name='metric',
-            name='value_type',
-            field=models.CharField(choices=[('float', 'Float'), ('int', 'Integer'), ('bool', 'Boolean'), ('range', 'Range'), ('text', 'Text'), ('date', 'Date'), ('time', 'Time'), ('datetime', 'Date & Time')], default='float', max_length=10),
+            model_name="metric",
+            name="value_type",
+            field=models.CharField(
+                choices=[
+                    ("float", "Float"),
+                    ("int", "Integer"),
+                    ("bool", "Boolean"),
+                    ("range", "Range"),
+                    ("text", "Text"),
+                    ("date", "Date"),
+                    ("time", "Time"),
+                    ("datetime", "Date & Time"),
+                ],
+                default="float",
+                max_length=10,
+            ),
         ),
     ]

@@ -6,18 +6,18 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('domain', '0003_domain_paper_name_domain_paper_url'),
+        ("domain", "0003_domain_paper_name_domain_paper_url"),
     ]
 
     operations = [
         migrations.AlterField(
-            model_name='domain',
-            name='paper_name',
+            model_name="domain",
+            name="paper_name",
             field=models.CharField(blank=True, max_length=255, null=True),
         ),
         migrations.AlterField(
-            model_name='domain',
-            name='paper_url',
+            model_name="domain",
+            name="paper_url",
             field=models.URLField(blank=True),
         ),
     ]

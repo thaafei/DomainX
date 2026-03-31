@@ -1,6 +1,6 @@
 from rest_framework import serializers
+
 from .models import CustomUser
-from api.database.domain.models import Domain
 
 
 class InviteUserSerializer(serializers.Serializer):
@@ -10,9 +10,7 @@ class InviteUserSerializer(serializers.Serializer):
     last_name = serializers.CharField(required=False, allow_blank=True)
     role = serializers.ChoiceField(choices=["admin", "superadmin"])
     domain_ids = serializers.ListField(
-        child=serializers.CharField(),
-        required=False,
-        default=[]
+        child=serializers.CharField(), required=False, default=[]
     )
 
     def validate_email(self, value):
@@ -24,7 +22,9 @@ class InviteUserSerializer(serializers.Serializer):
     def validate_username(self, value):
         value = value.lower()
         if CustomUser.objects.filter(username__iexact=value, is_deleted=False).exists():
-            raise serializers.ValidationError("A user with this username already exists.")
+            raise serializers.ValidationError(
+                "A user with this username already exists."
+            )
         return value
 
 
@@ -34,7 +34,9 @@ class AcceptInviteSerializer(serializers.Serializer):
 
 
 class UserProfileSerializer(serializers.ModelSerializer):
-    full_name = serializers.CharField(source="get_full_name", read_only=True, allow_null=True)
+    full_name = serializers.CharField(
+        source="get_full_name", read_only=True, allow_null=True
+    )
 
     class Meta:
         model = CustomUser
@@ -51,7 +53,9 @@ class UserProfileSerializer(serializers.ModelSerializer):
 
 
 class UserWithDomainsSerializer(serializers.ModelSerializer):
-    full_name = serializers.CharField(source="get_full_name", read_only=True, allow_null=True)
+    full_name = serializers.CharField(
+        source="get_full_name", read_only=True, allow_null=True
+    )
     domains = serializers.SerializerMethodField()
 
     class Meta:
@@ -76,6 +80,7 @@ class UserWithDomainsSerializer(serializers.ModelSerializer):
                 for d in domains
             ]
         return []
+
 
 class ForgotPasswordSerializer(serializers.Serializer):
     email = serializers.EmailField()

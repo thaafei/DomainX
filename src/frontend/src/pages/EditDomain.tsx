@@ -304,7 +304,7 @@ const EditDomain: React.FC = () => {
                   Save Changes
                 </button>
               </div>
-              
+
               <button
                 type="button"
                 className="dx-btn delete-domain-btn"
@@ -351,9 +351,9 @@ const EditDomain: React.FC = () => {
                     <>
                       <h3 style={{ marginTop: 0 }}>Domain Deletion in Process</h3>
                       <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
-                        <div style={{ 
-                          width: 24, 
-                          height: 24, 
+                        <div style={{
+                          width: 24,
+                          height: 24,
                           border: "3px solid var(--text-main)",
                           borderTop: "3px solid var(--accent)",
                           borderRadius: "50%",

@@ -1,18 +1,20 @@
+from django.shortcuts import get_object_or_404
 from rest_framework import generics, status
 from rest_framework.generics import ListAPIView
-from rest_framework.response import Response
-from django.shortcuts import get_object_or_404
 from rest_framework.permissions import IsAuthenticatedOrReadOnly
+from rest_framework.response import Response
 
+from ...utils.analysis import enqueue_library_analysis
 from ..domain.models import Domain
 from .models import Library
 from .serializers import LibrarySerializer, LibraryUpdateSerializer
-from ...utils.analysis import enqueue_library_analysis
+
 
 class LibraryListCreateView(generics.ListCreateAPIView):
     queryset = Library.objects.all().order_by("library_name")
     serializer_class = LibrarySerializer
     permission_classes = [IsAuthenticatedOrReadOnly]
+
     def create(self, request, *args, **kwargs):
         serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
@@ -91,7 +93,7 @@ class LibraryByDomainListView(ListAPIView):
 class LibraryUpdateView(generics.GenericAPIView):
     queryset = Library.objects.all()
     lookup_url_kwarg = "library_id"
-    permission_classes = [IsAuthenticatedOrReadOnly]  
+    permission_classes = [IsAuthenticatedOrReadOnly]
 
     def get_object(self):
         return get_object_or_404(Library, pk=self.kwargs["library_id"])

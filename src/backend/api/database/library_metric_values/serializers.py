@@ -1,17 +1,21 @@
 from rest_framework import serializers
+
 from .models import LibraryMetricValue
 
+
 class LibraryMetricValueSerializer(serializers.ModelSerializer):
-    library_name = serializers.CharField(source='library.library_name', read_only=True)
-    metric_name = serializers.CharField(source='metric.metric_name', read_only=True)
+    library_name = serializers.CharField(source="library.library_name", read_only=True)
+    metric_name = serializers.CharField(source="metric.metric_name", read_only=True)
 
     class Meta:
         model = LibraryMetricValue
         fields = "__all__"
 
+
 class FlatMetricValueSerializer(serializers.ModelSerializer):
     """Used for generating the cell values in the pivot table."""
+
     # Note: These fields directly reference the ForeignKey IDs
     class Meta:
         model = LibraryMetricValue
-        fields = ('library', 'metric', 'value', 'description')
+        fields = ("library", "metric", "value", "description")

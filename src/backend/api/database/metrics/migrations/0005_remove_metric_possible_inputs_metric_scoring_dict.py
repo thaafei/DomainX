@@ -6,17 +6,17 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('metrics', '0004_metric_possible_inputs'),
+        ("metrics", "0004_metric_possible_inputs"),
     ]
 
     operations = [
         migrations.RemoveField(
-            model_name='metric',
-            name='possible_inputs',
+            model_name="metric",
+            name="possible_inputs",
         ),
         migrations.AddField(
-            model_name='metric',
-            name='scoring_dict',
+            model_name="metric",
+            name="scoring_dict",
             field=models.JSONField(blank=True, default=dict, null=True),
         ),
     ]

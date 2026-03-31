@@ -6,13 +6,13 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('libraries', '0003_library_gitstats_report_path'),
+        ("libraries", "0003_library_gitstats_report_path"),
     ]
 
     operations = [
         migrations.AlterField(
-            model_name='library',
-            name='programming_language',
+            model_name="library",
+            name="programming_language",
             field=models.CharField(blank=True, max_length=255, null=True),
         ),
     ]

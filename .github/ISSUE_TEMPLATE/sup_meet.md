@@ -18,7 +18,7 @@ assignees: ''
 
 **Agenda**
 
-- 
+-
 
 **Questions to Ask**
 

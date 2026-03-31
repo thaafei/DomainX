@@ -53,4 +53,3 @@ You can also run a single test in vscode by:
 You can also run tests manually in terminal as headed:
 1. Navigate to the test/frontend and install requirements
 2. npx playwright test --project=chromium --headed
-

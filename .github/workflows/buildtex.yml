@@ -41,9 +41,9 @@ jobs:
           run: |
             apk add make
             cd docs
-            for file in ${{ env.CHANGED_FILES }}; do 
+            for file in ${{ env.CHANGED_FILES }}; do
               dir=$(dirname "$file" | cut -d'/' -f2-)
-              make -B "$dir/$(basename "$file" .tex).pdf" 
+              make -B "$dir/$(basename "$file" .tex).pdf"
             done
       - name: Commit and push PDFs
         uses: stefanzweifel/git-auto-commit-action@v4
@@ -52,4 +52,3 @@ jobs:
           file_pattern: 'docs/*.pdf'
           branch: main
           push_options: '--force-with-lease'
-

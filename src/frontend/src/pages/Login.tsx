@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { useAuthStore } from "../store/useAuthStore";
 import { apiUrl } from "../config/api";
-import { useNavigate, useLocation } from "react-router-dom"; 
+import { useNavigate, useLocation } from "react-router-dom";
 const Login: React.FC = () => {
   const [loginValue, setLoginValue] = useState("");
   const [password, setPassword] = useState("");

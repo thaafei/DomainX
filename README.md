@@ -9,7 +9,7 @@
 ## Date of project start
 September 8, 2025
 
-## Summary 
+## Summary
 This project contains a Domain assessment tool used to access the state of best practice for any domain.
 
 ## Contents

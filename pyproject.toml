@@ -1,0 +1,24 @@
+ [tool.black]
+ line-length = 88
+ target-version = ["py311"]
+ include = '\.pyi?$'
+ extend-exclude = '''
+ /(
+   \.venv
+   | venv
+   | build
+   | dist
+   | node_modules
+   | htmlcov
+   | \.mypy_cache
+   | \.pytest_cache
+   | \.ruff_cache
+   | migrations
+ )/
+ '''
+
+ [tool.isort]
+ profile = "black"
+ line_length = 88
+ src_paths = ["src/backend"]
+ skip_glob = ["**/migrations/*.py"]

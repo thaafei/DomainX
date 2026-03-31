@@ -298,6 +298,3 @@ db.sqlite3
 *.rdb
 dump.rdb
 *venv
-
-
-

@@ -6,18 +6,27 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('metrics', '0006_alter_metric_description'),
+        ("metrics", "0006_alter_metric_description"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='metric',
-            name='metric_key',
+            model_name="metric",
+            name="metric_key",
             field=models.CharField(blank=True, max_length=100, null=True),
         ),
         migrations.AddField(
-            model_name='metric',
-            name='source_type',
-            field=models.CharField(choices=[('manual', 'Manual'), ('github_api', 'GitHub API'), ('scc', 'SCC'), ('gitstats', 'GitStats')], default='manual', max_length=20),
+            model_name="metric",
+            name="source_type",
+            field=models.CharField(
+                choices=[
+                    ("manual", "Manual"),
+                    ("github_api", "GitHub API"),
+                    ("scc", "SCC"),
+                    ("gitstats", "GitStats"),
+                ],
+                default="manual",
+                max_length=20,
+            ),
         ),
     ]

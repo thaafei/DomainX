@@ -30,7 +30,7 @@ interface SavedData {
 const EditCategoryWeights: React.FC = () => {
   const { domainId } = useParams<{ domainId: string }>();
   const navigate = useNavigate();
-  
+
   const [allCategories, setAllCategories] = useState<string[]>([]);
   const [ahpCategories, setAhpCategories] = useState<QualityName[]>([]);
   const [matrix, setMatrix] = useState<Record<string, Record<string, number>>>({});
@@ -38,8 +38,8 @@ const EditCategoryWeights: React.FC = () => {
   const [saveStatus, setSaveStatus] = useState<string | null>(null);
   const [showMissingWarning, setShowMissingWarning] = useState(false);
 
-  const RI: Record<number, number> = { 
-    1: 0, 2: 0, 3: 0.58, 4: 0.9, 5: 1.12, 6: 1.24, 7: 1.32, 8: 1.41, 9: 1.45, 10: 1.49 
+  const RI: Record<number, number> = {
+    1: 0, 2: 0, 3: 0.58, 4: 0.9, 5: 1.12, 6: 1.24, 7: 1.32, 8: 1.41, 9: 1.45, 10: 1.49
   };
 
   useEffect(() => {
@@ -61,20 +61,20 @@ const EditCategoryWeights: React.FC = () => {
         setAllCategories(allCategoriesFromJson);
 
         // Added explicit type for parameter 'quality'
-        const validAhpCategories = AHP_QUALITIES.filter((quality: QualityName) => 
+        const validAhpCategories = AHP_QUALITIES.filter((quality: QualityName) =>
           allCategoriesFromJson.includes(quality)
         );
-        
+
         // Check if any required categories are missing
-        const missingCategories = AHP_QUALITIES.filter((quality: QualityName) => 
+        const missingCategories = AHP_QUALITIES.filter((quality: QualityName) =>
           !allCategoriesFromJson.includes(quality)
         );
-        
+
         if (missingCategories.length > 0) {
           console.warn("Missing AHP categories:", missingCategories);
           setShowMissingWarning(true);
         }
-        
+
         setAhpCategories(validAhpCategories);
 
         // Initialize matrix with default values (1 = equal importance)
@@ -86,7 +86,7 @@ const EditCategoryWeights: React.FC = () => {
             initialMatrix[row][col] = (savedValue !== undefined) ? savedValue : 1;
           });
         });
-        
+
         setMatrix(initialMatrix);
       } catch (err) {
         console.error("Initialization error:", err);
@@ -101,7 +101,7 @@ const EditCategoryWeights: React.FC = () => {
   const ahpResults = useMemo(() => {
     const n = ahpCategories.length;
     if (n === 0) return { weights: [] as CategoryWeight[], cr: 0, lambdaMax: 0, ci: 0 };
-    
+
     const colSums: Record<string, number> = {};
     ahpCategories.forEach((col: QualityName) => {
       colSums[col] = ahpCategories.reduce((sum: number, row: QualityName) => sum + (matrix[row][col] || 1), 0);
@@ -123,11 +123,11 @@ const EditCategoryWeights: React.FC = () => {
     });
     lambdaMax = lambdaMax / n;
 
-    const ci = (lambdaMax - n) / (Math.max(1, n - 1));    
+    const ci = (lambdaMax - n) / (Math.max(1, n - 1));
     const cr = n > 2 ? ci / RI[n] : 0;
 
-    return { 
-      weights: weights.sort((a, b) => b.weight - a.weight), 
+    return {
+      weights: weights.sort((a, b) => b.weight - a.weight),
       cr,
       lambdaMax,
       ci
@@ -144,7 +144,7 @@ const EditCategoryWeights: React.FC = () => {
 
   const handleSave = async () => {
     const weightsDict = ahpResults.weights.reduce(
-      (acc, curr) => ({ ...acc, [curr.name]: curr.weight }), 
+      (acc, curr) => ({ ...acc, [curr.name]: curr.weight }),
       {} as Record<string, number>
     );
 
@@ -153,7 +153,7 @@ const EditCategoryWeights: React.FC = () => {
       const res = await fetch(apiUrl(`/domain/${domainId}/category-weights/`), {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ 
+        body: JSON.stringify({
           values: weightsDict,
           matrix: matrix,
           categories_used: ahpCategories
@@ -168,7 +168,7 @@ const EditCategoryWeights: React.FC = () => {
         const error = await res.json();
         setSaveStatus(`Error: ${error.message || "Failed to save"}`);
       }
-    } catch (err) { 
+    } catch (err) {
       setSaveStatus("Error saving. Please try again.");
       console.error("Save error:", err);
     }
@@ -245,11 +245,11 @@ const EditCategoryWeights: React.FC = () => {
   // Removed the problematic JSX syntax
   return (
     <div className="dx-bg" style={{ minHeight: "100vh", padding: "30px", color: "#e0e0e0", fontFamily: "sans-serif" }}>
-      
+
       {/* Header */}
       <div style={{ maxWidth: "1400px", margin: "0 auto", marginBottom: "20px" }}>
-        <button 
-          className="dx-btn dx-btn-outline" 
+        <button
+          className="dx-btn dx-btn-outline"
           onClick={() => navigate("/")}
           style={{ display: "flex", alignItems: "center", gap: "8px" }}
         >
@@ -267,18 +267,18 @@ const EditCategoryWeights: React.FC = () => {
             Categories: {ahpCategories.map(getShortName).join(" | ")}
           </p>
         </div>
-        
+
         <div style={{ display: "flex", gap: "12px" }}>
-          <button 
-            className="dx-btn dx-btn-outline" 
+          <button
+            className="dx-btn dx-btn-outline"
             onClick={resetToEqual}
             style={{ padding: "8px 16px" }}
           >
             Reset to Equal
           </button>
-          <button 
-            className="dx-btn" 
-            style={{ 
+          <button
+            className="dx-btn"
+            style={{
               background: ahpResults.cr > 0.1 ? "#444" : "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
               color: "white",
               border: "none",
@@ -288,7 +288,7 @@ const EditCategoryWeights: React.FC = () => {
               cursor: ahpResults.cr > 0.1 ? "not-allowed" : "pointer",
               transition: "all 0.2s"
             }}
-            onClick={handleSave} 
+            onClick={handleSave}
             disabled={ahpResults.cr > 0.1}
           >
             {saveStatus || "Save & Continue to Package Scoring"}
@@ -297,24 +297,24 @@ const EditCategoryWeights: React.FC = () => {
       </div>
 
       <div style={{ display: "flex", gap: "30px", maxWidth: "1400px", margin: "0 auto", alignItems: "flex-start", flexWrap: "wrap" }}>
-        
+
         {/* LEFT COLUMN: Pairwise Matrix */}
-        <div style={{ 
-          flex: 2, 
+        <div style={{
+          flex: 2,
           minWidth: "600px",
-          background: "#1e212b", 
-          padding: "25px", 
-          borderRadius: "12px", 
-          border: "1px solid #333", 
+          background: "#1e212b",
+          padding: "25px",
+          borderRadius: "12px",
+          border: "1px solid #333",
           overflowX: "auto",
-          boxShadow: "0 10px 30px rgba(0,0,0,0.3)" 
+          boxShadow: "0 10px 30px rgba(0,0,0,0.3)"
         }}>
           <h3 style={{ marginBottom: "20px", color: "#fff", fontSize: "18px" }}>Pairwise Comparison Matrix</h3>
           <p style={{ fontSize: "12px", color: "#888", marginBottom: "20px" }}>
             Rate how much more important the ROW category is compared to the COLUMN category.
             Values {'>'} 1 mean the row is more important; values {'<'} 1 mean the column is more important.
           </p>
-          
+
           <table style={{ width: "100%", borderCollapse: "collapse", fontSize: "0.8rem" }}>
             <thead>
               <tr>
@@ -337,7 +337,7 @@ const EditCategoryWeights: React.FC = () => {
                     if (rowIndex === colIndex) {
                       return <td key={colCat} style={{ textAlign: "center", color: "#555", background: "#252836" }}>1</td>;
                     }
-                    
+
                     // Lower Triangle: Show reciprocal (Read Only)
                     if (rowIndex > colIndex) {
                       const val = matrix[rowCat][colCat];
@@ -351,14 +351,14 @@ const EditCategoryWeights: React.FC = () => {
                     // Upper Triangle: Selectable Inputs
                     return (
                       <td key={colCat} style={{ textAlign: "center", background: "#252836" }}>
-                        <select 
-                          value={matrix[rowCat][colCat]} 
+                        <select
+                          value={matrix[rowCat][colCat]}
                           onChange={(e) => handleUpdate(rowCat, colCat, parseFloat(e.target.value))}
-                          style={{ 
-                            background: "#2a2d3e", 
-                            color: "white", 
-                            border: "1px solid #444", 
-                            borderRadius: "6px", 
+                          style={{
+                            background: "#2a2d3e",
+                            color: "white",
+                            border: "1px solid #444",
+                            borderRadius: "6px",
                             padding: "6px 8px",
                             fontSize: "0.75rem",
                             cursor: "pointer",
@@ -390,19 +390,19 @@ const EditCategoryWeights: React.FC = () => {
               ))}
             </tbody>
           </table>
-          
+
           <div style={{ marginTop: "20px", padding: "12px", background: "#252836", borderRadius: "8px", fontSize: "12px", color: "#888" }}>
-            <strong style={{ color: "#4a9eff" }}>How to use:</strong> Compare categories by their importance for software quality assessment. 
+            <strong style={{ color: "#4a9eff" }}>How to use:</strong> Compare categories by their importance for software quality assessment.
             For example, if "Installability" is strongly more important than "Usability", select 5 in the Installability row and Usability column.
           </div>
         </div>
 
         <div style={{ flex: 1, minWidth: "280px", display: "flex", flexDirection: "column", gap: "20px", position: "sticky", top: "20px" }}>
-          
-          <div style={{ 
-            background: "#161821", 
-            padding: "20px", 
-            borderRadius: "12px", 
+
+          <div style={{
+            background: "#161821",
+            padding: "20px",
+            borderRadius: "12px",
             border: `1px solid ${ahpResults.cr > 0.1 ? "#ff4d4f" : "#52c41a"}`,
           }}>
             <h4 style={{ margin: "0 0 12px 0", fontSize: "0.85rem", textTransform: "uppercase", color: "#aaa" }}>
@@ -415,18 +415,18 @@ const EditCategoryWeights: React.FC = () => {
               <span style={{ fontSize: "0.8rem", color: "#666" }}>CR (should be &lt; 10%)</span>
             </div>
             <p style={{ fontSize: "0.75rem", color: "#aaa", marginTop: "12px", lineHeight: "1.5" }}>
-              {ahpResults.cr > 0.1 
-                ? "⚠️ Inconsistent judgments detected. Please review your comparisons." 
+              {ahpResults.cr > 0.1
+                ? "⚠️ Inconsistent judgments detected. Please review your comparisons."
                 : "✓ Consistent comparisons. Your judgments are mathematically sound."}
             </p>
           </div>
 
 
-          <div style={{ 
-            background: "#161821", 
-            padding: "20px", 
-            borderRadius: "12px", 
-            border: "1px solid #333" 
+          <div style={{
+            background: "#161821",
+            padding: "20px",
+            borderRadius: "12px",
+            border: "1px solid #333"
           }}>
             <h4 style={{ margin: "0 0 20px 0", color: "#888", textTransform: "uppercase", fontSize: "0.8rem" }}>
               Calculated Category Priorities
@@ -440,10 +440,10 @@ const EditCategoryWeights: React.FC = () => {
                   <span style={{ color: "#4a9eff", fontWeight: "bold" }}>{(item.weight * 100).toFixed(1)}%</span>
                 </div>
                 <div style={{ height: "6px", width: "100%", background: "#222", borderRadius: "4px", overflow: "hidden" }}>
-                  <div style={{ 
-                    height: "100%", 
-                    width: `${item.weight * 100}%`, 
-                    background: "linear-gradient(90deg, #4a9eff, #67e8f9)", 
+                  <div style={{
+                    height: "100%",
+                    width: `${item.weight * 100}%`,
+                    background: "linear-gradient(90deg, #4a9eff, #67e8f9)",
                     borderRadius: "4px"
                   }} />
                 </div>

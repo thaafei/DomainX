@@ -15,7 +15,7 @@
 \usepackage{caption}
 \usepackage{xcolor,colortbl}
 \captionsetup{font=small,labelfont=bf}
-\newcolumntype{Y}{>{\raggedright\arraybackslash}X} 
+\newcolumntype{Y}{>{\raggedright\arraybackslash}X}
 \newcolumntype{Z}{>{\centering\arraybackslash}p{1.6cm}}
 \hypersetup{
     bookmarks=true,         % show bookmarks bar?
@@ -33,10 +33,10 @@
 
 \begin{document}
 
-\title{Software Requirements Specification for \progname: DomainX} 
+\title{Software Requirements Specification for \progname: DomainX}
 \author{\authname}
 \date{\today}
-	
+
 \maketitle
 
 \pagenumbering{roman}
@@ -61,12 +61,12 @@ October 10, 2025 & Whole team & Initial v0 Draft\\
 The “methodology to assess the state of best practice for Domain X” paper, outlines a series of systematic steps to assess the state of best practice for a particular domain.
 However, the process of data gathering is dependent on the student themselves. Current practice involves numerous Excel sheets, and ad-hoc scripts to compile and generate the required tables and graphs.
 This method is extremely tedious, with lots of manual data entering, and information on prior domains are scattered, with no dedicated central storage.
-To assist in the creation of this paper, we will create a reusable tool, whose main purpose is to simplify the process of gathering, visualizing and storing the data. This tool will then be reusable for future domains. 
+To assist in the creation of this paper, we will create a reusable tool, whose main purpose is to simplify the process of gathering, visualizing and storing the data. This tool will then be reusable for future domains.
 \subsection{Goals of the Project}
 The tool will make the data gathering process faster and more efficient for the current paper used to pilot the project. Future papers will then be able to use the tool to assist in their own data gathering for their domain.\\
 See below for our goals, listed in their order of importance.
 \subsubsection{Centralized Domain Data Location}
-The tool should be the centralized location where users can view completed data gathered from a domain assessment, as well as create and edit new domains. 
+The tool should be the centralized location where users can view completed data gathered from a domain assessment, as well as create and edit new domains.
 \subsubsection{Automated Data Collection}
 The tool must be able to extract the repository based metrics automatically, to eliminate the need for user to manually enter this information. At least 80\% of the accessed packages should have these types of metrics automatically filled without error.
 \subsubsection{Interactive Data Table}
@@ -74,7 +74,7 @@ The tool's data table should be intuitive to use, and be similar to pre-existing
 \subsubsection{Automated Analytic Hierarchy Process}
 The tool will implement an automated AHP to compare libraries, guiding users through pairwise comparisons to weigh criteria and evaluate alternatives. It should match what the user would calculate exactly if they were to do it manually.
 \subsubsection{Data Visualization and Download}
-The tool should allow users to export tables and visuals relating to the domain they want, based on the data gathered in that domain. 
+The tool should allow users to export tables and visuals relating to the domain they want, based on the data gathered in that domain.
 \subsubsection{Collaboration and Access Control}
 The tool should allow for multiple users to use the tool simultaneously and contain multiple access levels.
 \section{Stakeholders}
@@ -264,22 +264,22 @@ All data interfaces will align with the definitions in the Data Dictionary (Sect
 \textbf{Event Name} & \textbf{Input \& Output} & \textbf{Summary of BUC} \\ \hline
 
 New Library/Package Added for Assessment &
-\textbf{Input:} Research subteam enters GitHub link or package name.  
+\textbf{Input:} Research subteam enters GitHub link or package name.
 \textbf{Output:} Tool retrieves metadata (stars, forks, releases, last commit) via API. &
 System automatically fetches repository metrics from GitHub and stores them in the database for analysis and visualization. \\ \hline
 
 Library Becomes Archived / Deleted / Restricted &
-\textbf{Input:} API request fails or returns error.  
+\textbf{Input:} API request fails or returns error.
 \textbf{Output:} Error log generated; library flagged for manual review. &
 System detects inaccessible data and notifies research team to investigate and update records. \\ \hline
 
 Domain Expert Revises Library List &
-\textbf{Input:} Feedback from domain expert on selected packages.  
+\textbf{Input:} Feedback from domain expert on selected packages.
 \textbf{Output:} Updated list of libraries for assessment. &
 System allows easy modification of included libraries; re-runs analysis with updated list. \\ \hline
 
 Assessment Cycle Completed &
-\textbf{Input:} All data collected and validated.  
+\textbf{Input:} All data collected and validated.
 \textbf{Output:} Generated dashboards, ranking reports, and exportable visualizations. &
 System computes AHP-based scores and produces comparative visualizations and reports for research publication. \\ \hline
 
@@ -443,7 +443,7 @@ Visualize \& Export Results & General User / Researcher / Admin & System & Allow
 \subsection{Individual Product Use Cases (PUC's)}
 Important things to keep in mind when looking at the Use Case Diagram:
 \begin{itemize}
-  \item Include: A include B means, if A is executed that means B will be executed as well. 
+  \item Include: A include B means, if A is executed that means B will be executed as well.
   \begin{itemize}
     \item Update Data include Login, if user wanted to Update Data they must Login.
     \item Login include Verify Account, when user tries login the system will verify account.
@@ -470,7 +470,7 @@ Important things to keep in mind when looking at the Use Case Diagram:
   \item Admin can create domains, using a unique domain name and optionally a short description.
   \item Admin can publish a domain, once research is completed, for anyone to see and download data collected.
   \item Researchers can add/modify data/libraries of existing domains, and download data/graphs regardless of completion status.
-  \item The system must validate all user input upon addition or update (e.g., ensuring numeric fields are numbers, dates are valid, and text limits are met).	
+  \item The system must validate all user input upon addition or update (e.g., ensuring numeric fields are numbers, dates are valid, and text limits are met).
   \item The system must allow a Admin to bulk upload library and metric data using a predefined Excel template. The system must report detailed errors for any records that fail validation, such as feature names not being in the scope or wrong data type for a column.
   \item When a Researcher enters a public GitHub URL for a library, the system must call the GitHub API to automatically retrieve and populate specific data points, such as the Repository Creation Date and the Last Commit Date.
   \item The system must display a complete list of all metrics and their definitions for a selected domain.
@@ -1125,7 +1125,7 @@ Security, accessibility. \\
 %\lips
 
 \section{Costs}
-There is no development cost for this project, due to the nature of this being a capstone project. 
+There is no development cost for this project, due to the nature of this being a capstone project.
 \\
 The costs of hosting the required services, such as the database and the web application will depend on McMaster University's existing infrastructure.
 \\
@@ -1138,7 +1138,7 @@ Assuming around a maximum usage of 20 Hours/Month, the total cost of hosting is 
 \toprule
 \textbf{Name} & \textbf{Configuration} & \textbf{Estimated Usage} & \textbf{Total Cost} \\
 \midrule
-RDS for MySQL & Two vCPU and 8GB of Memory & 20 Hours/Month & 9.76 CAD/Month \\ 
+RDS for MySQL & Two vCPU and 8GB of Memory & 20 Hours/Month & 9.76 CAD/Month \\
 EC2 & t4g.large Instance & 20 Hours/Month & 1.87 USD/Month \\
 \bottomrule
 \end{tabularx}

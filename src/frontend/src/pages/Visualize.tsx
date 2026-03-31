@@ -30,9 +30,9 @@ interface ChartRow {
 const Visualize: React.FC = () => {
   const { domainId } = useParams<{ domainId: string }>();
   const navigate = useNavigate();
-  const DOMAIN_ID = domainId; 
+  const DOMAIN_ID = domainId;
   const { user, isLoading: authLoading } = useAuthStore();
-  
+
   const [domainName, setDomainName] = useState("");
   const [domainPublished, setDomainPublished] = useState<boolean | null>(null);
   const [metricList, setMetricList] = useState<Metric[]>([]);
@@ -110,7 +110,7 @@ const Visualize: React.FC = () => {
     try {
       setLoading(true);
       setError(null);
-      
+
       await getDomainSpecification();
 
       const parseJson = async (res: Response) => {
@@ -175,11 +175,11 @@ const Visualize: React.FC = () => {
 
       const hasUncategorized = (Array.isArray(metricsData) ? metricsData : comparisonData.metrics || [])
         .some((m: Metric) => !m.category);
-      
+
       const categoryList = hasUncategorized
         ? [...availableCategories, "Uncategorized"]
         : availableCategories;
-      
+
       setCategories(categoryList);
     } catch (err) {
       console.error(err);
@@ -324,12 +324,12 @@ const Visualize: React.FC = () => {
   const handleVisualize = () => {
     setError(null);
     setChartData(null);
-    
+
     if (selectedCategories.length === 0 && selectedMetrics.length === 0) {
       setError("Please select at least one category or metric.");
       return;
     }
-  
+
     if (selectedLibraries.length < 2) {
       setError("Select at least two libraries.");
       return;
@@ -416,11 +416,11 @@ const Visualize: React.FC = () => {
   if (accessDenied) {
     return (
       <div className="dx-bg" style={{ display: "flex", height: "100vh", justifyContent: "center", alignItems: "center" }}>
-        <div 
-          className="dx-card" 
-          style={{ 
-            padding: "40px", 
-            maxWidth: "500px", 
+        <div
+          className="dx-card"
+          style={{
+            padding: "40px",
+            maxWidth: "500px",
             textAlign: "center",
             color: "white"
           }}
@@ -439,11 +439,11 @@ const Visualize: React.FC = () => {
   if (error && !chartData) {
     return (
       <div className="dx-bg" style={{ display: "flex", height: "100vh", justifyContent: "center", alignItems: "center" }}>
-        <div 
-          className="dx-card" 
-          style={{ 
-            padding: "40px", 
-            maxWidth: "500px", 
+        <div
+          className="dx-card"
+          style={{
+            padding: "40px",
+            maxWidth: "500px",
             textAlign: "center",
             color: "white"
           }}

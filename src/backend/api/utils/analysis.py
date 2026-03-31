@@ -1,5 +1,5 @@
-from ..tasks import analyze_repo_task, analyze_repo_gitstats_task
 from ..database.libraries.models import Library
+from ..tasks import analyze_repo_gitstats_task, analyze_repo_task
 
 
 def enqueue_library_analysis(library: Library):

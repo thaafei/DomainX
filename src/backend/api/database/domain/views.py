@@ -1,11 +1,11 @@
+import json
+import os
+
+from django.conf import settings
 from rest_framework import generics, status
-from rest_framework.decorators import api_view
-from rest_framework.response import Response
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import IsAuthenticatedOrReadOnly
-from django.conf import settings
-import os
-import json
+from rest_framework.response import Response
 
 from .models import Domain
 from .serializers import DomainSerializer
@@ -61,26 +61,29 @@ def category_weights(request, domain_id):
 
     if request.method == "GET":
         # Returns both the dictionary of weights and the raw matrix
-        return Response({
-            "category_weights": domain.category_weights or {},
-            "ahp_matrix": domain.ahp_matrix or {}
-        }, status=status.HTTP_200_OK)
+        return Response(
+            {
+                "category_weights": domain.category_weights or {},
+                "ahp_matrix": domain.ahp_matrix or {},
+            },
+            status=status.HTTP_200_OK,
+        )
 
     if request.method == "POST":
         # Get data from request
-        new_weights = request.data.get("values", {}) # The AHP results
-        matrix_data = request.data.get("matrix", {}) # The UI matrix
+        new_weights = request.data.get("values", {})  # The AHP results
+        matrix_data = request.data.get("matrix", {})  # The UI matrix
 
         # Update the category_weights dictionary
         current_weights = dict(domain.category_weights or {})
         for key, value in new_weights.items():
             current_weights[key] = value
-        
+
         domain.category_weights = current_weights
-        
+
         # Save the raw matrix into its own field
         domain.ahp_matrix = matrix_data
-        
+
         domain.save()
 
         return Response({"success": True}, status=status.HTTP_200_OK)

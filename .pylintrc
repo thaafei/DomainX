@@ -1,0 +1,18 @@
+[MAIN]
+py-version=3.11
+jobs=0
+ignore=.git,.venv,venv,build,dist,node_modules,htmlcov,.pytest_cache
+ignore-patterns=.*[/\\]migrations[/\\].*
+
+[MESSAGES CONTROL]
+disable=
+    missing-module-docstring,
+    missing-class-docstring,
+    missing-function-docstring,
+    too-few-public-methods,
+
+[FORMAT]
+max-line-length=88
+
+[DESIGN]
+max-args=10

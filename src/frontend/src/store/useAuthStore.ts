@@ -31,12 +31,12 @@ export const useAuthStore = create<AuthState>((set) => ({
   checkAuth: async () => {
     try {
       set({ isLoading: true });
-      
+
       // Call the /me/ endpoint with credentials
       const response = await fetch(apiUrl('/me/'), {
         credentials: 'include',  // This sends the cookies!
       });
-      
+
       if (response.ok) {
         const data = await response.json();
         set({ user: data.user, isLoading: false });
@@ -56,4 +56,3 @@ export const useAuthStore = create<AuthState>((set) => ({
     set({ user: null, isLoading: false });
   },
 }));
-

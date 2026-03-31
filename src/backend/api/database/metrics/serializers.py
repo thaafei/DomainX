@@ -1,7 +1,8 @@
-from rest_framework import serializers
-from django.conf import settings
 import json
 import os
+
+from django.conf import settings
+from rest_framework import serializers
 
 from .models import Metric
 
@@ -31,7 +32,9 @@ class MetricSerializer(serializers.ModelSerializer):
         )
 
     def validate(self, attrs):
-        source_type = attrs.get("source_type", getattr(self.instance, "source_type", "manual"))
+        source_type = attrs.get(
+            "source_type", getattr(self.instance, "source_type", "manual")
+        )
         metric_key = attrs.get("metric_key", getattr(self.instance, "metric_key", None))
 
         if source_type == "manual":
@@ -41,29 +44,31 @@ class MetricSerializer(serializers.ModelSerializer):
         try:
             definitions = load_auto_metric_definitions()
         except FileNotFoundError:
-            raise serializers.ValidationError({
-                "metric_key": "auto_metrics.json not found."
-            })
+            raise serializers.ValidationError(
+                {"metric_key": "auto_metrics.json not found."}
+            )
         except json.JSONDecodeError:
-            raise serializers.ValidationError({
-                "metric_key": "auto_metrics.json is invalid."
-            })
+            raise serializers.ValidationError(
+                {"metric_key": "auto_metrics.json is invalid."}
+            )
 
         if not metric_key:
-            raise serializers.ValidationError({
-                "metric_key": "This field is required for automatic metrics."
-            })
+            raise serializers.ValidationError(
+                {"metric_key": "This field is required for automatic metrics."}
+            )
 
         definition = definitions.get(metric_key)
         if not definition:
-            raise serializers.ValidationError({
-                "metric_key": "Invalid automatic metric key."
-            })
+            raise serializers.ValidationError(
+                {"metric_key": "Invalid automatic metric key."}
+            )
 
         if definition.get("source_type") != source_type:
-            raise serializers.ValidationError({
-                "metric_key": "Selected metric key does not belong to the selected source type."
-            })
+            raise serializers.ValidationError(
+                {
+                    "metric_key": "Selected metric key does not belong to the selected source type."
+                }
+            )
 
         attrs["value_type"] = definition.get("value_type")
         return attrs
@@ -71,6 +76,7 @@ class MetricSerializer(serializers.ModelSerializer):
 
 class FlatMetricSerializer(serializers.ModelSerializer):
     """Used for generating the columns (list of metrics) in the pivot table."""
+
     class Meta:
         model = Metric
         fields = ("metric_ID", "metric_name")
