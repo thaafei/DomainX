@@ -251,4 +251,3 @@ python manage_local.py loaddata test_db
 ```
 
 If there are any errors, delete the db.sqlite3 file and rerun migrations and loaddata
-
