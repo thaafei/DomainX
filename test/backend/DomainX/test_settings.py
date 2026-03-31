@@ -17,7 +17,6 @@ if not django.apps.apps.ready:
 
 class DatabaseConfigurationTestCase(SimpleTestCase):
     """Test cases for database configuration based on IS_LOCAL flag."""
-
     databases = {}
 
     @mock.patch.dict(os.environ, {

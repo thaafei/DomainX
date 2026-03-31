@@ -14,6 +14,10 @@
 \usepackage{booktabs,tabularx,makecell}
 \usepackage{caption}
 \usepackage{xcolor,colortbl}
+\usepackage{placeins}
+\usepackage{pdflscape}
+\usepackage{longtable}
+
 \captionsetup{font=small,labelfont=bf}
 \newcolumntype{Y}{>{\raggedright\arraybackslash}X}
 \newcolumntype{Z}{>{\centering\arraybackslash}p{1.6cm}}
@@ -47,6 +51,9 @@
 \textbf{Date} & \textbf{Developer(s)} & \textbf{Change}\\
 \midrule
 October 10, 2025 & Whole team & Initial v0 Draft\\
+\midrule
+December 28, 2025 & Fei & Update based on TA and Peer Review \href{https://github.com/thaafei/DomainX/pull/254}{feedback issues}\\
+March 30, 2026 & Fei & Final documentation update contained listed in this \href{https://github.com/thaafei/DomainX/issues/520}{Github issue}.\\
 \bottomrule
 \end{tabularx}
 \end{table}
@@ -56,9 +63,12 @@ October 10, 2025 & Whole team & Initial v0 Draft\\
 \tableofcontents
 
 ~\newpage
+\pagenumbering{arabic}
+
 \section{Purpose of the Project}
+The reason for building Domain Comparison Tool can be found in the sections below.
 \subsection{User Business}
-The “methodology to assess the state of best practice for Domain X” paper, outlines a series of systematic steps to assess the state of best practice for a particular domain.
+The “methodology to assess the state of best practice for Domain X” paper \cite{MethodologyPaper}, outlines a series of systematic steps to assess the state of best practice for a particular domain.
 However, the process of data gathering is dependent on the student themselves. Current practice involves numerous Excel sheets, and ad-hoc scripts to compile and generate the required tables and graphs.
 This method is extremely tedious, with lots of manual data entering, and information on prior domains are scattered, with no dedicated central storage.
 To assist in the creation of this paper, we will create a reusable tool, whose main purpose is to simplify the process of gathering, visualizing and storing the data. This tool will then be reusable for future domains.
@@ -69,9 +79,9 @@ See below for our goals, listed in their order of importance.
 The tool should be the centralized location where users can view completed data gathered from a domain assessment, as well as create and edit new domains.
 \subsubsection{Automated Data Collection}
 The tool must be able to extract the repository based metrics automatically, to eliminate the need for user to manually enter this information. At least 80\% of the accessed packages should have these types of metrics automatically filled without error.
-\subsubsection{Interactive Data Table}
+\subsubsection{G3: Interactive Data Table}\label{goal-data-table}
 The tool's data table should be intuitive to use, and be similar to pre-existing industry standard spreadsheet tools such as Excel. Users with prior experience using Excel should automatically be able to use the tool for inputting data.
-\subsubsection{Automated Analytic Hierarchy Process}
+\subsubsection{G4: Automated Analytic Hierarchy Process}\label{goal-auto-ahp}
 The tool will implement an automated AHP to compare libraries, guiding users through pairwise comparisons to weigh criteria and evaluate alternatives. It should match what the user would calculate exactly if they were to do it manually.
 \subsubsection{Data Visualization and Download}
 The tool should allow users to export tables and visuals relating to the domain they want, based on the data gathered in that domain.
@@ -80,26 +90,41 @@ The tool should allow for multiple users to use the tool simultaneously and cont
 \section{Stakeholders}
 The following section contains the stakeholders of the project.
 \subsection{Client}
+The main users for the tool, and the individuals who requested it.
 \subsubsection{Dr. Spencer Smith}\label{smith}
 Our supervisor, Dr. Spencer Smith is the product owner of the tool.
 They are responsible for providing the main features requested, as well has having the final say in the presentation and features of the tool during the team's weekly check-in.
-When the tool is live, they will also have administrative access and manages the access control of the tool.
+When the tool is live, they will also have administrative access and manages the access control of the tool. \\
+\textbf{Related Goals}: On top of the implied goal of having a completed tool, also concerned with \nameref{goal-collab} and \nameref{goal-central-data}
+
 \subsubsection{Research Subteam}\label{research_team}
 The research subteam will be actively using the tool. They are responsible for providing feedback to the product subteam on any pain points experienced while using the tool.
-As well as assessing if the tool makes the current data gathering process easier, as compared to the previous ad-hoc method of using excel. The research subteam will be alternating between the current students working on this project: Awurama Nyarko, Fei Xie, Ghena Hatoum, and Haniye Hamidizadeh.
+As well as assessing if the tool makes the current data gathering process easier, as compared to the previous ad-hoc method of using excel. The research subteam will be alternating between the current students working on this project: Awurama Nyarko, Fei Xie, Ghena Hatoum, and Haniye Hamidizadeh. \\
+\textbf{Related Goals}: \nameref{goal-auto-data}, \nameref{goal-data-table}, \nameref{goal-auto-ahp}, and \nameref{goal-visual},
+
 \subsection{Customer}
+The users of the tool.
 \subsubsection{Research Subteam}
 See \hyperref[research_team]{Research Subteam}.
+\subsubsection{Dr. Spencer Smith}
+See \hyperref[smith]{Dr. Spencer Smith}.
 \subsubsection{Ryan Fang}\label{ryan}
 A Master's student at McMaster University currently measuring the State of Best Practices for the Robotics Software domain.
-Once the tool is in a usable state, after the proof of concept demonstration, he will be onboarded to start using the tool for his research. He is responsible for providing feedback once he starts using the tool.
+Once the tool is in a usable state, after the proof of concept demonstration, he will be onboarded to start using the tool for his research. He is responsible for providing feedback once he starts using the tool. \\
+\textbf{Related Goals}: \nameref{goal-auto-data}, \nameref{goal-data-table}, \nameref{goal-auto-ahp}, and \nameref{goal-visual},
+
 \subsection{Other Stakeholders}
+Additional stakeholders for the development or maintenance of the tool.
 \subsubsection{Development Subteam}
 The development subteam will be alternating between the current students working on this project.
-They are responsible for the technical development portion of the project, including testing, system design, developing, and interacting with the client and customers (\hyperref[smith]{Dr. Spencer Smith}, \hyperref[research_team]{research subteam} and \hyperref[ryan]{Ryan Fang}).
+They are responsible for the technical development portion of the project, including testing, system design, developing, and interacting with the client and customers (\hyperref[smith]{Dr. Spencer Smith}, \hyperref[research_team]{research subteam} and \hyperref[ryan]{Ryan Fang}).\\
+\textbf{Related Goals:} Since the goals are structured from the perspective of the user, there are no explicitly listed goals for the development team, other than the completion of the project.
 \subsubsection{Dr. Lingyang Chu}\label{chu}
-The domain expert/consultant for the \hyperref[research_team]{research subteam} during their work on the paper. This person has deep domain knowledge but won't necessarily know the technical software aspects of the domain. He will be interested in the results that the research subteam discovered during their assessment of the domain.
+The domain expert/consultant for the \hyperref[research_team]{research subteam} during their work on the paper. This person has deep domain knowledge but won't necessarily know the technical software aspects of the domain. He will be interested in the results that the research subteam discovered during their assessment of the domain.\\
+\textbf{Related Goals}: \nameref{goal-data-table}, \nameref{goal-visual} and \nameref{goal-collab}
+
 \subsection{Hands-On Users of the Project}
+Broader users of the tool.
 \subsubsection{Dr. Spencer Smith}
 See \hyperref[smith]{Dr. Spencer Smith}.
 \subsubsection{Research Subteam}
@@ -107,13 +132,17 @@ See \hyperref[research_team]{Research Subteam}.
 \subsubsection{Dr. Lingyang Chu}
 See \hyperref[chu]{Dr. Lingyang Chu}
 \subsubsection{Researchers/Industry Workers}
-These are people who are interested in seeing the results of the research results for a domain. They are responsible for accessing the usability of the tool in the context of a read-only experience, and provide feedback to the product subteam.
+These are people who are interested in seeing the results of the research results for a domain. They are responsible for accessing the usability of the tool in the context of a read-only experience, and provide feedback to the product subteam. \\
+\textbf{Related Goals}: \nameref{goal-data-table}, \nameref{goal-visual} and \nameref{goal-collab}
+
 \subsection{Personas}
+Below are personas to help visualize the users of the tool.
 \subsubsection{Kevin - Master's Student at McMaster University}
 I’m Kevin, a master student at McMaster University currently working on the state of best practice for Domain X. I am extremely busy and don’t want to spend too much time entering data. I want a tool to decrease the amount of manual data inputting I need to do, allowing me to focus on the interesting portions of this research. Although I am adequately familiar with software tools, such as using the terminal and version control, my interests are more in the science aspect of computer science andI don’t want to spend too long setting things up.
 \subsubsection{Ashley - Research Scientist at X company}
 I’m Ashley, a research scientist currently working in the ML/AI field. During my work, I use several software tools to assist me. I don’t want to create all the tools myself, preferring to use off-the-shelve, pre-existing libraries, so I can focus on what actually matters. I’ve read through several tech blogs but they all rank the libraries differently, or don’t consider a big enough variety, and sometimes the libraries mentioned are outdated. A consolidated source that can measure varying aspects of the library would be great, since as a researcher, I haven’t had as much experience with the DevOps process of the software lifecycle. My personal preference is to use packages and libraries that are easy to learn, install, and use.
 \subsection{Priorities Assigned to Users}
+The priority level for each user groups.
 \textbf{Key Users}:
 \begin{itemize}
 \item Research Subteam
@@ -127,6 +156,7 @@ I’m Ashley, a research scientist currently working in the ML/AI field. During 
 \end{itemize}
 
 \subsection{User Participation}
+The following contains how the development team engages the user during development.
 \textbf{Research Subteam} \\
 Actively using the tool during the writing of the paper. They should provide honest feedbacks on the experience when using the tool. Including any shortfalls, UI disagreements, and bugs.\\\\
 \textbf{Domain Expert} \\
@@ -135,45 +165,42 @@ Has knowledge of the NN domain, will provide feedback on the research subteam’
 During the user acceptance testing phase of the product. The CASE Supervisor should provide their honest feedback on their experience while using the tool, as they are the main administrator of the tool once it's live.
 
 \subsection{Maintenance Users and Service Technicians}
+Users responsible for maintaining the tool after the initial development
 \textbf{Project Maintainer} \\
 The person responsible for updating the tool with new features, or fixing any existing bugs once the initial creators of the tool leaves. They were not present during the development of the tool, and will most likely be the future students who use the tool for their domain research.
 \\\\
 \textbf{Infrastructure Team} \\
 The infrastructure team at McMaster University will be responsible for hosting the project, and should ensure that the application is available for use and maintains data integrity of their database servers.
 \section{Mandated Constraints}
+Constraints on the eventual design of the tool.
 \subsection{Solution Constraints}
+Constraints on a particular way the tool should solve and behave.
 \begin{itemize}
   \item Requirement: The product must be built utilizing existing McMaster University software and IT infrastructure.
   \item Rationale: This approach is mandated to avoid the client incurring costs associated with application and database hosting.
   \item Fit Criterion: Successful implementation depends on the necessary infrastructure components being formally approved and provided by McMaster University IT services.
 \end{itemize}
 \subsection{Implementation Environment of the Current System}
-\begin{itemize}
-  \item The current system relies on Excel spreadsheets that are saved and stored either on an individual's personal laptop (which has an unknown operating system) or in an online cloud storage environment.
-\end{itemize}
+The current system relies on Excel spreadsheets that are saved and stored either on an individual's personal laptop (which has an unknown operating system) or in an online cloud storage environment.
+
 \subsection{Partner or Collaborative Applications}
-\begin{itemize}
-  \item Excel integration is essential. Since Excel was the format utilized by the previous ad hoc tool, enabling planned import and export functionality will facilitate a smooth transition and allow for the potential backfilling of historical data.
-\end{itemize}
+Excel integration is essential. Since Excel was the format utilized by the previous ad hoc tool, enabling planned import and export functionality will facilitate a smooth transition and allow for the potential backfilling of historical data.
+
 \subsection{Off-the-Shelf Software}
 N/A
 \subsection{Anticipated Workplace Environment}
-\begin{itemize}
-  \item  The application must be fully functional on current and immediately previous stable versions of major web browsers (e.g., Chrome, Firefox, Safari, Edge).
-\end{itemize}
+The application must be fully functional on current and immediately previous stable versions of major web browsers (e.g., Chrome, Firefox, Safari, Edge).
 \subsection{Schedule Constraints}
 \begin{itemize}
   \item Tool must be built by February 2, 2026
   \item Research paper must be written and submitted by April 6, 2026
 \end{itemize}
 \subsection{Budget Constraints}
-\begin{itemize}
-  \item The project cannot cost more than \$125.
-\end{itemize}
+The project cannot cost more than \$125.
 \subsection{Enterprise Constraints}
 N/A
-
 \section{Naming Conventions and Terminology}
+Below are the naming conventions and terminology that will be used throughout the video.
 \subsection{Glossary of All Terms, Including Acronyms, Used by Stakeholders
 involved in the Project}
 
@@ -197,7 +224,8 @@ The following terms and acronyms are used throughout this document and among pro
   \item[Ad Hoc Method:] Informal, unstructured approach previously used for data gathering.
   \item[Stakeholders:] All individuals involved in or affected by the project (e.g., supervisor, researchers, domain expert).
   \item[API]: Application Programming Interfaces.
-  \item[AHP]:  Analytic Hierarchy Process
+  \item[AHP]: Analytic Hierarchy Process
+  \item[BUC]: Business Use Cases
 \end{description}
 
 
@@ -210,9 +238,9 @@ Domain experts generally work Monday to Friday, 9 AM – 5 PM, and are unlikely 
 McMaster University will provide the infrastructure required to host the application and make the necessary databases available for use.
 
 \section{The Scope of the Work}
+Boundaries of the current environment and business requirements to understand the scope of the product are written below.
 \subsection{The Current Situation}
-Following the methodology listed:
-
+The following are the steps as stated from the methodology paper \cite{MethodologyPaper}:
 \begin{enumerate}
     \item Domain is identified
     \item Research team gathers a preliminary list of packages fitting the domain
@@ -256,6 +284,7 @@ Each interface between the tool and adjacent systems represents an exchange of d
 All data interfaces will align with the definitions in the Data Dictionary (Section~7).
 
 \subsection{Work Partitioning}
+The following table shows all business events to which the work responds. Business events are happenings in the real world that affect the work. They also happen because it is time for the work to do something.
 \begin{table}[H]
 \centering
 \caption{Work Partitioning and Business Use Cases}
@@ -336,15 +365,17 @@ Below is an example of a Business Use Case for a key event in the NNL Assessment
 \end{tabularx}
 \end{table}
 
-
 \section{Business Data Model and Data Dictionary}
+This section contains a specification of the business objects, entities and classes that relate to the product.
 \subsection{Business Data Model}
-\begin{figure}[h!]
+The following is an entity diagram of the key entities of the product, and how they interact.
+\begin{figure}[H]
   \centering
   \includegraphics[width=0.8\textwidth]{images/BusinessDataModel.png}
   \caption{Business Data Model}
   \label{fig:business-data-model}
 \end{figure}
+\FloatBarrier
 \subsection{Data Dictionary}
 \begin{table}[H]
 \centering
@@ -373,6 +404,7 @@ API Information & \textit{See Developer Platform} & Attribute/Element \\ \hline
 
 
 \section{The Scope of the Product}
+Visualization of the scope we decided for the tool.
 \subsection{Product Boundary}
 This system aims to simplify and streamline the process of collecting, managing, and analyzing data to assess the state of the practice for various research domains. It replaces the existing, manual process (currently managed via Excel sheets) and formalizes the methodology outlined in the \href{https://arxiv.org/abs/2110.11575}{Methodology for Assessing the State of the Practice for Domain X paper}. The final system will be a secure, accessible, data management and analysis tool.
 
@@ -415,7 +447,7 @@ The system will provide the following core functionality:
   \item \textbf{Data/Library Recommendations:} The system will not give users suggestions on which library to use based on insufficient information.
   \item \textbf{Data Imputation/Handling:} The system will not automatically fill in missing data, nor will it incorporate a mechanism to assume the possibility of missing data during AHP calculation.
   \item \textbf{System Management:} The system will not include functionality for adding or removing administrator accounts.
-  \item \textbf{AHP Validation:} The system will not include functionality to check the accuracy of the AHP calculations.
+  \item \textbf{AHP Validation:} The system will not include functionality to check the accuracy of the AHP calculations since external libraries will be used to implement the process itself.
 \end{itemize}
 
 \noindent The following items are recognized as potential enhancements but are considered low-priority:
@@ -426,19 +458,31 @@ The system will provide the following core functionality:
 \end{itemize}
 
 \subsection{Product Use Case Table}
-\begin{tabularx}{\textwidth}{|p{2cm}|p{2cm}|p{2cm}|X|} \hline
+Summary of all the interfaces between the product and other systems.\\
+
+\begin{longtable}{|p{2cm}|p{2cm}|p{2cm}|p{7cm}|}
+\caption{Product Use Case} \\ \hline
 \toprule
 \textbf{Use Case (Goal)} & \textbf{Primary Actor} & \textbf{Secondary Actor(s)} & \textbf{Key Functional Requirements (FRs)} \\ \hline
 \midrule
-Invite New Users & Admin & Researcher & Admin can input a new user email. New user will receive an email with a link that will allow them to setup an account, password, and username. \\  \hline
-Domain Creation \& Setup & Admin & Researcher & Create new Domain (must validate unique name). Optional: Add description to the domain. \\  \hline
-Publish Domain & Researcher & General Users & Once the data collection is finished, allow anyone to see it (General Users). \\  \hline
-Automation Library Data & Researcher & System & Auto-fill fields (e.g., creation date, commit date) upon entering a public URL. Check for and flag missing data that was expected to be collected. \\  \hline
-Manually Input/Update Data & Researcher & System & Add missing data through the data table. Missing data must be highlighted in red. Only allow user to input right format (e.g., numbers, text). Maintain an audit trail of changes. \\  \hline
-Ranking (AHP) & Researcher & System & System will run the integrated AHP tool using input quality scores and expert pairwise comparisons to automatically calculate the final package rankings. Run process automatically when the table is filled and updated. \\  \hline
-Visualize \& Export Results & General User / Researcher / Admin & System & Allow selection of domain, libraries, and metrics to 2D graphs. Allow download of collected data (JSON/Excel). Allow download of graphs (PNG/LaTeX). \\  \hline
+\endfirsthead
+\hline
+\toprule
+\textbf{Use Case (Goal)} & \textbf{Primary Actor} & \textbf{Secondary Actor(s)} & \textbf{Key Functional Requirements (FRs)} \\ \hline
+\midrule
+\endhead
+\hline
+\endfoot
 \bottomrule
-\end{tabularx}
+\endlastfoot
+Invite New Users  (\nameref{goal-collab}) & Admin & Researcher & Admin can input a new user email. New user will receive an email with a link that will allow them to setup an account, password, and username. \\  \hline
+Domain Creation \& Setup  (\nameref{goal-central-data}) & Admin & Researcher & Create new Domain (must validate unique name). Optional: Add description to the domain. \\  \hline
+Publish Domain  (\nameref{goal-central-data}) & Researcher & General Users & Once the data collection is finished, allow anyone to see it (General Users). \\  \hline
+Automation Library Data (\nameref{goal-auto-data})  & Researcher & System & Auto-fill fields (e.g., creation date, commit date) upon entering a public URL. Check for and flag missing data that was expected to be collected. \\  \hline
+Manually Input/Update Data  (\nameref{goal-data-table}) & Researcher & System & Add missing data through the data table. Missing data must be highlighted in red. Only allow user to input right format (e.g., numbers, text). Maintain an audit trail of changes. \\  \hline
+Ranking AHP (\nameref{goal-auto-ahp})  & Researcher & System & System will run the integrated AHP tool using input quality scores and expert pairwise comparisons to automatically calculate the final package rankings. Run process automatically when the table is filled and updated. \\  \hline
+Visualize \& Export Results (\nameref{goal-visual}) & General User / Researcher / Admin & System & Allow selection of domain, libraries, and metrics to 2D graphs. Allow download of collected data (JSON/Excel). Allow download of graphs (PNG/LaTeX). \\  \hline
+\end{longtable}
 
 \subsection{Individual Product Use Cases (PUC's)}
 Important things to keep in mind when looking at the Use Case Diagram:
@@ -456,113 +500,171 @@ Important things to keep in mind when looking at the Use Case Diagram:
 \end{itemize}
 \begin{figure}[H]
     \centering
+    \caption{Use Case Diagram}
     \includegraphics[scale=0.45] {images/usecase.png}
 \end{figure}
 
 
 \section{Functional Requirements}
-\subsection{Functional Requirements}
+What our tool must do, it's features and behaviours are listed below.
 \begin{enumerate}[label=FR\arabic*]
   \item The Admin will be able to extend an invitation to new researchers via the website, using the researcher's email address.
+  \\ \textbf{Rationale}: The tool should handle all required functionality for use, without requiring users to go off site.
+  \\ \textbf{Fit Criterion}: Superuser and admins can send email invite requests from the tool.
   \item Researchers will be able to sign up using their invited email. The process requires email validation and the creation of a unique username and password.
+  \\ \textbf{Rationale}: User should be able to create an account through the tool from the invite link.
+  \\ \textbf{Fit Criterion}: User can create an account and sign up
   \item The system will allow Admin and Researchers to securely login using their email and password.
+  \\ \textbf{Rationale}: To allow for role access levels within the application
+  \\ \textbf{Fit Criterion}: User can sign up with their email and password
   \item Users will be able to reset their password after validating their email address.
+  \\ \textbf{Rationale}: In case the user forgets their credentials
+  \\ \textbf{Fit Criterion}: User receives password reset email if the email exist, and the next login will use the new password instead of the old one to allow user access.
   \item Admin can create domains, using a unique domain name and optionally a short description.
+  \\ \textbf{Rationale}: To prevent all users to create domains, only domains that are verified by the product owner (Dr. Spencer Smith) will be able to create domains.
+  \\ \textbf{Fit Criterion}: Admin users can create domains, while normal users cannot.
   \item Admin can publish a domain, once research is completed, for anyone to see and download data collected.
+  \\ \textbf{Rationale}: To allow for domains to be in different stages, and for open access once completed.
+  \\ \textbf{Fit Criterion}: Unpublished domains cannot be seen by users. Published domains can be seen by users.
   \item Researchers can add/modify data/libraries of existing domains, and download data/graphs regardless of completion status.
   \item The system must validate all user input upon addition or update (e.g., ensuring numeric fields are numbers, dates are valid, and text limits are met).
   \item The system must allow a Admin to bulk upload library and metric data using a predefined Excel template. The system must report detailed errors for any records that fail validation, such as feature names not being in the scope or wrong data type for a column.
   \item When a Researcher enters a public GitHub URL for a library, the system must call the GitHub API to automatically retrieve and populate specific data points, such as the Repository Creation Date and the Last Commit Date.
+  \\ \textbf{Rationale}: Automatable repository metric data should be automatically extracted.
+  \\ \textbf{Fit Criterion}: With a valid Github URL, system populates the corresponding rows and columns with the collected metrics, and displays errors for irretrievable data.
   \item The system must display a complete list of all metrics and their definitions for a selected domain.
+  \\ \textbf{Rationale}: Users should be able to clearly see what metrics are and what does metrics mean.
+  \\ \textbf{Fit Criterion}: When a domain is selected, the system displays all associated metrics along with their definitions in a readable format.
   \item The system will rank the libraries within a domain using the Analytical Hierarchy Process (AHP) and display the calculated results.
-  \item Users must be able to select a domain → libraries → metrics → graph type to visualize differences in libraries using comparative graphs.
+  \\ \textbf{Rationale}: System should provide a more transparent and automated method to run the AHP between libraries to reduce manual human labour.
+  \\ \textbf{Fit Criterion}: System computes ranking using AHP and displays final results in a readable and traceable way.
+  \item Users must be able to visualize differences in libraries using comparative graphs.
+  \\ \textbf{Rationale}: Provides better user readability and quick view of the collected data.
+  \\ \textbf{Fit Criterion}: Users can select a domain, one or more libraries, relevant metrics, and a graph type, and the system generates the corresponding comparative visualization.
   \item All users will be able to download the collected data for a specific scope in JSON, Excel, or LaTeX code formats to their device.
+  \\ \textbf{Rationale}: Providing multiple export formats allows users to reuse data for analysis, reporting, and academic publication.
+  \\ \textbf{Fit Criterion}: Users can successfully download selected datasets in JSON, Excel, or LaTeX formats, and the downloaded files contain the correct data.
   \item Users must be able to download any generated graph, with the option to save it as a PNG file.
+  \\ \textbf{Rationale}: Users may need to include visualizations in reports, presentations, or publications.
+  \\ \textbf{Fit Criterion}: Users can download any generated graph as a PNG file, and the downloaded image accurately reflects the on-screen visualization.
 \end{enumerate}
 
 \section{Look and Feel Requirements}
+Requirements for the appearance of the tool.
 \subsection{Appearance Requirements}
 \begin{enumerate}[label=LF-AR\arabic*]
   \item The application will maintain a consistent visual hierarchy where primary action buttons (e.g., "Save," "Create New Domain") are visually distinct.
+  \\ \textbf{Fit Criterion}: Primary action buttons use a consistent color and style across the application and are visually more prominent than secondary actions. Users can easily identify buttons within 10 seconds.
   \item The system must be fully responsive and function correctly on standard desktop monitors and laptops.
+  \\ \textbf{Fit Criterion}: The application functions correctly at common desktop and laptop screen sizes without overlapping or hidden UI elements.
   \item Data visualization and editing displays must prioritize information density while remaining readable. Tables should have alternating row colors (zebra striping) to help tracking.
+  \\ \textbf{Fit Criterion}: Tables with five or more rows use alternating row colors, and all table text remains readable at default browser zoom.
   \item The main user dashboard should provide a clear, high-level overview of active domains and tasks, with minimal visual clutter.
+  \\ \textbf{Fit Criterion}: The dashboard displays active domains and tasks on a single screen without requiring scrolling under normal usage.
   \item Ensure all required input fields are clearly identified (e.g., with an asterisk). Input forms must give real-time feedback, such as a green check mark for acceptable input and a red boundary for errors.
+  \\ \textbf{Fit Criterion}: All required fields are clearly marked, and validation feedback appears immediately when input is accepted or rejected.
   \item All error messages (system errors, validation problems) must be clear, short, and contain practical guidance for resolving the problem.
+  \\ \textbf{Fit Criterion}: Error messages clearly state the issue and suggest a corrective action in one or two short sentences.
 \end{enumerate}
 \subsection{Style Requirements}
 \begin{enumerate}[label=LF-SR\arabic*]
   \item The system must use a single, consistent style of icons (e.g., solid, outline, or filled) for all navigational elements, actions, and status indicators.
+  \\ \textbf{Fit Criterion}: All icons used for navigation, actions, and status indicators follow the same visual style (e.g., all outline or all filled) across the application.
   \item Graphs must use minimalist design to prioritize data readability. Axes and labels must be clear and legible.
+  \\ \textbf{Fit Criterion}: All graphs include labeled x- and y-axes with text readable at 100\% browser zoom, and labels are legible without zooming on a standard desktop display.
   \item Font sizing must follow a defined scale (e.g., large for titles, medium for body text, small for captions) and remain consistent on all screens.
+  \\ \textbf{Fit Criterion}: The application uses no more than three font sizes for titles, body text, and captions, and these sizes are applied consistently across all pages.
 \end{enumerate}
 
 \section{Usability and Humanity Requirements}
+Requirements for the usability, and accessibility of the tool.
 \subsection{Ease of Use Requirements}
 \begin{enumerate}[label=UH-EU\arabic*]
   \item The primary navigation menu must be persistently available on the left side or top of every screen, and basic actions (e.g., viewing data, downloading reports) must be achievable within a maximum of three clicks/steps for new users.
+  \\ \textbf{Fit Criterion}: The primary navigation menu is visible on all screens, and common actions (viewing data, downloading reports) can be completed in three or fewer user actions.
   \item All data input fields for library metrics must include a tooltip (activated on hover) that explicitly states the required data type and format (e.g., "Numeric value, max 3 decimal places" or "Date in YYYY-MM-DD format").
+  \\ \textbf{Fit Criterion}: All metric input fields display a tooltip on hover that specifies the expected data type and format.
   \item All system error messages (validation failures, access denied) must be written in plain language, avoid technical jargon, and provide explicit instructions on how the user can resolve the issue (e.g., "Error: Please verify your username and try again" instead of "401 unauthorized").
+  \\ \textbf{Fit Criterion}: All system error messages avoid technical error codes and include a brief explanation and a clear corrective action.
 \end{enumerate}
 \subsection{Personalization and Internationalization Requirements}
 N/A
 \subsection{Learning Requirements}
 \begin{enumerate}[label=UH-LR\arabic*]
-  \item The system must contain a brief lesson or guide that explains the precise steps for Bulk Data Upload and the AHP Ranking process and is available from the appropriate screens.
-  \item All words referring to research entities (Domain, Library, Metric) must be used consistently across the interface and documentation.
+\item All words referring to research entities (Domain, Library, Metric) must be used consistently across the interface and documentation.
+  \\ \textbf{Fit Criterion}: All references to Domain, Library, and Metric use the same terms across the UI and documentation, with no alternate naming.
 \end{enumerate}
 \subsection{Understandability and Politeness Requirements}
 \begin{enumerate}[label=UH-UP\arabic*]
-  \item The system must contain a brief lesson or guide that explains the precise steps for Bulk Data Upload and the AHP Ranking process and is available from the appropriate screens.
-  \item All words referring to research entities (Domain, Library, Metric) must be used consistently across the interface and documentation.
-  \item All system-generated error messages will be clear, use non-technical language, and suggest a simple course of corrective action
+\item All system-generated error messages will be clear, use non-technical language, and suggest a simple course of corrective action.
+  \\ \textbf{Fit Criterion}: All system-generated error messages use non-technical language and suggest at least one corrective action.
 \end{enumerate}
 \subsection{Accessibility Requirements}
 \begin{enumerate}[label=UH-AR\arabic*]
   \item Critical status indicators and data visualizations must convey meaning through patterns or text labels in addition to color.
+  \\ \textbf{Fit Criterion}: All critical status indicators and visualizations include text labels or patterns in addition to color.
   \item Users must be able to change font size using regular browser options (up to 200\%) without losing information or functionality.
+  \\ \textbf{Fit Criterion}: All pages remain readable and functional when browser font size is increased up to 200\%.
 \end{enumerate}
 
 \section{Performance Requirements}
+Requirements for the performance of the tool itself.
 \subsection{Speed and Latency Requirements}
 \begin{enumerate}[label=PR-SL\arabic*]
   \item The system must finish the AHP ranking calculation for a standard domain in less than ten seconds.
+  \\ \textbf{Fit Criterion}: The AHP ranking calculation completes in under 10 seconds for a standard domain.
 \end{enumerate}
 \subsection{Safety-Critical Requirements}
 \begin{enumerate}[label=PR-SC\arabic*]
   \item The system will encrypt all user passwords.
+  \\ \textbf{Fit Criterion}: All user passwords are stored in encrypted (hashed) form and never in plaintext.
   \item If there have been multiple failed attempts to login to an existing account the user must be notified and lock account.
+  \\ \textbf{Fit Criterion}: After a predefined number of consecutive failed login attempts, the account is locked and the user is notified via email.
   \item The system will ensure that only researchers modify data.
+  \\ \textbf{Fit Criterion}: Only users with Researcher or Admin roles can modify domain data. Other users are blocked from write operations.
 \end{enumerate}\subsection{Precision or Accuracy Requirements}
 \begin{enumerate}[label=PR-PA\arabic*]
-  \item All data  that the system automatically filled out, must be 100\% accurate.
-\end{enumerate}
+  \item All data that the system automatically filled out, must be 100\% accurate.
+  \\ \textbf{Fit Criterion}: All automatically retrieved data matches the API used with transparent processing, if any.
+  \end{enumerate}
+
 \subsection{Robustness or Fault-Tolerance Requirements}
 \begin{enumerate}[label=PR-RFT\arabic*]
   \item The system must implement graceful error handling, ensuring that a failure in one function (e.g., a failed GitHub API call) does not crash the entire application or disrupt other users.
+  \\ \textbf{Fit Criterion}: Failures in external services (e.g., GitHub API) do not crash the application and display a user-facing error message with at least one next step.
   \item The system must use database transactions to ensure that data modifications are atomic, if an update operation fails in the middle, the data must be returned to its last validated state.
+  \\ \textbf{Fit Criterion}: If a data update fails mid-operation, no partial changes are saved to the database.
   \item The system should have a protocol in place to take backups of the database, to restore data at max within the timeframe of an hour.
+  \\ \textbf{Fit Criterion}: Database backups exist and allow restoration of system data within one hour.
 \end{enumerate}
 \subsection{Capacity Requirements}
 \begin{enumerate}[label=PR-CR\arabic*]
   \item The system must be able to accommodate up to 20 concurrent active users (logged in and doing operations) with no visible performance decrease.
+  \\ \textbf{Fit Criterion}: The system supports up to 20 concurrent active users without noticeable performance degradation.
   \item The database must be able to store at least 70 different study domains.
+  \\ \textbf{Fit Criterion}: The database can store at least 70 domains without errors.
   \item The system's architecture must support increasing the underlying database size (up to the maximum capacity defined by the Capacity Requirements) without resulting in database connection errors, timeouts, or data integrity issues.
+  \\ \textbf{Fit Criterion}: Increasing database size does not cause connection failures, timeouts, or data corruption.
 \end{enumerate}
 \subsection{Scalability or Extensibility Requirements}
 \begin{enumerate}[label=PR-SE\arabic*]
   \item The system architecture must clearly divide the Data Management/Storage layer from the Analysis/Visualization layer so that either component may be improved or replaced independently.
+  \\ \textbf{Fit Criterion}: Data storage and analysis/visualization components are implemented as separate modules.
   \item The authentication and authorization system must be adaptable enough to accommodate additional user roles (e.g., "Guest Analyst") and specialized rights without requiring code changes to core operations.
+  \\ \textbf{Fit Criterion}: New user roles can be added through configuration or extension without modifying core application logic.
 \end{enumerate}
 \subsection{Longevity Requirements}
 \begin{enumerate}[label=PR-LR\arabic*]
   \item The system must be capable of running without the requirement for maintenance for two years.
+  \\ \textbf{Fit Criterion}: The system operates without mandatory maintenance interruptions for a period of two years under normal usage.
   \item Database scaling operations (e.g. migrating to a larger server instance) must be achievable entirely by modifying the system's infrastructure configuration. Such scaling operations must not require any changes to the core application code base.
+  \\ \textbf{Fit Criterion}: Database scaling can be completed through infrastructure configuration changes without modifying application source code.
 \end{enumerate}
 
 \section{Operational and Environmental Requirements}
+Requirements for the operating environment and operational environment the tool will run in.
 \subsection{Expected Physical Environment}
-
+\textbf{Fit Criterion}: The system runs successfully on standard desktop or laptop hardware using a modern web browser and internet connection.
 \begin{enumerate}[label=OE-EPE\arabic*]
 \item The tool is a web-based application that will be used mainly by our team, supervisors, and potentially other researchers or domain experts.
 \item It is expected to run on a standard desktop or laptop computer with a reliable internet connection, in a normal indoor setting such as an office, lab, or home workspace.
@@ -570,6 +672,7 @@ N/A
 \end{enumerate}
 
 \subsection{Wider Environment Requirements}
+\textbf{Fit Criterion}: The application functions correctly on the latest two to three major versions of Chrome, Firefox, and Edge with an active internet connection.
 \begin{enumerate}[label=OE-WE\arabic*]
 \item The application depends on a stable internet connection for retrieving data from public repositories (e.g., GitHub) and for loading the hosted web interface if deployed to the cloud.
 \item It does not rely on any dedicated on-premises hardware.
@@ -577,21 +680,21 @@ N/A
 \end{enumerate}
 \subsection{Requirements for Interfacing with Adjacent Systems}
 The tool must be able to communicate with a few external systems and internal components to collect, store, and visualize data.
-
 \begin{enumerate}[label=OE-IA\arabic*]
-
   \item Public Repository APIs (e.g., GitHub API): The tool must communicate with external repository services to automatically collect information about the selected neural-network libraries. For example, it needs to retrieve details such as how often the code is updated, the number of open or closed issues and pull requests, and the main programming languages used. This data will help evaluate qualities like maintainability, transparency, and overall project activity. The information must be received in a standard machine-readable format (e.g., JSON over HTTPS) whenever a user triggers a scan or during scheduled updates.
-
+  \\ \textbf{Fit Criterion}: System calls external APIs immediately when the scan is triggered, and the system must be able to receive JSON over HTTPS.
   \item Database (MySQL): The backend must store scores, rankings, and evidence collected from repositories.
-
+\\ \textbf{Fit Criterion}: All scores, rankings, and evidence are stored and retrievable from the database within 10 seconds.
   \item Visualization Component: The frontend must render charts and comparisons (e.g., using Chart.js) from the data served by the backend.
-
+\\ \textbf{Fit Criterion}: Charts are rendered correctly using backend-provided data using visualization libraries.
   \item All connections must use standard web technologies (HTTP/HTTPS, JSON) and require only basic authentication methods such as API tokens for secure access to external repository APIs.
-
+\\ \textbf{Fit Criterion}: All external communications use HTTPS and authenticated API access where required.
 \end{enumerate}
 
 \subsection{Productization Requirements}
 The tool will be delivered as an open-source web application hosted in the team’s public GitHub repository.
+
+The project repository contains a README with setup instructions, required dependency files, and documentation for local and cloud deployment. The application can be accessed via a web URL when deployed, and supports exporting results in standard formats (e.g., CSV, PNG, PDF).
 \begin{enumerate}[label=OE-PR\arabic*]
 \item A clear README file must explain how to set up the backend (Python + Flask) and the frontend (React) using common package managers such as pip and npm.
 \item For developers running the tool locally, the repository must include a requirements.txt file for Python packages and a database schema file so they can create the required tables.
@@ -599,6 +702,7 @@ The tool will be delivered as an open-source web application hosted in the team�
 \item The application must also provide options to export results in formats such as CSV for data tables and PNG/PDF for visualizations.
 \end{enumerate}
 \subsection{Release Requirements}
+Project releases follow the capstone timeline, are published as GitHub Releases with version tags and changelogs, and the final release incorporates documented feedback from earlier demonstrations.
 \begin{enumerate}[label=OE-RR\arabic*]
 \item The project should follow the official capstone timeline: an internal test release before the Proof-of-Concept (PoC) demonstration in \textbf{November}, a Revision~0 Demonstration in \textbf{Weeks~18--19}, and the Final Release (Revision~1) at \textbf{Week~26} along with the research paper and final dataset.
 \item The Final Release (Revision 1) must incorporate feedback collected during the Revision 0 Demonstration, including usability improvements, bug fixes, and supervisor/TA-requested changes.
@@ -619,28 +723,34 @@ The tool will be delivered as an open-source web application hosted in the team�
         \item \texttt{v1.0.0} → stable Final Release for Revision~1
     \end{itemize}
 \end{enumerate}
+
 \section{Maintainability and Support Requirements}
+Requirements for the maintenance and support of the tool once the initial development has left.
 \subsection{Maintenance Requirements}
 The tool is an open-source web application that will need occasional updates to fix bugs and to adapt if external APIs change.
+
+The codebase follows defined coding standards, includes automated formatting and linting tools, maintains test coverage for core functionality, tracks dependencies with pinned versions, logs data changes, and supports routine maintenance and feature updates within the stated timeframes.
 \begin{enumerate}[label=MS-MR\arabic*]
 \item All code must follow the project’s coding standards (PEP 8 for the Python backend; React + TypeScript style guide for the frontend).
 \item Automated tools (such as Black, Flake8, and Pylint) must remain part of the workflow so new contributors can easily read and update the code.
 \item Unit tests must be written for all new features and bug fixes. Developers should also run basic integration tests to make sure the full pipeline (API → database → visualization) still works after changes.
 \item Test coverage must be tracked and reported to ensure that critical parts of the backend are being tested.
-\item All Python and frontend packages must be listed in requirements.txt and package.json, with pinned versions so the same build can be reproduced.
+\item All Python and frontend packages must be listed in requirements.txt and package.json, with pinned versions, so the same build can be reproduced.
 \item The dependency list must be reviewed and updated at least once each semester to keep it current and secure.
 \item Any changes to the dataset made through the interactive data table must be logged with a timestamp and the username so there is always a clear audit trail.
 \item Most routine fixes, such as small UI tweaks or bug fixes, should be finished within a couple of days. Larger updates, such as adding a new metric or a new visualization, are expected to take about one to two weeks.
 \end{enumerate}
 \subsection{Supportability Requirements}
 The tool is intended to be mostly self-supporting since it will be used primarily by our team, the supervisors, and potentially other researchers in the future.
+
+The repository includes up-to-date documentation that allows a new developer to set up and run the system within approximately two hours, provides guidance for core workflows, and includes logging and issue-reporting mechanisms to support troubleshooting.
 \begin{enumerate}[label=MS-SR\arabic*]
-\item The README file must include step-by-step instructions so that a new developer can set up the backend (Flask + MySQL) and frontend (React) locally, or deploy it to a cloud platform (such as AWS or Google Cloud), in a consistent and repeatable way. A new developer should be able to follow these instructions and have the application running within about two hours.
 \item The repository must always include an up-to-date guide for installation, setup, the data-collection workflow, using the interactive data table, visualization, and exporting results.
 \item The backend must include logging to record API failures (such as rate-limit errors or unexpected data formats), database issues, and runtime exceptions so that maintainers can troubleshoot problems quickly.
 \item Users should use the GitHub Issues page to report bugs or ask questions. No printed manual will be needed; all documentation will remain online in the repository.
 \end{enumerate}
 \subsection{Adaptability Requirements}
+The system uses a modular, cross-platform architecture that allows new metrics, data sources, user roles, and features to be added with limited changes and without disrupting existing functionality.
 \begin{enumerate}[label=MS-AR\arabic*]
 \item The tool must remain flexible so it can grow with the project and adapt to future needs.
 \item The MySQL database must be set up so that if a new quality criterion needs to be tracked, it can be added by creating a new column, updating the data-collection script, and adjusting the UI without having to redesign the whole system.
@@ -648,9 +758,11 @@ The tool is intended to be mostly self-supporting since it will be used primaril
 \item The tool must be able to run on standard operating systems(Windows, macOS, and Linux) by using widely supported technologies (such as Python, Node.js, and MySQL), and by avoiding any system-specific code.
 \item The system must be designed in a modular way so that parts like data collection, storage, and visualization remain separate. This makes it easier to add new features or update one part without affecting the rest of the tool.
 \end{enumerate}
-\section{Security Requirements}
-\subsection{Access Requirements}
 
+\section{Security Requirements}
+Requirements on the security in relation to data, such as the privacy and integrity of it.
+\subsection{Access Requirements}
+The system enforces role-based access control such that all users can view results, only authenticated Contributors can modify data or perform administrative actions, roles are correctly assigned and enforced, login failures are handled with clear recovery options, and all external API credentials are stored securely outside the source code.
 
 \begin{enumerate}[label=SR-AC\arabic*]
 
@@ -664,38 +776,46 @@ The tool is intended to be mostly self-supporting since it will be used primaril
 
   \item Editing or any other administrative actions must be available only to logged-in users with the \textbf{Contributor} role.
 
-  \item User roles (Viewer / Contributor) must be assigned and updated correctly at sign-up or by an admin so that permissions always reflect the intended access level. \textit{(From FMEA table, Hazard Analysis.)}
+  \item User roles (Viewer / Contributor) must be assigned and updated correctly at sign-up or by an admin so that permissions always reflect the intended access level. \textit{(From FMEA table, \href{https://github.com/thaafei/DomainX/blob/main/docs/HazardAnalysis/HazardAnalysis.pdf}{Hazard Analysis}.)}
 
-  \item The system must display clear error messages for login failures (e.g., invalid credentials, network errors) and provide a secure way for users to recover or reset their account credentials. \textit{(From FMEA table, Hazard Analysis.)}
+  \item The system must display clear error messages for login failures (e.g., invalid credentials, network errors) and provide a secure way for users to recover or reset their account credentials. \textit{(From FMEA table, \href{https://github.com/thaafei/DomainX/blob/main/docs/HazardAnalysis/HazardAnalysis.pdf}{Hazard Analysis}.)}
 
   \item API credentials such as keys or tokens for external services (e.g., repository APIs) must be stored securely outside the source code (e.g., in environment variables) and must never be exposed in the frontend or version control.
 
 \end{enumerate}
 
 \subsection{Integrity Requirements}
+All user inputs are validated before storage, concurrent or conflicting edits are detected and handled without data loss, raw data and derived results are stored separately, publishing is blocked during updates, and users are notified of failed exports or conflicting changes.
+
 \begin{enumerate}[label=SR-INT\arabic*]
 \item To ensure the accuracy and reliability of the collected data, all manually entered information into the interactive table must be checked before it is saved. For example, numbers must fall within valid ranges, and text must be cleaned so that it cannot be treated as code or scripts.
 \item The database must include safeguards so that if two users edit the same record at the same time, no changes are lost or overwritten.
-\item The system must detect simultaneous edits and either block one save or notify the users to resolve the conflict. \textit{(From FMEA table, Hazard Analysis.)}
-\item When automated data updates conflict with a user’s manual edits (if any are updated automatically), the system must warn the user or request confirmation before replacing existing data. \textit{(From FMEA table, Hazard Analysis.)}
+\item The system must detect simultaneous edits and either block one save or notify the users to resolve the conflict. \textit{(From FMEA table, \href{https://github.com/thaafei/DomainX/blob/main/docs/HazardAnalysis/HazardAnalysis.pdf}{Hazard Analysis}.)}
+\item When automated data updates conflict with a user’s manual edits (if any are updated automatically), the system must warn the user or request confirmation before replacing existing data. \textit{(From FMEA table, \href{https://github.com/thaafei/DomainX/blob/main/docs/HazardAnalysis/HazardAnalysis.pdf}{Hazard Analysis}.)}
 \item The system must also store the raw evidence, calculated scores, and final rankings in separate fields so that the original data and results cannot be accidentally modified.
-\item Publishing visualizations must not occur at the same time as data edits or automated refreshes. The system must either block publishing or enforce downtime until updates are complete. \textit{(From FMEA table, Hazard Analysis.)}
-\item If an export (e.g., CSV, PNG) fails or produces a corrupted file, the tool must alert the user and allow them to retry the download. \textit{(From FMEA table, Hazard Analysis.)}
+\item Publishing visualizations must not occur at the same time as data edits or automated refreshes. The system must either block publishing or enforce downtime until updates are complete. \textit{(From FMEA table, \href{https://github.com/thaafei/DomainX/blob/main/docs/HazardAnalysis/HazardAnalysis.pdf}{Hazard Analysis}.)}
+\item If an export (e.g., CSV, PNG) fails or produces a corrupted file, the tool must alert the user and allow them to retry the download. \textit{(From FMEA table, \href{https://github.com/thaafei/DomainX/blob/main/docs/HazardAnalysis/HazardAnalysis.pdf}{Hazard Analysis}.)}
 \end{enumerate}
 \subsection{Privacy Requirements}
 The tool mainly works with open-source repository data, so there is very little personal data involved.
+
+Any collected user information is stored securely using standard security practices, and passwords are stored only in hashed form. No additional personal or confidential data is stored by the system.
 \begin{enumerate}[label=SR-P\arabic*]
 \item If basic user details are collected for login (such as name or email), they must be kept private and stored securely using widely accepted security standards.
 \item User passwords must be stored only in hashed form using a secure one-way hashing algorithm so that the actual password is never saved.
 \end{enumerate}
 No other personal or confidential information will be collected or stored.
 \subsection{Audit Requirements}
+The system logs all critical user actions, login events, automated data collection runs, and major errors, and restricts access to these logs to authorized administrators only.
+
 \begin{enumerate}[label=SR-AU\arabic*]
 \item The system must keep a record of all important activity for accountability and troubleshooting. Every time a Contributor adds, edits, or deletes data in the interactive table, the system must save a log entry showing the user’s ID, the time of the action, the type of action, and the fields that were changed.
 \item The system must also log key events such as login attempts (successful and failed), scheduled API-collection runs, and major errors so that they can be reviewed later.
 \item Access to these logs must be restricted to authorized project admins only.
 \end{enumerate}
 \subsection{Immunity Requirements}
+The system prevents common security attacks by using safe database queries, rendering user input as plain text, respecting external API rate limits, and monitoring dependencies for known vulnerabilities.
+
 \begin{enumerate}[label=SR-IM\arabic*]
 \item The backend must prevent SQL-injection attacks by using the safe query methods provided by the database library instead of building raw SQL strings with user input.
 \item The frontend must display any text entered by users as plain text only and never allow it to run as code. For example, React’s built-in escaping already takes care of this.
@@ -704,15 +824,19 @@ No other personal or confidential information will be collected or stored.
 \end{enumerate}
 
 \section{Cultural Requirements}
-\subsection{Cultural Requirements}
 Since the tool will be shared mostly in an academic and research setting, we just need to make sure the interface stays clear, neutral, and easy to understand for anyone who uses it later.
+
+All user-facing text and documentation use plain English, follow consistent date and number formats, apply neutral design choices, and include standard open-source licensing and contribution information.
 \begin{enumerate}[label=CU-CR\arabic*]
 \item \textbf{Language:} All text in the user interface and documentation must be in plain English. We should avoid using region-specific jargon so that future collaborators from outside McMaster can understand it easily.
 \item \textbf{Dates and Numbers:} Dates must be displayed in a clear standard format such as ISO 8601 (YYYY-MM-DD) so they’re unambiguous for anyone who uses the tool. Numbers must use a consistent style (for example, decimal point for fractions and thousands separated by commas).
 \item \textbf{Neutral Design:} Colours, labels, and icons must stay neutral and must not include any symbols or words that could carry unintended cultural or political meaning.
 \item \textbf{Open-Source Norms:} The repository must include a license notice and simple contribution guidelines to match common open-source practice.
 \end{enumerate}
+
 \section{Compliance Requirements}
+The project includes a copyright notice, is distributed under a recognized open-source license, and clearly states citation or acknowledgement requirements for reuse.
+
 \subsection{Legal Requirements}
 \begin{enumerate}[label=CR-LR\arabic*]
 \item The tool must include a copyright notice covering the code and documentation produced by the team.
@@ -720,18 +844,17 @@ Since the tool will be shared mostly in an academic and research setting, we jus
 \item Users of the tool or any data generated by it are required to provide proper citation or acknowledgement when they use it in their own work.
 \end{enumerate}
 \subsection{Standards Compliance Requirements}
-\begin{enumerate}[label=CR-STD\arabic*]
-\item N/A
-\end{enumerate}
+N/A
+
 
 \section{Open Issues}
-
 Below is a list of factors and questions that remain unresolved and could significantly influence the design, functionality, or deployment of the Neural Network Libraries (NNL) Assessment Tool.
 
 The purpose of identifying these open issues is to ensure they are tracked, managed, and resolved in a timely manner. Maintaining visibility of these uncertainties supports effective risk management and informed decision-making throughout the development lifecycle.
 
 \subsection{List of Open Issues}
-\begin{table}[H]
+The below table contains the open issues at the start of the project.
+\begin{table}[!htbp]
 \centering
 \caption{Open Issues to Track and Resolve}
 \setlength{\tabcolsep}{5pt}
@@ -755,7 +878,7 @@ OI-02 & Confirmation of the final list of Neural Network Libraries & Section 6 -
 \hline
 OI-03 & Selection of UI framework and visualization library & Section 9 -- Functional Requirements & Development Team & Evaluate and finalize tech stack & In Progress \\
 \hline
-OI-04 & Clarification of Excel integration level (import/export vs live sync) & Section 9 -- Functional Requirements & Research Subteam, Developers & Define required use cases and confirm feasibility & Pending \\
+OI-04 & Clarification of Excel integration level, if live sync is required or is import/export functionality enough. & Section 9 -- Functional Requirements & Research Subteam, Developers & Define required use cases and confirm feasibility & Pending \\
 \hline
 OI-05 & Decision on authentication method (SSO vs custom login) & Section 9 -- Functional Requirements & CAS Supervisor, Development Team & Meet with IT to assess SSO feasibility & Pending \\
 \hline
@@ -763,7 +886,7 @@ OI-06 & Confirmation of data storage architecture (SQL vs cloud) & Section 13 --
 \bottomrule
 \end{tabularx}
 \end{table}
-
+\FloatBarrier
 
 
 
@@ -814,7 +937,7 @@ No direct database or analytics integration. \\
 
 
 
-These products may serve as inspiration or integration points (e.g., Excel import/export) but cannot replace the custom automation and analysis required by the NNL Assessment Tool.
+These products may serve as inspiration or integration points (e.g., Excel export) but cannot replace the custom automation and analysis required by the NNL Assessment Tool.
 
 \subsection{Reusable Components}
 
@@ -1028,17 +1151,17 @@ The tool will be hosted on McMaster’s internal infrastructure or an approved e
 Initiation &
 Define problem, scope, and objectives. &
 Document review, team formation, feasibility assessment. &
-Problem Statement, POC Plan, Development Plan. \\
+\href{https://github.com/thaafei/DomainX/blob/main/docs/ProblemStatementAndGoals/ProblemStatement.pdf}{Problem Statement}, POC Plan, \href{https://github.com/thaafei/DomainX/blob/main/docs/DevelopmentPlan/DevelopmentPlan.pdf}{Development Plan}. \\
 \hline
 Requirements &
 Gather and formalize system requirements. &
 Stakeholder interviews, drafting of SRS and Hazard Analysis. &
-SRS Document, Hazard Analysis. \\
+\href{https://github.com/thaafei/DomainX/blob/main/docs/SRS/SRS.pdf}{SRS Document}, \href{https://github.com/thaafei/DomainX/blob/main/docs/HazardAnalysis/HazardAnalysis.pdf}{Hazard Analysis}. \\
 \hline
 Design &
 Establish system architecture and interfaces. &
 UI mockups, data flow diagrams, schema design. &
-Design Document. \\
+Design Documents, \href{https://github.com/thaafei/DomainX/blob/main/docs/Design/SoftArchitecture/MG.pdf}{MG} and \href{https://github.com/thaafei/DomainX/blob/main/docs/Design/SoftDetailedDes/MIS.pdf}{MIS}. \\
 \hline
 Implementation &
 Build core tool functionality. &
@@ -1048,12 +1171,12 @@ Proof of Concept Demo. \\
 Validation \& Verification &
 Test and evaluate system performance. &
 Unit and integration testing, review sessions, issue resolution. &
-V\&V Plan, V\&V Report. \\
+\href{https://github.com/thaafei/DomainX/blob/main/docs/VnVPlan/VnVPlan.pdf}{V\&V Plan}, \href{https://github.com/thaafei/DomainX/blob/main/docs/VnVReport/VnVReport.pdf}{V\&V Report}. \\
 \hline
 Deployment &
 Deliver hosted solution. &
 Deploy tool, prepare documentation, conduct final demo. &
-Final Hosted Tool, Presentation, Final Report. \\
+\href{https://domainx.cas.mcmaster.ca/}{Final Hosted Tool}, Presentation, \href{https://github.com/thaafei/DomainX/blob/main/docs/ReflectAndTrace/ReflectAndTrace.pdf}{Final Reflect and Trace Report}. \\
 \bottomrule
 \end{tabularx}
 \end{table}
@@ -1080,35 +1203,35 @@ Each phase contributes to the development of a usable and reliable product. Feed
 
 Requirements \& Analysis &
 Clarifies system objectives and constraints. &
-Week 1–6 &
+September 5 - September 22 &
 GitHub, LaTeX &
 Requirements documentation. &
 Accuracy, clarity. \\
 \hline
 Design &
 Defines architecture and interfaces. &
-Week 10–16 &
+September 23 - November 13 &
 UML tools, wire framing software. &
 UI and backend design. &
 Maintainability. \\
 \hline
 Implementation &
 Delivers core product functionality. &
-Week 16–19 &
+October 27 - February 23 &
 IDE, databases, APIs. &
 Tool modules, automation scripts. &
 Reliability, usability. \\
 \hline
 Testing \& Validation &
 Ensures product meets all criteria. &
-Week 17–22 &
+February 24 - March 27 &
 Test suites, CI/CD. &
 Verification of features. &
 Performance. \\
 \hline
 Deployment &
 Provides accessible hosted tool. &
-Week 22–26 &
+March 12 - March 27 &
 Hosting platform, documentation. &
 Hosted application. &
 Security, accessibility. \\
@@ -1179,6 +1302,8 @@ The following is the development team's idea for the user interface of the tool.
   \label{fig:domainx_ui}
 \end{figure}
 \newpage{}
+\bibliographystyle {plainnat}
+\bibliography{../../refs/References}
 \section*{Appendix --- Reflection}
 
 \input{../Reflection.tex}

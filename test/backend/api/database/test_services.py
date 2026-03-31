@@ -34,7 +34,6 @@ def test_parse_last_page_from_link_none_or_missing_last_returns_none():
     ra = RepoAnalyzer("https://github.com/o/r")
     assert ra._parse_last_page_from_link("") is None
     assert ra._parse_last_page_from_link(None) is None
-
     link = '<https://api.github.com/repositories/1/commits?per_page=1&page=2>; rel="next"'
     assert ra._parse_last_page_from_link(link) is None
 
@@ -56,7 +55,6 @@ def test_search_count_uses_search_endpoint_and_reads_total_count(monkeypatch):
     monkeypatch.setattr(services_module, "github_get", fake_get)
 
     assert ra._search_count("repo:o/r is:pr is:open") == 123
-
     fake_get.assert_called_once()
     args, kwargs = fake_get.call_args
     assert args[0] == "/search/issues"

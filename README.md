@@ -10,7 +10,7 @@
 September 8, 2025
 
 ## Summary
-This project contains a Domain assessment tool used to access the state of best practice for any domain.
+This project contains a Domain assessment tool used to assess the state of best practice for any domain.
 
 ## Contents
 The folders and files for this project are as follows:

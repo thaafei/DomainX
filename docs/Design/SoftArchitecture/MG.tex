@@ -46,13 +46,13 @@
 \section{Revision History}
 
 \begin{table}[hp]
-\caption{Revision History} \label{MgRevHis}
 \begin{tabularx}{\textwidth}{llX}
 \toprule
 \textbf{Date} & \textbf{Developer(s)} & \textbf{Change}\\
 \midrule
 Nov 3, 2025 & Fei & Rev -1\\
 Dec 16, 2025 & Fei & Rev 0 Based on issues extracted from TA review and peer reviews. The list of related issues can be found in this \href{https://github.com/thaafei/DomainX/pull/307}{pull request}. \\
+Mar 18, 2026 & Fei & Final Documentation changes, compiled in this \href{https://github.com/thaafei/DomainX/issues/497}{github issue} \\
 \bottomrule
 \end{tabularx}
 \end{table}
@@ -177,7 +177,7 @@ change.
   \item[\refstepcounter{acnum} \actheacnum \label{ac5}:] The user access roles available might be expanded (e.g. Admin, User, Contributor)
   \item[\refstepcounter{acnum} \actheacnum \label{ac6}:] The APIs used to extract repository metrics
   \item[\refstepcounter{acnum} \actheacnum \label{ac7}:] The visualization libraries used to display data
-  \item[\refstepcounter{acnum} \actheacnum \label{ac8}:] Additional export and import file formatting may be added (e.g. CSV, Excel)
+  \item[\refstepcounter{acnum} \actheacnum \label{ac8}:] Additional export file formatting may be added (e.g. CSV, Excel)
   \item[\refstepcounter{acnum} \actheacnum \label{ac9}:] The user interface features, design and colours might be changed.
 \end{description}
 \subsection{Unlikely Changes} \label{SecUchange}
@@ -207,23 +207,20 @@ actually be implemented.
 \begin{description}
 \item [\refstepcounter{mnum} \mthemnum \label{mHH1}:] Hardware Hiding Module
 \item [\refstepcounter{mnum} \mthemnum \label{mHH2}:] Browser Module
-\item [\refstepcounter{mnum} \mthemnum \label{mAppUI}:] Application UI Module Module
+\item [\refstepcounter{mnum} \mthemnum \label{mAppUI}:] Application UI Module
 \item [\refstepcounter{mnum} \mthemnum \label{mDataEdit}:] Data Edit Module
 \item [\refstepcounter{mnum} \mthemnum \label{mUserAuth}:] User Authentication Module
-\item [\refstepcounter{mnum} \mthemnum \label{mUserRole}:] User Role Access Module
-\item [\refstepcounter{mnum} \mthemnum \label{mUserPage}:] User Page Module
-\item [\refstepcounter{mnum} \mthemnum \label{mAutMetrics}:] Automated Metrics
+\item [\refstepcounter{mnum} \mthemnum \label{mUserMgm}:] User Management Module
+\item [\refstepcounter{mnum} \mthemnum \label{mAutoMetrics}:] Automated Metrics
 \item [\refstepcounter{mnum} \mthemnum \label{mDomainsPage}:] Domains Page Module
+\item [\refstepcounter{mnum} \mthemnum \label{mCompare}:] Comparison Module
 \item [\refstepcounter{mnum} \mthemnum \label{mSysApi}:] System API Gateway Module
 \item [\refstepcounter{mnum} \mthemnum \label{mRankAlgo}:] Ranking Algorithm Module
 \item [\refstepcounter{mnum} \mthemnum \label{mGraphing}:] Graphing Module
-\item [\refstepcounter{mnum} \mthemnum \label{mImport}:] File Import Module
 \item [\refstepcounter{mnum} \mthemnum \label{mExport}:] File Export Module
 \item [\refstepcounter{mnum} \mthemnum \label{mRepoAPI}:] Repository API Module
-\item [\refstepcounter{mnum} \mthemnum \label{mCompare}:] Comparison Module
 \item [\refstepcounter{mnum} \mthemnum \label{mDB}:] Database Persistence Module
 \item [\refstepcounter{mnum} \mthemnum \label{mLog}:] Logging Module
-\item [\refstepcounter{mnum} \mthemnum \label{mConf}:] Configuration Module
 
 
 \end{description}
@@ -246,13 +243,11 @@ actually be implemented.
 & User Page Module \\
 & Automated Metrics Module\\
 & Comparison Module \\
-& Configuration Module \\
 \midrule
 
 \multirow{3}{0.3\textwidth}{Software Decision Module} & {System API Gateway Module}\\
 & Ranking Algorithm Module\\
 & Graphing Module\\
-& File Import Module\\
 & File Export Module\\
 & Repository API Module\\
 & Database Persistence Module \\
@@ -345,7 +340,7 @@ to be implemented.
 \item[Type of Module:] Abstract Object
 \end{description}
 
-\subsubsection{ User Role Access Module (\mref{mUserRole})}
+\subsubsection{ User Management Module (\mref{mUserMgm})}
 \begin{description}
 \item[Secrets:] The data structures and algorithms used to store and validate users access level within the system.
 \item[Services:] Provides user role and capabilities related to the role, which allows other modules to restrict features and display based on the role of the user.
@@ -353,15 +348,7 @@ to be implemented.
 \item[Type of Module:] ADT
 \end{description}
 
-\subsubsection{User Page Module (\mref{mUserPage})}
-\begin{description}
-\item[Secrets:] The algorithms and components used to display the interactive user settings page.
-\item[Services:] Displays user settings where user can update their settings and view information related to their account profile.
-\item[Implemented By:] \projname
-\item[Type of Module:] Abstract Object
-\end{description}
-
-\subsubsection{ Automated Metrics Module (\mref{mAutMetrics})}
+\subsubsection{ Automated Metrics Module (\mref{mAutoMetrics})}
 \begin{description}
 \item[Secrets:] The data structures and algorithms used for adding automatable metrics.
 \item[Services:] Handles the automated data entry into system using the Repository Api Module \mref{mRepoAPI}.
@@ -384,15 +371,6 @@ to be implemented.
 \item[Implemented By:] \projname
 \item[Type of Module:] Abstract Object
 \end{description}
-
-\subsubsection{Configuration Module (\mref{mConf})}
-\begin{description}
-\item[Secrets:] The data structures and algorithm that stores each individual user.
-\item[Services:] Using the user authentication and provides interface to retrieve and update user information.
-\item[Implemented By:] \projname
-\item[Type of Module:] Abstract Object
-\end{description}
-
 
 \subsection{Software Decision Module}
 \begin{description}
@@ -428,14 +406,6 @@ to be implemented.
 \item[Secrets:] The algorithms and external libraries required to graph and visualize user data.
 \item[Services:] Takes metric data as input and outputs requested graphs.
 \item[Implemented By:] \href{https://pypi.org/project/matplotlib/}{Matplotlib}
-\item[Type of Module:] Abstract Object
-\end{description}
-
-\subsubsection{File Import Module (\mref{mImport})}
-\begin{description}
-\item[Secrets:] The data structures and algorithms used to import data of varying formats (e.g. Excel, CSV).
-\item[Services:] Facilitates the process of processing a inputted file into data for use by the rest of the system. Contains the external libraries and additional mechanisms to retrieve and format inputted files.
-\item[Implemented By:] \href{https://pypi.org/project/pandas/}{pandas}
 \item[Type of Module:] Abstract Object
 \end{description}
 
@@ -482,16 +452,16 @@ requirements and between the modules and the anticipated changes.
 \toprule
 \textbf{Req.} & \textbf{Modules}\\
 \midrule
-FR1 & \mref{mUserPage}\\
-FR2 & \mref{mUserAuth}, \mref{mUserPage}\\
+FR1 & \mref{mUserMgm}\\
+FR2 & \mref{mUserAuth}, \mref{mUserMgm}\\
 FR3 & \mref{mUserAuth}\\
-FR4 & \mref{mConf}\\
-FR5 & \mref{mDomainsPage}, \mref{mUserRole} \\
+FR4 & \mref{mUserMgm}\\
+FR5 & \mref{mDomainsPage}, \mref{mUserMgm} \\
 FR6 & \mref{mDomainsPage} \\
 FR7 & \mref{mDataEdit}, \mref{mDB}, \mref{mExport} \\
 FR8 & \mref{mDataEdit} \\
-FR9 & \mref{mImport} \\
-FR10 & \mref{mAutMetrics}, \mref{mRepoAPI}\\
+FR9 & \mref{mAutoMetrics} \\
+FR10 & \mref{mAutoMetrics}, \mref{mRepoAPI}\\
 FR11 & \mref{mDomainsPage}\\
 FR12 & \mref{mRankAlgo}, \mref{mCompare}\\
 FR13 & \mref{mGraphing}\\
@@ -538,9 +508,9 @@ UH-AR1 & \mref{mAppUI}\\
 UH-AR2 & \mref{mAppUI}\\
 PR-SL1 & \mref{mCompare}\\
 PR-SC1 & \mref{mUserAuth}\\
-PR-SC2 & \mref{mUserAuth}, \mref{mConf}\\
-PR-SC3 & \mref{mUserRole}, \mref{mDataEdit}\\
-PR-PA1 & \mref{mAutMetrics}\\
+PR-SC2 & \mref{mUserAuth}, \mref{mUserMgm}\\
+PR-SC3 & \mref{mUserMgm}, \mref{mDataEdit}\\
+PR-PA1 & \mref{mAutoMetrics}\\
 PR-RFT1 & \mref{mSysApi}\\
 PR-RFT2 & \mref{mDB}\\
 PR-RFT3 & \mref{mDB}\\
@@ -548,7 +518,7 @@ PR-CR1 & \mref{mSysApi}\\
 PR-CR2 & \mref{mDB}\\
 PR-CR3 & \mref{mSysApi}, \mref{mDB}\\
 PR-SE1 & \mref{mAppUI}, \mref{mSysApi}, \mref{mDB}\\
-PR-SE2 & \mref{mUserAuth}, \mref{mUserRole} \\
+PR-SE2 & \mref{mUserAuth}, \mref{mUserMgm} \\
 PR-LR1 & \mref{mSysApi}, \mref{mDB}\\
 PR-LR2 & \mref{mDB}\\
 OE-EPE1 & \mref{mSysApi}\\
@@ -561,53 +531,28 @@ OE-IA1 & \mref{mRepoAPI}\\
 OE-IA2 & \mref{mDB}\\
 OE-IA3 & \mref{mGraphing}\\
 OE-IA4 & \mref{mSysApi}, \mref{mRepoAPI}\\
-OE-PR1 & Not Relevant \\
-OE-PR2 & Not Relevant \\
-OE-PR3 & Not Relevant \\
-OE-PR4 & \mref{mExport}, \mref{mGraphing} \\
-OE-RR1 & Not Relevant \\
-OE-RR2 & Not Relevant \\
-OE-RR3 & Not Relevant \\
-OE-RR4 & Not Relevant \\
-MS-MR1 & Not Relevant \\
-MS-MR2 & Not Relevant \\
-MS-MR3 & Not Relevant \\
-MS-MR4 & Not Relevant \\
-MS-MR5 & Not Relevant \\
-MS-MR6 & Not Relevant \\
-MS-MR7 & \mref{mLog}, \mref{mDataEdit} \\
-MS-MR8 & \mref{mAppUI}, \mref{mSysApi}, \mref{mRepoAPI}, \mref{mDB}\\
-MS-SR1 & Not Relevant \\
-MS-SR2 & Not Relevant \\
-MS-SR3 & \mref{mLog} \\
-MS-SR4 & Not Relevant \\
-MS-AR1 & \mref{mSysApi}\\
-MS-AR2 & \mref{mDB}\\
-MS-AR3 & \mref{mRepoAPI}\\
-MS-AR4 & \mref{mHH1}, \mref{mHH2}, \mref{mSysApi}\\
-MS-AR5 & \mref{mSysApi}, \mref{mAppUI}, \mref{mDB}\\
-SR-AC1 & \mref{mUserRole}, \mref{mDomainsPage}\\
-SR-AC2 & \mref{mUserRole}\\
-SR-AC3 & \mref{mConf}, \mref{mUserRole}\\
-SR-AC4 & \mref{mUserRole}\\
+SR-AC1 & \mref{mUserMgm}, \mref{mDomainsPage}\\
+SR-AC2 & \mref{mUserMgm}\\
+SR-AC3 & \mref{mUserMgm}\\
+SR-AC4 & \mref{mUserMgm}\\
 SR-AC5 & \mref{mAppUI}\\
 SR-AC6 & \mref{mRepoAPI}, \mref{mDB}\\
 SR-INT1 & \mref{mDataEdit}\\
 SR-INT2 & \mref{mDB}\\
 SR-INT3 & \mref{mDataEdit}, \mref{mDB}\\
-SR-INT4 & \mref{mAppUI}, \mref{mDataEdit}, \mref{mAutMetrics}, \mref{mDB}\\
+SR-INT4 & \mref{mAppUI}, \mref{mDataEdit}, \mref{mAutoMetrics}, \mref{mDB}\\
 SR-INT5 & \mref{mDB}, \mref{mLog}\\
 SR-INT6 & \mref{mDataEdit}\\
 SR-INT7 & \mref{mExport}, \mref{mSysApi}, \mref{mAppUI}\\
-SR-P1 & \mref{mDB}, \mref{mUserAuth}, \mref{mConf}\\
-SR-P2 & \mref{mDB}, \mref{mUserAuth}, \mref{mConf}\\
+SR-P1 & \mref{mDB}, \mref{mUserAuth}, \mref{mUserMgm}\\
+SR-P2 & \mref{mDB}, \mref{mUserAuth}, \mref{mUserMgm}\\
 SR-AU1 & \mref{mDB}, \mref{mLog}\\
 SR-AU2 & \mref{mLog}\\
-SR-AU3 & \mref{mLog}, \mref{mUserRole}\\
+SR-AU3 & \mref{mLog}, \mref{mUserMgm}\\
 SR-IM1 & \mref{mDB}\\
 SR-IM2 & \mref{mAppUI}\\
 SR-IM3 & \mref{mRepoAPI}\\
-SR-IM3 & Not Relevant \\
+SR-IM4 & Not Relevant \\
 CU-CR1 & \mref{mAppUI}\\
 CU-CR2 & \mref{mAppUI}\\
 CU-CR3 & \mref{mAppUI}\\
@@ -622,6 +567,10 @@ CR-LR3 & Not Relevant \\
 
 Table \ref{tnf_modules} shows the traceability between the non-functional requirements and the modules.
 
+Note that Productization (OE-PR*), Release (OE-RR*), Maintenance (MS-MR*), Supportability (MS-SR*), Adaptability (MS-AR*), Legal (CR-LR*) requirements are not considered, since they are out-of-scope for this document. \\
+SR-IM4 is also listed as Not Relevant, as it relates to ensuring external libraries used during development are up-to-date, which is out-of-scope for this document.
+
+More information about the nonfunctional requirements can be found in the \href{https://github.com/thaafei/DomainX/blob/main/docs/SRS/SRS.pdf}{SRS document}.
 \begin{table}[H]
 \centering
 \begin{tabular}{p{0.2\textwidth} p{0.6\textwidth}}
@@ -632,10 +581,10 @@ Table \ref{tnf_modules} shows the traceability between the non-functional requir
 \acref{ac2} & \mref{mUserAuth}\\
 \acref{ac3} & \mref{mRankAlgo}\\
 \acref{ac4} & \mref{mCompare}\\
-\acref{ac5} & \mref{mUserRole}, \mref{mUserPage}, \mref{mConf}\\
-\acref{ac6} & \mref{mRepoAPI}, \mref{mAutMetrics}\\
+\acref{ac5} & \mref{mUserMgm}\\
+\acref{ac6} & \mref{mRepoAPI}, \mref{mAutoMetrics}\\
 \acref{ac7} & \mref{mGraphing}\\
-\acref{ac8} & \mref{mExport},  \mref{mImport}\\
+\acref{ac8} & \mref{mExport}\\
 \acref{ac9} & \mref{mAppUI}\\
 \bottomrule
 \end{tabular}
@@ -646,8 +595,8 @@ Table \ref{TblACT} shows the traceability between the anticipated changes and th
 Note that \mref{mSysApi} is applicable to all the anticipated changes, since they cover the data flow for the system.
 \mref{mLog} is also applicable to all, since changes to the underlying modules could impact the logging module.
 \\ Since \acref{ac1} can result in additional metrics, the main page that would display the domain would have to change (\mref{mDomainsPage}), the underlying methods involved in updating the data (\mref{mDataEdit}) and database itself (\mref{mDB}).
-\\ \acref{ac5} touches on what the user can see, if additional roles are added, the user page UI must be updated (\mref{mUserPage}). The configuration to store each user's preference (\mref{mConf}) and role will also be updated (\mref{mUserRole}).
-\\ To account for \acref{ac6}, the underlying API will need to be updated (\mref{mRepoAPI}), and the data retrieved from the new API might differ (\mref{mAutMetrics}).
+\\ \acref{ac5} touches on what the user can see, if additional roles are added, the user page UI must be updated (\mref{mUserMgm}). The configuration to store each user's preference and role will also be updated (\mref{mUserMgm}).
+\\ To account for \acref{ac6}, the underlying API will need to be updated (\mref{mRepoAPI}), and the data retrieved from the new API might differ (\mref{mAutoMetrics}).
 
 
 
@@ -666,7 +615,7 @@ because they use modules from the lower levels.
 
 \begin{figure}[H]
 \centering
-\includegraphics[width=0.7\textwidth]{images/UsesHierarchy.png}
+\includegraphics[width=0.7\textwidth]{images/usehiechy.png}
 \caption{Use hierarchy among modules}
 \label{FigUH}
 \end{figure}
@@ -721,10 +670,8 @@ Figure \ref{FigUI5} shows the user management page, this page is visible for adm
 \caption{Main user information page (viewer role)}
 \label{FigUI6}
 \end{figure}
-Figure \ref{FigUI6} shows the main user information page that any users can see. This apge allows users to set their basic information. Additional side columns are added based on the role access level.
+Figure \ref{FigUI6} shows the main user information page that any users can see. This page allows users to set their basic information. Additional side columns are added based on the role access level.
 
-\section{Design of Communication Protocols}
-N/A
 \section{Timeline}
 
 The following is the timeline for development of the modules, building up from the POC. Issues related to the timeline will be created and tracked through \href{https://github.com/thaafei/DomainX/issues}{Github Issues} and the associated \href{https://github.com/users/thaafei/projects/6}{project board}.
@@ -737,22 +684,19 @@ The following is the timeline for development of the modules, building up from t
 \endhead
 
 1 & Jan 5 -- Jan 11 & Haniye & Implement \textbf{User Authentication Module (\mref{mUserAuth})} for secure login, registration, token management, and password encryption. \\ \cline{3-4}
-  &  & Ghena & Implement \textbf{User Role Access Module (\mref{mUserRole})} with Admin/Analyst/Viewer roles and middleware for route protection. \\ \cline{3-4}
+  &  & Ghena & Implement \textbf{User Management Module (\mref{mUserMgm})} with Admin/Analyst/Viewer roles and middleware for route protection. \\ \cline{3-4}
   &  & Fei & Setup testing framework \\ \cline{3-4}
-  &  & Awurama & Build User Page (\mref{mUserPage}) \\ \hline
+  &  & Awurama & Build User Page (\mref{mUserMgm}) \\ \hline
 
 2 & Jan 12 -- Jan 18 & Haniye & Extend backend to support \textbf{Database Persistence (\mref{mDB})}: ORM models, migrations, CRUD operations. \\ \cline{3-4}
   &  & Ghena & Expand \textbf{System API Gateway (\mref{mSysApi})} to integrate Auth \& Repo APIs, include error-handling layer. \\ \cline{3-4}
-  &  & Awurama & Expand user page with \textbf{configurable functionalities (\mref{mConf})}  based on user role \\ \hline
 
 3 & Jan 19 -- Jan 25 & Awurama & Build \textbf{Application UI Module (\mref{mAppUI})} with global navigation, sidebar, responsive design, and state handling. \\ \cline{3-4}
   &  & Fei & Implement \textbf{Domains Page Module (\mref{mDomainsPage})} to display domains and metrics with integrated backend data. \\ \cline{3-4}
   &  & Ghena & Finalize \textbf{Repository API Module (\mref{mRepoAPI})}: error handling, caching, and rate-limit retries. \\ \cline{3-4}
   &  & Fei & Build \textbf{File Export Module (\mref{mExport})} to export domain data in CSV/XLSX formats. \\ \hline
 
-4 & Jan 26 -- Feb 1 & Awurama & Develop \textbf{File Import Module (\mref{mImport})} to upload, validate, and parse CSV/XLSX files. \\ \cline{3-4}
-  &  & Haniye & Implement \textbf{Automated Metrics Module (\mref{mAutMetrics})} with background job scheduler and automatic metric retrieval. \\ \hline
-
+4 & Jan 26 -- Feb 1 & Haniye & Implement \textbf{Automated Metrics Module (\mref{mAutoMetrics})} with background job scheduler and automatic metric retrieval. \\ \cline{3-4}
 
 5 & Feb 2 -- Feb 8 & Awurama + Fei & Implement \textbf{Data Edit Module (\mref{mDataEdit})} with React validation, inline feedback, and API integration. \\ \cline{3-4}
   &  & Ghena & Implement \textbf{Ranking Algorithm Module (\mref{mRankAlgo})} using AHP/BWM/SSB methods with test coverage. \\ \cline{3-4}
@@ -771,12 +715,12 @@ The following is the timeline for development of the modules, building up from t
 \bibliography{../../../refs/References}
 
 \newpage{}
-    \section*{Appendix A: Database Schema}
-        \begin{figure}[h]
-            \centering
-            \includegraphics[width=0.9\textwidth]{images/DatabaseSchema.png}
-            \caption{Domain X Database Schema}
-            \label{fig:databaseschema}
-        \end{figure}
+  \section*{Appendix A: Database Schema}
+    \begin{figure}[h]
+      \centering
+      \includegraphics[width=0.9\textwidth]{images/DatabaseSchema.png}
+      \caption{Domain X Database Schema}
+      \label{fig:databaseschema}
+    \end{figure}
 \newpage{}
 \end{document}
