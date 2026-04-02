@@ -2,6 +2,8 @@
 
 \usepackage{tabularx}
 \usepackage{booktabs}
+\usepackage{multicol}
+\usepackage{longtable}
 
 \title{Reflection and Traceability Report on \progname}
 
@@ -16,23 +18,12 @@
 
 \maketitle
 
-\plt{Reflection is an important component of getting the full benefits from a
-learning experience.  Besides the intrinsic benefits of reflection, this
-document will be used to help the TAs grade how well your team responded to
-feedback.  Therefore, traceability between Revision 0 and Revision 1 is and
-important part of the reflection exercise.  In addition, several CEAB (Canadian
-Engineering Accreditation Board) Learning Outcomes (LOs) will be assessed based
-on your reflections.}
-
 \section{Changes in Response to Feedback}
+The below sections are the feedback and response to the feedback throughout the course, grouped by the related documents. Note that feedback in relation to simple styling, spelling or syntax of the documents were excluded.
 
 \plt{Summarize the changes made over the course of the project in response to
 feedback from TAs, the instructor, teammates, other teams, the project
 supervisor (if present), and from user testers.}
-
-\plt{For those teams with an external supervisor, please highlight how the feedback
-from the supervisor shaped your project.  In particular, you should highlight the
-supervisor's response to your Rev 0 demonstration to them.}
 
 \plt{Version control can make the summary relatively easy, if you used issues
 and meaningful commits.  If you feedback is in an issue, and you responded in
@@ -63,16 +54,340 @@ low.}
 
 \subsection{SRS and Hazard Analysis}
 
+
 \subsection{Design and Design Documentation}
+
+\subsubsection{Module Interface Specification (MIS)}
+\label{ssubsec:mis-trace}
+
+The MIS revisions focused on improving consistency, abstraction,
+traceability, and clarity of interfaces. Feedback items were grouped
+by source and mapped to the final document so that each change can be
+traced back to the review that motivated it.
+
+\begin{longtable}{p{0.18\textwidth} p{0.26\textwidth}
+                  p{0.34\textwidth} p{0.16\textwidth}}
+\caption{MIS feedback and response traceability}
+\label{tab:mis-trace}\\
+\toprule
+Source & Feedback & Change Made & Where Addressed \\
+\midrule
+\endfirsthead
+
+\toprule
+Source & Feedback & Change Made & Where Addressed \\
+\midrule
+\endhead
+
+\bottomrule
+\endfoot
+
+TA Review \#200,
+annotated MIS.pdf
+&
+Use \texttt{bool} instead of Boolean for consistency.
+&
+Revised the type notation to use \texttt{bool} consistently in the MIS.
+This aligned the type names with the notation table and removed
+inconsistent wording.
+&
+Issue \#265; Section~4.3, Table~2
+\\
+
+TA Review \#200,
+annotated MIS.pdf
+&
+Define variables using the names intended for the implementation.
+&
+Revised variable names to better match the intended system terminology
+and to improve consistency between the MIS and implementation-facing
+documentation.
+&
+Issue \#264; Sections~4.4 and~6
+\\
+
+TA Review \#200,
+annotated MIS.pdf
+&
+Clarify local functions, or reconfigure modules so that the module
+interfaces remain meaningful.
+&
+Added local functions where appropriate and revised module descriptions
+to better justify the structure of the affected modules.
+&
+Issue \#263; Section~6
+\\
+
+TA Review \#200,
+annotated MIS.pdf
+&
+Clarify whether the Browser Module functions as the system's main
+runtime entry.
+&
+Revised the Browser Module description to state that it provides the
+runtime container for the client application and clarified its role in
+the system.
+&
+Issue \#262; Section~6.1
+\\
+
+TA Review \#200,
+annotated MIS.pdf
+&
+Refer to the module decomposition table explicitly by number.
+&
+Revised the introductory text for module decomposition so that it
+explicitly refers to Table~3.
+&
+Issue \#261; Section~5, Table~3
+\\
+
+Peer Review \#239
+&
+The MIS is missing abbreviations and acronyms needed for readability.
+&
+Expanded the symbols, abbreviations, and acronyms section to improve
+clarity and make the document easier to read independently.
+&
+Section~2, Table~1
+\\
+
+Peer Reviews \#217
+and \#218
+&
+Module subsections, module types, and input/output types are unclear.
+&
+Standardized the MIS structure across modules and clarified exported
+access programs by making inputs, outputs, and exceptions more
+explicit.
+&
+Section~4.3, Table~2; Section~6
+\\
+
+Peer Reviews \#212
+and \#223
+&
+The level of abstraction and module hierarchy need to be more precise.
+&
+Revised the module decomposition and updated module descriptions and
+uses clauses so that the hierarchy and abstraction boundaries are more
+consistent.
+&
+Section~5, Table~3; Section~6
+\\
+
+Final Documentation
+Issue \#501
+(sub-issues \#481 to \#485)
+&
+Remove unnecessary text, clarify parameters and outputs, fix
+formatting, and hyperlink module references.
+&
+Removed unnecessary content, clarified parameter meanings and data
+types, defined outputs for exported access programs, corrected
+formatting issues, and added hyperlinks to module references.
+&
+Section~6
+\\
+
+\end{longtable}
+
 
 \subsection{VnV Plan and Report}
 
+\subsubsection{VnV Plan}
+\label{ssubsec:vnv-plan-trace}
+
+This subsection summarizes the feedback received on the Verification
+and Validation (V\&V) Plan and the revisions made in response. The
+updates focused on improving traceability, clarifying verification
+approaches, strengthening test descriptions, and refining the
+structure and readability of the document.
+
+\begin{longtable}{p{0.18\textwidth} p{0.26\textwidth}
+                  p{0.34\textwidth} p{0.16\textwidth}}
+\caption{V\&V Plan feedback and response traceability}
+\label{tab:vnv-plan-trace}\\
+\toprule
+Source & Feedback & Change Made & Where Addressed \\
+\midrule
+\endfirsthead
+
+\toprule
+Source & Feedback & Change Made & Where Addressed \\
+\midrule
+\endhead
+
+\bottomrule
+\endfoot
+
+TA Review \#130,
+annotated VnVPlan.pdf
+&
+Traceability table contains unnecessary columns.
+&
+Simplified the traceability table by removing redundant columns and
+retaining only essential mappings between test IDs and requirement
+identifiers.
+&
+Section~4.3, Table~9
+\\
+
+TA Review \#130,
+annotated VnVPlan.pdf
+&
+Traceability between test cases and requirements is unclear.
+&
+Revised the traceability table to explicitly map each test ID to
+corresponding SRS and non-functional requirement identifiers,
+improving clarity and coverage justification.
+&
+Section~4.3
+\\
+
+TA Review \#130,
+annotated VnVPlan.pdf
+&
+Verification approach is ambiguous and difficult to follow.
+&
+Rewrote verification approach descriptions to clearly connect testing
+methods (unit, UI, manual, automated) with the corresponding test
+cases and system components.
+&
+Section~4.1; Section~4.2
+\\
+
+TA Review \#130,
+annotated VnVPlan.pdf
+&
+Test case descriptions are incomplete and include unnecessary columns.
+&
+Refined test case tables by removing unnecessary columns and ensuring
+each test clearly specifies procedure, expected outcome, and linked
+requirements.
+&
+Section~4.1.1--4.1.3
+\\
+
+TA Review \#130,
+annotated VnVPlan.pdf
+&
+Unclear whether tests are manual or automated.
+&
+Explicitly distinguished between automated and manual tests in the
+verification approach sections and tool descriptions.
+&
+Section~3.5; Section~3.6; Section~4
+\\
+
+TA Review \#130,
+annotated VnVPlan.pdf
+&
+Descriptions of testing tools are vague.
+&
+Improved Table~5 by clarifying the purpose of each tool (testing,
+automation, CI/CD, static analysis, and API validation).
+&
+Section~3.6, Table~5
+\\
+
+TA Review \#130,
+annotated VnVPlan.pdf
+&
+Unclear ownership of verification activities.
+&
+Clarified team responsibilities and roles in verification activities,
+including testing, reviews, and traceability management.
+&
+Section~3.1, Table~4
+\\
+
+TA Review \#130,
+annotated VnVPlan.pdf
+&
+Usability evaluation is not fully specified.
+&
+Expanded usability testing to include task-based evaluation,
+performance metrics (time, clicks), and survey-based feedback with
+quantitative thresholds.
+&
+Section~4.2.3; Appendix~7.2
+\\
+
+TA Review \#130,
+annotated VnVPlan.pdf
+&
+Ambiguity between SRS walkthroughs and code walkthroughs.
+&
+Clarified distinction between SRS verification walkthroughs and code
+walkthroughs, and placed them in appropriate sections of the plan.
+&
+Section~3.2; Section~3.5
+\\
+
+TA Review \#130,
+annotated VnVPlan.pdf
+&
+Missing list of tables and figures based on rubric.
+&
+Added structured contents including tables and appendix references to
+align with documentation expectations.
+&
+Contents page
+\\
+
+Peer Review \#461
+&
+Traceability between VnV Plan and VnV Report is insufficient.
+&
+Ensured consistent identifiers are used across both documents so that
+test results in the VnV Report map directly to planned verification
+activities in the VnV Plan.
+&
+Section~4.3
+\\
+
+\end{longtable}
+
 \section{Extras}
 
-\plt{Summarize the extras that were tackled by this project.  Extras
-can include usability testing, code walkthroughs, user documentation, formal
-proof, GenderMag personas, Design Thinking, etc.  Extras should have already
-been approved by the course instructor as included in your problem statement.}
+Our extra is a research paper on the \href{https://github.com/thaafei/DomainX/blob/main/docs/ResearchReport/StateOfPractice_NLP.pdf}{State of the Practice for Open-Source Neural Network Software}. In this research paper, we identified a shortlist of 28 open-source Neural Network (NN) software packages and measured them across 9 qualities to have a pair-wise comparison using the Analytical Hierarchy Process (AHP).
+\\The 28 libraries are:
+\begin{multicols}{3}
+\begin{itemize}
+    \item Apache MXNet
+    \item Caffe
+    \item Captum
+    \item CatBoost
+    \item Chainer
+    \item CNTK
+    \item cuDF
+    \item DeepLearning4J
+    \item Gensim
+    \item Hugging Face Transformers
+    \item JAX
+    \item Keras
+    \item LightGBM
+    \item MLflow
+    \item NeuroLab
+    \item NLTK
+    \item OpenCV
+    \item Optuna
+    \item PaddlePaddle
+    \item PyTensor
+    \item PyTorch
+    \item PyTorch Geometric
+    \item scikit-learn
+    \item SHAP
+    \item TensorBoard
+    \item TensorFlow
+    \item TorchVision
+    \item XGBoost
+\end{itemize}
+\end{multicols}
+We followed the steps outline in the \href{https://arxiv.org/pdf/2110.11575}{Methodology for Assessing the State of the
+Practice for Domain X} paper. Our addition to the methods outline in the paper was using our tool to accomplish the data collection and comparison portions.
+
 
 \section{Design Iteration (LO11 (PrototypeIterate))}
 
@@ -92,52 +407,72 @@ it led to.}
 
 \section{Economic Considerations (LO23)}
 
-\plt{Is there a market for your product? What would be involved in marketing your
-product? What is your estimate of the cost to produce a version that you could
-sell?  What would you charge for your product?  How many units would you have to
-sell to make money? If your product isn't something that would be sold, like an
-open source project, how would you go about attracting users?  How many potential
-users currently exist?}
+Our project is meant to be an open-source tool to be used for the research community, both active researchers and students.
+
+Currently, we already have one user, the master's student who is researching for the Robotics software domain.
+The number of potential users is at minimum the amount of people who would be researching a domain.
+
+Since our project is open source, marketing efforts would focus on raising awareness rather than selling a product. Strategies could include:
+\begin{enumerate}
+    \item Promoting through word-of-mouth by Dr. Spencer Smith, development team and past users of the tool.
+    \item Presenting our research paper that mentions the use of this tool at academic conferences.
+    \item Posting online about our tool for anyone who is interested in seeing the results of this type of research.
+\end{enumerate}
 
 \section{Reflection on Project Management (LO24)}
 
-\plt{This question focuses on processes and tools used for project management.}
-
 \subsection{How Does Your Project Management Compare to Your Development Plan}
 
-\plt{Did you follow your Development plan, with respect to the team meeting plan,
-team communication plan, team member roles and workflow plan.  Did you use the
-technology you planned on using?}
+Our team mostly followed the \href{https://github.com/thaafei/DomainX/blob/main/docs/DevelopmentPlan/DevelopmentPlan.pdf}{Development Plan} we laid out. But as the project progressed, we made adjustments to better align with the reality of the project, and update the Development Plan accordingly.
+
+\textbf{Team Meeting Plan: } The team meeting plan originally stated that we would meet as a team every Monday virtually. But starting with the second semester, we started to meet when needed. This is due to the nature of our team, where we had two subteams so oftentimes, not everyone had to attend every meeting. \\
+\textbf{Team Communication Plan: } Originally, we planned on only using Microsoft Team's to communicate. But for our project, we wanted a communication platform that allowed for multiple different chat rooms, which Team's couldn't do. Therefore, we updated our communication plan and used Discord as our team's main communication platform. \\
+\textbf{Team Member Roles: } The roles mostly stayed the same, the only change was the Team Leader moving from Ghena to Fei. \\
+\textbf{Workflow Plan: } At the start, the workflow plan wasn't followed as tightly. Members weren't properly creating issues for their work, or labeling the issues themselves. However, towards the second half of the project, the workflow plan was followed exactly. \\
+
+We followed the expected technology to build the web application, namely \href{https://react.dev/}{React} for frontend, \href{https://www.djangoproject.com/}{Django} for backend, and \href{https://www.mysql.com/}{MySQL} for database. And implemented the linters \href{https://peps.python.org/pep-0008/}{PEP 8}, \href{https://github.com/psf/black}{Black},
+\href{https://pycqa.github.io/isort/}{isort}, and \href{https://flake8.pycqa.org/en/latest/}{Flake8}.
+
+Since McMaster actually deploys its application on-premise, we did not need to use a cloud platform like \href{https://aws.amazon.com/}{Amazon Web Services (AWS)}.
 
 \subsection{What Went Well?}
 
-\plt{What went well for your project management in terms of processes and
-technology?}
+With the implementation of GitHub workflows and Run \& Debug on VSCode, it was extremely easy to develop the application locally. Later on as we added testing frameworks and mandated the requirement that new features must have unit tests, and pull requests cannot be merged unless all unit test passes, it removed a lot of uncertainty that new changes would break existing systems.
+Furthermore, with pre-commit linting tools automating most syntax issues, the overall development was easy.
+
+On the infrastructure side, since we used docker containers, deploying new changes was very easy, since all we need was pull the updated GitHub code and recreate the containers.
+
+Being strict on documentation, particularly for development and infrastructure purposes reduced a lot of questions and helped get new members of the development team up and running quickly.
 
 \subsection{What Went Wrong?}
 
-\plt{What went wrong in terms of processes and technology?}
+Since everyone on the team was busy, there were times when team members had to wait for extended periods for their pull requests to be reviewed. Additionally, team members had different experiences and expectations regarding how issues should be structured. Some members weren’t creating issues for the tasks they were working on, while others were creating too many unnecessary issues. This was detrimental because the number of issues opened and closed was a key metric used to track team contributions.
 
-\subsection{What Would you Do Differently Next Time?}
+\subsection{What Would You Do Differently Next Time?}
 
-\plt{What will you do differently for your next project?}
+Next time, we would use the GitHub Project board more frequently. While it requires some effort to set up and maintain, it greatly improves transparency by making it easier to see what other team members are working on. Since we aren’t holding daily stand-up meetings, the board would help keep everyone on track and allow us to identify potential issues earlier.
 
 \section{Ethics and Equity (LO18)}
+We incorporated equity throughout the development process by establishing a team expectation plan that included clear communication and problem resolution guidelines. This created an environment where all team members could contribute ideas, provide feedback, and voice concerns safely and respectfully, ensuring that diverse perspectives were considered in decision-making.
 
-\plt{Describe how your team applied the principle of equity and universal design
-to ensure equitable treatment of all stakeholders.}
+In the design of the product, we applied principles of universal design by maintaining a consistent layout across all pages of the web application, making it easier for users to navigate and understand the interface. We also provided clear and timely user feedback to ensure that users are informed about system actions and outcomes. These design choices help make the application more accessible and intuitive for users with varying levels of experience and ability.
+
+Overall, our approach supports both equitable collaboration within the team and an inclusive user experience for all stakeholders.
 
 \section{Reflection on Capstone}
+Overall, our capstone project allowed us to further strengthen both our web development and project management skills. As we were responsible for the entire lifecycle of the application. From the problem statement to designing and implementing the solution, we each took on multiple roles throughout the process.
 
-\plt{This question focuses on what you learned during the course of the capstone project.}
+This experience closely mirrored real-world industry expectations, where teams must work within deadlines and constraints. We had to make thoughtful decisions about prioritization, recognizing that limited time and resources meant not every feature could be implemented. As a result, we focused on delivering the most impactful functionality while maintaining quality.
+
+Through this process, we gained valuable experience in balancing technical development with planning, communication, and adaptability, all of which are essential skills in a professional software engineering environment.
 
 \subsection{Which Courses Were Relevant}
+SFWRENG 4HC3: Human Computer Interfaces \\
+SFWRENG 3DB3: Databases \\
 
-\plt{Which of the courses you have taken were relevant for the capstone project?}
+The above two courses were particularly relevant to our capstone, due to our project being a web application with users. SFWRENG 3DB3 was particularly helpful during the design process, when we had to design our database to accommodate our business logic.
 
 \subsection{Knowledge/Skills Outside of Courses}
-
-\plt{What skills/knowledge did you need to acquire for your capstone project
-that was outside of the courses you took?}
+Web development and project management experience from past co-ops tremendously helped with the project. Since many members of the group was already familiar with certain tools, libraries and frameworks, we were able to play into our strengths and build our technology stack on what was already familiar.
 
 \end{document}

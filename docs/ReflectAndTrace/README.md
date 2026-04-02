@@ -1,5 +1,5 @@
-# Development Plan
+# Reflect and Trace Report
 
 The folders and files for this folder are as follows:
 
-Describe ...
+1. Reflect and Trace PDF and associated latex file.
