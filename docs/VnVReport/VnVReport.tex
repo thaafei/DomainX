@@ -23,10 +23,10 @@
 
 \begin{document}
 
-\title{Verification and Validation Report: \progname} 
+\title{Verification and Validation Report: \progname}
 \author{\authname}
 \date{\today}
-	
+
 \maketitle
 
 \pagenumbering{roman}
@@ -37,6 +37,7 @@
 \toprule {\bf Date} & {\bf Version} & {\bf Notes}\\
 \midrule
 March 6 & Rev 1 & First copy of VnV Report done by the whole team\\
+April 2 & Final & Final documentation update: Functional requirements updated based on recent tool changes (completed by Haniye).\\
 \bottomrule
 \end{tabularx}
 
@@ -45,24 +46,11 @@ March 6 & Rev 1 & First copy of VnV Report done by the whole team\\
 \section{Symbols, Abbreviations and Acronyms}
 
 \renewcommand{\arraystretch}{1.2}
-\begin{tabular}{l p{10cm}} 
-  \toprule		
-  \textbf{Symbol} & \textbf{Description}\\
-  \midrule 
-    AHP & Analytic Hierarchy Process \\
-    API & Application Programming Interface \\
-    CR & Consistency Ratio (AHP) \\
-    DB & Database \\
-    FR & Functional Requirement \\
-    NFR & Non-Functional Requirement \\
-    ORM & Object-Relational Mapping (e.g., Django ORM) \\
-    SRS & Software Requirements Specification \\
-    T & Test Case Identifier \\
-    VnV & Verification and Validation \\
-    JSON & JavaScript Object Notation \\
-    SRS & Software Requirements Specification \\
-    UUID   & Universally Unique Identifier \\
-    PATCH / POST / PUT & Standard HTTP methods used for updating, creating, and replacing resources, respectively.\\
+\begin{tabular}{l l}
+  \toprule
+  \textbf{symbol} & \textbf{description}\\
+  \midrule
+  T & Test\\
   \bottomrule
 \end{tabular}\\
 
@@ -230,6 +218,84 @@ restricting access to authorized users only.
 \textbf{Relevant Functional Requirement(s):} SR--AC5, PR--SC1
 \end{mdframed}
 
+\begin{mdframed}[linewidth=0.5mm]
+\setlength{\parindent}{0pt}
+\textbf{Test Case Identifier:} T--AC--8
+\vspace{0.4em}
+
+\textbf{Input:} A public (unauthenticated) user accesses a published domain, and an authenticated user without edit privileges attempts to modify domain data.
+\vspace{0.4em}
+
+\textbf{Expected Output:} The public user can view domain data but cannot edit it. Unauthorized users are restricted from modification actions, and edit controls are hidden or disabled.
+\vspace{0.4em}
+
+\textbf{Actual Output:} The public user is able to view published domain data, and unauthorized users are prevented from modifying domain content. Edit controls are correctly restricted.
+\vspace{0.4em}
+
+\textbf{Expected and Actual Output Match:} True
+\vspace{0.4em}
+
+\textbf{Relevant Functional Requirement(s):} SR--AC1
+\end{mdframed}
+
+\begin{mdframed}[linewidth=0.5mm]
+\setlength{\parindent}{0pt}
+\textbf{Test Case Identifier:} T--AC--9
+\vspace{0.4em}
+
+\textbf{Input:} A Super Admin creates a new user account through the admin interface. The new user receives an email with a link to set their password.
+\vspace{0.4em}
+
+\textbf{Expected Output:} The user receives a password setup email. The account remains inactive until the password is set. After completing the password setup, the account is activated and the user can log in successfully.
+\vspace{0.4em}
+
+\textbf{Actual Output:} The user receives the password setup email, completes the password setup process, and the account is activated. The user is then able to log in successfully.
+\vspace{0.4em}
+
+\textbf{Expected and Actual Output Match:} True
+\vspace{0.4em}
+
+\textbf{Relevant Functional Requirement(s):} FR2
+\end{mdframed}
+\begin{mdframed}[linewidth=0.5mm]
+\setlength{\parindent}{0pt}
+\textbf{Test Case Identifier:} T--AC--10
+\vspace{0.4em}
+
+\textbf{Input:} An authenticated user without sufficient privileges attempts to access restricted functionality (e.g., delete domain button or protected page URL).
+\vspace{0.4em}
+
+\textbf{Expected Output:} Restricted actions are not visible in the user interface. If the user attempts to directly access a restricted page or URL, they are redirected to the main dashboard or an authorized page.
+\vspace{0.4em}
+
+\textbf{Actual Output:} Restricted actions are hidden from unauthorized users, and attempts to access restricted pages result in redirection to the main dashboard.
+\vspace{0.4em}
+
+\textbf{Expected and Actual Output Match:} True
+\vspace{0.4em}
+
+\textbf{Relevant Functional Requirement(s):} SR--AC6, SR--IM1
+\end{mdframed}
+
+\begin{mdframed}[linewidth=0.5mm]
+\setlength{\parindent}{0pt}
+\textbf{Test Case Identifier:} T--AC--11
+\vspace{0.4em}
+
+\textbf{Input:} A user requests a password reset, receives an email with a tokenized link, and submits a new password.
+\vspace{0.4em}
+
+\textbf{Expected Output:} The reset link is valid for one use, the password is updated securely, and the user can log in with the new password.
+\vspace{0.4em}
+
+\textbf{Actual Output:} The password reset workflow completes successfully, and the user can log in using the updated password.
+\vspace{0.4em}
+
+\textbf{Expected and Actual Output Match:} True
+\vspace{0.4em}
+
+\textbf{Relevant Functional Requirement(s):} FR4
+\end{mdframed}
 
 \subsection{Domain and Data Management}
 
@@ -255,7 +321,7 @@ expected.
 \textbf{Expected and Actual Output Match:} True
 \vspace{0.4em}
 
-\textbf{Relevant Functional Requirement(s):} FR--5, SR--INT1, SR--AC3
+\textbf{Relevant Functional Requirement(s):} FR5, SR--INT1, SR--AC3
 \end{mdframed}
 
 \begin{mdframed}[linewidth=0.5mm]
@@ -275,7 +341,7 @@ expected.
 \textbf{Expected and Actual Output Match:} True
 \vspace{0.4em}
 
-\textbf{Relevant Functional Requirement(s):} FR--7, FR--10, OE--IA1, SR--INT2, SR--INT3
+\textbf{Relevant Functional Requirement(s):} FR7, FR10, OE--IA1, SR--INT2, SR--INT3
 \end{mdframed}
 
 \begin{mdframed}[linewidth=0.5mm]
@@ -295,7 +361,7 @@ expected.
 \textbf{Expected and Actual Output Match:} True
 \vspace{0.4em}
 
-\textbf{Relevant Functional Requirement(s):} FR--7, FR--12, SR--INT4, SR--IM2
+\textbf{Relevant Functional Requirement(s):} FR7, FR12, SR--INT4, SR--IM2
 \end{mdframed}
 
 \begin{mdframed}[linewidth=0.5mm]
@@ -335,9 +401,27 @@ expected.
 \textbf{Expected and Actual Output Match:} True
 \vspace{0.4em}
 
-\textbf{Relevant Functional Requirement(s):} FR--14, SR--INT7, OE--PR4
+\textbf{Relevant Functional Requirement(s):} FR14, SR--INT7, OE--PR4
 \end{mdframed}
+\begin{mdframed}[linewidth=0.5mm]
+\setlength{\parindent}{0pt}
+\textbf{Test Case Identifier:} T--DM--7
+\vspace{0.4em}
 
+\textbf{Input:} A Super Admin publishes a completed domain through the system interface.
+\vspace{0.4em}
+
+\textbf{Expected Output:} The domain becomes publicly visible and accessible to users for viewing and downloading.
+\vspace{0.4em}
+
+\textbf{Actual Output:} The domain is successfully published and becomes accessible for public viewing and download.
+\vspace{0.4em}
+
+\textbf{Expected and Actual Output Match:} True
+\vspace{0.4em}
+
+\textbf{Relevant Functional Requirement(s):} FR6, OE--PR3, FR--14
+\end{mdframed}
 \subsection{Visualization and Reporting}
 
 \hspace{2em}The following tests verify that the system correctly generates
@@ -361,7 +445,7 @@ metric values for libraries.
 \textbf{Expected and Actual Output Match:} True
 \vspace{0.4em}
 
-\textbf{Relevant Functional Requirement(s):} FR--13, FR--12, SR--VIS1, SR--IM1
+\textbf{Relevant Functional Requirement(s):} FR13, FR12, SR--VIS1, SR--IM1
 \end{mdframed}
 
 \begin{mdframed}[linewidth=0.5mm]
@@ -381,7 +465,7 @@ metric values for libraries.
 \textbf{Expected and Actual Output Match:} True
 \vspace{0.4em}
 
-\textbf{Relevant Functional Requirement(s):} FR--13, SR--VIS2, PR--SL1
+\textbf{Relevant Functional Requirement(s):} FR13, SR--VIS2, PR--SL1
 \end{mdframed}
 
 
@@ -402,7 +486,7 @@ metric values for libraries.
 \textbf{Expected and Actual Output Match:} True
 \vspace{0.4em}
 
-\textbf{Relevant Functional Requirement(s):} FR--15, OE--PR4, SR--INT7
+\textbf{Relevant Functional Requirement(s):} FR15, OE--PR4, SR--INT7
 \end{mdframed}
 
 \begin{mdframed}[linewidth=0.5mm]
@@ -462,48 +546,10 @@ metric values for libraries.
 \textbf{Expected and Actual Output Match:} True
 \vspace{0.4em}
 
-\textbf{Relevant Functional Requirement(s):} FR--11, UH--LR2, LF--AR3
+\textbf{Relevant Functional Requirement(s):} FR11, UH--LR2, LF--AR3
 \end{mdframed}
 
-\subsection{Features Currently in Progress}
 
-\hspace{2em}Some functional requirements identified in the SRS are still under development, while others were revised after further discussion and feedback. These items are not yet fully implemented or were removed from the final project scope. Their current status is summarized below.
-
-\begin{description}
-
-\item[\textbf{SR--AC1:}] \textbf{Public Viewing and Restricted Editing}
-
-This requirement is currently under development as part of the system's authorization implementation. The intended behaviour is to allow public users to view published domain data while restricting modification privileges to approved users only. Page-level and button-level authorization controls have been partially implemented and are still being refined.
-
-\item[\textbf{FR--2:}] \textbf{User Self Sign-Up}
-
-This requirement was originally intended to allow users to create their own accounts through a public sign-up page. During development, this design was reconsidered, and the system is being revised so that only a Super Admin can create new user accounts. As a result, self sign-up will not appear in the final implementation.
-
-\item[\textbf{SR--AC6, SR--AU1, SR--IM1:}] \textbf{Unauthorized API Access Control}
-
-Unauthorized API access control is currently under development. The intended behaviour is that attempts to perform restricted actions, such as deleting a domain without sufficient privileges, will return an HTTP 403 Forbidden response and generate an audit log entry. At present, restricted actions are hidden in the user interface, while API-level authorization checks are still being implemented and are not yet ready for formal testing.
-
-Security requirements related to SQL injection prevention and secure credential storage are already satisfied through the use of the Django ORM, which avoids raw SQL queries, and environment variables for sensitive configuration data.
-
-\item[\textbf{FR--4:}] \textbf{Password Reset via Email}
-
-This feature is intended to allow users to reset their password through an email verification workflow. The expected behaviour is that a user who forgets their password receives a reset email, verifies their identity through a tokenized link, and sets a new password for future logins.
-
-This functionality is currently under development and has not yet been fully implemented or tested.
-
-\item[\textbf{FR--9:}] \textbf{Bulk Data Upload}
-
-This requirement was originally intended to support bulk upload of domain data through an Excel template. Based on supervisor feedback, this functionality was removed from the project scope and will not be implemented. Therefore, no testing was performed for this requirement.
-
-\textbf{Relevant Functional Requirement(s):} FR--9, SR--INT1, UH--EU2
-
-\item[\textbf{FR--6:}] \textbf{Publish Domain for Public Access}
-
-This feature is currently under development as part of the remaining authorization work. The intended behaviour is that a completed domain can be published and made visible to all users, with its data available for public viewing and download. This functionality will be completed together with the remaining access-control features.
-
-\textbf{Relevant Functional Requirement(s):} FR--6, OE--PR3, FR--14
-
-\end{description}
 \section{Nonfunctional Requirements Evaluation}
 
 \label{sec:nfr}
@@ -1230,11 +1276,10 @@ GitHub Actions \texttt{tests.yml} workflow and latest successful run
 (\texttt{backend-test} and \texttt{frontend-test}), including coverage output
 (TOTAL coverage) and the \texttt{coverage-html} artifact; repository test
 documentation at \texttt{/test/README.md}.
-	
 
 
 \section{Unit Testing}
-The following unit tests concern behaviour-hiding modules that are implemented by the tool. Modules implemented by external libraries are assumed to be tested themselves and therefore don't need to be unit tested. 
+The following unit tests concern behaviour-hiding modules that are implemented by the tool. Modules implemented by external libraries are assumed to be tested themselves and therefore don't need to be unit tested.
 \subsection{Data Edit Module}
   \begin{enumerate}
     \item \texttt{test\_list\_libraries\_returns\_only\_domain\_libraries} \label{test-list-libraries-returns-only-domain-libraries}
@@ -1384,7 +1429,7 @@ The following unit tests concern behaviour-hiding modules that are implemented b
     \\Input: User changes their own password with correct old password
     \\Expected Output: HTTP 200 OK and password updated
     \\Actual Output: \texttt{set\_password()} called and response 200 OK
-    \\Result: Pass      
+    \\Result: Pass
   \end{enumerate}
 \subsection{Automated Metrics Module}
   \begin{enumerate}
@@ -1813,13 +1858,13 @@ To reduce user error, we refined the data entry process. We replaced open-ended 
 
 Pytest and the \texttt{pytest-django} ecosystem serve as the foundation for our automated testing suite, which offers a high-performance, adaptable framework for verifying environment setups and application logic. To ensure that model-level constraints are carefully enforced before code reaches production, we use specialized decorators like \texttt{@pytest.mark.django\_db} to safely communicate with a temporary test database. We can swiftly find and fix errors in our fundamental business logic, such the concatenation rules for user profiles, by utilizing Pytest's sophisticated assertion introspection.
 
-Using Django's \texttt{SimpleTestCase} and the \texttt{unittest.mock} module, we developed a strong configuration testing method in addition to standard data validation. This enables us to test that our settings dynamically swap between SQLite and MySQL engines as planned by programmatically simulating various deployment scenarios (e.g., Local vs. Production). We make sure the application stays stable and properly configured across different infrastructure states without having to manually review environment files by simulating environment variables and altering settings within our tests.		
+Using Django's \texttt{SimpleTestCase} and the \texttt{unittest.mock} module, we developed a strong configuration testing method in addition to standard data validation. This enables us to test that our settings dynamically swap between SQLite and MySQL engines as planned by programmatically simulating various deployment scenarios (e.g., Local vs. Production). We make sure the application stays stable and properly configured across different infrastructure states without having to manually review environment files by simulating environment variables and altering settings within our tests.
 \section{Trace to Requirements}
 Table~\ref{tab:trace} presents the traceability between the
 system test cases and the requirements defined in the Software Requirements
 Specification (SRS). The table indicates which test cases provide verification
 evidence for each requirement implemented in the system.
-		
+
 \begin{table}[H]
 \centering
 \caption{Traceability Between Requirements and System Test Cases}
@@ -1920,7 +1965,7 @@ corresponding test case contributes evidence for that requirement. Note that
 evidence may include Pass, Partial, or Pending outcomes as reported in the
 nonfunctional requirements evaluation section.
 
-\section{Trace to Modules}		
+\section{Trace to Modules}
 Table~\ref{tab:trace} presents the traceability between the system test cases and the software modules defined in the system architecture. The table indicates which test cases provide verification evidence for each module implemented in the system.
 \begin{table}[H]
 \centering
@@ -1950,7 +1995,7 @@ M19 &   &   &   &   &   &   &   & X &   &   &   &   &   &   &   &   &   &   \\ \
 \end{tabular}
 }
 \end{table}
-	
+
 
 \section{Code Coverage Metrics}
 The following report is automatically generated by pytest. We obtained a total coverage of 73\%. The actual coverage should be slightly higher since some files that contain no logic are being counted towards the percentage (i.e. \href{https://github.com/thaafei/DomainX/blob/main/src/backend/api/database/edit_history/views.py}{edit\_history/views}).
@@ -1958,12 +2003,12 @@ The following report is automatically generated by pytest. We obtained a total c
   \begin{longtable}{|p{10cm}|c|c|c|c|}
     \caption{Backend Code Coverage Report} \\
     \hline
-    \textbf{File} & \textbf{Statements} & \textbf{Missing} & \textbf{Excluded} & \textbf{Coverage} \\ 
+    \textbf{File} & \textbf{Statements} & \textbf{Missing} & \textbf{Excluded} & \textbf{Coverage} \\
     \hline
     \endfirsthead
 
     \hline
-    \textbf{File} & \textbf{Statements} & \textbf{Missing} & \textbf{Excluded} & \textbf{Coverage} \\ 
+    \textbf{File} & \textbf{Statements} & \textbf{Missing} & \textbf{Excluded} & \textbf{Coverage} \\
     \hline
     \endhead
       \textbf{\path{src/backend/api/database/backup_logs/admin.py}} & 1 & 0 & 0 & 100\% \\ \hline
@@ -2020,7 +2065,7 @@ graduate attribute of Reflection.
   \textbf{Haniye:} One aspect that went well while writing this deliverable was that many of the test scenarios were already clear from the development process. While implementing features such as domain management, metric editing, and visualization, the system was frequently tested to verify correct behaviour. As a result, when preparing the VnV report it was easier to define the test inputs and expected outcomes because the implemented features had already been validated during development.    \textbf{Fei:} I was responsible for the unit test portion. Since we decided to write unit test as we develop, instead of all at the end, writing this portion was much simpler as I just had to compile what we had into a report format.\\
 
   \textbf{Fei:} I was responsible for the unit test portion. Since we decided to write unit test as we develop, instead of all at the end, writing this portion was much simpler as I just had to compile what we had into a report format.\\
-  
+
   \textbf{Ghena:} A lot of test cases were already written and used throughout the development process, making sure that any ant changes to the code follows the logic of the requirements. This made the document easy to write since a lot of it was alreadt built.
 
   \textbf{Awurama}: Converting our real testing into a consistent structure (summary to method to results to analysis to next steps) worked well. We reused concrete evidence (timings, UI observations, CI output, and code excerpts) and traceability was straightforward because the VnV Plan already mapped each T--NF test to requirement IDs.
@@ -2044,17 +2089,17 @@ graduate attribute of Reflection.
 
   \item Which parts of this document stemmed from speaking to your client(s) or
   a proxy (e.g. your peers)? Which ones were not, and why?\\
-  
+
   \textbf{Haniye:} Some parts of this document were influenced by discussions
     with the project supervisor. For example, the bulk data upload feature was removed from the project scope after supervisor feedback
     indicated that it would not be necessary for the final tool. The
     supervisor also suggested removing the public sign-up feature and
     instead allowing a Super Admin to create user accounts directly, with
     users updating their password afterward.
-   
+
   \textbf{Fei:} N/A\\
-  
-  \textbf{Ghena:} All of the changes made due to testing came from the our client/stackholder meetings. However The specific direct mapping (e.g., tracing T–AC–1 to M5 and M7) didn't stem from those meetings. 
+
+  \textbf{Ghena:} All of the changes made due to testing came from the our client/stackholder meetings. However The specific direct mapping (e.g., tracing T–AC–1 to M5 and M7) didn't stem from those meetings.
 
   \textbf{Awurama}: The usability section (T--NF3) stems from a proxy user worksheet with task ratings and comments. The remaining NFR sections were primarily tool/code/CI-based verification (performance timing, offline fault injection and recovery, repo-field spot checks, security configuration review, CI maintainability evidence), so they did not require client input in Rev0.
 
@@ -2066,7 +2111,7 @@ graduate attribute of Reflection.
   predict a feasible amount of effort and the right tasks needed to build the
   evidence that demonstrates the required quality?  (It is expected that most
   teams will have had to deviate from their original VnV Plan.)\\
-  
+
   \textbf{Haniye:} Most of the verification and validation activities followed
     the original VnV Plan. Some small differences occurred due to time
     constraints and changes in project priorities. For example, the bulk data
@@ -2083,7 +2128,7 @@ graduate attribute of Reflection.
     planning additional tests for integration and deployment scenarios.
 
   \textbf{Fei:} The changes I had to make to the unit test portion was the modules. As we developed the tool, we ended up condensing a few modules together since that made more sense during the development. This just meant combining the related unit tests of the combined modules into one. For future projects, I don't think we can mitigate it completely. Since we designed the project before development, during development new insights arises which results in changes to the theoretical plan.\\
-  
+
   \textbf{Ghena:} The final VnV activities deviated from the plan primarily because the AHP Calculation Module (M11) required restructuring to align with the methodology in the assigned research paper, replacing an initial simplified model. These changes could have been avoided had the module been revised more properly during the initial design phase. Additionally, features like Excel bulk upload (FR9) were removed to prioritize core stability. While some scope reductions are manageable, predicting the future requirements of this project proved difficult and would remain a challenge in future iterations.
 
   \textbf{Awurama}: Rev0 deviated from the plan mainly due to feasibility and environment constraints: performance used available domains (2 and 10 libraries) with manual timing instead of 5/10/20/40 and automated measurement; reliability used offline-mode fault injection since 429 was not reproducible and caching/warnings were not observable; computational accuracy captured tool priorities plus a GitHub spot check but did not complete the full manual AHP computation with $2\%$ error checks; security verified settings/auth/logging but did not confirm lockout/session timeout (no explicit configuration found); maintainability used CI evidence but coverage did not meet the planned target and lint automation was not observed. These changes occurred because data, reproducible fault triggers, and infra access were limited in Rev0. In future projects, we can anticipate these risks and plan mitigations (early dataset prep, instrumentation for timing, fault-injection hooks, and explicit Rev0 vs.\ Rev1 evidence expectations).
