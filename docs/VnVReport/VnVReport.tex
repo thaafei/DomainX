@@ -37,6 +37,7 @@
 \toprule {\bf Date} & {\bf Version} & {\bf Notes}\\
 \midrule
 March 6 & Rev 1 & First copy of VnV Report done by the whole team\\
+April 2 & Final & Final documentation update: Functional requirements updated based on recent tool changes (completed by Haniye).\\
 \bottomrule
 \end{tabularx}
 
@@ -217,6 +218,84 @@ restricting access to authorized users only.
 \textbf{Relevant Functional Requirement(s):} SR--AC5, PR--SC1
 \end{mdframed}
 
+\begin{mdframed}[linewidth=0.5mm]
+\setlength{\parindent}{0pt}
+\textbf{Test Case Identifier:} T--AC--8
+\vspace{0.4em}
+
+\textbf{Input:} A public (unauthenticated) user accesses a published domain, and an authenticated user without edit privileges attempts to modify domain data.
+\vspace{0.4em}
+
+\textbf{Expected Output:} The public user can view domain data but cannot edit it. Unauthorized users are restricted from modification actions, and edit controls are hidden or disabled.
+\vspace{0.4em}
+
+\textbf{Actual Output:} The public user is able to view published domain data, and unauthorized users are prevented from modifying domain content. Edit controls are correctly restricted.
+\vspace{0.4em}
+
+\textbf{Expected and Actual Output Match:} True
+\vspace{0.4em}
+
+\textbf{Relevant Functional Requirement(s):} SR--AC1
+\end{mdframed}
+
+\begin{mdframed}[linewidth=0.5mm]
+\setlength{\parindent}{0pt}
+\textbf{Test Case Identifier:} T--AC--9
+\vspace{0.4em}
+
+\textbf{Input:} A Super Admin creates a new user account through the admin interface. The new user receives an email with a link to set their password.
+\vspace{0.4em}
+
+\textbf{Expected Output:} The user receives a password setup email. The account remains inactive until the password is set. After completing the password setup, the account is activated and the user can log in successfully.
+\vspace{0.4em}
+
+\textbf{Actual Output:} The user receives the password setup email, completes the password setup process, and the account is activated. The user is then able to log in successfully.
+\vspace{0.4em}
+
+\textbf{Expected and Actual Output Match:} True
+\vspace{0.4em}
+
+\textbf{Relevant Functional Requirement(s):} FR2
+\end{mdframed}
+\begin{mdframed}[linewidth=0.5mm]
+\setlength{\parindent}{0pt}
+\textbf{Test Case Identifier:} T--AC--10
+\vspace{0.4em}
+
+\textbf{Input:} An authenticated user without sufficient privileges attempts to access restricted functionality (e.g., delete domain button or protected page URL).
+\vspace{0.4em}
+
+\textbf{Expected Output:} Restricted actions are not visible in the user interface. If the user attempts to directly access a restricted page or URL, they are redirected to the main dashboard or an authorized page.
+\vspace{0.4em}
+
+\textbf{Actual Output:} Restricted actions are hidden from unauthorized users, and attempts to access restricted pages result in redirection to the main dashboard.
+\vspace{0.4em}
+
+\textbf{Expected and Actual Output Match:} True
+\vspace{0.4em}
+
+\textbf{Relevant Functional Requirement(s):} SR--AC6, SR--IM1
+\end{mdframed}
+
+\begin{mdframed}[linewidth=0.5mm]
+\setlength{\parindent}{0pt}
+\textbf{Test Case Identifier:} T--AC--11
+\vspace{0.4em}
+
+\textbf{Input:} A user requests a password reset, receives an email with a tokenized link, and submits a new password.
+\vspace{0.4em}
+
+\textbf{Expected Output:} The reset link is valid for one use, the password is updated securely, and the user can log in with the new password.
+\vspace{0.4em}
+
+\textbf{Actual Output:} The password reset workflow completes successfully, and the user can log in using the updated password.
+\vspace{0.4em}
+
+\textbf{Expected and Actual Output Match:} True
+\vspace{0.4em}
+
+\textbf{Relevant Functional Requirement(s):} FR4
+\end{mdframed}
 
 \subsection{Domain and Data Management}
 
@@ -242,7 +321,7 @@ expected.
 \textbf{Expected and Actual Output Match:} True
 \vspace{0.4em}
 
-\textbf{Relevant Functional Requirement(s):} FR--5, SR--INT1, SR--AC3
+\textbf{Relevant Functional Requirement(s):} FR5, SR--INT1, SR--AC3
 \end{mdframed}
 
 \begin{mdframed}[linewidth=0.5mm]
@@ -262,7 +341,7 @@ expected.
 \textbf{Expected and Actual Output Match:} True
 \vspace{0.4em}
 
-\textbf{Relevant Functional Requirement(s):} FR--7, FR--10, OE--IA1, SR--INT2, SR--INT3
+\textbf{Relevant Functional Requirement(s):} FR7, FR10, OE--IA1, SR--INT2, SR--INT3
 \end{mdframed}
 
 \begin{mdframed}[linewidth=0.5mm]
@@ -282,7 +361,7 @@ expected.
 \textbf{Expected and Actual Output Match:} True
 \vspace{0.4em}
 
-\textbf{Relevant Functional Requirement(s):} FR--7, FR--12, SR--INT4, SR--IM2
+\textbf{Relevant Functional Requirement(s):} FR7, FR12, SR--INT4, SR--IM2
 \end{mdframed}
 
 \begin{mdframed}[linewidth=0.5mm]
@@ -322,9 +401,27 @@ expected.
 \textbf{Expected and Actual Output Match:} True
 \vspace{0.4em}
 
-\textbf{Relevant Functional Requirement(s):} FR--14, SR--INT7, OE--PR4
+\textbf{Relevant Functional Requirement(s):} FR14, SR--INT7, OE--PR4
 \end{mdframed}
+\begin{mdframed}[linewidth=0.5mm]
+\setlength{\parindent}{0pt}
+\textbf{Test Case Identifier:} T--DM--7
+\vspace{0.4em}
 
+\textbf{Input:} A Super Admin publishes a completed domain through the system interface.
+\vspace{0.4em}
+
+\textbf{Expected Output:} The domain becomes publicly visible and accessible to users for viewing and downloading.
+\vspace{0.4em}
+
+\textbf{Actual Output:} The domain is successfully published and becomes accessible for public viewing and download.
+\vspace{0.4em}
+
+\textbf{Expected and Actual Output Match:} True
+\vspace{0.4em}
+
+\textbf{Relevant Functional Requirement(s):} FR6, OE--PR3, FR--14
+\end{mdframed}
 \subsection{Visualization and Reporting}
 
 \hspace{2em}The following tests verify that the system correctly generates
@@ -348,7 +445,7 @@ metric values for libraries.
 \textbf{Expected and Actual Output Match:} True
 \vspace{0.4em}
 
-\textbf{Relevant Functional Requirement(s):} FR--13, FR--12, SR--VIS1, SR--IM1
+\textbf{Relevant Functional Requirement(s):} FR13, FR12, SR--VIS1, SR--IM1
 \end{mdframed}
 
 \begin{mdframed}[linewidth=0.5mm]
@@ -368,7 +465,7 @@ metric values for libraries.
 \textbf{Expected and Actual Output Match:} True
 \vspace{0.4em}
 
-\textbf{Relevant Functional Requirement(s):} FR--13, SR--VIS2, PR--SL1
+\textbf{Relevant Functional Requirement(s):} FR13, SR--VIS2, PR--SL1
 \end{mdframed}
 
 
@@ -389,7 +486,7 @@ metric values for libraries.
 \textbf{Expected and Actual Output Match:} True
 \vspace{0.4em}
 
-\textbf{Relevant Functional Requirement(s):} FR--15, OE--PR4, SR--INT7
+\textbf{Relevant Functional Requirement(s):} FR15, OE--PR4, SR--INT7
 \end{mdframed}
 
 \begin{mdframed}[linewidth=0.5mm]
@@ -449,48 +546,10 @@ metric values for libraries.
 \textbf{Expected and Actual Output Match:} True
 \vspace{0.4em}
 
-\textbf{Relevant Functional Requirement(s):} FR--11, UH--LR2, LF--AR3
+\textbf{Relevant Functional Requirement(s):} FR11, UH--LR2, LF--AR3
 \end{mdframed}
 
-\subsection{Features Currently in Progress}
 
-\hspace{2em}Some functional requirements identified in the SRS are still under development, while others were revised after further discussion and feedback. These items are not yet fully implemented or were removed from the final project scope. Their current status is summarized below.
-
-\begin{description}
-
-\item[\textbf{SR--AC1:}] \textbf{Public Viewing and Restricted Editing}
-
-This requirement is currently under development as part of the system's authorization implementation. The intended behaviour is to allow public users to view published domain data while restricting modification privileges to approved users only. Page-level and button-level authorization controls have been partially implemented and are still being refined.
-
-\item[\textbf{FR--2:}] \textbf{User Self Sign-Up}
-
-This requirement was originally intended to allow users to create their own accounts through a public sign-up page. During development, this design was reconsidered, and the system is being revised so that only a Super Admin can create new user accounts. As a result, self sign-up will not appear in the final implementation.
-
-\item[\textbf{SR--AC6, SR--AU1, SR--IM1:}] \textbf{Unauthorized API Access Control}
-
-Unauthorized API access control is currently under development. The intended behaviour is that attempts to perform restricted actions, such as deleting a domain without sufficient privileges, will return an HTTP 403 Forbidden response and generate an audit log entry. At present, restricted actions are hidden in the user interface, while API-level authorization checks are still being implemented and are not yet ready for formal testing.
-
-Security requirements related to SQL injection prevention and secure credential storage are already satisfied through the use of the Django ORM, which avoids raw SQL queries, and environment variables for sensitive configuration data.
-
-\item[\textbf{FR--4:}] \textbf{Password Reset via Email}
-
-This feature is intended to allow users to reset their password through an email verification workflow. The expected behaviour is that a user who forgets their password receives a reset email, verifies their identity through a tokenized link, and sets a new password for future logins.
-
-This functionality is currently under development and has not yet been fully implemented or tested.
-
-\item[\textbf{FR--9:}] \textbf{Bulk Data Upload}
-
-This requirement was originally intended to support bulk upload of domain data through an Excel template. Based on supervisor feedback, this functionality was removed from the project scope and will not be implemented. Therefore, no testing was performed for this requirement.
-
-\textbf{Relevant Functional Requirement(s):} FR--9, SR--INT1, UH--EU2
-
-\item[\textbf{FR--6:}] \textbf{Publish Domain for Public Access}
-
-This feature is currently under development as part of the remaining authorization work. The intended behaviour is that a completed domain can be published and made visible to all users, with its data available for public viewing and download. This functionality will be completed together with the remaining access-control features.
-
-\textbf{Relevant Functional Requirement(s):} FR--6, OE--PR3, FR--14
-
-\end{description}
 \section{Nonfunctional Requirements Evaluation}
 
 \label{sec:nfr}
