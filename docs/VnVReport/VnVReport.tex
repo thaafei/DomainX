@@ -569,6 +569,7 @@ measures response times for dashboard load, filtering, AHP recomputation, and
 export, and summarizes median and 95th-percentile (p95) values.
 
 \subsubsection{Test Case Summary (T--NF1: Performance and Scalability)}
+Table~\ref{tab:tnf1-summary} summarizes the test setup, inputs, and outputs for evaluating system performance and scalability.
 \begin{table}[H]
   \centering
   \caption{T--NF1 performance experiment: test case summary (Rev0).}
@@ -666,6 +667,7 @@ tolerance.  The goal is to confirm the system remains stable, consistent, and
 capable of recovery when services fail or operations are interrupted.
 
 \subsubsection{Test Case Summary (T--NF2: Reliability and Fault Tolerance)}
+Table~\ref{tab:tnf2-summary} summarizes the test setup and observed system behavior under simulated failure and recovery scenarios.
 \begin{table}[H]
   \centering
   \caption{T--NF2 reliability and fault tolerance: test case summary (Rev0).}
@@ -708,6 +710,7 @@ capable of recovery when services fail or operations are interrupted.
 \end{table}
 
 \subsubsection{Results}
+Table~\ref{tab:tnf2-results} summarizes the observed outcomes for the reliability and fault tolerance scenarios.
 \begin{table}[H]
   \centering
   \caption{Reliability experiment results (Rev0).}
@@ -739,6 +742,7 @@ capable of recovery when services fail or operations are interrupted.
     \bottomrule
   \end{tabular}
 \end{table}
+Future improvements include extending existing error messaging to consistently handle network failures and providing clearer feedback when the system is offline.
 
 \subsubsection{Analysis}
 The system remained stable during a simulated service outage (offline mode) and
@@ -774,6 +778,7 @@ success criterion.  For Revision~0, available evidence consists of a pilot
 task-based proxy evaluation (n = 1), reported below as preliminary evidence.
 
 \subsubsection{Test Case Summary (T--NF3: Usability Pilot)}
+Table~\ref{tab:tnf3-summary} summarizes the usability pilot tasks, expected outcomes, and observed results.
 \begin{table}[H]
   \centering
   \caption{T--NF3 usability pilot: test case summary (Rev0).}
@@ -933,7 +938,8 @@ pairwise comparisons, and (2) a spot check of auto-filled repository fields
 matches externally verifiable values (GitHub).
 
 \subsubsection{Test Case Summary (T--NF4: Computational Accuracy)}
-\begin{table}[ht]
+Table~\ref{tab:tnf4-summary} summarizes the test setup, inputs, and outputs for evaluating computational accuracy.
+\begin{table}[H]
   \centering
   \caption{T--NF4 computational accuracy: test case summary (Rev0).}
   \label{tab:tnf4-summary}
@@ -1058,6 +1064,7 @@ The goal is to validate that credentials and permissions are handled securely
 and that unauthorized actions are prevented.
 
 \subsubsection{Test Case Summary (T--NF5: Security and Access Control)}
+Table~\ref{tab:tnf5-summary} summarizes the security and access control evaluation, including authentication mechanisms and access restrictions.
 \begin{table}[H]
   \centering
   \caption{T--NF5 security and access control: test case summary (Rev0).}
@@ -1102,6 +1109,7 @@ and that unauthorized actions are prevented.
 \end{table}
 
 \subsubsection{Results}
+Table~\ref{tab:tnf5-results} summarizes the observed results for security and access control scenarios.
 \begin{table}[H]
   \centering
   \caption{Security and access control results (Rev0).}
@@ -1176,6 +1184,7 @@ to testing.  The evaluation targets MS-MR1--MS-MR6 (maintainability standards:
 style compliance, modularity, testability, and documentation).
 
 \subsubsection{Test Case Summary (T--NF6: Maintainability)}
+Table~\ref{tab:tnf6-summary} summarizes the maintainability evaluation, including automated testing and documentation.
 \begin{table}[H]
   \centering
   \caption{T--NF6 maintainability: test case summary (Rev0).}
