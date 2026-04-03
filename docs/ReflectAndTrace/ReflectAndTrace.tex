@@ -19,7 +19,7 @@
 \maketitle
 
 \section{Changes in Response to Feedback}
-The below sections are the feedback and response to the feedback throughout the course, grouped by the related documents. Note that feedback in relation to simple styling, spelling or syntax of the documents were excluded.
+The below sections are the feedback and response to the feedback throughout the course, grouped by the related documents.
 
 \plt{Summarize the changes made over the course of the project in response to
 feedback from TAs, the instructor, teammates, other teams, the project
@@ -52,10 +52,161 @@ be able to grade your response to feedback.  In that case your grade on this
 document, and likely the Revision 1 versions of the other documents will be
 low.}
 
-\subsection{SRS and Hazard Analysis}
-
 
 \subsection{Design and Design Documentation}
+This section summarizes the feedback received on the Design Documents, Module Guide and Module Interface Specification. It is divided into their respective subsection.
+\subsubsection{Module Guide (MG)}
+\label{ssubsec:mg-trace}
+
+The MG revisions focused on improving consistency, abstraction,
+traceability, and clarity of interfaces. Feedback items were grouped
+by source and mapped to the final document so that each change can be
+traced back to the review that motivated it.
+
+\begin{longtable}{p{0.18\textwidth} p{0.26\textwidth}
+                  p{0.34\textwidth} p{0.16\textwidth}}
+\caption{MIS feedback and response traceability}
+\label{tab:mg-trace}\\
+\toprule
+Source & Feedback & Change Made & Where Addressed \\
+\midrule
+\endfirsthead
+
+\toprule
+Source & Feedback & Change Made & Where Addressed \\
+\midrule
+\endhead
+
+\bottomrule
+\endfoot
+
+% rev -1
+\href{https://github.com/thaafei/DomainX/issues/200}{TA Review - Rev -1\#200},
+&
+Update Anticipated Changes (AC) AC7 - The visualization libraries used to display data,  to include overall visualization and UI, instead of just the visualization libraries for displaying data.
+&
+Added a new AC (AC9 - The user interface features, design and colours might be changed). To encapsulate the UI elements since AC7 is specific to the graphing/plotting external libraries.
+&
+\href{https://github.com/thaafei/DomainX/issues/258}{Issue \#258}; Section~4.1, Table~4
+\\
+
+\href{https://github.com/thaafei/DomainX/issues/200}{TA Review - Rev -1 \#200},&
+Verify hyper references in the document is being displayed properly, some appear as ???.
+&
+Updated the refs used within the document to align with the labels used.
+&
+\href{https://github.com/thaafei/DomainX/issues/259}{Issue \#259}; Section~6
+\\
+
+\href{https://github.com/thaafei/DomainX/issues/200}{TA Review - Rev -1\#200},&
+Browser module needs clarification on what is supported. Are all of them supported? Such as Chrome, Firefox, Edge, Safari, etc.
+&
+Explicitly stated the supported web browser's (i.e. Chrome, Firefox, Safari, Edge)
+&
+\href{https://github.com/thaafei/DomainX/issues/260}{Issue \#260}; Section~7.1.1
+\\
+
+% rev 0 
+\href{https://github.com/thaafei/DomainX/issues/339}{TA Review - Rev 0\#200},&
+Delete Section 11, Design of Communication Protocols since it's not used.
+&
+Removed the section
+&
+\href{https://github.com/thaafei/DomainX/issues/479}{Issue \#479}; Section~11
+\\
+
+\href{https://github.com/thaafei/DomainX/issues/339}{TA Review - Rev 0\#200},&
+Remove caption of revision history table
+&
+Removed caption for the revision history table
+&
+\href{https://github.com/thaafei/DomainX/issues/480}{Issue \#480}; Revision History Table
+\\
+
+\href{https://github.com/thaafei/DomainX/issues/339}{TA Review - Rev 0\#200},&
+Clarify nonfunctional requirements (NFR) that are listed as Not relevant in the Trace between NFR's and Modules Table&
+Explicitly stated that certain NFR's (Productization (OE-PR*), Release (OE-RR*), Maintenance (MS-MR*), Supportability (MS-SR*), Adaptability (MS-AR*), Legal (CR-LR*)) are not considered, since they are out-of-scope for this document and removed them from the trace table.
+&
+\href{https://github.com/thaafei/DomainX/issues/478}{Issue \#478}; Section~8, Table~3
+\\
+% peer review
+
+\href{https://github.com/thaafei/DomainX/issues/218}{Peer Review \#218},
+&
+Ensure that you have identified each of your modules as the correct type in your Module Guide and Module Interface Specification. For example, I noticed that in you module guide, it states that the Automated Metrics Module is of type library. However, in your MIS, it shows that this module has state variables which library modules do not have. The same goes for library classified modules such as the Repository API Module, and Database Persistence Module.
+&
+Updated MG module's to align with the MIS.
+&
+\href{https://github.com/thaafei/DomainX/issues/307}{Issue \#307}; Section~7
+\\
+
+\href{https://github.com/thaafei/DomainX/issues/238}{Peer Review \#238},
+&
+The description of MG services is abstract, it is hard to understand the distinction between module services. Adding examples would be useful.
+&
+Added more details to the services section for the modules.
+&
+\href{https://github.com/thaafei/DomainX/issues/307}{Issue \#307}; Section~7
+\\
+
+\href{https://github.com/thaafei/DomainX/issues/203}{Peer Review \#203},
+&
+Centralization of M10 - System API Gateway Module, concerns for bottleneck
+&
+M10 is responsible for the overall flow and coordination of the information, but the other modules are responsible for fulfilling the information, so I don't think it is a bottle neck.
+Plus centralizing the information flow will reduce duplicating code and provide a centralized place to update any core business logic if required down the line. Additionally, it is implemented by a reliable external library (Django) that is widely used.
+&
+Not implemented
+\\
+
+\href{https://github.com/thaafei/DomainX/issues/211}{Peer Review \#211},
+&
+Secrets and Services Not Clearly Differentiated
+&
+Duplicate of \href{https://github.com/thaafei/DomainX/issues/238}{Peer Review \#238}, resolved by adding more description services.
+&
+\href{https://github.com/thaafei/DomainX/issues/307}{Issue \#307}; Section~7
+\\
+
+\href{https://github.com/thaafei/DomainX/issues/240}{Peer Review \#240},
+&
+Authentication Module Recommendation
+&
+Added M5 - User Authentication Module
+&
+\href{https://github.com/thaafei/DomainX/issues/307}{Issue \#307}; Section~7
+\\
+
+\href{https://github.com/thaafei/DomainX/issues/216}{Peer Review \#216},
+&
+Missing Connections Between Requirements and Design
+&
+The connection is already listed in Table~2 - Trace Between Functional Requirements and Module. However added an additional paragraph explaining how modules and requirements related, with an example.
+&
+Not implemented
+\\
+
+\href{https://github.com/thaafei/DomainX/issues/224}{Peer Review \#224},
+&
+User Interface (UI) Design using Figma suggestion.
+&
+Not implemented since the team has already sketched out our potential UI design but will consider Figma in the future.
+&
+Not implemented
+\\
+
+\href{https://github.com/thaafei/DomainX/issues/204}{Peer Review \#204},
+&
+Missing Strong Data Validation Strategy, concerns with Integrity Issues. Preference for centralized Validation Service.
+&
+Since the data is different for the different modules, I would disagree that it should be decentralized. Or else the modules would be too tightly coupled
+&
+Not implemented
+\\
+
+
+
+\end{longtable}
 
 \subsubsection{Module Interface Specification (MIS)}
 \label{ssubsec:mis-trace}
@@ -194,6 +345,8 @@ Section~6
 
 
 \subsection{VnV Plan and Report}
+This section summarizes the feedback received on the Verification
+and Validation (V\&V) Plan and report. It is divided into their respective subsection.
 
 \subsubsection{VnV Plan}
 \label{ssubsec:vnv-plan-trace}
