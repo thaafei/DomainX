@@ -21,42 +21,165 @@
 \section{Changes in Response to Feedback}
 The below sections are the feedback and response to the feedback throughout the course, grouped by the related documents.
 
-\plt{Summarize the changes made over the course of the project in response to
-feedback from TAs, the instructor, teammates, other teams, the project
-supervisor (if present), and from user testers.}
+\subsection{SRS and HA Documentation}
+This section summarizes the feedback received on the SRS and HA. It is divided into their respective subsection.
+\begin{longtable}{p{0.18\textwidth} p{0.26\textwidth}
+                  p{0.34\textwidth} p{0.16\textwidth}}
+\caption{MIS feedback and response traceability}
+\label{tab:mg-trace}\\
+\toprule
+Source & Feedback & Change Made & Where Addressed \\
+\midrule
+\endfirsthead
 
-\plt{Version control can make the summary relatively easy, if you used issues
-and meaningful commits.  If you feedback is in an issue, and you responded in
-the issue tracker, you can point to the issue as part of explaining your
-changes.  If addressing the issue required changes to code or documentation, you
-can point to the specific commit that made the changes.  Although the links are
-helpful for the details, you should include a label for each item of feedback so
-that the reader has an idea of what each item is about without the need to click
-on everything to find out.}
+\toprule
+Source & Feedback & Change Made & Where Addressed \\
+\midrule
+\endhead
 
-\plt{If you were not organized with your commits, traceability between feedback
-and commits will not be feasible to capture after the fact.  You will instead
-need to spend time writing down a summary of the changes made in response to
-each item of feedback.}
+\bottomrule
+\endfoot
 
-\plt{You should address EVERY item of feedback.  A table or itemized list is
-recommended.  You should record every item of feedback, along with the source of
-that feedback and the change you made in response to that feedback.  The
-response can be a change to your documentation, code, or development process.
-The response can also be the reason why no changes were made in response to the
-feedback.  To make this information manageable, you will record the feedback and
-response separately for each deliverable in the sections that follow.}
+% TA review
+\href{https://github.com/thaafei/DomainX/issues/116}{TA Review\#116},
+&
+Sections require a brief explanation before subsection
+&
+Updated with a brief description of what the overall section contains
+&
+\href{https://github.com/thaafei/DomainX/issues/140}{Issue \#140}; Many sections
+\\
 
-\plt{If the feedback is general or incomplete, the TA (or instructor) will not
-be able to grade your response to feedback.  In that case your grade on this
-document, and likely the Revision 1 versions of the other documents will be
-low.}
+\href{https://github.com/thaafei/DomainX/issues/116}{TA Review\#116},
+&
+Cite methodology paper.
+&
+When mentioning the methodology paper, we should be citing it each time.
+&
+\href{https://github.com/thaafei/DomainX/issues/141}{Issue \#141}; Many sections
+\\
 
+\href{https://github.com/thaafei/DomainX/issues/116}{TA Review\#116},
+&
+Label each goal with identifier G*, where * is the corresponding goal number. Updated all mention of goals with a reference to them. 
+&
+&
+\href{https://github.com/thaafei/DomainX/issues/142}{Issue \#142}; Section~1.2
+\\
+
+\href{https://github.com/thaafei/DomainX/issues/116}{TA Review\#116},
+&
+Page numbering should be in numbers, only the Table of Contents should be numbered in limitations.
+&
+Updated the incorrect page numbering for pages after the Table of Contents.
+&
+\href{https://github.com/thaafei/DomainX/issues/143}{Issue \#143}; All pages
+\\
+
+\href{https://github.com/thaafei/DomainX/issues/116}{TA Review\#116},
+&
+Add Dr. Smith as a customer as well in the stakeholders section.
+&
+Added reference of Dr. Smith to the customers.
+&
+\href{https://github.com/thaafei/DomainX/issues/144}{Issue \#144}; Section~2.2
+\\
+
+\href{https://github.com/thaafei/DomainX/issues/116}{TA Review\#116},
+&
+Relate goals to all the stakeholders. Indicating which goals matter to them.
+&
+Added Relevant Goals under each stakeholders with references to the stated goals.
+&
+\href{https://github.com/thaafei/DomainX/issues/145}{Issue \#145}; Section~2
+\\
+
+\href{https://github.com/thaafei/DomainX/issues/116}{TA Review\#116},
+&
+Add accessibility and compatibility to goals, since we noted that the application should be fully functional.
+&
+Since having a functional web application is assumed, it shouldn't need to be stated as an explicit goal.
+&
+Not implemented \\
+
+\href{https://github.com/thaafei/DomainX/issues/116}{TA Review\#116},
+&
+Work partitioning table needs to include a caption and add BUC to table of acronyms.
+&
+Implemented the feedback.
+&
+\href{https://github.com/thaafei/DomainX/issues/148}{Issue \#148}; Section~6.3 \\
+
+\href{https://github.com/thaafei/DomainX/issues/116}{TA Review\#116},
+&
+Business Data model appearing above the section that mentions it. The section should also include a description
+&
+Implemented the feedback.
+&
+\href{https://github.com/thaafei/DomainX/issues/149}{Issue \#149}; Section~7 \\
+
+\href{https://github.com/thaafei/DomainX/issues/116}{TA Review\#116},
+&
+In the Product Use Case table, the mentioned goals should be referenced. Additionally the table also needs a caption.&
+Implemented the feedback.
+&
+\href{https://github.com/thaafei/DomainX/issues/150}{Issue \#150}; Section~8.2 \\
+
+\href{https://github.com/thaafei/DomainX/issues/116}{TA Review\#116},
+&
+Several small formatting issues in NFR, such as quotation marks facing the wrong way. 
+&
+Implemented the feedback.
+&
+\href{https://github.com/thaafei/DomainX/issues/151}{Issue \#151}; Several sections \\
+
+\href{https://github.com/thaafei/DomainX/issues/116}{TA Review\#116},
+&
+Duplicated NFRs in two sections. UH-LR1 and UH-LR2 of Learning Requirements is the same as UH-UP1 and UH-UP2 of Understandability and Politeness Requirements.
+&
+Removed UH-LR1, UH-UP1 and UH-UP2. UH-LR1 and UH-UP1 were removed due to not implementing in the end.
+&
+\href{https://github.com/thaafei/DomainX/issues/152}{Issue \#152}; Section~11.3, Section~11.4 \\
+
+\href{https://github.com/thaafei/DomainX/issues/116}{TA Review\#116},
+&
+Duplicated NFRs in two sections. MS-SR1 of Supportability Requirements is the same as OE-PR1 of Productization Requirements.
+&
+Removed MS-SR1.
+&
+\href{https://github.com/thaafei/DomainX/issues/153}{Issue \#153}; Section~14.2, Section~13.4 \\
+
+\href{https://github.com/thaafei/DomainX/issues/116}{TA Review\#116},
+&
+Overall, all references to external documents and software libraries should by hyperlinked.
+&
+Added hyperlinks to all referenced internal documents and external software libraries.
+&
+\href{https://github.com/thaafei/DomainX/issues/154}{Issue \#154}; \href{https://github.com/thaafei/DomainX/issues/155}{Issue \#155}; Overall document. \\
+
+\href{https://github.com/thaafei/DomainX/issues/116}{TA Review\#116},
+&
+Table 10 - Development Phase Plan should list actual dates, not week numbers.
+&
+Implemented feedback.
+&
+\href{https://github.com/thaafei/DomainX/issues/156}{Issue \#156}; Table~11. \\
+
+
+
+
+
+
+
+\end{longtable}
+\subsubsection{Software Requirements Specification (SRS)}
+
+
+\subsubsection{Hazard Analysis (HA)}
 
 \subsection{Design and Design Documentation}
 This section summarizes the feedback received on the Design Documents, Module Guide and Module Interface Specification. It is divided into their respective subsection.
-\subsubsection{Module Guide (MG)}
-\label{ssubsec:mg-trace}
+\subsubsection{Module Guide (MG)}\label{ssubsec:mg-trace}
 
 The MG revisions focused on improving consistency, abstraction,
 traceability, and clarity of interfaces. Feedback items were grouped
