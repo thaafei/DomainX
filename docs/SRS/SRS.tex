@@ -75,17 +75,17 @@ To assist in the creation of this paper, we will create a reusable tool, whose m
 \subsection{Goals of the Project}
 The tool will make the data gathering process faster and more efficient for the current paper used to pilot the project. Future papers will then be able to use the tool to assist in their own data gathering for their domain.\\
 See below for our goals, listed in their order of importance.
-\subsubsection{Centralized Domain Data Location}
+\subsubsection{G1: Centralized Domain Data Location}\label{goal-central-data}
 The tool should be the centralized location where users can view completed data gathered from a domain assessment, as well as create and edit new domains.
-\subsubsection{Automated Data Collection}
+\subsubsection{G2: Automated Data Collection}\label{goal-auto-data}
 The tool must be able to extract the repository based metrics automatically, to eliminate the need for user to manually enter this information. At least 80\% of the accessed packages should have these types of metrics automatically filled without error.
 \subsubsection{G3: Interactive Data Table}\label{goal-data-table}
 The tool's data table should be intuitive to use, and be similar to pre-existing industry standard spreadsheet tools such as Excel. Users with prior experience using Excel should automatically be able to use the tool for inputting data.
 \subsubsection{G4: Automated Analytic Hierarchy Process}\label{goal-auto-ahp}
 The tool will implement an automated AHP to compare libraries, guiding users through pairwise comparisons to weigh criteria and evaluate alternatives. It should match what the user would calculate exactly if they were to do it manually.
-\subsubsection{Data Visualization and Download}
+\subsubsection{G5: Data Visualization and Download} \label{goal-visual}
 The tool should allow users to export tables and visuals relating to the domain they want, based on the data gathered in that domain.
-\subsubsection{Collaboration and Access Control}
+\subsubsection{G6: Collaboration and Access Control} \label{goal-collab}
 The tool should allow for multiple users to use the tool simultaneously and contain multiple access levels.
 \section{Stakeholders}
 The following section contains the stakeholders of the project.
@@ -240,7 +240,9 @@ McMaster University will provide the infrastructure required to host the applica
 \section{The Scope of the Work}
 Boundaries of the current environment and business requirements to understand the scope of the product are written below.
 \subsection{The Current Situation}
-The following are the steps as stated from the methodology paper \cite{MethodologyPaper}:
+The following are the steps as stated from the methodology paper
+
+\cite{MethodologyPaper}:
 \begin{enumerate}
     \item Domain is identified
     \item Research team gathers a preliminary list of packages fitting the domain
@@ -553,7 +555,7 @@ What our tool must do, it's features and behaviours are listed below.
 Requirements for the appearance of the tool.
 \subsection{Appearance Requirements}
 \begin{enumerate}[label=LF-AR\arabic*]
-  \item The application will maintain a consistent visual hierarchy where primary action buttons (e.g., "Save," "Create New Domain") are visually distinct.
+  \item The application will maintain a consistent visual hierarchy where primary action buttons (e.g., Save, Create New Domain) are visually distinct.
   \\ \textbf{Fit Criterion}: Primary action buttons use a consistent color and style across the application and are visually more prominent than secondary actions. Users can easily identify buttons within 10 seconds.
   \item The system must be fully responsive and function correctly on standard desktop monitors and laptops.
   \\ \textbf{Fit Criterion}: The application functions correctly at common desktop and laptop screen sizes without overlapping or hidden UI elements.
