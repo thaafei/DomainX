@@ -569,6 +569,7 @@ measures response times for dashboard load, filtering, AHP recomputation, and
 export, and summarizes median and 95th-percentile (p95) values.
 
 \subsubsection{Test Case Summary (T--NF1: Performance and Scalability)}
+Table~\ref{tab:tnf1-summary} summarizes the test setup, inputs, and outputs for evaluating system performance and scalability.
 \begin{table}[H]
   \centering
   \caption{T--NF1 performance experiment: test case summary (Rev0).}
@@ -666,6 +667,7 @@ tolerance.  The goal is to confirm the system remains stable, consistent, and
 capable of recovery when services fail or operations are interrupted.
 
 \subsubsection{Test Case Summary (T--NF2: Reliability and Fault Tolerance)}
+Table~\ref{tab:tnf2-summary} summarizes the test setup and observed system behavior under simulated failure and recovery scenarios.
 \begin{table}[H]
   \centering
   \caption{T--NF2 reliability and fault tolerance: test case summary (Rev0).}
@@ -708,6 +710,7 @@ capable of recovery when services fail or operations are interrupted.
 \end{table}
 
 \subsubsection{Results}
+Table~\ref{tab:tnf2-results} summarizes the observed outcomes for the reliability and fault tolerance scenarios.
 \begin{table}[H]
   \centering
   \caption{Reliability experiment results (Rev0).}
@@ -739,6 +742,7 @@ capable of recovery when services fail or operations are interrupted.
     \bottomrule
   \end{tabular}
 \end{table}
+Future improvements include extending existing error messaging to consistently handle network failures and providing clearer feedback when the system is offline.
 
 \subsubsection{Analysis}
 The system remained stable during a simulated service outage (offline mode) and
@@ -774,6 +778,7 @@ success criterion.  For Revision~0, available evidence consists of a pilot
 task-based proxy evaluation (n = 1), reported below as preliminary evidence.
 
 \subsubsection{Test Case Summary (T--NF3: Usability Pilot)}
+Table~\ref{tab:tnf3-summary} summarizes the usability pilot tasks, expected outcomes, and observed results.
 \begin{table}[H]
   \centering
   \caption{T--NF3 usability pilot: test case summary (Rev0).}
@@ -933,7 +938,8 @@ pairwise comparisons, and (2) a spot check of auto-filled repository fields
 matches externally verifiable values (GitHub).
 
 \subsubsection{Test Case Summary (T--NF4: Computational Accuracy)}
-\begin{table}[ht]
+Table~\ref{tab:tnf4-summary} summarizes the test setup, inputs, and outputs for evaluating computational accuracy.
+\begin{table}[H]
   \centering
   \caption{T--NF4 computational accuracy: test case summary (Rev0).}
   \label{tab:tnf4-summary}
@@ -1058,6 +1064,7 @@ The goal is to validate that credentials and permissions are handled securely
 and that unauthorized actions are prevented.
 
 \subsubsection{Test Case Summary (T--NF5: Security and Access Control)}
+Table~\ref{tab:tnf5-summary} summarizes the security and access control evaluation, including authentication mechanisms and access restrictions.
 \begin{table}[H]
   \centering
   \caption{T--NF5 security and access control: test case summary (Rev0).}
@@ -1102,6 +1109,7 @@ and that unauthorized actions are prevented.
 \end{table}
 
 \subsubsection{Results}
+Table~\ref{tab:tnf5-results} summarizes the observed results for security and access control scenarios.
 \begin{table}[H]
   \centering
   \caption{Security and access control results (Rev0).}
@@ -1176,6 +1184,7 @@ to testing.  The evaluation targets MS-MR1--MS-MR6 (maintainability standards:
 style compliance, modularity, testability, and documentation).
 
 \subsubsection{Test Case Summary (T--NF6: Maintainability)}
+Table~\ref{tab:tnf6-summary} summarizes the maintainability evaluation, including automated testing and documentation.
 \begin{table}[H]
   \centering
   \caption{T--NF6 maintainability: test case summary (Rev0).}
@@ -1276,6 +1285,7 @@ GitHub Actions \texttt{tests.yml} workflow and latest successful run
 (\texttt{backend-test} and \texttt{frontend-test}), including coverage output
 (TOTAL coverage) and the \texttt{coverage-html} artifact; repository test
 documentation at \texttt{/test/README.md}.
+
 
 
 \section{Unit Testing}
@@ -1860,7 +1870,7 @@ Pytest and the \texttt{pytest-django} ecosystem serve as the foundation for our 
 
 Using Django's \texttt{SimpleTestCase} and the \texttt{unittest.mock} module, we developed a strong configuration testing method in addition to standard data validation. This enables us to test that our settings dynamically swap between SQLite and MySQL engines as planned by programmatically simulating various deployment scenarios (e.g., Local vs. Production). We make sure the application stays stable and properly configured across different infrastructure states without having to manually review environment files by simulating environment variables and altering settings within our tests.
 \section{Trace to Requirements}
-Table~\ref{tab:trace} presents the traceability between the
+Table~\ref{tab:trace-functional} presents the traceability between the
 system test cases and the requirements defined in the Software Requirements
 Specification (SRS). The table indicates which test cases provide verification
 evidence for each requirement implemented in the system.
@@ -1868,53 +1878,55 @@ evidence for each requirement implemented in the system.
 \begin{table}[H]
 \centering
 \caption{Traceability Between Requirements and System Test Cases}
-\label{tab:trace}
+\label{tab:trace-functional}
 \resizebox{\textwidth}{!}{
-\begin{tabular}{|l|c|c|c|c|c|c|c|c|c|c|c|c|c|c|c|c|}
+\begin{tabular}{|l|c|c|c|c|c|c|c|c|c|c|c|c|c|c|c|c|c|c|c|c|c|}
 \hline
-Requirement & T-AC-1 & T-AC-2 & T-AC-3 & T-AC-4 & T-AC-5 & T-DM-1 & T-DM-2 & T-DM-3 & T-DM-4 & T-DM-5 & T-VR-1 & T-VR-2 & T-VR-3 & T-VR-4 & T-VR-5 & T-VR-6 \\ \hline
+Requirement
+& T-AC-1 & T-AC-2 & T-AC-3 & T-AC-4 & T-AC-5
+& T-AC-8 & T-AC-9 & T-AC-10 & T-AC-11
+& T-DM-1 & T-DM-2 & T-DM-3 & T-DM-4 & T-DM-5 & T-DM-7
+& T-VR-1 & T-VR-2 & T-VR-3 & T-VR-4 & T-VR-5 & T-VR-6 \\
+\hline
 
-FR2  & X &  &  &  &  &  &  &  &  &  &  &  &  &  &  &  \\ \hline
-FR3  &  & X & X &  &  &  &  &  &  &  &  &  &  &  &  &  \\ \hline
-FR4  &  &  &  & X &  &  &  &  &  &  &  &  &  &  &  &  \\ \hline
-FR5  &  &  &  &  &  & X &  &  &  &  &  &  &  &  &  &  \\ \hline
-FR7  &  &  &  &  &  &  & X & X &  &  &  &  &  &  &  &  \\ \hline
-FR10 &  &  &  &  &  &  & X &  &  &  &  &  &  &  &  &  \\ \hline
-FR11 &  &  &  &  &  &  &  &  &  &  &  &  &  &  &  & X \\ \hline
-FR12 &  &  &  &  &  &  &  & X &  &  & X &  &  &  &  &  \\ \hline
-FR13 &  &  &  &  &  &  &  &  &  &  & X & X &  &  &  &  \\ \hline
-FR14 &  &  &  &  &  &  &  &  &  & X &  &  &  &  &  &  \\ \hline
-FR15 &  &  &  &  &  &  &  &  &  &  &  &  & X &  &  &  \\ \hline
+FR2  &  &  &  &  &  &  & X &  &  &  &  &  &  &  &  &  &  &  &  &  &  \\ \hline
+FR3  &  & X & X &  &  &  &  &  &  &  &  &  &  &  &  &  &  &  &  &  &  \\ \hline
+FR4  &  &  &  &  &  &  &  &  & X &  &  &  &  &  &  &  &  &  &  &  &  \\ \hline
+FR5  &  &  &  &  &  &  &  &  &  & X &  &  &  &  &  &  &  &  &  &  &  \\ \hline
+FR6  &  &  &  &  &  &  &  &  &  &  &  &  &  &  & X &  &  &  &  &  &  \\ \hline
+FR7  &  &  &  &  &  &  &  &  &  &  & X & X &  &  &  &  &  &  &  &  &  \\ \hline
+FR10 &  &  &  &  &  &  &  &  &  &  & X &  &  &  &  &  &  &  &  &  &  \\ \hline
+FR11 &  &  &  &  &  &  &  &  &  &  &  &  &  &  &  &  &  &  &  &  & X \\ \hline
+FR12 &  &  &  &  &  &  &  &  &  &  &  & X &  &  &  & X &  &  &  &  &  \\ \hline
+FR13 &  &  &  &  &  &  &  &  &  &  &  &  &  &  &  & X & X &  &  &  &  \\ \hline
+FR14 &  &  &  &  &  &  &  &  &  &  &  &  &  & X & X &  &  &  &  &  &  \\ \hline
+FR15 &  &  &  &  &  &  &  &  &  &  &  &  &  &  &  &  &  & X &  &  &  \\ \hline
 
-SR-AC4 &  &  &  &  & X &  &  &  &  &  &  &  &  &  &  &  \\ \hline
-SR-AC5 & X & X & X & X &  &  &  &  &  &  &  &  &  &  &  &  \\ \hline
+SR-AC1 &  &  &  &  &  & X &  &  &  &  &  &  &  &  &  &  &  &  &  &  &  \\ \hline
+SR-AC4 &  &  &  &  & X &  &  &  &  &  &  &  &  &  &  &  &  &  &  &  &  \\ \hline
+SR-AC5 & X & X & X & X &  &  &  &  &  &  &  &  &  &  &  &  &  &  &  &  &  \\ \hline
+SR-AC6 &  &  &  &  &  &  &  & X &  &  &  &  &  &  &  &  &  &  &  &  &  \\ \hline
+SR-IM1 &  &  &  &  &  &  &  & X &  &  &  &  &  &  &  &  &  &  &  &  &  \\ \hline
 
-SR-VIS1 &  &  &  &  &  &  &  &  &  &  & X &  &  &  &  &  \\ \hline
-SR-VIS2 &  &  &  &  &  &  &  &  &  &  &  & X &  &  &  &  \\ \hline
+SR-VIS1 &  &  &  &  &  &  &  &  &  &  &  &  &  &  &  & X &  &  &  &  &  \\ \hline
+SR-VIS2 &  &  &  &  &  &  &  &  &  &  &  &  &  &  &  &  & X &  &  &  &  \\ \hline
 
-PR-RFT1 &  &  &  &  &  &  &  &  & X &  &  &  &  &  & X &  \\ \hline
-SR-INT5 &  &  &  &  &  &  &  &  & X &  &  &  &  &  & X &  \\ \hline
+PR-RFT1 &  &  &  &  &  &  &  &  &  &  &  &  & X &  &  &  &  &  &  & X &  \\ \hline
+SR-INT5 &  &  &  &  &  &  &  &  &  &  &  &  & X &  &  &  &  &  &  & X &  \\ \hline
 
-LF-AR2 &  &  &  &  &  &  &  &  &  &  &  &  &  & X &  &  \\ \hline
-LF-AR3 &  &  &  &  &  &  &  &  &  &  &  &  &  &  &  & X \\ \hline
-LF-SR2 &  &  &  &  &  &  &  &  &  &  &  &  &  & X &  &  \\ \hline
+LF-AR2 &  &  &  &  &  &  &  &  &  &  &  &  &  &  &  &  &  &  & X &  &  \\ \hline
+LF-AR3 &  &  &  &  &  &  &  &  &  &  &  &  &  &  &  &  &  &  &  &  & X \\ \hline
+LF-SR2 &  &  &  &  &  &  &  &  &  &  &  &  &  &  &  &  &  &  & X &  &  \\ \hline
 
-UH-AR1 &  &  &  &  &  &  &  &  &  &  &  &  &  & X &  &  \\ \hline
+UH-AR1 &  &  &  &  &  &  &  &  &  &  &  &  &  &  &  &  &  &  & X &  &  \\ \hline
 
-OE-PR4 &  &  &  &  &  &  &  &  &  & X &  &  & X &  &  &  \\ \hline
+OE-PR4 &  &  &  &  &  &  &  &  &  &  &  &  &  & X &  &  &  & X &  &  &  \\ \hline
 
 \end{tabular}
 }
 \end{table}
 
-The tests listed in this report were primarily designed to verify
-functional requirements. However, some of these tests also provide
-evidence related to certain non-functional requirements, which is why
-those requirements appear in the traceability matrix. Requirements that
-were still under development or removed from the final project scope are
-not included in the table and are discussed earlier in the
-\textit{Features Currently in Progress} subsection of the
-\textit{Functional Requirements Evaluation} section.
+The tests listed in this report were designed to verify the functional requirements implemented in the final system. Some tests also provide evidence for non-functional requirements, which is why those requirements appear in the traceability matrix.
 
 \section{Trace to Requirements (Nonfunctional)}
 \label{sec:trace-nfr}
