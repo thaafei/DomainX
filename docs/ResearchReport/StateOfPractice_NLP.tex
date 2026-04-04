@@ -199,7 +199,7 @@ training, deployment, analysis, or direct use of neural network models. The targ
 %  Report counts at each step and the final shortlist size. Final shortlist: 28.
 %  Point to Appendix~\ref{app-packages} for the full list and exclusions (see emails).}
 
- 
+
 Candidate packages were identified by aggregating package
 names from authoritative sources and normalizing duplicates
 and naming variants. Packages that were primarily
@@ -250,8 +250,8 @@ The qualities assessed are: installability; correctness and verifiability; surfa
   When evidence was missing or ambiguous, responses were recorded conservatively and flagged for traceability.
 
 \subsection{Repository-based measures}\label{metrics}
-% \wss{Describe repository/empirical measures collected (e.g. GitHub-based measures + codebase statistics). 
-%  the tools/sources used (e.g., GitHub API, scc, git\_stats) and what each category captures. 
+% \wss{Describe repository/empirical measures collected (e.g. GitHub-based measures + codebase statistics).
+%  the tools/sources used (e.g., GitHub API, scc, git\_stats) and what each category captures.
 %   enough detail to reproduce extraction.}
 
 Repository-based measures complement the measurement template
@@ -280,9 +280,9 @@ additional context for interpreting the quality scores
 recorded in the measurement template.
 
 \subsection{Ranking method (AHP)}\label{ahp}
-% \wss{Explain how AHP was used to compute weights and produce an overall ranking from quality scores. 
-% Describe how pairwise comparisons were obtained and how final scores were computed. 
-%  sensitivity analysis results (plan if not yet complete) to assess ranking stability under reasonable weight changes. 
+% \wss{Explain how AHP was used to compute weights and produce an overall ranking from quality scores.
+% Describe how pairwise comparisons were obtained and how final scores were computed.
+%  sensitivity analysis results (plan if not yet complete) to assess ranking stability under reasonable weight changes.
 %  ranking supports comparison/insight rather than a universal claim of “best.”}
 To produce an overall comparison across multiple quality
 criteria, this work uses the Analytic Hierarchy Process
@@ -306,8 +306,8 @@ the quality scores and weighting choices \cite{MethodologyPaper}.
 
 
 \subsection{Tool support: DomainX}\label{domainx}
-% \wss{ DomainX at the key-feature level: centralized evidence capture, structured template completion, 
-% metric extraction, AHP computation, and export of results.  reduced manual effort and improved traceability/auditability. 
+% \wss{ DomainX at the key-feature level: centralized evidence capture, structured template completion,
+% metric extraction, AHP computation, and export of results.  reduced manual effort and improved traceability/auditability.
 % Repository: \url{https://github.com/thaafei/DomainX} }
 DomainX supports a tool-based workflow for conducting the
 assessment and managing the resulting dataset. It provides an
@@ -330,7 +330,7 @@ ranking for the assessed packages.}
 %%add snapshot
 
 \subsection{Environment and reproducibility}\label{env}
-% \wss{Describe the evaluation environment and  steps to take for reproducing (e.g. pinned versions, standardized install attempts). 
+% \wss{Describe the evaluation environment and  steps to take for reproducing (e.g. pinned versions, standardized install attempts).
 % Mention Dockerfiles used for older packages where needed and connect this to repeatability and transparency.}
 
 Following the methodology, installation-based assessment is
@@ -363,7 +363,7 @@ assessment process.
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 \subsection{Descriptive summary of assessed packages}\label{results-summary}
-% \wss{Summarize the evaluated set (final no., alive/dead counts, languages/activity/licensing if reported). 
+% \wss{Summarize the evaluated set (final no., alive/dead counts, languages/activity/licensing if reported).
 % Present  statistics that help give insight into the domain landscape before ranking.}
 
 The final shortlist contains 28 open-source neural network
@@ -378,7 +378,7 @@ of documentation, testing artifacts, maintenance signals,
 and other observable evidence of development practice.
 
 \subsection{Overall ranking}\label{results-ranking}
-% \wss{ the final ranking table and a short explanation of how to read it. 
+% \wss{ the final ranking table and a short explanation of how to read it.
 % Highlight  top-ranked packages without overconfidence/ overdoing it. Reference DomainX ranking output as a figure/table.}
 
 Figure~\ref{fig:overall-ranking} presents the overall AHP
@@ -526,8 +526,8 @@ the assessment.
 \section{Discussion and Recommendations}\label{discussion}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-% \wss{ what the results imply for users and maintainers. 
-%  actionable recommendations organized by quality attribute (installability, maintainability, transparency...). 
+% \wss{ what the results imply for users and maintainers.
+%  actionable recommendations organized by quality attribute (installability, maintainability, transparency...).
 %  Keep recommendations evidence-backed.}
 
 The results indicate that the overall ranking is shaped by
@@ -573,7 +573,7 @@ evidence available for state-of-practice assessment.
 \section{Threats to Validity and Limitations}\label{validity}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-% \wss{ construct validity, internal validity, external validity, and temporal validity. 
+% \wss{ construct validity, internal validity, external validity, and temporal validity.
 % Note limitations such as evolving repositories, subjectivity in scoring, missing/ambiguous evidence,
 %  and interviews not conducted yet.}
 This work is subject to several threats to validity.
@@ -620,7 +620,7 @@ publicly available evidence and repository-derived measures.
 \section{Conclusion and Future Work}\label{conclusion}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-% \wss{Summarize contributions (DomainX + dataset + findings), key results,  list future work 
+% \wss{Summarize contributions (DomainX + dataset + findings), key results,  list future work
 % (interviews, expanded shortlist, stronger sensitivity analysis, refined scoring rules, deeper automation).}
 This paper presented a state-of-practice assessment of
 28 open-source neural network software packages using
