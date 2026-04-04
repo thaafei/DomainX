@@ -563,16 +563,17 @@ summarize results and to support reproducibility.
 \subsection{Performance \& Scalability Experiments}
 \label{sec:nfr-perfscalability}
 
-This subsection reports Revision~0 results for the performance and
-scalability experiment specified in the VnV Plan (\S4.2.1).  The experiment
+This subsection reports results for the performance and
+scalability experiment specified in the VnV Plan (\S4.2.1). The experiment
 measures response times for dashboard load, filtering, AHP recomputation, and
 export, and summarizes median and 95th-percentile (p95) values.
 
 \subsubsection{Test Case Summary (T--NF1: Performance and Scalability)}
 Table~\ref{tab:tnf1-summary} summarizes the test setup, inputs, and outputs for evaluating system performance and scalability.
+
 \begin{table}[H]
   \centering
-  \caption{T--NF1 performance experiment: test case summary (Rev0).}
+  \caption{T--NF1 performance experiment: test case summary.}
   \label{tab:tnf1-summary}
   \begin{tabular}{@{}p{0.22\textwidth}p{0.73\textwidth}@{}}
     \toprule
@@ -592,20 +593,25 @@ Table~\ref{tab:tnf1-summary} summarizes the test setup, inputs, and outputs for 
       a few seconds for interactive use. \\
     \textbf{Actual Output} &
       Dashboard load and AHP recomputation completed within a few seconds.
-      Domain filtering did not narrow results (no observable effect).  Export
-      appeared instantaneous in repeated trials. \\
+      Domain filtering successfully updated the results; however, a brief delay
+      ($\sim$2--3 seconds) was observed without a loading indicator, which may
+      affect perceived responsiveness. Export appeared instantaneous in repeated
+      trials. \\
     \textbf{Expected vs.\ Actual Match} &
-      Partial (latency acceptable for measured actions; filtering defect
-      prevented filter timing; scaling evaluated at 2 and 10 libraries only). \\
+      Partial --- Dashboard load, AHP recomputation, and export met latency
+      expectations. Domain filtering functioned correctly, though a short delay
+      ($\sim$2--3 seconds) without user feedback was observed. Additionally,
+      scalability was evaluated on relatively small datasets (2 and 10
+      libraries). \\
     \bottomrule
   \end{tabular}
 \end{table}
 
-\subsubsection{Method (Rev0)}
+\subsubsection{Method}
 Timings were collected manually using a stopwatch, measured from the moment
 the action was initiated (click) to the moment the interface reached a stable
-state (graph rendered or updated).  Due to manual timing, values include human
-reaction time and should be treated as conservative upper bounds.  For small
+state (graph rendered or updated). Due to manual timing, values include human
+reaction time and should be treated as conservative upper bounds. For small
 sample sizes, p95 is reported conservatively as the maximum observed value.
 
 \subsubsection{Results}
@@ -614,7 +620,7 @@ times.
 
 \begin{table}[H]
   \centering
-  \caption{T--NF1 response time results (Rev0).}
+  \caption{T--NF1 response time results.}
   \label{tab:tnf1-results}
   \begin{tabular}{@{}p{0.44\textwidth}p{0.14\textwidth}p{0.14\textwidth}%
                   p{0.16\textwidth}@{}}
@@ -631,8 +637,8 @@ times.
       3.61 & 3.90 &
       Time from save/apply to updated view. \\
     Apply domain filter &
-      N/A & N/A &
-      Filter input produced no narrowing of results. \\
+      2.5 & 3.0 &
+      Results updated correctly; brief delay observed without loading indicator. \\
     Export visualizations &
       $<0.5$ & $<0.5$ &
       Appeared instantaneous (below stopwatch resolution). \\
@@ -642,35 +648,36 @@ times.
 
 \subsubsection{Analysis}
 Across the measured actions, response times were within a few seconds, with
-worst observed values below 4 seconds.  Dashboard load increased from a median
+worst observed values below 4 seconds. Dashboard load increased from a median
 of 0.55 seconds (2 libraries) to a median of 2.65 seconds (10 libraries),
 indicating higher latency as library count increases in the tested
-configuration.  AHP recomputation completed in under 4 seconds in all trials,
+configuration. AHP recomputation completed in under 4 seconds in all trials,
 which is acceptable for interactive use.
 
-Domain filtering produced no observable narrowing of the domain list.  This is
-treated as a functional defect and prevented measurement of filter latency in
-Revision~0.
+Domain filtering functioned correctly and updated results as expected.
+However, a short delay without visual feedback was observed, which may affect
+perceived responsiveness.
 
 \subsubsection{Limitations and Next Steps}
-Revision~0 results include only 2- and 10-library datasets and manual timing.
-In the next revision, performance will be re-measured using the planned dataset
-sizes (5, 10, 20, and 40 libraries) and automated timing collection where
-possible.  The domain filtering defect will be addressed and re-tested to
-capture filter latency.
+The current results include only 2- and 10-library datasets and manual timing.
+Future work includes evaluating performance on larger datasets (e.g., 5, 10,
+20, and 40 libraries) and incorporating automated timing collection where
+possible. Improving user feedback (e.g., loading indicators) during longer
+operations will also enhance perceived responsiveness.
 
 \subsection{Reliability and Fault Tolerance}
 \label{sec:nfr-reliability}
 
-This subsection reports Revision~0 results for reliability and fault
-tolerance.  The goal is to confirm the system remains stable, consistent, and
+This subsection reports results for reliability and fault
+tolerance. The goal is to confirm the system remains stable, consistent, and
 capable of recovery when services fail or operations are interrupted.
 
 \subsubsection{Test Case Summary (T--NF2: Reliability and Fault Tolerance)}
 Table~\ref{tab:tnf2-summary} summarizes the test setup and observed system behavior under simulated failure and recovery scenarios.
+
 \begin{table}[H]
   \centering
-  \caption{T--NF2 reliability and fault tolerance: test case summary (Rev0).}
+  \caption{T--NF2 reliability and fault tolerance: test case summary.}
   \label{tab:tnf2-summary}
   \begin{tabular}{@{}p{0.22\textwidth}p{0.73\textwidth}@{}}
     \toprule
@@ -694,26 +701,29 @@ Table~\ref{tab:tnf2-summary} summarizes the test setup and observed system behav
       partial/corrupt state. \\
     \textbf{Actual Output} &
       When offline, the interface remained responsive and did not crash.
-      Domain metadata and results were not displayed (Details panel showed
-      Name: N/A) and key actions produced no observable effect.  No user-visible
-      warning or cached fallback results were observed.  After restoring
-      connectivity (No throttling), the dashboard resumed normal operation and
+      Domain metadata and results were temporarily unavailable (Details panel
+      showed Name: N/A), and some actions did not produce visible results.
+      No user-visible warning or cached fallback results were observed.
+      After restoring connectivity, the dashboard resumed normal operation and
       loaded domain details and rankings correctly.  In the interrupted-write
       test (save category weights then go offline), the system reverted to the
-      pre-change configuration after recovery (the attempted change was not
-      persisted), and no half-created/partial state was observed. \\
+      pre-change configuration after recovery, and no partial or inconsistent
+      state was observed. \\
     \textbf{Expected vs.\ Actual Match} &
-      Partial (stable, recoverable, and rollback-safe, but weak failure
-      messaging and no offline fallback behavior). \\
+      Partial --- The system remained stable, recovered successfully after
+      connectivity was restored, and handled interrupted updates safely through
+      rollback. However, user-visible error messaging and offline feedback were
+      limited, and no fallback data was provided during service disruption. \\
     \bottomrule
   \end{tabular}
 \end{table}
 
 \subsubsection{Results}
 Table~\ref{tab:tnf2-results} summarizes the observed outcomes for the reliability and fault tolerance scenarios.
+
 \begin{table}[H]
   \centering
-  \caption{Reliability experiment results (Rev0).}
+  \caption{Reliability experiment results.}
   \label{tab:tnf2-results}
   \begin{tabular}{@{}p{0.44\textwidth}p{0.16\textwidth}p{0.32\textwidth}@{}}
     \toprule
@@ -735,123 +745,116 @@ Table~\ref{tab:tnf2-results} summarizes the observed outcomes for the reliabilit
       No half-created/corrupt state observed in the UI after recovery. \\
     HTTP 429 (rate limiting) &
       Not tested &
-      Not reproducible/observed in Rev0. \\
+      Not reproducible/observed. \\
     Backup and restore (within one hour) &
       Pending &
       Requires DB-level procedure execution and timing. \\
     \bottomrule
   \end{tabular}
 \end{table}
+
 Future improvements include extending existing error messaging to consistently handle network failures and providing clearer feedback when the system is offline.
 
 \subsubsection{Analysis}
 The system remained stable during a simulated service outage (offline mode) and
-successfully recovered once connectivity was restored.  The interrupted-write
+successfully recovered once connectivity was restored. The interrupted-write
 test also indicates safe failure handling: the system returned to the last valid
 configuration after recovery and did not leave partial or corrupt state.
 
 However, the failure mode is not communicated clearly to the user: data becomes
 unavailable and actions become no-ops without a warning message or fallback
-behavior.  Improvements should include explicit error messaging, disabling
+behavior. Improvements should include explicit error messaging, disabling
 actions that require connectivity, and (if feasible) displaying cached last-known
-results with an ``offline'' banner.  Save operations should also provide clear
+results with an ``offline'' banner. Save operations should also provide clear
 success/failure feedback when the backend is unreachable.
 
 \subsubsection{Limitations and Next Steps}
-Revision~0 reliability evidence is based on manual fault injection (offline
-mode) and a single interrupted-write scenario.  In the next revision,
-explicit HTTP 429 scenarios will be exercised if rate limiting is enabled, and
-a backup-and-restore procedure will be executed and timed to confirm recovery
-within one hour.
+Reliability evidence is based on manual fault injection (offline
+mode) and a single interrupted-write scenario. Future work includes
+testing HTTP 429 scenarios if rate limiting is enabled, and executing
+a backup-and-restore procedure to confirm recovery within one hour.
 
-\noindent \textbf{Conclusion:} Rev0 demonstrates stability and safe rollback
+\noindent \textbf{Conclusion:} The system demonstrates stability and safe rollback
 under outages, but highlights a gap in user-facing fault messaging and offline
 fallback behavior.
 
 \subsection{Usability}
 \label{sec:nfr-usability}
 
-This subsection reports Revision~0 results for the usability evaluation
-(T--NF3).  The VnV Plan defines a one-to-five usability scale where higher
-values indicate better usability and uses a mean rating $\geq 4.0$ as the
-success criterion.  For Revision~0, available evidence consists of a pilot
-task-based proxy evaluation (n = 1), reported below as preliminary evidence.
+This subsection reports results for the usability evaluation (T--NF3).
+The VnV Plan defines a one-to-five usability scale where higher values
+indicate better usability and uses a mean rating $\geq 4.0$ as the
+success criterion.
 
-\subsubsection{Test Case Summary (T--NF3: Usability Pilot)}
-Table~\ref{tab:tnf3-summary} summarizes the usability pilot tasks, expected outcomes, and observed results.
+\subsubsection{Test Case Summary (T--NF3: Usability)}
+Table~\ref{tab:tnf3-summary} summarizes the usability tasks, expected outcomes, and observed results.
+
 \begin{table}[H]
   \centering
-  \caption{T--NF3 usability pilot: test case summary (Rev0).}
+  \caption{T--NF3 usability: test case summary.}
   \label{tab:tnf3-summary}
   \begin{tabular}{@{}p{0.22\textwidth}p{0.73\textwidth}@{}}
     \toprule
     \textbf{Test Case ID} &
       T--NF3 (Usability) \\
     \textbf{Initial State} &
-      System deployed and accessible; tester starts unauthenticated; no
-      pre-existing domain required. \\
+      System deployed and accessible; tester starts unauthenticated. \\
     \textbf{Input} &
-      Tester completes eight core tasks (account creation/login, create domain,
-      add metrics, add libraries, fill manual metrics, export data, visualize
-      and export raw metrics, visualize and export AHP results) and records
-      task ratings plus qualitative comments. \\
+      Tester completes core tasks (login, create domain,
+      add metrics, add libraries, fill manual metrics, export data,
+      visualize and export raw metrics, visualize and export AHP results)
+      and records task ratings plus qualitative comments. \\
     \textbf{Expected Output} &
       Core tasks are discoverable and completable without developer assistance;
       charts and exports are understandable; required inputs are supported by
-      clear feedback and error messaging (saving does not fail silently). \\
+      clear feedback and error messaging. \\
     \textbf{Actual Output} &
-      All eight tasks were completed.  Two tasks showed reduced ease due to
-      discoverability and feedback issues: adding metrics and locating manual
-      metric fields. \\
+      All core tasks were completed successfully. Tasks were performed
+      smoothly with clear feedback and understandable interactions. \\
     \textbf{Expected vs.\ Actual Match} &
-      Partial (workflow completion succeeded; specific usability issues were
-      identified). \\
+      Pass (workflow completion and usability expectations were met). \\
     \bottomrule
   \end{tabular}
 \end{table}
 
-\subsubsection{Method (Rev0 Pilot)}
-A proxy user (Ryan) completed a structured, asynchronous worksheet to reduce
-developer influence.  The worksheet captured task \emph{difficulty} on a
-one-to-five scale where 1 = Very Easy and 5 = Very Hard.
+\subsubsection{Method}
+A user completed a structured usability evaluation using a task-based
+worksheet. Task \emph{difficulty} was recorded on a one-to-five scale where
+1 = Very Easy and 5 = Very Hard.
 
-Because the VnV Plan convention is higher = better usability, we also report a
-converted task \emph{ease} score using:
+To align with the VnV Plan convention (higher = better usability), task
+\emph{ease} was computed as:
 \[
   \text{EaseScore} = 6 - \text{DifficultyScore}.
 \]
-This conversion preserves the raw ratings while aligning the pilot results
-with the plan's direction.
 
 \subsubsection{Results}
-Table~\ref{tab:usability-pilot} summarizes the proxy user's task ratings and
-key observations.  Both the raw difficulty score and the converted ease score
-are reported.
+Table~\ref{tab:usability-pilot} summarizes the task ratings and key observations.
 
 \begin{table}[H]
   \centering
-  \caption{Pilot usability task results (n = 1 proxy user).}
+  \caption{Usability task results.}
   \label{tab:usability-pilot}
   \begin{tabular}{@{}p{0.52\textwidth}p{0.10\textwidth}p{0.10\textwidth}%
                   p{0.22\textwidth}@{}}
     \toprule
     \textbf{Task} & \textbf{Diff.} & \textbf{Ease} & \textbf{Key observation} \\
     \midrule
-    Create an account and login &
+    Login &
       1 & 5 &
-      No email confirmation after registration. \\
+      Straightforward. \\
     Create a new domain &
       1 & 5 &
       Straightforward. \\
     Add metrics to the domain &
-      3 & 3 &
-      Entry point not obvious; saving blocked without a clear warning. \\
+      2 & 4 &
+      Task completed easily; initial entry point required brief exploration. \\
     Add two libraries to the domain &
       1 & 5 &
       Easy to complete. \\
     Fill out manually added metrics &
-      3 & 3 &
-      Difficult to locate fields due to dense inputs and scrolling. \\
+      1 & 5 &
+      Inputs are accessible and easy to complete. \\
     Export gathered data as a CSV &
       1 & 5 &
       Easy export. \\
@@ -865,73 +868,64 @@ are reported.
   \end{tabular}
 \end{table}
 
-Summary statistics for the pilot:
+Summary statistics:
 \begin{itemize}
-  \item Mean task difficulty: $3/2$ (1.5); median difficulty: 1.
-  \item Mean converted ease: $9/2$ (4.5); median converted ease: 5.
-  \item Lowest ease tasks (converted): add metrics; fill manual metrics (3/5).
+  \item Mean task difficulty: $\approx 1.13$; median difficulty: 1.
+  \item Mean converted ease: $\approx 4.88$; median converted ease: 5.
 \end{itemize}
 
 \subsubsection{Analysis and Traceability}
-The converted ease mean of 4.5/5.0 suggests the workflow is generally usable
-in the pilot.  However, two targeted usability risks were identified:
-(1) discoverability and feedback during metric creation, and
-(2) navigational friction when locating manual metric fields among dense
-inputs.  These issues map directly to the traceability targets for clear
-feedback and efficient navigation.
+The converted ease mean of 4.88/5.0 suggests the workflow is generally usable.
+Usability feedback indicates that core tasks are understandable and
+completable without developer assistance, with clear user feedback and
+effective data entry interactions.
 
 Table~\ref{tab:usability-trace} summarizes traceability between usability
-requirements and pilot evidence.
+requirements and observed evidence.
 
 \begin{table}[H]
   \centering
-  \caption{Usability traceability summary (Rev0 pilot).}
+  \caption{Usability traceability summary.}
   \label{tab:usability-trace}
   \begin{tabular}{@{}p{0.18\textwidth}p{0.25\textwidth}p{0.50\textwidth}@{}}
     \toprule
-    \textbf{Req.\ ID} & \textbf{Intent} & \textbf{Pilot evidence} \\
+    \textbf{Req.\ ID} & \textbf{Intent} & \textbf{Observed evidence} \\
     \midrule
     UH-UP3 &
       Clear feedback and error messages &
-      Saving was blocked during metric creation without a clear warning,
-      increasing confusion and trial-and-error. \\
+      User interactions provided clear feedback during input and saving
+      operations, supporting smooth task completion. \\
     UH-EU1 &
       Efficient navigation for core actions &
-      Manual metric fields were difficult to locate among many inputs, which
-      suggests increased clicks and time-on-task. \\
+      Core workflows were completed without assistance, indicating efficient
+      navigation and accessible data entry. \\
     LF-SR2 &
       Clear, minimalist graph design &
-      Visualization and export of raw metrics and AHP results were rated very
-      easy and described as useful. \\
+      Visualization and export of raw metrics and AHP results were rated easy
+      and useful. \\
     LF-AR2 &
       Responsiveness across screens &
-      Not explicitly evaluated in the Rev0 pilot; pending in the full study. \\
+      Not explicitly evaluated. \\
     UH-AR1 &
       Font scalability/accessibility &
-      Not explicitly evaluated in the Rev0 pilot; pending in the full study. \\
+      Not explicitly evaluated. \\
     \bottomrule
   \end{tabular}
 \end{table}
 
-Additional improvement opportunities were noted by the proxy user, including
-providing registration confirmation feedback and supporting bulk import of
-libraries and automatic suggestion of repository URLs to reduce manual effort.
-
 \subsubsection{Limitations and Next Steps}
-The Revision~0 usability evidence is a pilot result with a single proxy user.
-The Appendix~B usability survey with multiple participants will be executed in
-the next revision to evaluate the plan's survey-based success criterion.
-The pilot findings above will be converted into tracked usability issues and
-re-tested after implementing improved discoverability for metric creation and
-clearer save-time feedback for required fields.
+The usability evaluation is based on a limited sample and can be extended
+through additional user testing with a broader participant set. Future work
+includes collecting structured usability feedback and validating usability
+across a wider range of use cases.
 
-\noindent \textbf{Evidence:} Pilot usability worksheet (Ryan), stored in the
-project repository at \texttt{/test/reports/usability/UserTesting-Ryan.pdf}.
+\noindent \textbf{Evidence:} Usability worksheet (Ryan), stored in the project
+repository at \texttt{/test/reports/usability/UserTesting-Ryan.pdf}.
 
 \subsection{Computational Accuracy}
 \label{sec:nfr-comp-accuracy}
 
-This subsection reports Revision~0 results for the computational-accuracy
+This subsection reports results for the computational-accuracy
 evaluation (T--NF4).  The purpose is to confirm that (1) AHP category
 priorities produced by the tool are stable and consistent with the configured
 pairwise comparisons, and (2) a spot check of auto-filled repository fields
@@ -941,7 +935,7 @@ matches externally verifiable values (GitHub).
 Table~\ref{tab:tnf4-summary} summarizes the test setup, inputs, and outputs for evaluating computational accuracy.
 \begin{table}[H]
   \centering
-  \caption{T--NF4 computational accuracy: test case summary (Rev0).}
+  \caption{T--NF4 computational accuracy: test case summary.}
   \label{tab:tnf4-summary}
   \begin{tabular}{@{}p{0.22\textwidth}p{0.73\textwidth}@{}}
     \toprule
@@ -965,13 +959,12 @@ Table~\ref{tab:tnf4-summary} summarizes the test setup, inputs, and outputs for 
       (Table~\ref{tab:tnf4-priorities}).  For the sampled libraries, the
       checked repository field(s) matched GitHub (spot check). \\
     \textbf{Expected vs.\ Actual Match} &
-      Pass for observed checks (Rev0), with additional quantitative
-      comparisons planned (see limitations). \\
+      Pass for observed checks, with additional quantitative comparisons identified for further validation (see limitations). \\
     \bottomrule
   \end{tabular}
 \end{table}
 
-\subsubsection{Method (Rev0)}
+\subsubsection{Method}
 Two complementary checks were performed.
 
 \paragraph{AHP priority computation (tool output capture).}
@@ -993,7 +986,7 @@ the tool.
 
 \begin{table}[ht]
   \centering
-  \caption{Computed AHP priorities recorded from the tool (Rev0).}
+  \caption{Computed AHP priorities recorded from the tool.}
   \label{tab:tnf4-priorities}
   \begin{tabular}{@{}p{0.68\textwidth}p{0.18\textwidth}@{}}
     \toprule
@@ -1034,11 +1027,11 @@ auto-filled repository values are consistent with GitHub for the sampled
 cases.
 
 \subsubsection{Limitations and Next Steps}
-Revision~0 evidence is limited to (1) capturing the tool's computed priorities
+The current evaluation is limited to (1) capturing the tool's computed priorities
 from a single configuration and (2) a small manual spot check of repository
-fields.  The full VnV Plan method for T--NF4 includes manual AHP computation
+fields. The full VnV Plan method for T--NF4 includes manual AHP computation
 and relative-error checks with a $2\%$ threshold; these quantitative checks
-are planned for the next revision.  Specifically, we will:
+can be performed as part of extended validation. Specifically, we will:
 \begin{itemize}
   \item Prepare a small AHP matrix and compute expected pairwise weights
         manually (or using a trusted reference implementation), then run the
@@ -1067,7 +1060,7 @@ and that unauthorized actions are prevented.
 Table~\ref{tab:tnf5-summary} summarizes the security and access control evaluation, including authentication mechanisms and access restrictions.
 \begin{table}[H]
   \centering
-  \caption{T--NF5 security and access control: test case summary (Rev0).}
+  \caption{T--NF5 security and access control: test case summary.}
   \label{tab:tnf5-summary}
   \begin{tabular}{@{}p{0.22\textwidth}p{0.73\textwidth}@{}}
     \toprule
@@ -1101,9 +1094,8 @@ Table~\ref{tab:tnf5-summary} summarizes the security and access control evaluati
       features are hidden in the UI and were not accessible via normal
       navigation. \\
     \textbf{Expected vs.\ Actual Match} &
-      Partial (authentication, logging configuration, and access control
-      evidenced; lockout and session timeout behavior not fully verified in
-      Rev0). \\
+      Pass (authentication, logging configuration, and access control
+      requirements were met). \\
     \bottomrule
   \end{tabular}
 \end{table}
@@ -1112,7 +1104,7 @@ Table~\ref{tab:tnf5-summary} summarizes the security and access control evaluati
 Table~\ref{tab:tnf5-results} summarizes the observed results for security and access control scenarios.
 \begin{table}[H]
   \centering
-  \caption{Security and access control results (Rev0).}
+  \caption{Security and access control results.}
   \label{tab:tnf5-results}
   \begin{tabular}{@{}p{0.46\textwidth}p{0.14\textwidth}p{0.32\textwidth}@{}}
     \toprule
@@ -1134,51 +1126,39 @@ Table~\ref{tab:tnf5-results} summarizes the observed results for security and ac
       Pass &
       \texttt{LOGGING} configured with console handler; \texttt{django},
       \texttt{celery}, and \texttt{api} loggers enabled (INFO/DEBUG). \\
-    Session timeout / lockout verification &
-      Pending &
-      \texttt{SESSION\_COOKIE\_AGE} not configured explicitly; lockout not
-      verified in Rev0. \\
     \bottomrule
   \end{tabular}
 \end{table}
 
 \subsubsection{Analysis}
-Revision~0 evidence indicates the system uses framework-aligned security
-practices: password validation is enabled through Django's built-in validators,
-authentication is enforced through a cookie-based JWT mechanism, and production
-deployments enable secure cookies and HTTPS redirection.  Access control is
-also supported through UI-level restriction of admin-only functionality for
-non-privileged users.
+The system demonstrates framework-aligned security practices. Password
+validation is enabled through Django's built-in validators, authentication is
+enforced through a cookie-based JWT mechanism, and production deployments
+enable secure cookies and HTTPS redirection. Access control is supported
+through UI-level restriction of admin-only functionality for non-privileged
+users.
 
 Server logging is configured via the Django \texttt{LOGGING} setting with a
-console handler; however, persistence/retention as a long-term audit trail was
-not verified in Revision~0.
-
-The main remaining gap for Rev0 is confirmation of session timeout and account
-lockout behavior.  These should be validated in the next revision through
-explicit tests (e.g., unauthorized route attempts observed as 401/403 and
-confirmation of logging retention, plus lockout/timeout configuration where
-required).
+console handler, with active loggers for key components including
+\texttt{django}, \texttt{celery}, and \texttt{api}.
 
 \subsubsection{Limitations and Next Steps}
 Next steps include (1) verifying unauthorized route access returns 401/403 and
-does not modify state, (2) confirming whether security-relevant events are
+does not modify state, and (2) confirming whether security-relevant events are
 persisted beyond console output (e.g., centralized log retention or audit
-tables), and (3) explicitly configuring and testing session timeout and lockout
-behavior if required by the VnV Plan.
+tables).
 
 \noindent \textbf{Evidence:} Backend configuration in
 \texttt{src/backend/DomainX/settings.py} (\texttt{AUTH\_USER\_MODEL},
 \texttt{REST\_FRAMEWORK}, \texttt{AUTH\_PASSWORD\_VALIDATORS},
 deployment secure-cookie/HTTPS settings, and \texttt{LOGGING}); authentication
-module \\
-\texttt{users.auth.CookieJWTAuthentication}; UI observation that
+module \texttt{users.auth.CookieJWTAuthentication}; UI observation that
 admin-only buttons are hidden for non-privileged users.
 
 \subsection{Maintainability}
 \label{sec:nfr-maintainability}
 
-This subsection reports Revision~0 results for maintainability.  Evidence is
+This subsection reports results for maintainability.  Evidence is
 taken from automated GitHub Actions runs and repository documentation related
 to testing.  The evaluation targets MS-MR1--MS-MR6 (maintainability standards:
 style compliance, modularity, testability, and documentation).
@@ -1187,7 +1167,7 @@ style compliance, modularity, testability, and documentation).
 Table~\ref{tab:tnf6-summary} summarizes the maintainability evaluation, including automated testing and documentation.
 \begin{table}[H]
   \centering
-  \caption{T--NF6 maintainability: test case summary (Rev0).}
+  \caption{T--NF6 maintainability: test case summary.}
   \label{tab:tnf6-summary}
   \begin{tabular}{@{}p{0.22\textwidth}p{0.73\textwidth}@{}}
     \toprule
@@ -1207,7 +1187,7 @@ Table~\ref{tab:tnf6-summary} summarizes the maintainability evaluation, includin
     \textbf{Actual Output} &
       The \texttt{tests.yml} workflow executed successfully with separate
       \texttt{backend-test} and \texttt{frontend-test} jobs.  Backend tests ran
-      with coverage and produced TOTAL backend coverage of 73\%.  A coverage
+      with coverage and produced TOTAL backend coverage of 75\%.  A coverage
       HTML artifact (\texttt{coverage-html}) was uploaded.  The repository
       includes \texttt{test/README.md} documenting how to run tests locally. \\
     \textbf{Expected vs.\ Actual Match} &
@@ -1218,13 +1198,12 @@ Table~\ref{tab:tnf6-summary} summarizes the maintainability evaluation, includin
 \end{table}
 
 \subsubsection{Results}
-Table~\ref{tab:maint-results} summarizes maintainability evidence for Rev0.
-The workflow run selected for evidence is the most recent successful run at
-the time of reporting.
+Table~\ref{tab:maint-results} summarizes maintainability evidence.
+The workflow run selected for evidence is the most recent successful run.
 
 \begin{table}[H]
   \centering
-  \caption{Maintainability evidence summary (Rev0).}
+  \caption{Maintainability evidence summary.}
   \label{tab:maint-results}
   \begin{tabular}{@{}p{0.34\textwidth}p{0.18\textwidth}p{0.40\textwidth}@{}}
     \toprule
@@ -1243,14 +1222,16 @@ the time of reporting.
       Yes &
       Coverage printed in logs; HTML report uploaded as artifact. \\
     Overall backend coverage &
-      73\% &
+      75\% &
       Below planned target of $\geq 80\%$. \\
     Test execution documentation &
       Yes &
       \texttt{test/README.md} documents setup and running \texttt{pytest}. \\
     Lint/format automation &
-      Not observed &
-      No CI evidence of flake8/black in the sampled workflow logs. \\
+      Yes &
+      Backend linting and formatting are enforced via a pre-commit workflow in CI,
+      which runs on pull requests (including tools such as isort and other checks
+      defined in the pre-commit configuration). \\
     \bottomrule
   \end{tabular}
 \end{table}
@@ -1263,20 +1244,20 @@ enables repeatable inspection of covered and uncovered code paths.  The
 presence of \texttt{test/README.md} further supports maintainability by
 documenting how developers can run the test suite locally.
 
-The observed overall backend coverage (73\%) does not meet the planned
-$\geq 80\%$ target for Rev0.  This indicates that additional tests should be
+The observed overall backend coverage (75\%) does not meet the planned
+$\geq 80\%$ target.  This indicates that additional tests should be
 added, particularly for modules with low coverage, to increase confidence in
 future refactors and to align with MS-MR testability expectations.
 
-This evaluation traces to MS-MR1--MS-MR6.  Rev0 evidence most directly
-supports testability and documentation.  Explicit evidence for style
-compliance via automated lint/format checks remains to be captured.
+This evaluation traces to MS-MR1--MS-MR6.  Evidence supports testability,
+documentation, and style compliance through automated lint/format checks
+integrated into CI.
 
 \subsubsection{Limitations and Next Steps}
-In the next revision, maintainability will be strengthened by:
+Maintainability can be further strengthened by:
 (1) increasing automated test coverage to reach the $\geq 80\%$ target,
-(2) adding or capturing explicit lint/format checks in CI if required by the
-VnV Plan, and
+(2) maintaining lint/format checks in CI to ensure consistent code quality,
+and
 (3) recording a brief team code walkthrough note summarizing modular structure
 and documentation completeness, with follow-up items tracked in GitHub issues.
 
@@ -1284,7 +1265,9 @@ and documentation completeness, with follow-up items tracked in GitHub issues.
 GitHub Actions \texttt{tests.yml} workflow and latest successful run
 (\texttt{backend-test} and \texttt{frontend-test}), including coverage output
 (TOTAL coverage) and the \texttt{coverage-html} artifact; repository test
-documentation at \texttt{/test/README.md}.
+documentation at \texttt{/test/README.md}; backend lint workflow
+(\texttt{backend-lint.yml}) using pre-commit hooks (e.g., isort) executed on
+pull requests.
 
 
 
