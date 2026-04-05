@@ -621,49 +621,150 @@ the repository.
 \subsection{Software Validation}
 \label{subsec:software-validation}
 
-% \wss{If there is any external data that can be used for validation, you should
-%   point to it here.  If there are no plans for validation, you should state that
-%   here.}
-
-% \wss{You might want to use review sessions with the stakeholder to check that
-% the requirements document captures the right requirements.  Maybe task based
-% inspection?}
-
-% \wss{For those capstone teams with an external supervisor, the Rev 0 demo should
-% be used as an opportunity to validate the requirements.  You should plan on
-% demonstrating your project to your supervisor shortly after the scheduled Rev 0 demo.
-% The feedback from your supervisor will be very useful for improving your project.}
-
-% \wss{For teams without an external supervisor, user testing can serve the same purpose
-% as a Rev 0 demo for the supervisor.}
-
-% \wss{This section might reference back to the SRS verification section.}
 Software validation confirms that the delivered Domain Assessment Tool satisfies
 stakeholder expectations and performs reliably under normal operating
 conditions.
 
-Validation will combine functional scenario testing, usability evaluation, and
-non-functional performance checks:
+Validation combined functional scenario testing, usability evaluation, and
+non-functional performance checks as described below.
 
+\subsubsection{End-to-End Validation}
+Execute representative workflows, from data collection through AHP ranking and
+visualization, to confirm system integrity. These tests were performed manually
+by the research subteam using real library data.
+
+\subsubsection{Usability Assessment}
+Conducted with internal research users and Ryan Fang (Robotics domain student)
+using short post-demo surveys (questions provided in Appendix~7.2). The success
+criterion was a mean rating of $\geq 4.0$ (out of 5) across all survey questions.
+
+\subsubsection{Performance Validation}
+\label{subsubsec:performance-validation}
+
+Performance validation ensured the system meets the speed and latency
+requirements defined in the SRS (PR-SL1: AHP ranking calculation must complete
+in less than ten seconds).
+
+\textbf{Method:}
 \begin{itemize}
-  \item \textbf{End-to-end validation:} execute representative workflows, from
-  data collection through AHP ranking and visualization, to confirm system
-  integrity.
-
-  \item \textbf{Usability assessment:} conducted with internal research users
-  using short post-demo surveys (questions provided in Appendix~7.2).
-
-  \item \textbf{Performance validation:} stress-test database operations and API
-  response times to verify thresholds stated in SRS Section~4.3.
-
-  \item \textbf{Security validation:} attempt invalid inputs and authentication
-  edge cases to ensure protection against hazards such as data leakage and
-  unauthorized access.
-
-  \item \textbf{Supervisor review:} a final demonstration and feedback session
-  with Dr.~Smith will confirm that the implemented system meets project
-  objectives and research goals.
+  \item \textbf{Tools:} pytest with timing measurements, browser developer tools
+  for front-end performance, and custom timing scripts for AHP calculations.
+  
+  \item \textbf{Timing:} Performance tests were conducted at two points:
+  \begin{itemize}
+    \item \textbf{After feature completion:} Basic response time checks for new
+    endpoints to detect performance regressions early.
+    \item \textbf{Before major releases (Rev 0 and Rev 1):} Full performance
+    benchmark suite executed on representative datasets (5, 10, 20, and 40
+    libraries).
+  \end{itemize}
+  
+  \item \textbf{Metrics Collected:}
+  \begin{itemize}
+    \item Dashboard load time (median and 95th percentile)
+    \item AHP recomputation time
+    \item Filter application latency
+    \item Export generation time
+  \end{itemize}
 \end{itemize}
+
+\textbf{Pass/Fail Criteria and Remediation Plan:}
+\begin{itemize}
+  \item \textbf{Pass:} All measured response times are below the SRS thresholds
+  (AHP $\leq$ 10 seconds; other actions $\leq$ 5 seconds for interactive use).
+  
+  \item \textbf{Fail:} Any response time exceeds the defined threshold.
+  
+  \item \textbf{Remediation Actions if Fail:}
+  \begin{enumerate}
+    \item Identify bottleneck using profiling tools (Django Debug Toolbar).
+    \item Optimize database queries (add indexes, reduce N+1 queries).
+    \item Implement caching for expensive calculations.
+    \item Defer non-critical computations to background tasks (Celery).
+    \item If threshold still not met after optimization, document the limitation
+    and negotiate revised threshold with supervisor.
+  \end{enumerate}
+\end{itemize}
+
+\subsubsection{Security Validation}
+Attempt invalid inputs and authentication edge cases to ensure protection
+against hazards such as data leakage and unauthorized access. This includes
+SQL injection attempts (prevented by Django ORM), privilege escalation tests,
+and invalid login attempts.
+
+\textbf{Pass/Fail Criteria:}
+\begin{itemize}
+  \item \textbf{Pass:} All unauthorized actions return HTTP 403 Forbidden;
+  audit logs capture all failed attempts; no data leakage occurs.
+  \item \textbf{Fail:} Any unauthorized action succeeds or sensitive data is exposed.
+  \item \textbf{Remediation:} Immediate patch of security vulnerability and
+  re-validation before next release.
+\end{itemize}
+
+\subsubsection{Stakeholder and User Validation}
+Regular validation was conducted through:
+\begin{itemize}
+  \item \textbf{Weekly stakeholder meetings:} Dr.~Spencer Smith reviewed
+  implemented features and provided feedback on alignment with requirements.
+  
+  \item \textbf{User testing sessions:} The research subteam and Ryan Fang
+  (Robotics domain student) used the tool and provided feedback on usability,
+  missing features, and pain points. This feedback was tracked via GitHub
+  issues and prioritized for subsequent sprints.
+\end{itemize}
+
+\subsection{Timeline and Iterative Process}
+\label{subsec:timeline}
+
+The V\&V activities followed an iterative process aligned with the team's agile development methodology. The timeline for verification and validation was structured as follows:
+
+\begin{table}[H]
+\centering
+\caption{V\&V Timeline and Iterative Process}
+\label{tab:vnv-timeline}
+\begin{tabular}{|p{4cm}|p{10cm}|}
+\hline
+\textbf{Activity} & \textbf{Frequency / Timing} \\
+\hline
+Build Feature & Continuous, each sprint (2-week cycles) \\
+\hline
+Unit Testing & Immediately after feature completion, automated via CI/CD (pytest) \\
+\hline
+Integration Testing & After each sprint, before merging to main branch \\
+\hline
+Stakeholder Meeting & Weekly with Dr.~Spencer Smith to review progress and verify requirements \\
+\hline
+User Feedback Session & Conducted with research subteam and Ryan Fang (Robotics domain student) \\
+\hline
+Dev Team Meeting & Weekly to review progress, assign tasks, and adjust priorities \\
+\hline
+VnV Plan Update & After each feedback session, as needed \\
+\hline
+Regression Testing & Before each release (Rev 0, Rev 1) \\
+\hline
+\end{tabular}
+\end{table}
+
+\textbf{Iterative Process Description:}
+\begin{enumerate}
+  \item \textbf{Build Feature:} The development team implemented a new feature according to the sprint plan.
+  
+  \item \textbf{Unit Testing:} Automated unit tests were written using pytest and executed via GitHub Actions CI/CD pipeline. Features without passing unit tests could not be merged.
+  
+  \item \textbf{Integration Testing:} After feature completion, integration tests verified that the new feature worked correctly with existing system components.
+  
+  \item \textbf{Weekly Dev Team Meeting:} The team reviewed test results, identified failing tests, and prioritized fixes. Adjustments to the VnV plan were discussed based on observed outcomes.
+  
+  \item \textbf{Weekly Stakeholder Meeting:} Dr.~Smith reviewed progress, provided feedback on feature implementation and test coverage, and identified any gaps in requirements verification. All changes were tracked through GitHub issues.
+  
+  \item \textbf{User Feedback Session:} The research subteam and Ryan Fang (a Master's student who will use the tool for the Robotics domain) used the tool and provided feedback on usability, correctness, and missing features. This feedback directly informed updates to both the feature backlog and the VnV plan.
+  
+  \item \textbf{VnV Plan Update:} Based on feedback from testing, stakeholder review, and user sessions, the VnV plan was updated to reflect new test cases, modified success criteria, or changed priorities.
+  
+  \item \textbf{Regression Testing:} Before major releases (Rev 0 and Rev 1), the full test suite was executed to ensure no existing functionality was broken.
+\end{enumerate}
+
+This iterative approach ensured that verification and validation were continuous activities rather than end-of-cycle events, allowing for early detection of issues and incorporation of stakeholder feedback throughout development.
 
 \section{System Tests}
 \label{sec:system-tests}
