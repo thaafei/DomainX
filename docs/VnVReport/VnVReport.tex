@@ -78,29 +78,10 @@ and manage their account information within the system. These tests ensure that
 login, profile updates, and password modification operate correctly while
 restricting access to authorized users only.
 
+
 \begin{mdframed}[linewidth=0.5mm]
 \setlength{\parindent}{0pt}
 \textbf{Test Case Identifier:} T--AC--1
-\vspace{0.4em}
-
-\textbf{Input:} Submission of valid sign-up information through the system interface.
-\vspace{0.4em}
-
-\textbf{Expected Output:} The expected result is that a new user account is created successfully and the user is redirected to the login page.
-\vspace{0.4em}
-
-\textbf{Actual Output:} The actual result is that a new user account is created successfully and the user is redirected to the login page.
-\vspace{0.4em}
-
-\textbf{Expected and Actual Output Match:} True
-\vspace{0.4em}
-
-\textbf{Relevant Functional Requirement(s):} FR2
-\end{mdframed}
-
-\begin{mdframed}[linewidth=0.5mm]
-\setlength{\parindent}{0pt}
-\textbf{Test Case Identifier:} T--AC--2
 \vspace{0.4em}
 
 \textbf{Input:} Submission of valid login credentials through the system login interface.
@@ -120,7 +101,7 @@ restricting access to authorized users only.
 
 \begin{mdframed}[linewidth=0.5mm]
 \setlength{\parindent}{0pt}
-\textbf{Test Case Identifier:} T--AC--3
+\textbf{Test Case Identifier:} T--AC--2
 \vspace{0.4em}
 
 \textbf{Input:} A user with the Contributor role logs into the system and attempts to edit metric values in the interactive data table.
@@ -140,7 +121,7 @@ restricting access to authorized users only.
 
 \begin{mdframed}[linewidth=0.5mm]
 \setlength{\parindent}{0pt}
-\textbf{Test Case Identifier:} T--AC--4
+\textbf{Test Case Identifier:} T--AC--3
 \vspace{0.4em}
 
 \textbf{Input:} A user with the Super Admin role logs into the system and attempts to access administrative functionality for managing users.
@@ -160,7 +141,7 @@ restricting access to authorized users only.
 
 \begin{mdframed}[linewidth=0.5mm]
 \setlength{\parindent}{0pt}
-\textbf{Test Case Identifier:} T--AC--5
+\textbf{Test Case Identifier:} T--AC--4
 \vspace{0.4em}
 
 \textbf{Input:} Submission of invalid login credentials or an unregistered email through the system login interface.
@@ -180,7 +161,7 @@ restricting access to authorized users only.
 
 \begin{mdframed}[linewidth=0.5mm]
 \setlength{\parindent}{0pt}
-\textbf{Test Case Identifier:} T--AC--6
+\textbf{Test Case Identifier:} T--AC--5
 \vspace{0.4em}
 
 \textbf{Input:} A Super Admin updates the role of an existing user (e.g., Contributor to Super Admin) through the user management interface.
@@ -200,7 +181,7 @@ restricting access to authorized users only.
 
 \begin{mdframed}[linewidth=0.5mm]
 \setlength{\parindent}{0pt}
-\textbf{Test Case Identifier:} T--AC--7
+\textbf{Test Case Identifier:} T--AC--6
 \vspace{0.4em}
 
 \textbf{Input:} An authenticated user accesses their profile page and submits a request to change their password using the password update form.
@@ -220,7 +201,7 @@ restricting access to authorized users only.
 
 \begin{mdframed}[linewidth=0.5mm]
 \setlength{\parindent}{0pt}
-\textbf{Test Case Identifier:} T--AC--8
+\textbf{Test Case Identifier:} T--AC--7
 \vspace{0.4em}
 
 \textbf{Input:} A public (unauthenticated) user accesses a published domain, and an authenticated user without edit privileges attempts to modify domain data.
@@ -240,7 +221,7 @@ restricting access to authorized users only.
 
 \begin{mdframed}[linewidth=0.5mm]
 \setlength{\parindent}{0pt}
-\textbf{Test Case Identifier:} T--AC--9
+\textbf{Test Case Identifier:} T--AC--8
 \vspace{0.4em}
 
 \textbf{Input:} A Super Admin creates a new user account through the admin interface. The new user receives an email with a link to set their password.
@@ -259,7 +240,7 @@ restricting access to authorized users only.
 \end{mdframed}
 \begin{mdframed}[linewidth=0.5mm]
 \setlength{\parindent}{0pt}
-\textbf{Test Case Identifier:} T--AC--10
+\textbf{Test Case Identifier:} T--AC--9
 \vspace{0.4em}
 
 \textbf{Input:} An authenticated user without sufficient privileges attempts to access restricted functionality (e.g., delete domain button or protected page URL).
@@ -279,7 +260,7 @@ restricting access to authorized users only.
 
 \begin{mdframed}[linewidth=0.5mm]
 \setlength{\parindent}{0pt}
-\textbf{Test Case Identifier:} T--AC--11
+\textbf{Test Case Identifier:} T--AC--10
 \vspace{0.4em}
 
 \textbf{Input:} A user requests a password reset, receives an email with a tokenized link, and submits a new password.
@@ -405,7 +386,7 @@ expected.
 \end{mdframed}
 \begin{mdframed}[linewidth=0.5mm]
 \setlength{\parindent}{0pt}
-\textbf{Test Case Identifier:} T--DM--7
+\textbf{Test Case Identifier:} T--DM--6
 \vspace{0.4em}
 
 \textbf{Input:} A Super Admin publishes a completed domain through the system interface.
