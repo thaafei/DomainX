@@ -977,17 +977,16 @@ This section specifies execution-based experiments (with summaries or plots rath
 
 \textbf{Method (Static + Dynamic):}
 \begin{itemize}
-  \item Perform a code review of authentication modules to confirm proper password hashing (e.g., \texttt{\href{https://www.npmjs.com/package/bcrypt}{bcrypt}} or \texttt{\href{https://argon2.online/}{Argon2}}) and secure session-token handling.
-  \item Attempt unauthorized actions (e.g., deleting data without sufficient privileges, accessing admin-only routes) and verify they are blocked and logged.
-  \item Review audit-log entries to ensure failed attempts are timestamped and attributed to the correct user.
-  \item Confirm session-timeout and account lockout mechanisms activate after consecutive failed attempts.
+  \item Perform a code review of authentication modules to confirm proper password hashing (e.g., Django built-in hashing) and secure session-token handling.
+  \item Attempt unauthorized actions (e.g., deleting data without sufficient privileges, accessing admin-only routes) and verify they are blocked (e.g., HTTP 401/403 responses) and do not modify system state.
+  \item Review logging configuration to ensure security-relevant events (e.g., failed authentication attempts) are recorded with timestamps and associated user/context where applicable.
+  \item Verify that secure cookie and HTTPS settings are enforced in production configuration.
 \end{itemize}
 
-\textbf{Expected Output:} Completed security-verification checklist, screenshots/logs of simulated intrusions, and a concise summary of results confirming no critical vulnerabilities.
+\textbf{Expected Output:} Completed security-verification checklist, screenshots/logs of simulated unauthorized access attempts, and confirmation that restricted actions are blocked with appropriate responses.
 
 \textbf{Traceability:} PR-SC1--PR-SC3, SR-AC6, SR-IM1, SR-AU1.\\
 Also aligns with \href{https://github.com/thaafei/DomainX/blob/main/docs/HazardAnalysis/HazardAnalysis.pdf}{Hazard Analysis} controls for unauthorized access and data integrity risks.
-
 % ------------------------------------------------------
 \subsubsection{Maintainability}
 \label{subsubsec:maintainability}
