@@ -1259,7 +1259,9 @@ documentation at \texttt{/test/README.md}; backend lint workflow
 (\texttt{backend-lint.yml}) using pre-commit hooks (e.g., isort) executed on
 pull requests.
 
-
+\subsection{Impact of Verification}
+The verification results helped highlight areas where the system could be improved.
+For example, observed delays during some interactions motivated the addition of a loading indicator when switching pages to improve user feedback. Other observations, such as limited feedback during certain operations, were noted as potential improvements for future work. Overall, the results informed small usability enhancements and identified areas for further refinement.
 
 \section{Unit Testing}
 The following unit tests concern behaviour-hiding modules that are implemented by the tool. Modules implemented by external libraries are assumed to be tested themselves and therefore don't need to be unit tested.
