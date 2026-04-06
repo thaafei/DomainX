@@ -545,7 +545,8 @@ summarize results and to support reproducibility.
 \label{sec:nfr-perfscalability}
 
 This subsection reports results for the performance and
-scalability experiment specified in the VnV Plan (\S4.2.1). The experiment
+scalability experiment specified in the VnV Plan (\S4.2.1),
+conducted under a single-user setup. The experiment
 measures response times for dashboard load, filtering, AHP recomputation, and
 export, and summarizes median and 95th-percentile (p95) values.
 
@@ -564,7 +565,7 @@ Table~\ref{tab:tnf1-summary} summarizes the test setup, inputs, and outputs for 
       PR-SL1 (Speed and Latency Requirement). \\
     \textbf{Initial State} &
       System deployed and accessible; existing domains available with known
-      library counts (2 and 10). \\
+library counts (2 and 10); tests performed under a single-user setup (no concurrent load). \\
     \textbf{Input} &
       Record time to (1) load the dashboard and render the ranking graph,
       (2) apply a domain filter, (3) update category weights to trigger AHP
@@ -591,13 +592,20 @@ Table~\ref{tab:tnf1-summary} summarizes the test setup, inputs, and outputs for 
 \subsubsection{Method}
 Timings were collected manually using a stopwatch, measured from the moment
 the action was initiated (click) to the moment the interface reached a stable
-state (graph rendered or updated). Due to manual timing, values include human
-reaction time and should be treated as conservative upper bounds. For small
-sample sizes, p95 is reported conservatively as the maximum observed value.
+state (graph rendered or updated). Each action was repeated multiple times
+(n = 8--10 per configuration), and median and p95 values were computed.
+
+Experiments were conducted using a single user (no concurrent load) on a personal
+laptop using a web browser over a stable internet connection. Tests were performed
+on domains containing 2 and 10 libraries.
+
+Due to manual timing, values include human reaction time and should be treated as
+conservative upper bounds. For small sample sizes, p95 is reported conservatively
+as the maximum observed value.
 
 \subsubsection{Results}
 Table~\ref{tab:tnf1-results} summarizes the observed median and p95 response
-times.
+times. Each action was repeated multiple times (n shown per row).
 
 \begin{table}[H]
   \centering
@@ -640,7 +648,8 @@ However, a short delay without visual feedback was observed, which may affect
 perceived responsiveness.
 
 \subsubsection{Limitations and Next Steps}
-The current results include only 2- and 10-library datasets and manual timing.
+The current results include only 2- and 10-library datasets, a single-user setup
+(no concurrent load), and manual timing.
 Future work includes evaluating performance on larger datasets (e.g., 5, 10,
 20, and 40 libraries) and incorporating automated timing collection where
 possible. Improving user feedback (e.g., loading indicators) during longer
