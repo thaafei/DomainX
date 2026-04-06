@@ -20,43 +20,403 @@
 \maketitle
 
 \section{Changes in Response to Feedback}
-The below sections are the feedback and response to the feedback throughout the course, grouped by the related documents. Note that feedback in relation to simple styling, spelling or syntax of the documents were excluded.
+The below sections are the feedback and response to the feedback throughout the course, grouped by the related documents.
 
-\plt{Summarize the changes made over the course of the project in response to
-feedback from TAs, the instructor, teammates, other teams, the project
-supervisor (if present), and from user testers.}
+\subsection{SRS and HA Documentation}
+This section summarizes the feedback received on the SRS and HA. It is divided into their respective subsection.
 
-\plt{Version control can make the summary relatively easy, if you used issues
-and meaningful commits.  If you feedback is in an issue, and you responded in
-the issue tracker, you can point to the issue as part of explaining your
-changes.  If addressing the issue required changes to code or documentation, you
-can point to the specific commit that made the changes.  Although the links are
-helpful for the details, you should include a label for each item of feedback so
-that the reader has an idea of what each item is about without the need to click
-on everything to find out.}
+\subsubsection{Software Requirements Specification (SRS)}
+    This section summarizes the feedback received and resolution for the SRS.
 
-\plt{If you were not organized with your commits, traceability between feedback
-and commits will not be feasible to capture after the fact.  You will instead
-need to spend time writing down a summary of the changes made in response to
-each item of feedback.}
+    \begin{longtable}{p{0.18\textwidth} p{0.26\textwidth}
+                    p{0.34\textwidth} p{0.16\textwidth}}
+    \caption{SRS feedback and response traceability}
+    \label{tab:srs-trace}\\
+    \toprule
+    Source & Feedback & Change Made & Where Addressed \\
+    \midrule
+    \endfirsthead
 
-\plt{You should address EVERY item of feedback.  A table or itemized list is
-recommended.  You should record every item of feedback, along with the source of
-that feedback and the change you made in response to that feedback.  The
-response can be a change to your documentation, code, or development process.
-The response can also be the reason why no changes were made in response to the
-feedback.  To make this information manageable, you will record the feedback and
-response separately for each deliverable in the sections that follow.}
+    \toprule
+    Source & Feedback & Change Made & Where Addressed \\
+    \midrule
+    \endhead
 
-\plt{If the feedback is general or incomplete, the TA (or instructor) will not
-be able to grade your response to feedback.  In that case your grade on this
-document, and likely the Revision 1 versions of the other documents will be
-low.}
+    \bottomrule
+    \endfoot
 
-\subsection{SRS and Hazard Analysis}
+    % TA review
+    \href{https://github.com/thaafei/DomainX/issues/116}{TA Review\#116},
+    &
+    Sections require a brief explanation before subsection
+    &
+    Updated with a brief description of what the overall section contains
+    &
+    \href{https://github.com/thaafei/DomainX/issues/140}{Issue \#140}; Many sections
+    \\
 
+    \href{https://github.com/thaafei/DomainX/issues/116}{TA Review\#116},
+    &
+    Cite methodology paper.
+    &
+    When mentioning the methodology paper, we should be citing it each time.
+    &
+    \href{https://github.com/thaafei/DomainX/issues/141}{Issue \#141}; Many sections
+    \\
+
+    \href{https://github.com/thaafei/DomainX/issues/116}{TA Review\#116},
+    &
+    Label each goal with identifier G*, where * is the corresponding goal number. Updated all mention of goals with a reference to them.
+    &
+    &
+    \href{https://github.com/thaafei/DomainX/issues/142}{Issue \#142}; Section~1.2
+    \\
+
+    \href{https://github.com/thaafei/DomainX/issues/116}{TA Review\#116},
+    &
+    Page numbering should be in numbers, only the Table of Contents should be numbered in limitations.
+    &
+    Updated the incorrect page numbering for pages after the Table of Contents.
+    &
+    \href{https://github.com/thaafei/DomainX/issues/143}{Issue \#143}; All pages
+    \\
+
+    \href{https://github.com/thaafei/DomainX/issues/116}{TA Review\#116},
+    &
+    Add Dr. Smith as a customer as well in the stakeholders section.
+    &
+    Added reference of Dr. Smith to the customers.
+    &
+    \href{https://github.com/thaafei/DomainX/issues/144}{Issue \#144}; Section~2.2
+    \\
+
+    \href{https://github.com/thaafei/DomainX/issues/116}{TA Review\#116},
+    &
+    Relate goals to all the stakeholders. Indicating which goals matter to them.
+    &
+    Added Relevant Goals under each stakeholders with references to the stated goals.
+    &
+    \href{https://github.com/thaafei/DomainX/issues/145}{Issue \#145}; Section~2
+    \\
+
+    \href{https://github.com/thaafei/DomainX/issues/116}{TA Review\#116},
+    &
+    Add accessibility and compatibility to goals, since we noted that the application should be fully functional.
+    &
+    Since having a functional web application is assumed, it shouldn't need to be stated as an explicit goal.
+    &
+    Not implemented \\
+
+    \href{https://github.com/thaafei/DomainX/issues/116}{TA Review\#116},
+    &
+    Work partitioning table needs to include a caption and add BUC to table of acronyms.
+    &
+    Implemented the feedback.
+    &
+    \href{https://github.com/thaafei/DomainX/issues/148}{Issue \#148}; Section~6.3 \\
+
+    \href{https://github.com/thaafei/DomainX/issues/116}{TA Review\#116},
+    &
+    Business Data model appearing above the section that mentions it. The section should also include a description
+    &
+    Implemented the feedback.
+    &
+    \href{https://github.com/thaafei/DomainX/issues/149}{Issue \#149}; Section~7 \\
+
+    \href{https://github.com/thaafei/DomainX/issues/116}{TA Review\#116},
+    &
+    In the Product Use Case table, the mentioned goals should be referenced. Additionally the table also needs a caption.&
+    Implemented the feedback.
+    &
+    \href{https://github.com/thaafei/DomainX/issues/150}{Issue \#150}; Section~8.2 \\
+
+    \href{https://github.com/thaafei/DomainX/issues/116}{TA Review\#116},
+    &
+    Several small formatting issues in NFR, such as quotation marks facing the wrong way.
+    &
+    Implemented the feedback.
+    &
+    \href{https://github.com/thaafei/DomainX/issues/151}{Issue \#151}; Several sections \\
+
+    \href{https://github.com/thaafei/DomainX/issues/116}{TA Review\#116},
+    &
+    Duplicated NFRs in two sections. UH-LR1 and UH-LR2 of Learning Requirements is the same as UH-UP1 and UH-UP2 of Understandability and Politeness Requirements.
+    &
+    Removed UH-LR1, UH-UP1 and UH-UP2. UH-LR1 and UH-UP1 were removed due to not implementing in the end.
+    &
+    \href{https://github.com/thaafei/DomainX/issues/152}{Issue \#152}; Section~11.3, Section~11.4 \\
+
+    \href{https://github.com/thaafei/DomainX/issues/116}{TA Review\#116},
+    &
+    Duplicated NFRs in two sections. MS-SR1 of Supportability Requirements is the same as OE-PR1 of Productization Requirements.
+    &
+    Removed MS-SR1.
+    &
+    \href{https://github.com/thaafei/DomainX/issues/153}{Issue \#153}; Section~14.2, Section~13.4 \\
+
+    \href{https://github.com/thaafei/DomainX/issues/116}{TA Review\#116},
+    &
+    Overall, all references to external documents and software libraries should by hyperlinked.
+    &
+    Added hyperlinks to all referenced internal documents and external software libraries.
+    &
+    \href{https://github.com/thaafei/DomainX/issues/154}{Issue \#154}; \href{https://github.com/thaafei/DomainX/issues/155}{Issue \#155}; Overall document. \\
+
+    \href{https://github.com/thaafei/DomainX/issues/116}{TA Review\#116},
+    &
+    Table 10 - Development Phase Plan should list actual dates, not week numbers.
+    &
+    Implemented feedback.
+    &
+    \href{https://github.com/thaafei/DomainX/issues/156}{Issue \#156}; Table~11. \\
+
+    \href{https://github.com/thaafei/DomainX/issues/116}{TA Review\#116},
+    &
+    All sections require a brief explanation before the subsection
+    &
+    Implemented feedback.
+    &
+    \href{https://github.com/thaafei/DomainX/issues/140}{Issue \#140}; Whole document. \\
+
+        % peer review
+    \href{https://github.com/thaafei/DomainX/issues/114}{Peer Review\#114},
+    &
+    Section 1.2.4 and FR12 claim the AHP process will “match what the user would calculate exactly." But Section 8.1 (Exclusions) states: “The system will not include functionality to check the accuracy of the AHP calculations.” The system promises perfect AHP equivalence without including any mechanism to verify that equivalence - a logical contradiction that affects credibility and testing feasibility. Maybe add in a threshold for acceptance or some other solution?
+    &
+    Due to the AHP process itself being very common and having many pre-existing libraries, we said we didn't need to check it as we won't be implementation the comparison ourselves. But the wording is a bit weird so I will update the phrasing to include this additional context.
+    &
+    Not implemented. \\
+
+    \href{https://github.com/thaafei/DomainX/issues/115}{Peer Review\#115},
+    &
+    No rationale or fit criterion is provided for any requirements in the document.
+    &
+    Added rationale/fit criterion for the FRs. Rational/fit criterion for NFRs are out of scope due to time constraints.
+    &
+    \href{https://github.com/thaafei/DomainX/issues/255}{Issue \#255} \\
+
+    \href{https://github.com/thaafei/DomainX/issues/118}{Peer Review\#118},
+    &
+    Excel import/export is listed as essential in Section 3.3 (“Excel integration is essential”) but is still marked Pending in Open Issue OI-04. Since Excel serves as the baseline for the existing workflow, this leaves uncertainty about the system’s compatibility with legacy data. The team could specify whether minimal import/export is required for the first release or whether live synchronization is planned for later phases.    &
+    Although Excel integration is required in the sense that we do need it for export, the open issue is more so clarifying whatever we need a live sync, on top. I will rephrase the open issue to clarify this.
+    &
+    Not implemented.
+    \\
+
+
+    \end{longtable}
+
+\subsubsection{Hazard Analysis (HA)}
+
+   This section summarizes the feedback received and resolution for the HA.
+    \begin{longtable}{p{0.18\textwidth} p{0.26\textwidth}
+                    p{0.34\textwidth} p{0.16\textwidth}}
+    \caption{SRS feedback and response traceability}
+    \label{tab:srs-trace}\\
+    \toprule
+    Source & Feedback & Change Made & Where Addressed \\
+    \midrule
+    \endfirsthead
+
+    \toprule
+    Source & Feedback & Change Made & Where Addressed \\
+    \midrule
+    \endhead
+
+    \bottomrule
+    \endfoot
+
+    \href{https://github.com/thaafei/DomainX/issues/116}{TA Review\#116},
+    &
+    Page numbering should be in numbers, only the Table of Contents should be numbered in limitations.
+    &
+    Updated the incorrect page numbering for pages after the Table of Contents.
+    &
+    \href{https://github.com/thaafei/DomainX/issues/136}{Issue \#136}; All pages
+    \\
+
+    \href{https://github.com/thaafei/DomainX/issues/116}{TA Review\#116},
+    &
+    Inconsistency of sentence structures in the Introduction, such as order of brackets and content within brackets.
+    &
+    Fixed the inconsistency.
+    &
+    \href{https://github.com/thaafei/DomainX/issues/137}{Issue \#137}; Section~1
+    \\
+
+    \href{https://github.com/thaafei/DomainX/issues/116}{TA Review\#116},
+    &
+    Section~3 - System Boundaries and Components should have each component labelled. The figure displaying the System Components should then use the labels in it's display.
+    &
+    Added labels and updated the figure
+    &
+    \href{https://github.com/thaafei/DomainX/issues/138}{Issue \#138}; Section~3
+    \\
+
+    \href{https://github.com/thaafei/DomainX/issues/116}{TA Review\#116},
+    &
+    Instructor comments was left in the Appendix.
+    &
+    Deleted the comments.
+    &
+    \href{https://github.com/thaafei/DomainX/issues/138}{Issue \#139}; Appendix
+    \\
+    \end{longtable}
 
 \subsection{Design and Design Documentation}
+This section summarizes the feedback received on the Design Documents, Module Guide and Module Interface Specification. It is divided into their respective subsection.
+\subsubsection{Module Guide (MG)}\label{ssubsec:mg-trace}
+
+The MG revisions focused on improving consistency, abstraction,
+traceability, and clarity of interfaces. Feedback items were grouped
+by source and mapped to the final document so that each change can be
+traced back to the review that motivated it.
+
+\begin{longtable}{p{0.18\textwidth} p{0.26\textwidth}
+                  p{0.34\textwidth} p{0.16\textwidth}}
+\caption{MIS feedback and response traceability}
+\label{tab:mg-trace}\\
+\toprule
+Source & Feedback & Change Made & Where Addressed \\
+\midrule
+\endfirsthead
+
+\toprule
+Source & Feedback & Change Made & Where Addressed \\
+\midrule
+\endhead
+
+\bottomrule
+\endfoot
+
+% rev -1
+\href{https://github.com/thaafei/DomainX/issues/200}{TA Review - Rev -1\#200},
+&
+Update Anticipated Changes (AC) AC7 - The visualization libraries used to display data,  to include overall visualization and UI, instead of just the visualization libraries for displaying data.
+&
+Added a new AC (AC9 - The user interface features, design and colours might be changed). To encapsulate the UI elements since AC7 is specific to the graphing/plotting external libraries.
+&
+\href{https://github.com/thaafei/DomainX/issues/258}{Issue \#258}; Section~4.1, Table~4
+\\
+
+\href{https://github.com/thaafei/DomainX/issues/200}{TA Review - Rev -1 \#200},&
+Verify hyper references in the document is being displayed properly, some appear as ???.
+&
+Updated the refs used within the document to align with the labels used.
+&
+\href{https://github.com/thaafei/DomainX/issues/259}{Issue \#259}; Section~6
+\\
+
+\href{https://github.com/thaafei/DomainX/issues/200}{TA Review - Rev -1\#200},&
+Browser module needs clarification on what is supported. Are all of them supported? Such as Chrome, Firefox, Edge, Safari, etc.
+&
+Explicitly stated the supported web browser's (i.e. Chrome, Firefox, Safari, Edge)
+&
+\href{https://github.com/thaafei/DomainX/issues/260}{Issue \#260}; Section~7.1.1
+\\
+
+% rev 0
+\href{https://github.com/thaafei/DomainX/issues/339}{TA Review - Rev 0\#200},&
+Delete Section 11, Design of Communication Protocols since it's not used.
+&
+Removed the section
+&
+\href{https://github.com/thaafei/DomainX/issues/479}{Issue \#479}; Section~11
+\\
+
+\href{https://github.com/thaafei/DomainX/issues/339}{TA Review - Rev 0\#200},&
+Remove caption of revision history table
+&
+Removed caption for the revision history table
+&
+\href{https://github.com/thaafei/DomainX/issues/480}{Issue \#480}; Revision History Table
+\\
+
+\href{https://github.com/thaafei/DomainX/issues/339}{TA Review - Rev 0\#200},&
+Clarify nonfunctional requirements (NFR) that are listed as Not relevant in the Trace between NFR's and Modules Table&
+Explicitly stated that certain NFR's (Productization (OE-PR*), Release (OE-RR*), Maintenance (MS-MR*), Supportability (MS-SR*), Adaptability (MS-AR*), Legal (CR-LR*)) are not considered, since they are out-of-scope for this document and removed them from the trace table.
+&
+\href{https://github.com/thaafei/DomainX/issues/478}{Issue \#478}; Section~8, Table~3
+\\
+% peer review
+
+\href{https://github.com/thaafei/DomainX/issues/218}{Peer Review \#218},
+&
+Ensure that you have identified each of your modules as the correct type in your Module Guide and Module Interface Specification. For example, I noticed that in you module guide, it states that the Automated Metrics Module is of type library. However, in your MIS, it shows that this module has state variables which library modules do not have. The same goes for library classified modules such as the Repository API Module, and Database Persistence Module.
+&
+Updated MG module's to align with the MIS.
+&
+\href{https://github.com/thaafei/DomainX/issues/307}{Issue \#307}; Section~7
+\\
+
+\href{https://github.com/thaafei/DomainX/issues/238}{Peer Review \#238},
+&
+The description of MG services is abstract, it is hard to understand the distinction between module services. Adding examples would be useful.
+&
+Added more details to the services section for the modules.
+&
+\href{https://github.com/thaafei/DomainX/issues/307}{Issue \#307}; Section~7
+\\
+
+\href{https://github.com/thaafei/DomainX/issues/203}{Peer Review \#203},
+&
+Centralization of M10 - System API Gateway Module, concerns for bottleneck
+&
+M10 is responsible for the overall flow and coordination of the information, but the other modules are responsible for fulfilling the information, so I don't think it is a bottle neck.
+Plus centralizing the information flow will reduce duplicating code and provide a centralized place to update any core business logic if required down the line. Additionally, it is implemented by a reliable external library (Django) that is widely used.
+&
+Not implemented
+\\
+
+\href{https://github.com/thaafei/DomainX/issues/211}{Peer Review \#211},
+&
+Secrets and Services Not Clearly Differentiated
+&
+Duplicate of \href{https://github.com/thaafei/DomainX/issues/238}{Peer Review \#238}, resolved by adding more description services.
+&
+\href{https://github.com/thaafei/DomainX/issues/307}{Issue \#307}; Section~7
+\\
+
+\href{https://github.com/thaafei/DomainX/issues/240}{Peer Review \#240},
+&
+Authentication Module Recommendation
+&
+Added M5 - User Authentication Module
+&
+\href{https://github.com/thaafei/DomainX/issues/307}{Issue \#307}; Section~7
+\\
+
+\href{https://github.com/thaafei/DomainX/issues/216}{Peer Review \#216},
+&
+Missing Connections Between Requirements and Design
+&
+The connection is already listed in Table~2 - Trace Between Functional Requirements and Module. However added an additional paragraph explaining how modules and requirements related, with an example.
+&
+Not implemented
+\\
+
+\href{https://github.com/thaafei/DomainX/issues/224}{Peer Review \#224},
+&
+User Interface (UI) Design using Figma suggestion.
+&
+Not implemented since the team has already sketched out our potential UI design but will consider Figma in the future.
+&
+Not implemented
+\\
+
+\href{https://github.com/thaafei/DomainX/issues/204}{Peer Review \#204},
+&
+Missing Strong Data Validation Strategy, concerns with Integrity Issues. Preference for centralized Validation Service.
+&
+Since the data is different for the different modules, I would disagree that it should be decentralized. Or else the modules would be too tightly coupled
+&
+Not implemented
+\\
+
+
+
+\end{longtable}
+
 
 \subsubsection{Module Interface Specification (MIS)}
 \label{ssubsec:mis-trace}
@@ -92,7 +452,8 @@ Revised the type notation to use \texttt{bool} consistently in the MIS.
 This aligned the type names with the notation table and removed
 inconsistent wording.
 &
-Issue \#265; Section~4.3, Table~2
+\href{https://github.com/thaafei/DomainX/issues/265}{Issue \#265};
+Section~4.3, Table~2
 \\
 
 TA Review \#200,
@@ -104,7 +465,8 @@ Revised variable names to better match the intended system terminology
 and to improve consistency between the MIS and implementation-facing
 documentation.
 &
-Issue \#264; Sections~4.4 and~6
+\href{https://github.com/thaafei/DomainX/issues/264}{Issue \#264};
+Sections~4.4 and~6
 \\
 
 TA Review \#200,
@@ -116,7 +478,8 @@ interfaces remain meaningful.
 Added local functions where appropriate and revised module descriptions
 to better justify the structure of the affected modules.
 &
-Issue \#263; Section~6
+\href{https://github.com/thaafei/DomainX/issues/263}{Issue \#263};
+Section~6
 \\
 
 TA Review \#200,
@@ -129,7 +492,8 @@ Revised the Browser Module description to state that it provides the
 runtime container for the client application and clarified its role in
 the system.
 &
-Issue \#262; Section~6.1
+\href{https://github.com/thaafei/DomainX/issues/262}{Issue \#262};
+Section~6.1
 \\
 
 TA Review \#200,
@@ -140,10 +504,12 @@ Refer to the module decomposition table explicitly by number.
 Revised the introductory text for module decomposition so that it
 explicitly refers to Table~3.
 &
-Issue \#261; Section~5, Table~3
+\href{https://github.com/thaafei/DomainX/issues/261}{Issue \#261};
+Section~5, Table~3
 \\
 
-Peer Review \#239
+Peer Review
+\href{https://github.com/thaafei/DomainX/issues/239}{\#239}
 &
 The MIS is missing abbreviations and acronyms needed for readability.
 &
@@ -153,8 +519,9 @@ clarity and make the document easier to read independently.
 Section~2, Table~1
 \\
 
-Peer Reviews \#217
-and \#218
+Peer Reviews
+\href{https://github.com/thaafei/DomainX/issues/217}{\#217}
+and \href{https://github.com/thaafei/DomainX/issues/218}{\#218}
 &
 Module subsections, module types, and input/output types are unclear.
 &
@@ -165,8 +532,9 @@ explicit.
 Section~4.3, Table~2; Section~6
 \\
 
-Peer Reviews \#212
-and \#223
+Peer Reviews
+\href{https://github.com/thaafei/DomainX/issues/212}{\#212}
+and \href{https://github.com/thaafei/DomainX/issues/223}{\#223}
 &
 The level of abstraction and module hierarchy need to be more precise.
 &
@@ -178,8 +546,10 @@ Section~5, Table~3; Section~6
 \\
 
 Final Documentation
-Issue \#501
-(sub-issues \#481 to \#485)
+\href{https://github.com/thaafei/DomainX/issues/501}{Issue \#501}
+(sub-issues
+\href{https://github.com/thaafei/DomainX/issues/481}{\#481} to
+\href{https://github.com/thaafei/DomainX/issues/485}{\#485})
 &
 Remove unnecessary text, clarify parameters and outputs, fix
 formatting, and hyperlink module references.
@@ -194,21 +564,18 @@ Section~6
 \end{longtable}
 
 
+
 \subsection{VnV Plan and Report}
-
-\subsubsection{VnV Plan}
-\label{ssubsec:vnv-plan-trace}
-
-This subsection summarizes the feedback received on the Verification
-and Validation (V\&V) Plan and the revisions made in response. The
-updates focused on improving traceability, clarifying verification
-approaches, strengthening test descriptions, and refining the
-structure and readability of the document.
+This section summarizes the feedback received on the Verification
+and Validation (V\&V) Plan and V\&V Report. The updates focused on
+improving traceability, clarifying verification approaches,
+strengthening test descriptions, and refining the structure and
+readability of the documents.
 
 \begin{longtable}{p{0.18\textwidth} p{0.26\textwidth}
                   p{0.34\textwidth} p{0.16\textwidth}}
-\caption{V\&V Plan feedback and response traceability}
-\label{tab:vnv-plan-trace}\\
+\caption{V\&V Plan and Report feedback and response traceability}
+\label{tab:vnv-plan-report-trace}\\
 \toprule
 Source & Feedback & Change Made & Where Addressed \\
 \midrule
@@ -222,7 +589,7 @@ Source & Feedback & Change Made & Where Addressed \\
 \bottomrule
 \endfoot
 
-TA Review \#130,
+TA Review \href{https://github.com/thaafei/DomainX/issues/130}{\#130},
 annotated VnVPlan.pdf
 &
 Traceability table contains unnecessary columns.
@@ -234,7 +601,7 @@ identifiers.
 Section~4.3, Table~9
 \\
 
-TA Review \#130,
+TA Review \href{https://github.com/thaafei/DomainX/issues/130}{\#130},
 annotated VnVPlan.pdf
 &
 Traceability between test cases and requirements is unclear.
@@ -246,7 +613,7 @@ improving clarity and coverage justification.
 Section~4.3
 \\
 
-TA Review \#130,
+TA Review \href{https://github.com/thaafei/DomainX/issues/130}{\#130},
 annotated VnVPlan.pdf
 &
 Verification approach is ambiguous and difficult to follow.
@@ -258,7 +625,7 @@ cases and system components.
 Section~4.1; Section~4.2
 \\
 
-TA Review \#130,
+TA Review \href{https://github.com/thaafei/DomainX/issues/130}{\#130},
 annotated VnVPlan.pdf
 &
 Test case descriptions are incomplete and include unnecessary columns.
@@ -270,7 +637,7 @@ requirements.
 Section~4.1.1--4.1.3
 \\
 
-TA Review \#130,
+TA Review \href{https://github.com/thaafei/DomainX/issues/130}{\#130},
 annotated VnVPlan.pdf
 &
 Unclear whether tests are manual or automated.
@@ -281,7 +648,7 @@ verification approach sections and tool descriptions.
 Section~3.5; Section~3.6; Section~4
 \\
 
-TA Review \#130,
+TA Review \href{https://github.com/thaafei/DomainX/issues/130}{\#130},
 annotated VnVPlan.pdf
 &
 Descriptions of testing tools are vague.
@@ -292,7 +659,7 @@ automation, CI/CD, static analysis, and API validation).
 Section~3.6, Table~5
 \\
 
-TA Review \#130,
+TA Review \href{https://github.com/thaafei/DomainX/issues/130}{\#130},
 annotated VnVPlan.pdf
 &
 Unclear ownership of verification activities.
@@ -303,7 +670,7 @@ including testing, reviews, and traceability management.
 Section~3.1, Table~4
 \\
 
-TA Review \#130,
+TA Review \href{https://github.com/thaafei/DomainX/issues/130}{\#130},
 annotated VnVPlan.pdf
 &
 Usability evaluation is not fully specified.
@@ -315,18 +682,19 @@ quantitative thresholds.
 Section~4.2.3; Appendix~7.2
 \\
 
-TA Review \#130,
+TA Review \href{https://github.com/thaafei/DomainX/issues/130}{\#130},
 annotated VnVPlan.pdf
 &
 Ambiguity between SRS walkthroughs and code walkthroughs.
 &
-Clarified distinction between SRS verification walkthroughs and code
-walkthroughs, and placed them in appropriate sections of the plan.
+Clarified the distinction between SRS verification walkthroughs and
+code walkthroughs, and placed them in appropriate sections of the
+plan.
 &
 Section~3.2; Section~3.5
 \\
 
-TA Review \#130,
+TA Review \href{https://github.com/thaafei/DomainX/issues/130}{\#130},
 annotated VnVPlan.pdf
 &
 Missing list of tables and figures based on rubric.
@@ -337,18 +705,57 @@ align with documentation expectations.
 Contents page
 \\
 
-Peer Review \#461
+Peer Review \href{https://github.com/thaafei/DomainX/issues/461}{\#461}
 &
 Traceability between VnV Plan and VnV Report is insufficient.
 &
-Ensured consistent identifiers are used across both documents so that
-test results in the VnV Report map directly to planned verification
-activities in the VnV Plan.
+Aligned identifiers and requirement mappings across both documents so
+that planned tests correspond directly to reported results, improving
+end-to-end traceability.
 &
-Section~4.3
+VnV Plan Section~4.3; VnV Report Sections~3--4
+\\
+
+Issue \href{https://github.com/thaafei/DomainX/issues/528}{\#528}
+&
+Update tests for implemented features that were previously marked as
+in progress in earlier versions of the report.
+&
+Revised the functional requirements evaluation to reflect completed
+implementations rather than listing them under features in progress.
+Functional test cases were updated to align with the current system
+state.
+&
+VnV Report, Section~3
+\\
+
+TA Review (annotated VnV Report PDF)
+&
+Some nonfunctional results are marked as \textit{Partial}.
+&
+Expanded the corresponding nonfunctional sections to clarify the
+meaning of partial results and to document limitations and next steps
+for incomplete verification.
+&
+VnV Report, Section~4
+\\
+
+TA Review (annotated VnV Report PDF)
+&
+Computational accuracy test case summary appears incomplete.
+&
+Completed the computational accuracy subsection by adding a full test
+case summary, including method, results, and analysis of AHP outputs.
+&
+VnV Report, Section~4.4
 \\
 
 \end{longtable}
+
+
+
+
+
 
 \section{Extras}
 
