@@ -4,8 +4,15 @@
 \usepackage{booktabs}
 \usepackage{multicol}
 \usepackage{longtable}
-\usepackage{graphicx}
+
+\usepackage{amsmath}
+\usepackage{hyperref}
 \usepackage{float}
+
+
+\usepackage{graphicx}
+
+
 \title{Reflection and Traceability Report on \progname}
 
 \author{\authname}
@@ -1023,9 +1030,98 @@ We added dropdown inputs for metrics with predefined values (e.g., Boolean, rang
 The feedback helped identify usability gaps in metric-related workflows. The resulting changes focused on improving clarity, reducing user effort, and ensuring more consistent data entry.
 \section{Design Decisions (LO12)}
 
-\plt{Reflect and justify your design decisions.  How did limitations,
- assumptions, and constraints influence your decisions?  Discuss each of these
- separately.}
+This section reflects on the key design decisions made during the development of the DomainX tool, organized by the limitations, assumptions, and constraints that influenced them.
+
+\subsection{Limitations}
+
+The primary limitation we faced was the project timeline. Development had to be completed within a single academic year, which required us to prioritize core functionality over comprehensive features. This time constraint directly influenced several architectural decisions:
+
+\begin{itemize}
+  \item \textbf{Modular Backend Architecture:} We chose a modular Django-based architecture rather than a monolithic design. This allowed team members to work on different modules (e.g., domain management, metric collection, AHP calculations) in parallel without blocking each other, accelerating development.
+  \item \textbf{Feature Prioritization:} Due to time constraints, we prioritized essential features such as user authentication, domain management, metric collection, and AHP ranking over optional features like sensitivity analysis, bulk data upload, and logging changes. This ensured that the core research workflow remained functional while less critical features were deferred.
+  \item \textbf{Automated Testing Focus:} While we aimed for 80\% code coverage, time limitations prevented us from achieving this target. We focused testing efforts on critical modules (e.g., AHP calculations, data validation) where failures would have the greatest impact, while lower-risk areas received less coverage.
+  \item \textbf{Simplified Deployment:} We opted for a traditional Django + React deployment over a more complex microservice architecture to reduce setup time and maintenance overhead, given the short development window.
+\end{itemize}
+
+\subsection{Assumptions}
+
+Several assumptions guided our design decisions, based on the expected users and environment:
+
+\begin{itemize}
+  \item \textbf{User Technical Proficiency:} We assumed that users (researchers working with Dr.~Smith) have basic technical proficiency, including familiarity with web browsers, GitHub, and research methodologies. This allowed us to design a web-based interface without extensive onboarding tutorials, though we still provided tooltips and inline help for metric input fields.
+  \item \textbf{Stable Internet Connection:} We assumed users would have reliable internet access, as the tool depends on external APIs (GitHub, PyPI) for automated data collection. This assumption influenced our decision not to implement offline caching mechanisms.
+  \item \textbf{GitHub API Availability:} We assumed that GitHub APIs would remain accessible and within rate limits during typical usage. We implemented basic error handling but did not build complex retry or fallback mechanisms due to time constraints.
+  \item \textbf{Researcher Collaboration:} We assumed that multiple researchers would collaborate on the same domains, requiring role-based access control. This led us to implement Contributor and Viewer roles to manage edit permissions.
+\end{itemize}
+
+\subsection{Constraints}
+
+Various external and internal constraints shaped the final design of the system:
+
+\begin{itemize}
+  \item \textbf{Time Constraint (Schedule):} The most significant constraint was the fixed capstone timeline, with a hard deadline for the final release. This forced us to make deliberate trade-offs:
+  \begin{itemize}
+    \item We prioritized security features (password encryption, role-based access) over sensitivity testing, as data protection was deemed more critical for user trust.
+    \item We implemented a working AHP calculation matching the LBM paper methodology but deferred comprehensive sensitivity analysis to future work.
+    \item We focused on stability and correctness of core features rather than exhaustive performance optimization.
+  \end{itemize}
+
+  \item \textbf{Budget Constraint:} The project could not exceed \$125 in hosting costs. This constraint led us to:
+  \begin{itemize}
+    \item Use McMaster University's existing infrastructure when possible, rather than paid cloud services.
+    \item Optimize database queries to reduce server load, allowing us to run on lower-cost instances.
+    \item Avoid third-party paid APIs, relying instead on free public APIs (GitHub, PyPI) with rate limits.
+  \end{itemize}
+
+  \item \textbf{Technical Constraints:} GitHub API rate limits (60 requests per hour for unauthenticated users, 5000 for authenticated) constrained how many libraries could be analyzed in a single session. We mitigated this by using authenticated requests where possible and adding status indicators for long-running analyses.
+
+  \item \textbf{Research Methodology Constraint:} The AHP calculations had to follow the exact methodology from the LBM research paper. This constrained our implementation to use the specific pairwise comparison formula:
+  \[
+  A_{jk} = 
+  \begin{cases} 
+  \min(9, x_{sub} - y_{sub} + 1) & \text{if } x_{sub} \geq y_{sub} \\
+  1 / \min(9, y_{sub} - x_{sub} + 1) & \text{if } x_{sub} < y_{sub}
+  \end{cases}
+  \]
+  We could not deviate from this formula, even if alternative approaches might have been simpler to implement.
+
+  \item \textbf{User Access Constraints:} The system had to support both authenticated researchers (who can edit data) and public viewers (read-only access). This led us to implement role-based access control with Django's authentication system, ensuring that unauthorized users cannot modify domain data.
+
+  \item \textbf{Platform Compatibility:} The tool had to run on standard desktop browsers (Chrome, Firefox, Edge) without requiring additional software installation. This constrained us to use web technologies (HTML/CSS/JavaScript for frontend, Python/Django for backend) rather than platform-specific solutions.
+\end{itemize}
+
+\subsection{Design Decisions Summary}
+
+The following table summarizes the key design decisions and their justifications:
+
+\begin{table}[H]
+\centering
+\caption{Summary of Design Decisions}
+\label{tab:design-decisions}
+\begin{tabular}{p{4cm} p{4.5cm} p{5.5cm}}
+\toprule
+\textbf{Decision Area} & \textbf{Choice Made} & \textbf{Justification} \\
+\midrule
+Backend Framework & Django & Rapid development, built-in admin, ORM, and authentication \\
+\midrule
+Frontend Framework & React & Component reusability, responsive UI, large ecosystem \\
+\midrule
+Database & MySQL (production), SQLite (development) & MySQL for scalability, SQLite for local testing \\
+\midrule
+AHP Implementation & Custom pairwise formula & Required by LBM research paper methodology \\
+\midrule
+Authentication & Django built-in with role-based access & Secure, meets access control requirements \\
+\midrule
+Automated Metrics & GitHub API + GitStats + SCC & Free, well-documented, meets data collection needs \\
+\midrule
+Testing & pytest with GitHub Actions CI & Automated, integrates with development workflow \\
+\midrule
+Deployment & McMaster University infrastructure & Cost-free, meets budget constraint \\
+\midrule
+Security & Password hashing (bcrypt), role-based access & Protects user data, prevents unauthorized edits \\
+\bottomrule
+\end{tabular}
+\end{table}
 
 \section{Economic Considerations (LO23)}
 
