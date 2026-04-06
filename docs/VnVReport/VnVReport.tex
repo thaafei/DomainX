@@ -645,7 +645,8 @@ which is acceptable for interactive use.
 
 Domain filtering functioned correctly and updated results as expected.
 However, a short delay without visual feedback was observed, which may affect
-perceived responsiveness.
+perceived responsiveness.\\
+\noindent The observed response times satisfy the performance requirement PR-SL1, which specifies that AHP ranking calculations must complete within 10 seconds. In all trials, AHP recomputation completed in under 4 seconds, remaining well within the acceptable threshold. This indicates that the system meets the intended performance requirement for interactive use.
 
 \subsubsection{Limitations and Next Steps}
 The current results include only 2- and 10-library datasets, a single-user setup
@@ -742,7 +743,33 @@ Table~\ref{tab:tnf2-results} summarizes the observed outcomes for the reliabilit
     \bottomrule
   \end{tabular}
 \end{table}
-
+\begin{table}[H]
+  \centering
+  \caption{Reliability summary across scenarios.}
+  \label{tab:tnf2-summary-metrics}
+  \begin{tabular}{@{}p{0.45\textwidth}p{0.2\textwidth}p{0.25\textwidth}@{}}
+    \toprule
+    \textbf{Scenario} & \textbf{Trials} & \textbf{Outcome} \\
+    \midrule
+    Client forced offline &
+      4 &
+      4/4 stable (no crash) \\
+    Recovery after reconnect &
+      4 &
+      4/4 successful recovery \\
+    Interrupted mid-update transaction &
+      4 &
+      4/4 rollback successful \\
+    Integrity after failure/recovery &
+      4 &
+      4/4 no corruption observed \\
+    \midrule
+    \textbf{Overall} &
+      16 &
+      16/16 successful (100\%) \\
+    \bottomrule
+  \end{tabular}
+\end{table}
 Future improvements include extending existing error messaging to consistently handle network failures and providing clearer feedback when the system is offline.
 
 \subsubsection{Analysis}
