@@ -4,7 +4,8 @@
 \usepackage{booktabs}
 \usepackage{multicol}
 \usepackage{longtable}
-
+\usepackage{graphicx}
+\usepackage{float}
 \title{Reflection and Traceability Report on \progname}
 
 \author{\authname}
@@ -797,15 +798,229 @@ Practice for Domain X} paper. Our addition to the methods outline in the paper w
 
 
 \section{Design Iteration (LO11 (PrototypeIterate))}
+The design of DomainX evolved through multiple iterations based on stakeholder feedback and usability observations. The goal of these iterations was to improve usability, ensure methodological correctness, and enhance data consistency.
+\subsection{AHP Framework Redesign}
 
-\plt{Explain how you arrived at your final design and implementation.  How did
-the design evolve from the first version to the final version?}
+\textbf{Previous Design}
 
-\plt{Don't just say what you changed, say why you changed it.  The needs of the
-client should be part of the explanation.  For example, if you made changes in
-response to usability testing, explain what the testing found and what changes
-it led to.}
+In the initial version, category importance was assigned using independent sliders. Each category was given a percentage weight directly by the user.
 
+\begin{itemize}
+    \item There was no direct comparison between categories
+    \item Users could assign inconsistent weights
+    \item The approach did not correctly follow the actual AHP methodology
+\end{itemize}
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.85\textwidth]{figures/old_ahp_weights.png}
+\caption{Initial weight assignment using independent sliders}
+\end{figure}
+
+\textbf{Final Design}
+
+We replaced this with a pairwise comparison matrix based on the AHP method. Instead of assigning percentages directly, users compare categories relative to each other using the Saaty scale.
+
+\begin{itemize}
+    \item Weights are computed automatically
+    \item A consistency ratio (CR) is calculated to detect unreliable inputs
+\end{itemize}
+
+This change was important because the slider approach looked simple but often produced unreliable results. The matrix-based approach is slightly more structured, but it ensures the final weights are meaningful and consistent.
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.85\textwidth]{figures/new_ahp.png}
+\caption{Pairwise comparison matrix with consistency validation}
+\end{figure}
+
+\subsection{Visualization Improvements}
+
+\textbf{Previous Design}
+
+The earlier version used 3D-style bar charts and only displayed a small subset of libraries.
+
+\begin{itemize}
+    \item The 3D view made values harder to compare
+    \item Not all libraries were visible at once
+\end{itemize}
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.8\textwidth]{figures/old_ahp_visual.png}
+\caption{Previous 3D visualization with limited libraries}
+\end{figure}
+
+\textbf{Final Design}
+
+We switched to a full ranking view using a standard 2D bar chart that shows all libraries.
+
+\begin{itemize}
+    \item Easier to compare values across libraries
+    \item No hidden data (All libraries are visible)
+\end{itemize}
+
+This change mainly came from usability issues. The previous chart looked visually appealing, but it was not practical when the number of libraries increased.
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.9\textwidth]{figures/new_ranking.png}
+\caption{Improved visualization showing full ranking of libraries}
+\end{figure}
+
+\subsection{Metric Definition Improvements}
+
+\textbf{Previous Design}
+
+Originally, each metric had a single name field that was used both for display and internally in the system.
+
+\begin{itemize}
+    \item Renaming a metric could break functionality (especially for automated metrics)
+    \item There was no clear distinction between manual and automated metrics
+    \item Input expectations were not well defined
+\end{itemize}
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.85\textwidth]{figures/metrics_list.png}
+\caption{Metric management interface}
+\end{figure}
+
+\textbf{Final Design}
+
+We redesigned the metric configuration to separate concerns more clearly:
+
+\begin{itemize}
+    \item Introduced an internal \textbf{metric key} separate from the display name
+    \item Allowed users to rename metrics without affecting system logic
+    \item Added an explicit distinction between \textbf{manual} and \textbf{automated} data sources
+    \item Supported structured metric types (Boolean, Integer, Range, etc.)
+    \item Added input categories and scoring rules for controlled data entry
+\end{itemize}
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.7\textwidth]{figures/metric_edit_system.png}
+\caption{Configuration for automated metrics}
+\end{figure}
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.7\textwidth]{figures/metric_edit_manual.png}
+\caption{Configuration for manual metrics with predefined input categories}
+\end{figure}
+
+This change was mainly driven by a stakeholder requirement: they needed the ability to rename metrics freely without breaking automated data collection. Separating the internal key from the display name fixed this issue and made the system more robust.
+
+\subsection{Metric Value Input Improvements}
+
+\textbf{Previous Design}
+
+Metric values were entered directly inside a table, with each row representing a library.
+
+\begin{itemize}
+    \item Hard to navigate when many metrics were present
+    \item Easy to lose track of which values were being edited
+\end{itemize}
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.9\textwidth]{figures/old_library_values_table.png}
+\caption{Row-based metric value input}
+\end{figure}
+
+\textbf{Final Design}
+
+We introduced a popup-based interface for editing values.
+
+\begin{itemize}
+    \item Users focus on one library at a time
+    \item Inputs are grouped more clearly
+\end{itemize}
+
+This made data entry much more manageable, especially for domains with many metrics.
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.8\textwidth]{figures/new_library_values_popup.png}
+\caption{Popup-based metric value input interface}
+\end{figure}
+
+\subsection{Data Input and Validation Improvements}
+
+\textbf{Previous Design}
+
+All metric values were entered as free text.
+
+\begin{itemize}
+    \item Flexible but inconsistent
+    \item Same value could be entered in different formats (e.g., "yes", "Yes", "Y")
+\end{itemize}
+
+\textbf{Final Design}
+
+We introduced structured inputs where possible:
+
+\begin{itemize}
+    \item Boolean metrics now use dropdowns (Yes / No / Unclear)
+    \item Metrics with predefined scoring (e.g., ranges or rating scales) also use dropdown selections
+\end{itemize}
+
+Free-text input is still allowed for metrics that require flexibility.
+
+Instead of removing flexibility entirely, we limited it only where it caused problems. This helped standardize inputs without making the system too rigid.
+
+\subsection{User Feedback and Iteration}
+
+User feedback was collected through task-based testing with an external user (Ryan).
+
+\textbf{Overall Observation}
+
+Basic tasks such as domain creation, and exporting data were straightforward. However, usability issues appeared in more complex workflows involving metrics.
+
+\textbf{Key Findings and Changes}
+
+\textbf{Metric Creation}
+
+Ryan noted:
+\begin{quote}
+"If the scoring rule is not clicked, the system does not allow saving, but there is no clear prompt or warning message."
+\end{quote}
+
+This showed that although required fields (e.g., metric name, scoring rule, input category) were already enforced by the system, there was no feedback indicating which fields were missing. As a result, the system appeared unresponsive when users attempted to create a metric.
+
+\textit{Change:}
+We added explicit validation feedback to indicate missing required fields, making it clear why a metric could not be created.
+
+\vspace{0.2cm}
+
+\textbf{Metric Value Input}
+
+Ryan reported:
+\begin{quote}
+"It was difficult to find where to fill in the manual metrics... I had to scroll or search to locate them."
+\end{quote}
+
+This showed that the table-based input interface did not scale well.
+
+\textit{Change:}
+We introduced a popup-based interface to allow users to focus on one library at a time.
+
+\vspace{0.2cm}
+
+\textbf{Input Consistency}
+
+Free-text inputs led to inconsistent data entry.
+
+\textit{Change:}
+We added dropdown inputs for metrics with predefined values (e.g., Boolean, ranges, scoring scales), while keeping free-text where needed.
+
+\vspace{0.2cm}
+
+
+\textbf{Summary}
+
+The feedback helped identify usability gaps in metric-related workflows. The resulting changes focused on improving clarity, reducing user effort, and ensuring more consistent data entry.
 \section{Design Decisions (LO12)}
 
 \plt{Reflect and justify your design decisions.  How did limitations,

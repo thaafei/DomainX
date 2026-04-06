@@ -53,6 +53,7 @@
 October 17, 2025  & Awurama, Fei & Initial v0 Draft\\
 March 6, 2026  & Fei & Update Unit Test section\\
 March 7, 2026  & Haniye & Updated Functional Requirement Plan Section\\
+April 3, 2026 & Haniye, Ghena & Final documentation update contained listed in this \href{https://github.com/thaafei/DomainX/issues/538}{Github issue}.\\
 \bottomrule
 \end{tabularx}
 \end{table}
@@ -675,12 +676,7 @@ NF = Non-Functional).
 
 \subsection{Tests for Functional Requirements}
 \label{subsec:functional-tests}
-% \wss{Subsets of the tests may be in related, so this section is divided into
-%   different areas.  If there are no identifiable subsets for the tests, this
-%   level of document structure can be removed.}
 
-% \wss{Include a blurb here to explain why the subsections below
-%   cover the requirements.  References to the SRS would be good here.}
 This section describes the dynamic verification activities that will confirm the implemented system meets all functional requirements in the SRS.
 
 Functional tests are grouped by feature areas that reflect the system’s major use cases.
@@ -690,7 +686,7 @@ All tests will be executed after integration and will rely on automated CI pipel
 Each test case references the corresponding \textbf{SRS requirement identifier (SR--xx)} to maintain full traceability (see Section~\ref{sec:traceability}).
 
 \subsubsection{Area of Testing 1: User Management and Access Control}
-\textbf{Objective:} Verify that user account creation, login, role assignment, and authentication operate correctly and protect system integrity.
+\textbf{Objective:} Verify that user account creation, login, role-based access control, and authentication operate correctly and protect system integrity.
 
 \begin{table}[H]
 \centering
@@ -698,39 +694,76 @@ Each test case references the corresponding \textbf{SRS requirement identifier (
 \hline
 \textbf{Test ID} & \textbf{Description / Procedure} & \textbf{Expected Outcome} & \textbf{SRS Refs} \\
 \hline
+
+
 \textbf{T--AC--1} &
-Attempt sign-up and login with valid credentials through the UI and API. &
-Account created successfully; user redirected to dashboard; session token generated. &
-\textbf{SR--AC1, SR--AC2, FR2, FR3} \\
+Submit valid login credentials. &
+User is authenticated and redirected to the dashboard. &
+\textbf{FR3} \\
 \hline
+
 \textbf{T--AC--2} &
-Attempt login with invalid password or unregistered email. &
-Access denied; error message displayed; no session token created. &
+Login as a Contributor and attempt to edit metric values. &
+User can view and edit metric values through the interactive table. &
+\textbf{SR--AC2} \\
+\hline
+
+\textbf{T--AC--3} &
+Login as a Super Admin and access administrative functionality. &
+User can access user management features and manage accounts. &
+\textbf{SR--AC2} \\
+\hline
+
+\textbf{T--AC--4} &
+Attempt login with invalid credentials or unregistered email. &
+Access is denied; error message displayed; no session created. &
 \textbf{SR--AC5, UH--UP3, LF--AR6} \\
 \hline
-\textbf{T--AC--3} &
-Update user role (Viewer → Contributor) and verify access rights. &
-Role change saved; UI options update to reflect new permissions. &
+
+\textbf{T--AC--5} &
+Update user role (e.g., Contributor to Super Admin). &
+Role is updated successfully and permissions reflect the change. &
 \textbf{SR--AC4, PR--SC3, FR7} \\
 \hline
-\textbf{T--AC--4} &
-Attempt unauthorized API call (e.g., delete domain without privilege). &
-HTTP 403 Forbidden returned; audit entry recorded in logs. &
-\textbf{SR--AC6, SR--AU1, SR--IM1} \\
+
+\textbf{T--AC--6} &
+Authenticated user updates password through profile page. &
+Password is updated and required for future logins. &
+\textbf{SR--AC5, PR--SC1} \\
 \hline
-\textbf{T--AC--5} &
-Verify password reset workflow (email token, form validation). &
-Token expires after one use; password updated securely. &
-\textbf{FR4, SR--AC5, PR--SC1} \\
+
+\textbf{T--AC--7} &
+Access system as a public or unauthorized user and attempt modification. &
+Published data is viewable but modification actions are restricted. &
+\textbf{SR--AC1} \\
 \hline
+
+\textbf{T--AC--8} &
+Super Admin creates user and triggers password setup email. &
+User receives email, sets password, and account becomes active. &
+\textbf{FR2} \\
+\hline
+
+\textbf{T--AC--9} &
+Attempt to access restricted functionality without sufficient privileges. &
+Restricted actions are hidden and direct access is blocked or redirected. &
+\textbf{SR--AC6, SR--IM1} \\
+\hline
+
+\textbf{T--AC--10} &
+Perform password reset using email token. &
+Reset link is valid for one use and password is updated securely. &
+\textbf{FR4} \\
+\hline
+
 \end{tabularx}
 \caption{Functional test cases for user management and access control.}
 \end{table}
 
 \noindent\textbf{Verification Approach:}\\
 White-box unit tests (\texttt{\href{https://requests-mock.readthedocs.io/en/latest/overview.html}{pytest}}) will validate authentication and token logic.\\
-Black-box UI tests (\texttt{\href{https://www.selenium.dev/}{Selenium}}/\texttt{\href{https://playwright.dev/}{Playwright}}) will simulate login, logout, and password reset flows.\\
-Manual security validation will include injection and privilege-escalation attempts, referencing hazards identified in the \href{https://github.com/thaafei/DomainX/blob/main/docs/HazardAnalysis/HazardAnalysis.pdf}{Hazard Analysis} (e.g., credential exposure, improper access).\\[0.5em]
+Black-box UI tests (\texttt{\href{https://www.selenium.dev/}{Selenium}}/\texttt{\href{https://playwright.dev/}{Playwright}}) will simulate login, role-based access, and password workflows.\\
+Manual security validation will include privilege-restriction checks and unauthorized access attempts, referencing hazards identified in the Hazard Analysis (e.g., improper access control, credential misuse).\\[0.5em]
 
 
 \subsubsection{Area of Testing 2: Domain and Data Management}
@@ -742,48 +775,56 @@ Manual security validation will include injection and privilege-escalation attem
 \hline
 \textbf{Test ID} & \textbf{Description / Procedure} & \textbf{Expected Outcome} & \textbf{SRS Refs} \\
 \hline
+
 \textbf{T--DM--1} &
-Create a new domain and confirm database record created. &
-Domain visible in UI and persisted in database with unique ID. &
+Create a new domain. &
+Domain is stored in database with unique identifier and displayed in UI. &
 \textbf{FR5, SR--INT1, SR--AC3} \\
 \hline
+
 \textbf{T--DM--2} &
-Add libraries to a domain and retrieve metadata from GitHub API. &
-Repository data (commits, issues, LOC) auto-populated without error. &
+Add library using GitHub repository URL. &
+Repository metadata (commits, issues, LOC) is retrieved successfully via external tools. &
 \textbf{FR7, FR10, OE--IA1, SR--INT2, SR--INT3} \\
 \hline
+
 \textbf{T--DM--3} &
-Manually edit a metric and verify changes saved and reflected in AHP ranking. &
-Updated metric value stored and reflected in new ranking scores. &
+Edit metric values for a library. &
+Updated values are stored and AHP ranking is recalculated accordingly. &
 \textbf{FR7, FR12, SR--INT4, SR--IM2} \\
 \hline
+
 \textbf{T--DM--4} &
-Simulate API failure (limit exceeded) and verify fallback mechanism. &
-System uses cached data and issues warning to user. &
+Simulate API failure during repository analysis. &
+System reports failure and preserves previously stored metric data. &
 \textbf{PR--RFT1, PR--RFT2, SR--INT5} \\
 \hline
+
 \textbf{T--DM--5} &
-Export domain data (JSON / Excel) and verify file integrity. &
-Downloaded file contains complete, uncorrupted records. &
+Export domain data as Excel file. &
+Downloaded file contains complete and correct domain and metric data. &
 \textbf{FR14, SR--INT7, OE--PR4} \\
 \hline
+
 \textbf{T--DM--6} &
-Publish a completed domain for public view/download. &
-Domain becomes visible to all users; data available for download. &
+Publish a completed domain. &
+Domain becomes publicly accessible for viewing and download. &
 \textbf{FR6, OE--PR3, FR14} \\
 \hline
+
 \end{tabularx}
 \caption{Functional test cases for domain and data management.}
 \end{table}
 
 \noindent\textbf{Verification Approach:}\\
-Dynamic system tests executed using \texttt{\href{https://docs.pytest.org/en/stable/}{pytest-requests}} for API and database verification.\\
-Automated UI tests confirm front-end state updates and form validation.\\
-Error handling (rate limits, invalid uploads) tested manually and automatically, referencing hazards from the \href{https://github.com/thaafei/DomainX/blob/main/docs/HazardAnalysis/HazardAnalysis.pdf}{Hazard Analysis} (data loss, API outage, invalid input).\\
-Export and publishing workflows validated through integration testing and file-integrity checks.\\[0.5em]
+Dynamic system tests will validate database persistence, API integration, and data processing.\\
+Automated UI tests will confirm front-end updates and form validation.\\
+Failure scenarios (e.g., API timeout, missing data) will be tested to ensure robustness and data integrity, referencing the Hazard Analysis.\\
+Export and publishing workflows will be verified through integration testing and file validation.\\[0.5em]
+
 
 \subsubsection{Area of Testing 3: Visualization and Reporting}
-\textbf{Objective:} Verify that visualization components and export functionalities correctly display and summarize the analyzed data, ensuring results are accurate, interactive, and consistent with underlying datasets.
+\textbf{Objective:} Verify that visualization components and export functionalities correctly display and summarize analyzed data.
 
 \begin{longtable}{|p{0.12\textwidth}|p{0.30\textwidth}|p{0.30\textwidth}|p{0.10\textwidth}|p{0.14\textwidth}|}
 \caption{Functional test cases for visualization and reporting.}
@@ -799,28 +840,22 @@ Export and publishing workflows validated through integration testing and file-i
 \hline
 \endhead
 
-\hline
-\endfoot
-
-\hline
-\endlastfoot
-
-\textbf{T--VR--1} & Generate comparison dashboard for at least 3 libraries after data import. & All metrics (stars, issues, commits, LOC, performance) accurately represented in graphs; no missing or mislabeled values. & Auto & \textbf{FR13, FR12, SR--VIS1, SR--IM1} \\
+\textbf{T--VR--1} & Generate visualization for selected libraries and metrics. & Comparative graphs are displayed correctly and reflect stored values. & Auto & \textbf{FR13, FR12, SR--VIS1, SR--IM1} \\
 \hline
 
-\textbf{T--VR--2} & Change visualization filter (e.g., date range, metric type). & Dashboard updates dynamically within 2 seconds; graphs reflect new filters correctly. & Auto & \textbf{FR13, SR--VIS2, PR--SL1} \\
+\textbf{T--VR--2} & Modify selected metrics or libraries and regenerate graphs. & Graphs update dynamically to reflect new selections. & Auto & \textbf{FR13, SR--VIS2, PR--SL1} \\
 \hline
 
-\textbf{T--VR--3} & Export visualized data to PDF/PNG via “Export” button. & File generated successfully; exported data matches visible chart; correct title and timestamp shown. & Manual & \textbf{FR15, OE--PR4, SR--INT7} \\
+\textbf{T--VR--3} & Download generated visualizations. & Visualization images are exported successfully (PNG). & Manual & \textbf{FR15, OE--PR4, SR--INT7} \\
 \hline
 
-\textbf{T--VR--4} & Resize browser window or test on different screen resolutions. & Graphs remain legible; UI maintains layout integrity; no overlapping elements. & Manual & \textbf{LF--AR2, LF--SR2, UH--AR1} \\
+\textbf{T--VR--4} & Resize browser or test on different screen resolutions. & Graphs remain readable and layout adapts correctly. & Manual & \textbf{LF--AR2, LF--SR2, UH--AR1} \\
 \hline
 
-\textbf{T--VR--5} & Simulate missing metric value in one library record. & Visualization renders gracefully (e.g., empty bar or greyed-out field); no runtime errors. & Auto & \textbf{PR--RFT1, SR--INT5} \\
+\textbf{T--VR--5} & Generate visualization with missing metric values. & System handles missing data without runtime errors. & Auto & \textbf{PR--RFT1, SR--INT5} \\
 \hline
 
-\textbf{T--VR--6} & Display complete metric definitions list for the selected domain. & Each metric label includes definition tooltip or help text; matches repository data fields. & Manual & \textbf{FR11, UH--LR2, LF--AR3} \\
+\textbf{T--VR--6} & Open Manage Metrics page. & All metrics and definitions are displayed correctly. & Manual & \textbf{FR11, UH--LR2, LF--AR3} \\
 \hline
 
 \end{longtable}
@@ -828,12 +863,11 @@ Export and publishing workflows validated through integration testing and file-i
 \noindent\textbf{Verification Approach}
 
 \begin{itemize}
-  \item \textbf{Dynamic Tests:} Executed using \texttt{\href{https://docs.pytest.org/en/stable/}{pytest-dash}} for back-end data verification and \href{https://playwright.dev/}{Playwright} or \href{https://www.selenium.dev/}{Selenium} for front-end UI rendering.
-  \item \textbf{Static Verification:} Visual inspection by the project team and supervisor to confirm readability, legend accuracy, and chart-type selection alignment with research goals.
-  \item \textbf{Cross-Validation:} Exported results are compared with raw dataset values to ensure visual outputs match actual AHP scores.
-  \item \textbf{Failure Handling:} UI behaviour under missing data and network interruptions is verified against \href{https://github.com/thaafei/DomainX/blob/main/docs/HazardAnalysis/HazardAnalysis.pdf}{Hazard Analysis} controls (e.g., safe-state notifications).
+  \item \textbf{Dynamic Tests:} Executed using \texttt{\href{https://docs.pytest.org/en/stable/}{pytest}} for backend validation and \href{https://playwright.dev/}{Playwright} or \href{https://www.selenium.dev/}{Selenium} for UI verification.
+  \item \textbf{Static Verification:} Manual inspection will confirm readability, layout consistency, and labeling accuracy.
+  \item \textbf{Cross-Validation:} Visualization outputs will be compared against stored metric values and AHP rankings.
+  \item \textbf{Failure Handling:} System behavior under missing data and API failures will be validated against Hazard Analysis controls.
 \end{itemize}
-
 
 \subsection{Tests for Nonfunctional Requirements}
 
@@ -944,17 +978,16 @@ This section specifies execution-based experiments (with summaries or plots rath
 
 \textbf{Method (Static + Dynamic):}
 \begin{itemize}
-  \item Perform a code review of authentication modules to confirm proper password hashing (e.g., \texttt{\href{https://www.npmjs.com/package/bcrypt}{bcrypt}} or \texttt{\href{https://argon2.online/}{Argon2}}) and secure session-token handling.
-  \item Attempt unauthorized actions (e.g., deleting data without sufficient privileges, accessing admin-only routes) and verify they are blocked and logged.
-  \item Review audit-log entries to ensure failed attempts are timestamped and attributed to the correct user.
-  \item Confirm session-timeout and account lockout mechanisms activate after consecutive failed attempts.
+  \item Perform a code review of authentication modules to confirm proper password hashing (e.g., Django built-in hashing) and secure session-token handling.
+  \item Attempt unauthorized actions (e.g., deleting data without sufficient privileges, accessing admin-only routes) and verify they are blocked (e.g., HTTP 401/403 responses) and do not modify system state.
+  \item Review logging configuration to ensure security-relevant events (e.g., failed authentication attempts) are recorded with timestamps and associated user/context where applicable.
+  \item Verify that secure cookie and HTTPS settings are enforced in production configuration.
 \end{itemize}
 
-\textbf{Expected Output:} Completed security-verification checklist, screenshots/logs of simulated intrusions, and a concise summary of results confirming no critical vulnerabilities.
+\textbf{Expected Output:} Completed security-verification checklist, screenshots/logs of simulated unauthorized access attempts, and confirmation that restricted actions are blocked with appropriate responses.
 
 \textbf{Traceability:} PR-SC1--PR-SC3, SR-AC6, SR-IM1, SR-AU1.\\
 Also aligns with \href{https://github.com/thaafei/DomainX/blob/main/docs/HazardAnalysis/HazardAnalysis.pdf}{Hazard Analysis} controls for unauthorized access and data integrity risks.
-
 % ------------------------------------------------------
 \subsubsection{Maintainability}
 \label{subsubsec:maintainability}

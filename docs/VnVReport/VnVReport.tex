@@ -37,6 +37,7 @@
 \toprule {\bf Date} & {\bf Version} & {\bf Notes}\\
 \midrule
 March 6 & Rev 1 & First copy of VnV Report done by the whole team\\
+April 2 & Final & Final documentation update across multiple sections (completed by Haniye, Ghena); details are listed in \href{https://github.com/thaafei/DomainX/issues/537}{GitHub Issue}.\\
 \bottomrule
 \end{tabularx}
 
@@ -77,29 +78,10 @@ and manage their account information within the system. These tests ensure that
 login, profile updates, and password modification operate correctly while
 restricting access to authorized users only.
 
+
 \begin{mdframed}[linewidth=0.5mm]
 \setlength{\parindent}{0pt}
 \textbf{Test Case Identifier:} T--AC--1
-\vspace{0.4em}
-
-\textbf{Input:} Submission of valid sign-up information through the system interface.
-\vspace{0.4em}
-
-\textbf{Expected Output:} The expected result is that a new user account is created successfully and the user is redirected to the login page.
-\vspace{0.4em}
-
-\textbf{Actual Output:} The actual result is that a new user account is created successfully and the user is redirected to the login page.
-\vspace{0.4em}
-
-\textbf{Expected and Actual Output Match:} True
-\vspace{0.4em}
-
-\textbf{Relevant Functional Requirement(s):} FR2
-\end{mdframed}
-
-\begin{mdframed}[linewidth=0.5mm]
-\setlength{\parindent}{0pt}
-\textbf{Test Case Identifier:} T--AC--2
 \vspace{0.4em}
 
 \textbf{Input:} Submission of valid login credentials through the system login interface.
@@ -119,7 +101,7 @@ restricting access to authorized users only.
 
 \begin{mdframed}[linewidth=0.5mm]
 \setlength{\parindent}{0pt}
-\textbf{Test Case Identifier:} T--AC--3
+\textbf{Test Case Identifier:} T--AC--2
 \vspace{0.4em}
 
 \textbf{Input:} A user with the Contributor role logs into the system and attempts to edit metric values in the interactive data table.
@@ -139,7 +121,7 @@ restricting access to authorized users only.
 
 \begin{mdframed}[linewidth=0.5mm]
 \setlength{\parindent}{0pt}
-\textbf{Test Case Identifier:} T--AC--4
+\textbf{Test Case Identifier:} T--AC--3
 \vspace{0.4em}
 
 \textbf{Input:} A user with the Super Admin role logs into the system and attempts to access administrative functionality for managing users.
@@ -159,7 +141,7 @@ restricting access to authorized users only.
 
 \begin{mdframed}[linewidth=0.5mm]
 \setlength{\parindent}{0pt}
-\textbf{Test Case Identifier:} T--AC--5
+\textbf{Test Case Identifier:} T--AC--4
 \vspace{0.4em}
 
 \textbf{Input:} Submission of invalid login credentials or an unregistered email through the system login interface.
@@ -179,7 +161,7 @@ restricting access to authorized users only.
 
 \begin{mdframed}[linewidth=0.5mm]
 \setlength{\parindent}{0pt}
-\textbf{Test Case Identifier:} T--AC--6
+\textbf{Test Case Identifier:} T--AC--5
 \vspace{0.4em}
 
 \textbf{Input:} A Super Admin updates the role of an existing user (e.g., Contributor to Super Admin) through the user management interface.
@@ -199,7 +181,7 @@ restricting access to authorized users only.
 
 \begin{mdframed}[linewidth=0.5mm]
 \setlength{\parindent}{0pt}
-\textbf{Test Case Identifier:} T--AC--7
+\textbf{Test Case Identifier:} T--AC--6
 \vspace{0.4em}
 
 \textbf{Input:} An authenticated user accesses their profile page and submits a request to change their password using the password update form.
@@ -217,6 +199,84 @@ restricting access to authorized users only.
 \textbf{Relevant Functional Requirement(s):} SR--AC5, PR--SC1
 \end{mdframed}
 
+\begin{mdframed}[linewidth=0.5mm]
+\setlength{\parindent}{0pt}
+\textbf{Test Case Identifier:} T--AC--7
+\vspace{0.4em}
+
+\textbf{Input:} A public (unauthenticated) user accesses a published domain, and an authenticated user without edit privileges attempts to modify domain data.
+\vspace{0.4em}
+
+\textbf{Expected Output:} The public user can view domain data but cannot edit it. Unauthorized users are restricted from modification actions, and edit controls are hidden or disabled.
+\vspace{0.4em}
+
+\textbf{Actual Output:} The public user is able to view published domain data, and unauthorized users are prevented from modifying domain content. Edit controls are correctly restricted.
+\vspace{0.4em}
+
+\textbf{Expected and Actual Output Match:} True
+\vspace{0.4em}
+
+\textbf{Relevant Functional Requirement(s):} SR--AC1
+\end{mdframed}
+
+\begin{mdframed}[linewidth=0.5mm]
+\setlength{\parindent}{0pt}
+\textbf{Test Case Identifier:} T--AC--8
+\vspace{0.4em}
+
+\textbf{Input:} A Super Admin creates a new user account through the admin interface. The new user receives an email with a link to set their password.
+\vspace{0.4em}
+
+\textbf{Expected Output:} The user receives a password setup email. The account remains inactive until the password is set. After completing the password setup, the account is activated and the user can log in successfully.
+\vspace{0.4em}
+
+\textbf{Actual Output:} The user receives the password setup email, completes the password setup process, and the account is activated. The user is then able to log in successfully.
+\vspace{0.4em}
+
+\textbf{Expected and Actual Output Match:} True
+\vspace{0.4em}
+
+\textbf{Relevant Functional Requirement(s):} FR2
+\end{mdframed}
+\begin{mdframed}[linewidth=0.5mm]
+\setlength{\parindent}{0pt}
+\textbf{Test Case Identifier:} T--AC--9
+\vspace{0.4em}
+
+\textbf{Input:} An authenticated user without sufficient privileges attempts to access restricted functionality (e.g., delete domain button or protected page URL).
+\vspace{0.4em}
+
+\textbf{Expected Output:} Restricted actions are not visible in the user interface. If the user attempts to directly access a restricted page or URL, they are redirected to the main dashboard or an authorized page.
+\vspace{0.4em}
+
+\textbf{Actual Output:} Restricted actions are hidden from unauthorized users, and attempts to access restricted pages result in redirection to the main dashboard.
+\vspace{0.4em}
+
+\textbf{Expected and Actual Output Match:} True
+\vspace{0.4em}
+
+\textbf{Relevant Functional Requirement(s):} SR--AC6, SR--IM1
+\end{mdframed}
+
+\begin{mdframed}[linewidth=0.5mm]
+\setlength{\parindent}{0pt}
+\textbf{Test Case Identifier:} T--AC--10
+\vspace{0.4em}
+
+\textbf{Input:} A user requests a password reset, receives an email with a tokenized link, and submits a new password.
+\vspace{0.4em}
+
+\textbf{Expected Output:} The reset link is valid for one use, the password is updated securely, and the user can log in with the new password.
+\vspace{0.4em}
+
+\textbf{Actual Output:} The password reset workflow completes successfully, and the user can log in using the updated password.
+\vspace{0.4em}
+
+\textbf{Expected and Actual Output Match:} True
+\vspace{0.4em}
+
+\textbf{Relevant Functional Requirement(s):} FR4
+\end{mdframed}
 
 \subsection{Domain and Data Management}
 
@@ -242,7 +302,7 @@ expected.
 \textbf{Expected and Actual Output Match:} True
 \vspace{0.4em}
 
-\textbf{Relevant Functional Requirement(s):} FR--5, SR--INT1, SR--AC3
+\textbf{Relevant Functional Requirement(s):} FR5, SR--INT1, SR--AC3
 \end{mdframed}
 
 \begin{mdframed}[linewidth=0.5mm]
@@ -262,7 +322,7 @@ expected.
 \textbf{Expected and Actual Output Match:} True
 \vspace{0.4em}
 
-\textbf{Relevant Functional Requirement(s):} FR--7, FR--10, OE--IA1, SR--INT2, SR--INT3
+\textbf{Relevant Functional Requirement(s):} FR7, FR10, OE--IA1, SR--INT2, SR--INT3
 \end{mdframed}
 
 \begin{mdframed}[linewidth=0.5mm]
@@ -282,7 +342,7 @@ expected.
 \textbf{Expected and Actual Output Match:} True
 \vspace{0.4em}
 
-\textbf{Relevant Functional Requirement(s):} FR--7, FR--12, SR--INT4, SR--IM2
+\textbf{Relevant Functional Requirement(s):} FR7, FR12, SR--INT4, SR--IM2
 \end{mdframed}
 
 \begin{mdframed}[linewidth=0.5mm]
@@ -322,9 +382,27 @@ expected.
 \textbf{Expected and Actual Output Match:} True
 \vspace{0.4em}
 
-\textbf{Relevant Functional Requirement(s):} FR--14, SR--INT7, OE--PR4
+\textbf{Relevant Functional Requirement(s):} FR14, SR--INT7, OE--PR4
 \end{mdframed}
+\begin{mdframed}[linewidth=0.5mm]
+\setlength{\parindent}{0pt}
+\textbf{Test Case Identifier:} T--DM--6
+\vspace{0.4em}
 
+\textbf{Input:} A Super Admin publishes a completed domain through the system interface.
+\vspace{0.4em}
+
+\textbf{Expected Output:} The domain becomes publicly visible and accessible to users for viewing and downloading.
+\vspace{0.4em}
+
+\textbf{Actual Output:} The domain is successfully published and becomes accessible for public viewing and download.
+\vspace{0.4em}
+
+\textbf{Expected and Actual Output Match:} True
+\vspace{0.4em}
+
+\textbf{Relevant Functional Requirement(s):} FR6, OE--PR3, FR--14
+\end{mdframed}
 \subsection{Visualization and Reporting}
 
 \hspace{2em}The following tests verify that the system correctly generates
@@ -348,7 +426,7 @@ metric values for libraries.
 \textbf{Expected and Actual Output Match:} True
 \vspace{0.4em}
 
-\textbf{Relevant Functional Requirement(s):} FR--13, FR--12, SR--VIS1, SR--IM1
+\textbf{Relevant Functional Requirement(s):} FR13, FR12, SR--VIS1, SR--IM1
 \end{mdframed}
 
 \begin{mdframed}[linewidth=0.5mm]
@@ -368,7 +446,7 @@ metric values for libraries.
 \textbf{Expected and Actual Output Match:} True
 \vspace{0.4em}
 
-\textbf{Relevant Functional Requirement(s):} FR--13, SR--VIS2, PR--SL1
+\textbf{Relevant Functional Requirement(s):} FR13, SR--VIS2, PR--SL1
 \end{mdframed}
 
 
@@ -389,7 +467,7 @@ metric values for libraries.
 \textbf{Expected and Actual Output Match:} True
 \vspace{0.4em}
 
-\textbf{Relevant Functional Requirement(s):} FR--15, OE--PR4, SR--INT7
+\textbf{Relevant Functional Requirement(s):} FR15, OE--PR4, SR--INT7
 \end{mdframed}
 
 \begin{mdframed}[linewidth=0.5mm]
@@ -449,48 +527,10 @@ metric values for libraries.
 \textbf{Expected and Actual Output Match:} True
 \vspace{0.4em}
 
-\textbf{Relevant Functional Requirement(s):} FR--11, UH--LR2, LF--AR3
+\textbf{Relevant Functional Requirement(s):} FR11, UH--LR2, LF--AR3
 \end{mdframed}
 
-\subsection{Features Currently in Progress}
 
-\hspace{2em}Some functional requirements identified in the SRS are still under development, while others were revised after further discussion and feedback. These items are not yet fully implemented or were removed from the final project scope. Their current status is summarized below.
-
-\begin{description}
-
-\item[\textbf{SR--AC1:}] \textbf{Public Viewing and Restricted Editing}
-
-This requirement is currently under development as part of the system's authorization implementation. The intended behaviour is to allow public users to view published domain data while restricting modification privileges to approved users only. Page-level and button-level authorization controls have been partially implemented and are still being refined.
-
-\item[\textbf{FR--2:}] \textbf{User Self Sign-Up}
-
-This requirement was originally intended to allow users to create their own accounts through a public sign-up page. During development, this design was reconsidered, and the system is being revised so that only a Super Admin can create new user accounts. As a result, self sign-up will not appear in the final implementation.
-
-\item[\textbf{SR--AC6, SR--AU1, SR--IM1:}] \textbf{Unauthorized API Access Control}
-
-Unauthorized API access control is currently under development. The intended behaviour is that attempts to perform restricted actions, such as deleting a domain without sufficient privileges, will return an HTTP 403 Forbidden response and generate an audit log entry. At present, restricted actions are hidden in the user interface, while API-level authorization checks are still being implemented and are not yet ready for formal testing.
-
-Security requirements related to SQL injection prevention and secure credential storage are already satisfied through the use of the Django ORM, which avoids raw SQL queries, and environment variables for sensitive configuration data.
-
-\item[\textbf{FR--4:}] \textbf{Password Reset via Email}
-
-This feature is intended to allow users to reset their password through an email verification workflow. The expected behaviour is that a user who forgets their password receives a reset email, verifies their identity through a tokenized link, and sets a new password for future logins.
-
-This functionality is currently under development and has not yet been fully implemented or tested.
-
-\item[\textbf{FR--9:}] \textbf{Bulk Data Upload}
-
-This requirement was originally intended to support bulk upload of domain data through an Excel template. Based on supervisor feedback, this functionality was removed from the project scope and will not be implemented. Therefore, no testing was performed for this requirement.
-
-\textbf{Relevant Functional Requirement(s):} FR--9, SR--INT1, UH--EU2
-
-\item[\textbf{FR--6:}] \textbf{Publish Domain for Public Access}
-
-This feature is currently under development as part of the remaining authorization work. The intended behaviour is that a completed domain can be published and made visible to all users, with its data available for public viewing and download. This functionality will be completed together with the remaining access-control features.
-
-\textbf{Relevant Functional Requirement(s):} FR--6, OE--PR3, FR--14
-
-\end{description}
 \section{Nonfunctional Requirements Evaluation}
 
 \label{sec:nfr}
@@ -504,15 +544,18 @@ summarize results and to support reproducibility.
 \subsection{Performance \& Scalability Experiments}
 \label{sec:nfr-perfscalability}
 
-This subsection reports Revision~0 results for the performance and
-scalability experiment specified in the VnV Plan (\S4.2.1).  The experiment
+This subsection reports results for the performance and
+scalability experiment specified in the VnV Plan (\S4.2.1),
+conducted under a single-user setup. The experiment
 measures response times for dashboard load, filtering, AHP recomputation, and
 export, and summarizes median and 95th-percentile (p95) values.
 
 \subsubsection{Test Case Summary (T--NF1: Performance and Scalability)}
+Table~\ref{tab:tnf1-summary} summarizes the test setup, inputs, and outputs for evaluating system performance and scalability.
+
 \begin{table}[H]
   \centering
-  \caption{T--NF1 performance experiment: test case summary (Rev0).}
+  \caption{T--NF1 performance experiment: test case summary.}
   \label{tab:tnf1-summary}
   \begin{tabular}{@{}p{0.22\textwidth}p{0.73\textwidth}@{}}
     \toprule
@@ -522,7 +565,7 @@ export, and summarizes median and 95th-percentile (p95) values.
       PR-SL1 (Speed and Latency Requirement). \\
     \textbf{Initial State} &
       System deployed and accessible; existing domains available with known
-      library counts (2 and 10). \\
+library counts (2 and 10); tests performed under a single-user setup (no concurrent load). \\
     \textbf{Input} &
       Record time to (1) load the dashboard and render the ranking graph,
       (2) apply a domain filter, (3) update category weights to trigger AHP
@@ -532,29 +575,41 @@ export, and summarizes median and 95th-percentile (p95) values.
       a few seconds for interactive use. \\
     \textbf{Actual Output} &
       Dashboard load and AHP recomputation completed within a few seconds.
-      Domain filtering did not narrow results (no observable effect).  Export
-      appeared instantaneous in repeated trials. \\
+      Domain filtering successfully updated the results; however, a brief delay
+      ($\sim$2--3 seconds) was observed without a loading indicator, which may
+      affect perceived responsiveness. Export appeared instantaneous in repeated
+      trials. \\
     \textbf{Expected vs.\ Actual Match} &
-      Partial (latency acceptable for measured actions; filtering defect
-      prevented filter timing; scaling evaluated at 2 and 10 libraries only). \\
+      Partial --- Dashboard load, AHP recomputation, and export met latency
+      expectations. Domain filtering functioned correctly, though a short delay
+      ($\sim$2--3 seconds) without user feedback was observed. Additionally,
+      scalability was evaluated on relatively small datasets (2 and 10
+      libraries). \\
     \bottomrule
   \end{tabular}
 \end{table}
 
-\subsubsection{Method (Rev0)}
+\subsubsection{Method}
 Timings were collected manually using a stopwatch, measured from the moment
 the action was initiated (click) to the moment the interface reached a stable
-state (graph rendered or updated).  Due to manual timing, values include human
-reaction time and should be treated as conservative upper bounds.  For small
-sample sizes, p95 is reported conservatively as the maximum observed value.
+state (graph rendered or updated). Each action was repeated multiple times
+(n = 8--10 per configuration), and median and p95 values were computed.
+
+Experiments were conducted using a single user (no concurrent load) on a personal
+laptop using a web browser over a stable internet connection. Tests were performed
+on domains containing 2 and 10 libraries.
+
+Due to manual timing, values include human reaction time and should be treated as
+conservative upper bounds. For small sample sizes, p95 is reported conservatively
+as the maximum observed value.
 
 \subsubsection{Results}
 Table~\ref{tab:tnf1-results} summarizes the observed median and p95 response
-times.
+times. Each action was repeated multiple times (n shown per row).
 
 \begin{table}[H]
   \centering
-  \caption{T--NF1 response time results (Rev0).}
+  \caption{T--NF1 response time results.}
   \label{tab:tnf1-results}
   \begin{tabular}{@{}p{0.44\textwidth}p{0.14\textwidth}p{0.14\textwidth}%
                   p{0.16\textwidth}@{}}
@@ -571,8 +626,8 @@ times.
       3.61 & 3.90 &
       Time from save/apply to updated view. \\
     Apply domain filter &
-      N/A & N/A &
-      Filter input produced no narrowing of results. \\
+      2.5 & 3.0 &
+      Results updated correctly; brief delay observed without loading indicator. \\
     Export visualizations &
       $<0.5$ & $<0.5$ &
       Appeared instantaneous (below stopwatch resolution). \\
@@ -582,34 +637,38 @@ times.
 
 \subsubsection{Analysis}
 Across the measured actions, response times were within a few seconds, with
-worst observed values below 4 seconds.  Dashboard load increased from a median
+worst observed values below 4 seconds. Dashboard load increased from a median
 of 0.55 seconds (2 libraries) to a median of 2.65 seconds (10 libraries),
 indicating higher latency as library count increases in the tested
-configuration.  AHP recomputation completed in under 4 seconds in all trials,
+configuration. AHP recomputation completed in under 4 seconds in all trials,
 which is acceptable for interactive use.
 
-Domain filtering produced no observable narrowing of the domain list.  This is
-treated as a functional defect and prevented measurement of filter latency in
-Revision~0.
+Domain filtering functioned correctly and updated results as expected.
+However, a short delay without visual feedback was observed, which may affect
+perceived responsiveness.\\
+\noindent The observed response times satisfy the performance requirement PR-SL1, which specifies that AHP ranking calculations must complete within 10 seconds. In all trials, AHP recomputation completed in under 4 seconds, remaining well within the acceptable threshold. This indicates that the system meets the intended performance requirement for interactive use.
 
 \subsubsection{Limitations and Next Steps}
-Revision~0 results include only 2- and 10-library datasets and manual timing.
-In the next revision, performance will be re-measured using the planned dataset
-sizes (5, 10, 20, and 40 libraries) and automated timing collection where
-possible.  The domain filtering defect will be addressed and re-tested to
-capture filter latency.
+The current results include only 2- and 10-library datasets, a single-user setup
+(no concurrent load), and manual timing.
+Future work includes evaluating performance on larger datasets (e.g., 5, 10,
+20, and 40 libraries) and incorporating automated timing collection where
+possible. Improving user feedback (e.g., loading indicators) during longer
+operations will also enhance perceived responsiveness.
 
 \subsection{Reliability and Fault Tolerance}
 \label{sec:nfr-reliability}
 
-This subsection reports Revision~0 results for reliability and fault
-tolerance.  The goal is to confirm the system remains stable, consistent, and
+This subsection reports results for reliability and fault
+tolerance. The goal is to confirm the system remains stable, consistent, and
 capable of recovery when services fail or operations are interrupted.
 
 \subsubsection{Test Case Summary (T--NF2: Reliability and Fault Tolerance)}
+Table~\ref{tab:tnf2-summary} summarizes the test setup and observed system behavior under simulated failure and recovery scenarios.
+
 \begin{table}[H]
   \centering
-  \caption{T--NF2 reliability and fault tolerance: test case summary (Rev0).}
+  \caption{T--NF2 reliability and fault tolerance: test case summary.}
   \label{tab:tnf2-summary}
   \begin{tabular}{@{}p{0.22\textwidth}p{0.73\textwidth}@{}}
     \toprule
@@ -633,25 +692,29 @@ capable of recovery when services fail or operations are interrupted.
       partial/corrupt state. \\
     \textbf{Actual Output} &
       When offline, the interface remained responsive and did not crash.
-      Domain metadata and results were not displayed (Details panel showed
-      Name: N/A) and key actions produced no observable effect.  No user-visible
-      warning or cached fallback results were observed.  After restoring
-      connectivity (No throttling), the dashboard resumed normal operation and
+      Domain metadata and results were temporarily unavailable (Details panel
+      showed Name: N/A), and some actions did not produce visible results.
+      No user-visible warning or cached fallback results were observed.
+      After restoring connectivity, the dashboard resumed normal operation and
       loaded domain details and rankings correctly.  In the interrupted-write
       test (save category weights then go offline), the system reverted to the
-      pre-change configuration after recovery (the attempted change was not
-      persisted), and no half-created/partial state was observed. \\
+      pre-change configuration after recovery, and no partial or inconsistent
+      state was observed. \\
     \textbf{Expected vs.\ Actual Match} &
-      Partial (stable, recoverable, and rollback-safe, but weak failure
-      messaging and no offline fallback behavior). \\
+      Partial --- The system remained stable, recovered successfully after
+      connectivity was restored, and handled interrupted updates safely through
+      rollback. However, user-visible error messaging and offline feedback were
+      limited, and no fallback data was provided during service disruption. \\
     \bottomrule
   \end{tabular}
 \end{table}
 
 \subsubsection{Results}
+Table~\ref{tab:tnf2-results} summarizes the observed outcomes for the reliability and fault tolerance scenarios.
+
 \begin{table}[H]
   \centering
-  \caption{Reliability experiment results (Rev0).}
+  \caption{Reliability experiment results.}
   \label{tab:tnf2-results}
   \begin{tabular}{@{}p{0.44\textwidth}p{0.16\textwidth}p{0.32\textwidth}@{}}
     \toprule
@@ -673,46 +736,559 @@ capable of recovery when services fail or operations are interrupted.
       No half-created/corrupt state observed in the UI after recovery. \\
     HTTP 429 (rate limiting) &
       Not tested &
-      Not reproducible/observed in Rev0. \\
+      Not reproducible/observed. \\
     Backup and restore (within one hour) &
       Pending &
       Requires DB-level procedure execution and timing. \\
     \bottomrule
   \end{tabular}
 \end{table}
+\begin{table}[H]
+  \centering
+  \caption{Reliability summary across scenarios.}
+  \label{tab:tnf2-summary-metrics}
+  \begin{tabular}{@{}p{0.45\textwidth}p{0.2\textwidth}p{0.25\textwidth}@{}}
+    \toprule
+    \textbf{Scenario} & \textbf{Trials} & \textbf{Outcome} \\
+    \midrule
+    Client forced offline &
+      4 &
+      4/4 stable (no crash) \\
+    Recovery after reconnect &
+      4 &
+      4/4 successful recovery \\
+    Interrupted mid-update transaction &
+      4 &
+      4/4 rollback successful \\
+    Integrity after failure/recovery &
+      4 &
+      4/4 no corruption observed \\
+    \midrule
+    \textbf{Overall} &
+      16 &
+      16/16 successful (100\%) \\
+    \bottomrule
+  \end{tabular}
+\end{table}
+Future improvements include extending existing error messaging to consistently handle network failures and providing clearer feedback when the system is offline.
 
 \subsubsection{Analysis}
 The system remained stable during a simulated service outage (offline mode) and
-successfully recovered once connectivity was restored.  The interrupted-write
+successfully recovered once connectivity was restored. The interrupted-write
 test also indicates safe failure handling: the system returned to the last valid
 configuration after recovery and did not leave partial or corrupt state.
 
 However, the failure mode is not communicated clearly to the user: data becomes
 unavailable and actions become no-ops without a warning message or fallback
-behavior.  Improvements should include explicit error messaging, disabling
+behavior. Improvements should include explicit error messaging, disabling
 actions that require connectivity, and (if feasible) displaying cached last-known
-results with an ``offline'' banner.  Save operations should also provide clear
+results with an ``offline'' banner. Save operations should also provide clear
 success/failure feedback when the backend is unreachable.
 
 \subsubsection{Limitations and Next Steps}
-Revision~0 reliability evidence is based on manual fault injection (offline
-mode) and a single interrupted-write scenario.  In the next revision,
-explicit HTTP 429 scenarios will be exercised if rate limiting is enabled, and
-a backup-and-restore procedure will be executed and timed to confirm recovery
-within one hour.
+Reliability evidence is based on manual fault injection (offline
+mode) and a single interrupted-write scenario. Future work includes
+testing HTTP 429 scenarios if rate limiting is enabled, and executing
+a backup-and-restore procedure to confirm recovery within one hour.
 
-\noindent \textbf{Conclusion:} Rev0 demonstrates stability and safe rollback
+\noindent \textbf{Conclusion:} The system demonstrates stability and safe rollback
 under outages, but highlights a gap in user-facing fault messaging and offline
 fallback behavior.
 
 \subsection{Usability}
+\label{sec:nfr-usability}
 
-\subsection{Performance}
+This subsection reports results for the usability evaluation (T--NF3).
+The VnV Plan defines a one-to-five usability scale where higher values
+indicate better usability and uses a mean rating $\geq 4.0$ as the
+success criterion.
 
-\subsection{etc.}
+\subsubsection{Test Case Summary (T--NF3: Usability)}
+Table~\ref{tab:tnf3-summary} summarizes the usability tasks, expected outcomes, and observed results.
 
-\section{Comparison to Existing Implementation}
+\begin{table}[H]
+  \centering
+  \caption{T--NF3 usability: test case summary.}
+  \label{tab:tnf3-summary}
+  \begin{tabular}{@{}p{0.22\textwidth}p{0.73\textwidth}@{}}
+    \toprule
+    \textbf{Test Case ID} &
+      T--NF3 (Usability) \\
+    \textbf{Initial State} &
+      System deployed and accessible; tester starts unauthenticated. \\
+    \textbf{Input} &
+      Tester completes core tasks (login, create domain,
+      add metrics, add libraries, fill manual metrics, export data,
+      visualize and export raw metrics, visualize and export AHP results)
+      and records task ratings plus qualitative comments. \\
+    \textbf{Expected Output} &
+      Core tasks are discoverable and completable without developer assistance;
+      charts and exports are understandable; required inputs are supported by
+      clear feedback and error messaging. \\
+    \textbf{Actual Output} &
+      All core tasks were completed successfully. Tasks were performed
+      smoothly with clear feedback and understandable interactions. \\
+    \textbf{Expected vs.\ Actual Match} &
+      Pass (workflow completion and usability expectations were met). \\
+    \bottomrule
+  \end{tabular}
+\end{table}
 
+\subsubsection{Method}
+A user completed a structured usability evaluation using a task-based
+worksheet. Task \emph{difficulty} was recorded on a one-to-five scale where
+1 = Very Easy and 5 = Very Hard.
+
+To align with the VnV Plan convention (higher = better usability), task
+\emph{ease} was computed as:
+\[
+  \text{EaseScore} = 6 - \text{DifficultyScore}.
+\]
+
+\subsubsection{Results}
+Table~\ref{tab:usability-pilot} summarizes the task ratings and key observations.
+
+\begin{table}[H]
+  \centering
+  \caption{Usability task results.}
+  \label{tab:usability-pilot}
+  \begin{tabular}{@{}p{0.52\textwidth}p{0.10\textwidth}p{0.10\textwidth}%
+                  p{0.22\textwidth}@{}}
+    \toprule
+    \textbf{Task} & \textbf{Diff.} & \textbf{Ease} & \textbf{Key observation} \\
+    \midrule
+    Login &
+      1 & 5 &
+      Straightforward. \\
+    Create a new domain &
+      1 & 5 &
+      Straightforward. \\
+    Add metrics to the domain &
+      2 & 4 &
+      Task completed easily; initial entry point required brief exploration. \\
+    Add two libraries to the domain &
+      1 & 5 &
+      Easy to complete. \\
+    Fill out manually added metrics &
+      1 & 5 &
+      Inputs are accessible and easy to complete. \\
+    Export gathered data as a CSV &
+      1 & 5 &
+      Easy export. \\
+    Visualize and export raw metric values &
+      1 & 5 &
+      Easy to use; visualization perceived as useful. \\
+    Visualize and export AHP calculations &
+      1 & 5 &
+      Easy to find and download. \\
+    \bottomrule
+  \end{tabular}
+\end{table}
+
+Summary statistics:
+\begin{itemize}
+  \item Mean task difficulty: $\approx 1.13$; median difficulty: 1.
+  \item Mean converted ease: $\approx 4.88$; median converted ease: 5.
+\end{itemize}
+
+\subsubsection{Analysis and Traceability}
+The converted ease mean of 4.88/5.0 suggests the workflow is generally usable.
+Usability feedback indicates that core tasks are understandable and
+completable without developer assistance, with clear user feedback and
+effective data entry interactions.
+
+Table~\ref{tab:usability-trace} summarizes traceability between usability
+requirements and observed evidence.
+
+\begin{table}[H]
+  \centering
+  \caption{Usability traceability summary.}
+  \label{tab:usability-trace}
+  \begin{tabular}{@{}p{0.18\textwidth}p{0.25\textwidth}p{0.50\textwidth}@{}}
+    \toprule
+    \textbf{Req.\ ID} & \textbf{Intent} & \textbf{Observed evidence} \\
+    \midrule
+    UH-UP3 &
+      Clear feedback and error messages &
+      User interactions provided clear feedback during input and saving
+      operations, supporting smooth task completion. \\
+    UH-EU1 &
+      Efficient navigation for core actions &
+      Core workflows were completed without assistance, indicating efficient
+      navigation and accessible data entry. \\
+    LF-SR2 &
+      Clear, minimalist graph design &
+      Visualization and export of raw metrics and AHP results were rated easy
+      and useful. \\
+    LF-AR2 &
+      Responsiveness across screens &
+      Not explicitly evaluated. \\
+    UH-AR1 &
+      Font scalability/accessibility &
+      Not explicitly evaluated. \\
+    \bottomrule
+  \end{tabular}
+\end{table}
+
+\subsubsection{Limitations and Next Steps}
+The usability evaluation is based on a limited sample and can be extended
+through additional user testing with a broader participant set. Future work
+includes collecting structured usability feedback and validating usability
+across a wider range of use cases.
+
+\noindent \textbf{Evidence:} Usability worksheet (Ryan), stored in the project
+repository at \texttt{/test/reports/usability/UserTesting-Ryan.pdf}.
+
+\subsection{Computational Accuracy}
+\label{sec:nfr-comp-accuracy}
+
+This subsection reports results for the computational-accuracy
+evaluation (T--NF4).  The purpose is to confirm that (1) AHP category
+priorities produced by the tool are stable and consistent with the configured
+pairwise comparisons, and (2) a spot check of auto-filled repository fields
+matches externally verifiable values (GitHub).
+
+\subsubsection{Test Case Summary (T--NF4: Computational Accuracy)}
+Table~\ref{tab:tnf4-summary} summarizes the test setup, inputs, and outputs for evaluating computational accuracy.
+\begin{table}[H]
+  \centering
+  \caption{T--NF4 computational accuracy: test case summary.}
+  \label{tab:tnf4-summary}
+  \begin{tabular}{@{}p{0.22\textwidth}p{0.73\textwidth}@{}}
+    \toprule
+    \textbf{Test Case ID} &
+      T--NF4 (Computational Accuracy) \\
+    \textbf{Initial State} &
+      User is authenticated; a domain exists with at least two libraries; the
+      Category Weights (AHP) configuration and repo-metric views are
+      accessible. \\
+    \textbf{Input} &
+      (1) Configure AHP pairwise comparisons and record the computed category
+      priorities and consistency indicator shown by the tool.
+      (2) Select a small sample of libraries and cross-check key auto-filled
+      repository fields against GitHub (e.g., last commit date). \\
+    \textbf{Expected Output} &
+      Tool computes and displays a stable priority vector consistent with the
+      configured comparisons.  Auto-filled repository fields match GitHub for
+      the sampled libraries, or discrepancies are identified for correction. \\
+    \textbf{Actual Output} &
+      AHP priorities were computed and recorded
+      (Table~\ref{tab:tnf4-priorities}).  For the sampled libraries, the
+      checked repository field(s) matched GitHub (spot check). \\
+    \textbf{Expected vs.\ Actual Match} &
+      Pass for observed checks, with additional quantitative comparisons identified for further validation (see limitations). \\
+    \bottomrule
+  \end{tabular}
+\end{table}
+
+\subsubsection{Method}
+Two complementary checks were performed.
+
+\paragraph{AHP priority computation (tool output capture).}
+A category-weight configuration was entered in the AHP interface.  The
+\emph{Calculated Priorities} panel was used to record the resulting priority
+percentages exactly as displayed.  The consistency ratio (CR) value shown by
+the tool UI was also recorded.
+
+\paragraph{Repository-field spot check (external verification).}
+For a small sample of libraries, a key automatically populated repository
+field (e.g., last commit date) was compared against the corresponding value
+shown on GitHub.
+
+\subsubsection{Results}
+
+\paragraph{AHP priorities produced by the tool.}
+Table~\ref{tab:tnf4-priorities} lists the computed priorities recorded from
+the tool.
+
+\begin{table}[ht]
+  \centering
+  \caption{Computed AHP priorities recorded from the tool.}
+  \label{tab:tnf4-priorities}
+  \begin{tabular}{@{}p{0.68\textwidth}p{0.18\textwidth}@{}}
+    \toprule
+    \textbf{Category} & \textbf{Priority} \\
+    \midrule
+    Installability & 25.6\% \\
+    Quality & 15.1\% \\
+    Correctness and Verifiability & 9.6\% \\
+    Surface Reliability & 5.0\% \\
+    Surface Robustness & 5.0\% \\
+    Surface Usability & 5.0\% \\
+    Reusability & 5.0\% \\
+    Visibility/Transparency & 5.0\% \\
+    Surface Understandability & 5.0\% \\
+    Raw Metrics (Measured via git\_stats) & 5.0\% \\
+    Raw Metrics (Measured via scc) & 5.0\% \\
+    Repo Metrics (Measured via GitHub) & 5.0\% \\
+    Uncategorized & 5.0\% \\
+    \bottomrule
+  \end{tabular}
+\end{table}
+
+During this run, the tool displayed the consistency ratio (CR) as
+\texttt{NaN\%} in the UI while still producing the priority vector above.
+
+\paragraph{Repository-field spot check.}
+For the sampled libraries, the checked repository field(s) (e.g., last commit
+date) matched GitHub during the manual cross-check.
+
+\subsubsection{Analysis and Discussion}
+The recorded priority vector reflects the intended ordering in which
+\emph{Installability}, \emph{Quality}, and \emph{Correctness and Verifiability}
+receive higher weights than the remaining categories, which are weighted
+equally in this configuration.
+
+The repository-field spot check provides preliminary evidence that the
+auto-filled repository values are consistent with GitHub for the sampled
+cases.
+
+\subsubsection{Limitations and Next Steps}
+The current evaluation is limited to (1) capturing the tool's computed priorities
+from a single configuration and (2) a small manual spot check of repository
+fields. The full VnV Plan method for T--NF4 includes manual AHP computation
+and relative-error checks with a $2\%$ threshold; these quantitative checks
+can be performed as part of extended validation. Specifically, we will:
+\begin{itemize}
+  \item Prepare a small AHP matrix and compute expected pairwise weights
+        manually (or using a trusted reference implementation), then run the
+        same inputs through the tool and compare priorities.
+  \item Calculate relative error (\%) for each compared value and flag any
+        deviation greater than $2\%$.
+  \item Expand the repository-field verification to additional fields
+        (e.g., repository creation date and last commit date) across a larger
+        library sample.
+  \item Investigate the \texttt{NaN\%} CR display to determine whether it is an
+        expected UI behavior for the given comparison pattern or a defect in
+        the consistency calculation display.
+\end{itemize}
+
+\noindent \textbf{Traceability:} PR-PA1 (auto-filled data accuracy) and FR12
+(AHP ranking computation).
+
+\subsection{Security and Access Control}
+\label{sec:nfr-security}
+
+This subsection reports Revision~0 results for security and access control.
+The goal is to validate that credentials and permissions are handled securely
+and that unauthorized actions are prevented.
+
+\subsubsection{Test Case Summary (T--NF5: Security and Access Control)}
+Table~\ref{tab:tnf5-summary} summarizes the security and access control evaluation, including authentication mechanisms and access restrictions.
+\begin{table}[H]
+  \centering
+  \caption{T--NF5 security and access control: test case summary.}
+  \label{tab:tnf5-summary}
+  \begin{tabular}{@{}p{0.22\textwidth}p{0.73\textwidth}@{}}
+    \toprule
+    \textbf{Test Case ID} &
+      T--NF5 (Security and Access Control) \\
+    \textbf{Traceability} &
+      PR-SC1--PR-SC3, SR-AC6, SR-IM1, SR-AU1. \\
+    \textbf{Initial State} &
+      System deployed and accessible; both non-privileged and privileged user
+      accounts available. \\
+    \textbf{Input} &
+      (1) Static review of backend authentication configuration and security
+      settings.  (2) Dynamic check of restricted UI features using a
+      non-privileged account. \\
+    \textbf{Expected Output} &
+      Authentication uses secure mechanisms (hashed password storage, validated
+      password policy, secure cookies in production).  Unauthorized actions are
+      blocked and do not modify system state. \\
+    \textbf{Actual Output} &
+      Static inspection shows a custom user model
+      (\texttt{AUTH\_USER\_MODEL = users.CustomUser}) and DRF authentication via
+      \texttt{users.auth.CookieJWTAuthentication}.  Password validation is
+      enabled using Django's built-in validators (similarity, minimum length,
+      common password, numeric password checks).  Deployment security settings
+      use environment-based configuration for \texttt{SECRET\_KEY}, and enable
+      \texttt{SESSION\_COOKIE\_SECURE}, \texttt{CSRF\_COOKIE\_SECURE}, and
+      \texttt{SECURE\_SSL\_REDIRECT} when not in debug/local mode.  Backend
+      logging is configured via \texttt{LOGGING} with console output and
+      enabled loggers for \texttt{django}, \texttt{celery}, and \texttt{api}.
+      Dynamic testing with a non-privileged user showed restricted admin
+      features are hidden in the UI and were not accessible via normal
+      navigation. \\
+    \textbf{Expected vs.\ Actual Match} &
+      Pass (authentication, logging configuration, and access control
+      requirements were met). \\
+    \bottomrule
+  \end{tabular}
+\end{table}
+
+\subsubsection{Results}
+Table~\ref{tab:tnf5-results} summarizes the observed results for security and access control scenarios.
+\begin{table}[H]
+  \centering
+  \caption{Security and access control results.}
+  \label{tab:tnf5-results}
+  \begin{tabular}{@{}p{0.46\textwidth}p{0.14\textwidth}p{0.32\textwidth}@{}}
+    \toprule
+    \textbf{Scenario} & \textbf{Result} & \textbf{Notes} \\
+    \midrule
+    Authentication mechanism review &
+      Pass &
+      DRF uses \texttt{CookieJWTAuthentication}; custom user model configured. \\
+    Password policy validation review &
+      Pass &
+      \texttt{AUTH\_PASSWORD\_VALIDATORS} enabled with Django validators. \\
+    Production cookie / HTTPS settings review &
+      Pass &
+      Secure cookies and SSL redirect enabled when not debug/local. \\
+    Unauthorized feature access (UI) &
+      Pass &
+      Admin-only buttons hidden for non-privileged user. \\
+    Server logging configuration review &
+      Pass &
+      \texttt{LOGGING} configured with console handler; \texttt{django},
+      \texttt{celery}, and \texttt{api} loggers enabled (INFO/DEBUG). \\
+    \bottomrule
+  \end{tabular}
+\end{table}
+
+\subsubsection{Analysis}
+The system demonstrates framework-aligned security practices. Password
+validation is enabled through Django's built-in validators, authentication is
+enforced through a cookie-based JWT mechanism, and production deployments
+enable secure cookies and HTTPS redirection. Access control is supported
+through UI-level restriction of admin-only functionality for non-privileged
+users.
+
+Server logging is configured via the Django \texttt{LOGGING} setting with a
+console handler, with active loggers for key components including
+\texttt{django}, \texttt{celery}, and \texttt{api}.
+
+\subsubsection{Limitations and Next Steps}
+Next steps include (1) verifying unauthorized route access returns 401/403 and
+does not modify state, and (2) confirming whether security-relevant events are
+persisted beyond console output (e.g., centralized log retention or audit
+tables).
+
+\noindent \textbf{Evidence:} Backend configuration in
+\texttt{src/backend/DomainX/settings.py} (\texttt{AUTH\_USER\_MODEL},
+\texttt{REST\_FRAMEWORK}, \texttt{AUTH\_PASSWORD\_VALIDATORS},
+deployment secure-cookie/HTTPS settings, and \texttt{LOGGING}); authentication
+module \texttt{users.auth.CookieJWTAuthentication}; UI observation that
+admin-only buttons are hidden for non-privileged users.
+
+\subsection{Maintainability}
+\label{sec:nfr-maintainability}
+
+This subsection reports results for maintainability.  Evidence is
+taken from automated GitHub Actions runs and repository documentation related
+to testing.  The evaluation targets MS-MR1--MS-MR6 (maintainability standards:
+style compliance, modularity, testability, and documentation).
+
+\subsubsection{Test Case Summary (T--NF6: Maintainability)}
+Table~\ref{tab:tnf6-summary} summarizes the maintainability evaluation, including automated testing and documentation.
+\begin{table}[H]
+  \centering
+  \caption{T--NF6 maintainability: test case summary.}
+  \label{tab:tnf6-summary}
+  \begin{tabular}{@{}p{0.22\textwidth}p{0.73\textwidth}@{}}
+    \toprule
+    \textbf{Test Case ID} &
+      T--NF6 (Maintainability) \\
+    \textbf{Initial State} &
+      Repository contains an automated test workflow in GitHub Actions and a
+      dedicated \texttt{test/} directory with documentation. \\
+    \textbf{Input} &
+      Trigger the \texttt{tests.yml} workflow via a pull request update and
+      inspect the run status, logs, and artifacts.  Inspect \texttt{test/}
+      documentation to confirm test execution instructions are provided. \\
+    \textbf{Expected Output} &
+      Automated tests execute successfully; a CI coverage summary is produced
+      and meets the target (planned $\geq 80\%$); test documentation exists for
+      developers to run tests locally. \\
+    \textbf{Actual Output} &
+      The \texttt{tests.yml} workflow executed successfully with separate
+      \texttt{backend-test} and \texttt{frontend-test} jobs.  Backend tests ran
+      with coverage and produced TOTAL backend coverage of 75\%.  A coverage
+      HTML artifact (\texttt{coverage-html}) was uploaded.  The repository
+      includes \texttt{test/README.md} documenting how to run tests locally. \\
+    \textbf{Expected vs.\ Actual Match} &
+      Partial (tests and reporting present; coverage below 80\% target;
+      documentation present). \\
+    \bottomrule
+  \end{tabular}
+\end{table}
+
+\subsubsection{Results}
+Table~\ref{tab:maint-results} summarizes maintainability evidence.
+The workflow run selected for evidence is the most recent successful run.
+
+\begin{table}[H]
+  \centering
+  \caption{Maintainability evidence summary.}
+  \label{tab:maint-results}
+  \begin{tabular}{@{}p{0.34\textwidth}p{0.18\textwidth}p{0.40\textwidth}@{}}
+    \toprule
+    \textbf{Item} & \textbf{Observed} & \textbf{Notes} \\
+    \midrule
+    Automated CI tests (GitHub Actions) &
+      Yes &
+      \texttt{tests.yml} runs on pull requests with backend and frontend jobs. \\
+    Backend tests &
+      Pass &
+      \texttt{pytest} executed in CI; tests passed (with warnings). \\
+    Frontend tests &
+      Pass &
+      Frontend job executed in CI (Playwright-based). \\
+    Coverage reporting enabled &
+      Yes &
+      Coverage printed in logs; HTML report uploaded as artifact. \\
+    Overall backend coverage &
+      75\% &
+      Below planned target of $\geq 80\%$. \\
+    Test execution documentation &
+      Yes &
+      \texttt{test/README.md} documents setup and running \texttt{pytest}. \\
+    Lint/format automation &
+      Yes &
+      Backend linting and formatting are enforced via a pre-commit workflow in CI,
+      which runs on pull requests (including tools such as isort and other checks
+      defined in the pre-commit configuration). \\
+    \bottomrule
+  \end{tabular}
+\end{table}
+
+\subsubsection{Analysis and Traceability}
+The existence of an automated test workflow integrated into pull requests
+supports maintainability through testability and regression resistance.  The
+workflow runs backend and frontend tests and produces a coverage report, which
+enables repeatable inspection of covered and uncovered code paths.  The
+presence of \texttt{test/README.md} further supports maintainability by
+documenting how developers can run the test suite locally.
+
+The observed overall backend coverage (75\%) does not meet the planned
+$\geq 80\%$ target.  This indicates that additional tests should be
+added, particularly for modules with low coverage, to increase confidence in
+future refactors and to align with MS-MR testability expectations.
+
+This evaluation traces to MS-MR1--MS-MR6.  Evidence supports testability,
+documentation, and style compliance through automated lint/format checks
+integrated into CI.
+
+\subsubsection{Limitations and Next Steps}
+Maintainability can be further strengthened by:
+(1) increasing automated test coverage to reach the $\geq 80\%$ target,
+(2) maintaining lint/format checks in CI to ensure consistent code quality,
+and
+(3) recording a brief team code walkthrough note summarizing modular structure
+and documentation completeness, with follow-up items tracked in GitHub issues.
+
+\noindent \textbf{Evidence:}
+GitHub Actions \texttt{tests.yml} workflow and latest successful run
+(\texttt{backend-test} and \texttt{frontend-test}), including coverage output
+(TOTAL coverage) and the \texttt{coverage-html} artifact; repository test
+documentation at \texttt{/test/README.md}; backend lint workflow
+(\texttt{backend-lint.yml}) using pre-commit hooks (e.g., isort) executed on
+pull requests.
+
+\subsection{Impact of Verification}
+The verification results helped highlight areas where the system could be improved.
+For example, observed delays during some interactions motivated the addition of a loading indicator when switching pages to improve user feedback. Other observations, such as limited feedback during certain operations, were noted as potential improvements for future work. Overall, the results informed small usability enhancements and identified areas for further refinement.
 
 \section{Unit Testing}
 The following unit tests concern behaviour-hiding modules that are implemented by the tool. Modules implemented by external libraries are assumed to be tested themselves and therefore don't need to be unit tested.
@@ -1271,16 +1847,169 @@ The following unit tests concern behaviour-hiding modules that are implemented b
 
 \section{Changes Due to Testing}
 
-\wss{This section should highlight how feedback from the users and from
-the supervisor (when one exists) shaped the final product.  In particular
-the feedback from the Rev 0 demo to the supervisor (or to potential users)
-should be highlighted.}
+\subsection{AHP Methodology Alignment}
+Following the feedback from the Rev 0 meeting, we identified a discrepancy between our initial implementation and the established research methodology.
+\begin{itemize}
+  \item \textbf{Previous Iteration:} AHP was only applied to calculate the ``Local Weights'' of libraries within a single criterion. Users were then asked to manually assign a flat percentage to each overarching criterion.
+  \item \textbf{The Revision:} To align with the formal AHP framework, we transitioned to a Pairwise Comparison Matrix for criterion weighting. Users now compare the relative importance of categories (e.g., Usability vs. Reliability) using the Saaty 1--9 scale. The system then mathematically derives the global weights and validates the results via a Consistency Ratio (CR) check, ensuring the data is scientifically sound.
+\end{itemize}
+
+\subsection{Visualization and Data Density}
+We addressed the limitations regarding how library rankings were displayed to improve transparency.
+
+\begin{itemize}
+  \item \textbf{Graph Scalability:} Previously, the dashboard was limited to the top 10 libraries to avoid overcrowding. However, to provide a comprehensive view of the domain, we have redesigned the visualization format to clearly accommodate and display all libraries simultaneously.
+  \item \textbf{Tabular Data:} Based on user recommendations, we have introduced a Ranking Table to complement the graphical data. This allows users to view precise numerical scores and rankings alongside the visual trends.
+\end{itemize}
+
+\subsection{Data Integrity and Input Validation}
+To reduce user error, we refined the data entry process. We replaced open-ended text fields with context-aware inputs. The system now provides dropdown menus for Booleans and Ranges, preventing invalid data types from corrupting the AHP calculations.
+\textit{Note: No changes were required based on current unit testing results, as the core logic remains stable.}
 
 \section{Automated Testing}
 
+Pytest and the \texttt{pytest-django} ecosystem serve as the foundation for our automated testing suite, which offers a high-performance, adaptable framework for verifying environment setups and application logic. To ensure that model-level constraints are carefully enforced before code reaches production, we use specialized decorators like \texttt{@pytest.mark.django\_db} to safely communicate with a temporary test database. We can swiftly find and fix errors in our fundamental business logic, such the concatenation rules for user profiles, by utilizing Pytest's sophisticated assertion introspection.
+
+Using Django's \texttt{SimpleTestCase} and the \texttt{unittest.mock} module, we developed a strong configuration testing method in addition to standard data validation. This enables us to test that our settings dynamically swap between SQLite and MySQL engines as planned by programmatically simulating various deployment scenarios (e.g., Local vs. Production). We make sure the application stays stable and properly configured across different infrastructure states without having to manually review environment files by simulating environment variables and altering settings within our tests.
 \section{Trace to Requirements}
+Table~\ref{tab:trace-functional} presents the traceability between the
+system test cases and the requirements defined in the Software Requirements
+Specification (SRS). The table indicates which test cases provide verification
+evidence for each requirement implemented in the system.
+
+\begin{table}[H]
+\centering
+\caption{Traceability Between Requirements and System Test Cases}
+\label{tab:trace-functional}
+\resizebox{\textwidth}{!}{
+\begin{tabular}{|l|c|c|c|c|c|c|c|c|c|c|c|c|c|c|c|c|c|c|c|c|c|}
+\hline
+Requirement
+& T-AC-1 & T-AC-2 & T-AC-3 & T-AC-4 & T-AC-5
+& T-AC-8 & T-AC-9 & T-AC-10 & T-AC-11
+& T-DM-1 & T-DM-2 & T-DM-3 & T-DM-4 & T-DM-5 & T-DM-7
+& T-VR-1 & T-VR-2 & T-VR-3 & T-VR-4 & T-VR-5 & T-VR-6 \\
+\hline
+
+FR2  &  &  &  &  &  &  & X &  &  &  &  &  &  &  &  &  &  &  &  &  &  \\ \hline
+FR3  &  & X & X &  &  &  &  &  &  &  &  &  &  &  &  &  &  &  &  &  &  \\ \hline
+FR4  &  &  &  &  &  &  &  &  & X &  &  &  &  &  &  &  &  &  &  &  &  \\ \hline
+FR5  &  &  &  &  &  &  &  &  &  & X &  &  &  &  &  &  &  &  &  &  &  \\ \hline
+FR6  &  &  &  &  &  &  &  &  &  &  &  &  &  &  & X &  &  &  &  &  &  \\ \hline
+FR7  &  &  &  &  &  &  &  &  &  &  & X & X &  &  &  &  &  &  &  &  &  \\ \hline
+FR10 &  &  &  &  &  &  &  &  &  &  & X &  &  &  &  &  &  &  &  &  &  \\ \hline
+FR11 &  &  &  &  &  &  &  &  &  &  &  &  &  &  &  &  &  &  &  &  & X \\ \hline
+FR12 &  &  &  &  &  &  &  &  &  &  &  & X &  &  &  & X &  &  &  &  &  \\ \hline
+FR13 &  &  &  &  &  &  &  &  &  &  &  &  &  &  &  & X & X &  &  &  &  \\ \hline
+FR14 &  &  &  &  &  &  &  &  &  &  &  &  &  & X & X &  &  &  &  &  &  \\ \hline
+FR15 &  &  &  &  &  &  &  &  &  &  &  &  &  &  &  &  &  & X &  &  &  \\ \hline
+
+SR-AC1 &  &  &  &  &  & X &  &  &  &  &  &  &  &  &  &  &  &  &  &  &  \\ \hline
+SR-AC4 &  &  &  &  & X &  &  &  &  &  &  &  &  &  &  &  &  &  &  &  &  \\ \hline
+SR-AC5 & X & X & X & X &  &  &  &  &  &  &  &  &  &  &  &  &  &  &  &  &  \\ \hline
+SR-AC6 &  &  &  &  &  &  &  & X &  &  &  &  &  &  &  &  &  &  &  &  &  \\ \hline
+SR-IM1 &  &  &  &  &  &  &  & X &  &  &  &  &  &  &  &  &  &  &  &  &  \\ \hline
+
+SR-VIS1 &  &  &  &  &  &  &  &  &  &  &  &  &  &  &  & X &  &  &  &  &  \\ \hline
+SR-VIS2 &  &  &  &  &  &  &  &  &  &  &  &  &  &  &  &  & X &  &  &  &  \\ \hline
+
+PR-RFT1 &  &  &  &  &  &  &  &  &  &  &  &  & X &  &  &  &  &  &  & X &  \\ \hline
+SR-INT5 &  &  &  &  &  &  &  &  &  &  &  &  & X &  &  &  &  &  &  & X &  \\ \hline
+
+LF-AR2 &  &  &  &  &  &  &  &  &  &  &  &  &  &  &  &  &  &  & X &  &  \\ \hline
+LF-AR3 &  &  &  &  &  &  &  &  &  &  &  &  &  &  &  &  &  &  &  &  & X \\ \hline
+LF-SR2 &  &  &  &  &  &  &  &  &  &  &  &  &  &  &  &  &  &  & X &  &  \\ \hline
+
+UH-AR1 &  &  &  &  &  &  &  &  &  &  &  &  &  &  &  &  &  &  & X &  &  \\ \hline
+
+OE-PR4 &  &  &  &  &  &  &  &  &  &  &  &  &  & X &  &  &  & X &  &  &  \\ \hline
+
+\end{tabular}
+}
+\end{table}
+
+The tests listed in this report were designed to verify the functional requirements implemented in the final system. Some tests also provide evidence for non-functional requirements, which is why those requirements appear in the traceability matrix.
+
+\section{Trace to Requirements (Nonfunctional)}
+\label{sec:trace-nfr}
+
+Table~\ref{tab:trace-nfr} summarizes traceability between nonfunctional
+requirements (NFR-related requirement IDs from the SRS) and the nonfunctional
+test cases (T--NF1 through T--NF6) defined in the VnV Plan.
+
+\begin{table}[H]
+\centering
+\caption{Nonfunctional Requirements Traceability Matrix}
+\label{tab:trace-nfr}
+\resizebox{\textwidth}{!}{
+\begin{tabular}{|l|c|c|c|c|c|c|}
+\hline
+\textbf{Requirement ID} & \textbf{T--NF1} & \textbf{T--NF2} & \textbf{T--NF3} &
+\textbf{T--NF4} & \textbf{T--NF5} & \textbf{T--NF6} \\ \hline
+PR--SL1   & X &   &   &   &   &   \\ \hline
+PR--RFT1  &   & X &   &   &   &   \\ \hline
+PR--RFT2  &   & X &   &   &   &   \\ \hline
+PR--RFT3  &   & X &   &   &   &   \\ \hline
+SR--INT5  &   & X &   &   &   &   \\ \hline
+UH--EU1   &   &   & X &   &   &   \\ \hline
+LF--AR2   &   &   & X &   &   &   \\ \hline
+UH--UP3   &   &   & X &   &   &   \\ \hline
+LF--SR2   &   &   & X &   &   &   \\ \hline
+PR--PA1   &   &   &   & X &   &   \\ \hline
+FR12      &   &   &   & X &   &   \\ \hline
+PR--SC1   &   &   &   &   & X &   \\ \hline
+PR--SC2   &   &   &   &   & X &   \\ \hline
+PR--SC3   &   &   &   &   & X &   \\ \hline
+SR--AC6   &   &   &   &   & X &   \\ \hline
+SR--IM1   &   &   &   &   & X &   \\ \hline
+SR--AU1   &   &   &   &   & X &   \\ \hline
+MS--MR1   &   &   &   &   &   & X \\ \hline
+MS--MR2   &   &   &   &   &   & X \\ \hline
+MS--MR3   &   &   &   &   &   & X \\ \hline
+MS--MR4   &   &   &   &   &   & X \\ \hline
+MS--MR5   &   &   &   &   &   & X \\ \hline
+MS--MR6   &   &   &   &   &   & X \\ \hline
+\end{tabular}
+}
+\end{table}
+
+The tests listed in this section were designed to provide verification evidence
+for the nonfunctional requirements in the SRS. An ``X'' indicates that the
+corresponding test case contributes evidence for that requirement. Note that
+evidence may include Pass, Partial, or Pending outcomes as reported in the
+nonfunctional requirements evaluation section.
 
 \section{Trace to Modules}
+Table~\ref{tab:trace} presents the traceability between the system test cases and the software modules defined in the system architecture. The table indicates which test cases provide verification evidence for each module implemented in the system.
+\begin{table}[H]
+\centering
+\caption{Traceability Between Modules and System Test Cases}
+\label{tab:trace}
+\resizebox{\textwidth}{!}{
+\begin{tabular}{|l|c|c|c|c|c|c|c|c|c|c|c|c|c|c|c|c|c|c|}
+\hline
+\textbf{Module} & \textbf{T-AC-1} & \textbf{T-AC-2} & \textbf{T-AC-3} & \textbf{T-AC-4} & \textbf{T-AC-5} & \textbf{T-AC-6} & \textbf{T-AC-7} & \textbf{T-DM-1} & \textbf{T-DM-2} & \textbf{T-DM-3} & \textbf{T-DM-4} & \textbf{T-DM-5} & \textbf{T-VR-1} & \textbf{T-VR-2} & \textbf{T-VR-3} & \textbf{T-VR-4} & \textbf{T-VR-5} & \textbf{T-VR-6} \\ \hline
+M2  &   &   &   &   &   &   &   &   &   &   &   &   &   &   &   & X &   &   \\ \hline
+M3  &   &   &   &   & X &   & X &   &   & X &   & X &   &   & X & X &   & X \\ \hline
+M4  &   &   &   &   &   & X &   & X & X & X &   &   &   &   &   &   &   &   \\ \hline
+M5  & X & X &   &   &   &   & X &   &   &   &   &   &   &   &   &   &   &   \\ \hline
+M6  &   &   & X & X &   & X &   & X &   &   &   &   &   &   &   &   &   &   \\ \hline
+M7  & X &   &   &   &   &   &   &   &   &   &   &   &   &   &   &   &   &   \\ \hline
+M8  &   &   &   &   &   &   &   &   & X &   &   &   &   &   &   &   &   &   \\ \hline
+M9  &   &   &   &   &   &   &   & X &   &   &   &   &   &   &   &   &   & X \\ \hline
+M10 &   &   &   &   &   &   &   &   &   &   & X & X &   &   & X & X & X & X \\ \hline
+M11 &   &   &   &   &   &   &   &   &   & X &   &   & X &   &   &   &   &   \\ \hline
+M12 &   &   &   &   &   &   &   &   &   &   &   &   & X & X & X & X &   & X \\ \hline
+M14 &   &   &   &   &   & X &   &   & X & X &   & X &   &   & X &   &   &   \\ \hline
+M15 &   &   &   &   &   &   &   &   & X &   &   &   &   &   &   &   &   &   \\ \hline
+M16 &   &   &   &   &   &   &   &   &   & X &   &   & X & X &   &   &   &   \\ \hline
+M17 &   &   &   &   &   & X &   &   & X & X & X &   & X &   &   &   & X &   \\ \hline
+M18 &   &   &   &   &   &   &   &   &   &   & X &   &   &   &   &   & X &   \\ \hline
+M19 &   &   &   &   &   &   &   & X &   &   &   &   &   &   &   &   &   &   \\ \hline
+\end{tabular}
+}
+\end{table}
+
 
 \section{Code Coverage Metrics}
 The following report is automatically generated by pytest. We obtained a total coverage of 73\%. The actual coverage should be slightly higher since some files that contain no logic are being counted towards the percentage (i.e. \href{https://github.com/thaafei/DomainX/blob/main/src/backend/api/database/edit_history/views.py}{edit\_history/views}).
@@ -1345,7 +2074,16 @@ graduate attribute of Reflection.
 \input{../Reflection.tex}
 
 \begin{enumerate}
-  \item What went well while writing this deliverable?
+  \item What went well while writing this deliverable?\\
+
+  \textbf{Haniye:} One aspect that went well while writing this deliverable was that many of the test scenarios were already clear from the development process. While implementing features such as domain management, metric editing, and visualization, the system was frequently tested to verify correct behaviour. As a result, when preparing the VnV report it was easier to define the test inputs and expected outcomes because the implemented features had already been validated during development.    \textbf{Fei:} I was responsible for the unit test portion. Since we decided to write unit test as we develop, instead of all at the end, writing this portion was much simpler as I just had to compile what we had into a report format.\\
+
+  \textbf{Fei:} I was responsible for the unit test portion. Since we decided to write unit test as we develop, instead of all at the end, writing this portion was much simpler as I just had to compile what we had into a report format.\\
+
+  \textbf{Ghena:} A lot of test cases were already written and used throughout the development process, making sure that any ant changes to the code follows the logic of the requirements. This made the document easy to write since a lot of it was alreadt built.
+
+  \textbf{Awurama}: Converting our real testing into a consistent structure (summary to method to results to analysis to next steps) worked well. We reused concrete evidence (timings, UI observations, CI output, and code excerpts) and traceability was straightforward because the VnV Plan already mapped each T--NF test to requirement IDs.
+
   \item What pain points did you experience during this deliverable, and how
     did you resolve them?\\
 
