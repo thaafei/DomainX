@@ -4,9 +4,13 @@
 \usepackage{booktabs}
 \usepackage{multicol}
 \usepackage{longtable}
+
 \usepackage{amsmath}
 \usepackage{hyperref}
 \usepackage{float}
+
+
+\usepackage{graphicx}
 
 
 \title{Reflection and Traceability Report on \progname}
@@ -420,6 +424,7 @@ Not implemented
 
 \end{longtable}
 
+
 \subsubsection{Module Interface Specification (MIS)}
 \label{ssubsec:mis-trace}
 
@@ -454,7 +459,8 @@ Revised the type notation to use \texttt{bool} consistently in the MIS.
 This aligned the type names with the notation table and removed
 inconsistent wording.
 &
-Issue \#265; Section~4.3, Table~2
+\href{https://github.com/thaafei/DomainX/issues/265}{Issue \#265};
+Section~4.3, Table~2
 \\
 
 TA Review \#200,
@@ -466,7 +472,8 @@ Revised variable names to better match the intended system terminology
 and to improve consistency between the MIS and implementation-facing
 documentation.
 &
-Issue \#264; Sections~4.4 and~6
+\href{https://github.com/thaafei/DomainX/issues/264}{Issue \#264};
+Sections~4.4 and~6
 \\
 
 TA Review \#200,
@@ -478,7 +485,8 @@ interfaces remain meaningful.
 Added local functions where appropriate and revised module descriptions
 to better justify the structure of the affected modules.
 &
-Issue \#263; Section~6
+\href{https://github.com/thaafei/DomainX/issues/263}{Issue \#263};
+Section~6
 \\
 
 TA Review \#200,
@@ -491,7 +499,8 @@ Revised the Browser Module description to state that it provides the
 runtime container for the client application and clarified its role in
 the system.
 &
-Issue \#262; Section~6.1
+\href{https://github.com/thaafei/DomainX/issues/262}{Issue \#262};
+Section~6.1
 \\
 
 TA Review \#200,
@@ -502,10 +511,12 @@ Refer to the module decomposition table explicitly by number.
 Revised the introductory text for module decomposition so that it
 explicitly refers to Table~3.
 &
-Issue \#261; Section~5, Table~3
+\href{https://github.com/thaafei/DomainX/issues/261}{Issue \#261};
+Section~5, Table~3
 \\
 
-Peer Review \#239
+Peer Review
+\href{https://github.com/thaafei/DomainX/issues/239}{\#239}
 &
 The MIS is missing abbreviations and acronyms needed for readability.
 &
@@ -515,8 +526,9 @@ clarity and make the document easier to read independently.
 Section~2, Table~1
 \\
 
-Peer Reviews \#217
-and \#218
+Peer Reviews
+\href{https://github.com/thaafei/DomainX/issues/217}{\#217}
+and \href{https://github.com/thaafei/DomainX/issues/218}{\#218}
 &
 Module subsections, module types, and input/output types are unclear.
 &
@@ -527,8 +539,9 @@ explicit.
 Section~4.3, Table~2; Section~6
 \\
 
-Peer Reviews \#212
-and \#223
+Peer Reviews
+\href{https://github.com/thaafei/DomainX/issues/212}{\#212}
+and \href{https://github.com/thaafei/DomainX/issues/223}{\#223}
 &
 The level of abstraction and module hierarchy need to be more precise.
 &
@@ -540,8 +553,10 @@ Section~5, Table~3; Section~6
 \\
 
 Final Documentation
-Issue \#501
-(sub-issues \#481 to \#485)
+\href{https://github.com/thaafei/DomainX/issues/501}{Issue \#501}
+(sub-issues
+\href{https://github.com/thaafei/DomainX/issues/481}{\#481} to
+\href{https://github.com/thaafei/DomainX/issues/485}{\#485})
 &
 Remove unnecessary text, clarify parameters and outputs, fix
 formatting, and hyperlink module references.
@@ -556,23 +571,18 @@ Section~6
 \end{longtable}
 
 
+
 \subsection{VnV Plan and Report}
 This section summarizes the feedback received on the Verification
-and Validation (V\&V) Plan and report. It is divided into their respective subsection.
-
-\subsubsection{VnV Plan}
-\label{ssubsec:vnv-plan-trace}
-
-This subsection summarizes the feedback received on the Verification
-and Validation (V\&V) Plan and the revisions made in response. The
-updates focused on improving traceability, clarifying verification
-approaches, strengthening test descriptions, and refining the
-structure and readability of the document.
+and Validation (V\&V) Plan and V\&V Report. The updates focused on
+improving traceability, clarifying verification approaches,
+strengthening test descriptions, and refining the structure and
+readability of the documents.
 
 \begin{longtable}{p{0.18\textwidth} p{0.26\textwidth}
                   p{0.34\textwidth} p{0.16\textwidth}}
-\caption{V\&V Plan feedback and response traceability}
-\label{tab:vnv-plan-trace}\\
+\caption{V\&V Plan and Report feedback and response traceability}
+\label{tab:vnv-plan-report-trace}\\
 \toprule
 Source & Feedback & Change Made & Where Addressed \\
 \midrule
@@ -586,7 +596,7 @@ Source & Feedback & Change Made & Where Addressed \\
 \bottomrule
 \endfoot
 
-TA Review \#130,
+TA Review \href{https://github.com/thaafei/DomainX/issues/130}{\#130},
 annotated VnVPlan.pdf
 &
 Traceability table contains unnecessary columns.
@@ -598,7 +608,7 @@ identifiers.
 Section~4.3, Table~9
 \\
 
-TA Review \#130,
+TA Review \href{https://github.com/thaafei/DomainX/issues/130}{\#130},
 annotated VnVPlan.pdf
 &
 Traceability between test cases and requirements is unclear.
@@ -610,7 +620,7 @@ improving clarity and coverage justification.
 Section~4.3
 \\
 
-TA Review \#130,
+TA Review \href{https://github.com/thaafei/DomainX/issues/130}{\#130},
 annotated VnVPlan.pdf
 &
 Verification approach is ambiguous and difficult to follow.
@@ -622,7 +632,7 @@ cases and system components.
 Section~4.1; Section~4.2
 \\
 
-TA Review \#130,
+TA Review \href{https://github.com/thaafei/DomainX/issues/130}{\#130},
 annotated VnVPlan.pdf
 &
 Test case descriptions are incomplete and include unnecessary columns.
@@ -634,7 +644,7 @@ requirements.
 Section~4.1.1--4.1.3
 \\
 
-TA Review \#130,
+TA Review \href{https://github.com/thaafei/DomainX/issues/130}{\#130},
 annotated VnVPlan.pdf
 &
 Unclear whether tests are manual or automated.
@@ -645,7 +655,7 @@ verification approach sections and tool descriptions.
 Section~3.5; Section~3.6; Section~4
 \\
 
-TA Review \#130,
+TA Review \href{https://github.com/thaafei/DomainX/issues/130}{\#130},
 annotated VnVPlan.pdf
 &
 Descriptions of testing tools are vague.
@@ -656,7 +666,7 @@ automation, CI/CD, static analysis, and API validation).
 Section~3.6, Table~5
 \\
 
-TA Review \#130,
+TA Review \href{https://github.com/thaafei/DomainX/issues/130}{\#130},
 annotated VnVPlan.pdf
 &
 Unclear ownership of verification activities.
@@ -667,7 +677,7 @@ including testing, reviews, and traceability management.
 Section~3.1, Table~4
 \\
 
-TA Review \#130,
+TA Review \href{https://github.com/thaafei/DomainX/issues/130}{\#130},
 annotated VnVPlan.pdf
 &
 Usability evaluation is not fully specified.
@@ -679,18 +689,19 @@ quantitative thresholds.
 Section~4.2.3; Appendix~7.2
 \\
 
-TA Review \#130,
+TA Review \href{https://github.com/thaafei/DomainX/issues/130}{\#130},
 annotated VnVPlan.pdf
 &
 Ambiguity between SRS walkthroughs and code walkthroughs.
 &
-Clarified distinction between SRS verification walkthroughs and code
-walkthroughs, and placed them in appropriate sections of the plan.
+Clarified the distinction between SRS verification walkthroughs and
+code walkthroughs, and placed them in appropriate sections of the
+plan.
 &
 Section~3.2; Section~3.5
 \\
 
-TA Review \#130,
+TA Review \href{https://github.com/thaafei/DomainX/issues/130}{\#130},
 annotated VnVPlan.pdf
 &
 Missing list of tables and figures based on rubric.
@@ -701,18 +712,57 @@ align with documentation expectations.
 Contents page
 \\
 
-Peer Review \#461
+Peer Review \href{https://github.com/thaafei/DomainX/issues/461}{\#461}
 &
 Traceability between VnV Plan and VnV Report is insufficient.
 &
-Ensured consistent identifiers are used across both documents so that
-test results in the VnV Report map directly to planned verification
-activities in the VnV Plan.
+Aligned identifiers and requirement mappings across both documents so
+that planned tests correspond directly to reported results, improving
+end-to-end traceability.
 &
-Section~4.3
+VnV Plan Section~4.3; VnV Report Sections~3--4
+\\
+
+Issue \href{https://github.com/thaafei/DomainX/issues/528}{\#528}
+&
+Update tests for implemented features that were previously marked as
+in progress in earlier versions of the report.
+&
+Revised the functional requirements evaluation to reflect completed
+implementations rather than listing them under features in progress.
+Functional test cases were updated to align with the current system
+state.
+&
+VnV Report, Section~3
+\\
+
+TA Review (annotated VnV Report PDF)
+&
+Some nonfunctional results are marked as \textit{Partial}.
+&
+Expanded the corresponding nonfunctional sections to clarify the
+meaning of partial results and to document limitations and next steps
+for incomplete verification.
+&
+VnV Report, Section~4
+\\
+
+TA Review (annotated VnV Report PDF)
+&
+Computational accuracy test case summary appears incomplete.
+&
+Completed the computational accuracy subsection by adding a full test
+case summary, including method, results, and analysis of AHP outputs.
+&
+VnV Report, Section~4.4
 \\
 
 \end{longtable}
+
+
+
+
+
 
 \section{Extras}
 
@@ -755,15 +805,229 @@ Practice for Domain X} paper. Our addition to the methods outline in the paper w
 
 
 \section{Design Iteration (LO11 (PrototypeIterate))}
+The design of DomainX evolved through multiple iterations based on stakeholder feedback and usability observations. The goal of these iterations was to improve usability, ensure methodological correctness, and enhance data consistency.
+\subsection{AHP Framework Redesign}
 
-\plt{Explain how you arrived at your final design and implementation.  How did
-the design evolve from the first version to the final version?}
+\textbf{Previous Design}
 
-\plt{Don't just say what you changed, say why you changed it.  The needs of the
-client should be part of the explanation.  For example, if you made changes in
-response to usability testing, explain what the testing found and what changes
-it led to.}
+In the initial version, category importance was assigned using independent sliders. Each category was given a percentage weight directly by the user.
 
+\begin{itemize}
+    \item There was no direct comparison between categories
+    \item Users could assign inconsistent weights
+    \item The approach did not correctly follow the actual AHP methodology
+\end{itemize}
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.85\textwidth]{figures/old_ahp_weights.png}
+\caption{Initial weight assignment using independent sliders}
+\end{figure}
+
+\textbf{Final Design}
+
+We replaced this with a pairwise comparison matrix based on the AHP method. Instead of assigning percentages directly, users compare categories relative to each other using the Saaty scale.
+
+\begin{itemize}
+    \item Weights are computed automatically
+    \item A consistency ratio (CR) is calculated to detect unreliable inputs
+\end{itemize}
+
+This change was important because the slider approach looked simple but often produced unreliable results. The matrix-based approach is slightly more structured, but it ensures the final weights are meaningful and consistent.
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.85\textwidth]{figures/new_ahp.png}
+\caption{Pairwise comparison matrix with consistency validation}
+\end{figure}
+
+\subsection{Visualization Improvements}
+
+\textbf{Previous Design}
+
+The earlier version used 3D-style bar charts and only displayed a small subset of libraries.
+
+\begin{itemize}
+    \item The 3D view made values harder to compare
+    \item Not all libraries were visible at once
+\end{itemize}
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.8\textwidth]{figures/old_ahp_visual.png}
+\caption{Previous 3D visualization with limited libraries}
+\end{figure}
+
+\textbf{Final Design}
+
+We switched to a full ranking view using a standard 2D bar chart that shows all libraries.
+
+\begin{itemize}
+    \item Easier to compare values across libraries
+    \item No hidden data (All libraries are visible)
+\end{itemize}
+
+This change mainly came from usability issues. The previous chart looked visually appealing, but it was not practical when the number of libraries increased.
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.9\textwidth]{figures/new_ranking.png}
+\caption{Improved visualization showing full ranking of libraries}
+\end{figure}
+
+\subsection{Metric Definition Improvements}
+
+\textbf{Previous Design}
+
+Originally, each metric had a single name field that was used both for display and internally in the system.
+
+\begin{itemize}
+    \item Renaming a metric could break functionality (especially for automated metrics)
+    \item There was no clear distinction between manual and automated metrics
+    \item Input expectations were not well defined
+\end{itemize}
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.85\textwidth]{figures/metrics_list.png}
+\caption{Metric management interface}
+\end{figure}
+
+\textbf{Final Design}
+
+We redesigned the metric configuration to separate concerns more clearly:
+
+\begin{itemize}
+    \item Introduced an internal \textbf{metric key} separate from the display name
+    \item Allowed users to rename metrics without affecting system logic
+    \item Added an explicit distinction between \textbf{manual} and \textbf{automated} data sources
+    \item Supported structured metric types (Boolean, Integer, Range, etc.)
+    \item Added input categories and scoring rules for controlled data entry
+\end{itemize}
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.7\textwidth]{figures/metric_edit_system.png}
+\caption{Configuration for automated metrics}
+\end{figure}
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.7\textwidth]{figures/metric_edit_manual.png}
+\caption{Configuration for manual metrics with predefined input categories}
+\end{figure}
+
+This change was mainly driven by a stakeholder requirement: they needed the ability to rename metrics freely without breaking automated data collection. Separating the internal key from the display name fixed this issue and made the system more robust.
+
+\subsection{Metric Value Input Improvements}
+
+\textbf{Previous Design}
+
+Metric values were entered directly inside a table, with each row representing a library.
+
+\begin{itemize}
+    \item Hard to navigate when many metrics were present
+    \item Easy to lose track of which values were being edited
+\end{itemize}
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.9\textwidth]{figures/old_library_values_table.png}
+\caption{Row-based metric value input}
+\end{figure}
+
+\textbf{Final Design}
+
+We introduced a popup-based interface for editing values.
+
+\begin{itemize}
+    \item Users focus on one library at a time
+    \item Inputs are grouped more clearly
+\end{itemize}
+
+This made data entry much more manageable, especially for domains with many metrics.
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.8\textwidth]{figures/new_library_values_popup.png}
+\caption{Popup-based metric value input interface}
+\end{figure}
+
+\subsection{Data Input and Validation Improvements}
+
+\textbf{Previous Design}
+
+All metric values were entered as free text.
+
+\begin{itemize}
+    \item Flexible but inconsistent
+    \item Same value could be entered in different formats (e.g., "yes", "Yes", "Y")
+\end{itemize}
+
+\textbf{Final Design}
+
+We introduced structured inputs where possible:
+
+\begin{itemize}
+    \item Boolean metrics now use dropdowns (Yes / No / Unclear)
+    \item Metrics with predefined scoring (e.g., ranges or rating scales) also use dropdown selections
+\end{itemize}
+
+Free-text input is still allowed for metrics that require flexibility.
+
+Instead of removing flexibility entirely, we limited it only where it caused problems. This helped standardize inputs without making the system too rigid.
+
+\subsection{User Feedback and Iteration}
+
+User feedback was collected through task-based testing with an external user (Ryan).
+
+\textbf{Overall Observation}
+
+Basic tasks such as domain creation, and exporting data were straightforward. However, usability issues appeared in more complex workflows involving metrics.
+
+\textbf{Key Findings and Changes}
+
+\textbf{Metric Creation}
+
+Ryan noted:
+\begin{quote}
+"If the scoring rule is not clicked, the system does not allow saving, but there is no clear prompt or warning message."
+\end{quote}
+
+This showed that although required fields (e.g., metric name, scoring rule, input category) were already enforced by the system, there was no feedback indicating which fields were missing. As a result, the system appeared unresponsive when users attempted to create a metric.
+
+\textit{Change:}
+We added explicit validation feedback to indicate missing required fields, making it clear why a metric could not be created.
+
+\vspace{0.2cm}
+
+\textbf{Metric Value Input}
+
+Ryan reported:
+\begin{quote}
+"It was difficult to find where to fill in the manual metrics... I had to scroll or search to locate them."
+\end{quote}
+
+This showed that the table-based input interface did not scale well.
+
+\textit{Change:}
+We introduced a popup-based interface to allow users to focus on one library at a time.
+
+\vspace{0.2cm}
+
+\textbf{Input Consistency}
+
+Free-text inputs led to inconsistent data entry.
+
+\textit{Change:}
+We added dropdown inputs for metrics with predefined values (e.g., Boolean, ranges, scoring scales), while keeping free-text where needed.
+
+\vspace{0.2cm}
+
+
+\textbf{Summary}
+
+The feedback helped identify usability gaps in metric-related workflows. The resulting changes focused on improving clarity, reducing user effort, and ensuring more consistent data entry.
 \section{Design Decisions (LO12)}
 
 This section reflects on the key design decisions made during the development of the DomainX tool, organized by the limitations, assumptions, and constraints that influenced them.
