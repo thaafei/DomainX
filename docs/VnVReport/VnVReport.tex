@@ -2046,52 +2046,69 @@ evidence for each requirement implemented in the system.
 \caption{Traceability Between Requirements and System Test Cases}
 \label{tab:trace-functional}
 \resizebox{\textwidth}{!}{
-\begin{tabular}{|l|c|c|c|c|c|c|c|c|c|c|c|c|c|c|c|c|c|c|c|c|c|}
+\begin{tabular}{|l|c|c|c|c|c|c|c|c|c|c|c|c|c|c|c|c|c|c|c|c|c|c|}
 \hline
 Requirement
-& T-AC-1 & T-AC-2 & T-AC-3 & T-AC-4
-& T-AC-7 & T-AC-8 & T-AC-9 & T-AC-10
-& T-DM-1 & T-DM-2 & T-DM-3 & T-DM-4 & T-DM-5 & T-DM-7
+& T-AC-1 & T-AC-2 & T-AC-3 & T-AC-4 & T-AC-5 & T-AC-6 & T-AC-7 & T-AC-8 & T-AC-9 & T-AC-10
+& T-DM-1 & T-DM-2 & T-DM-3 & T-DM-4 & T-DM-5 & T-DM-6
 & T-VR-1 & T-VR-2 & T-VR-3 & T-VR-4 & T-VR-5 & T-VR-6 \\
 \hline
 
-FR2  &  &  &  &  &  & X &  &  &  &  &  &  &  &  &  &  &  &  &  &  &  \\ \hline
-FR3  & X & X &  &  &  &  &  &  &  &  &  &  &  &  &  &  &  &  &  &  &  \\ \hline
-FR4  &  &  &  &  &  &  &  & X &  &  &  &  &  &  &  &  &  &  &  &  &  \\ \hline
-FR5  &  &  &  &  &  &  &  &  & X &  &  &  &  &  &  &  &  &  &  &  &  \\ \hline
-FR6  &  &  &  &  &  &  &  &  &  &  &  &  &  & X &  &  &  &  &  &  &  \\ \hline
-FR7  &  &  &  &  &  &  &  &  &  & X & X &  &  &  &  &  &  &  &  &  &  \\ \hline
-FR10 &  &  &  &  &  &  &  &  &  & X &  &  &  &  &  &  &  &  &  &  &  \\ \hline
-FR11 &  &  &  &  &  &  &  &  &  &  &  &  &  &  &  &  &  &  &  &  & X \\ \hline
-FR12 &  &  &  &  &  &  &  &  &  &  & X &  &  &  & X &  &  &  &  &  &  \\ \hline
-FR13 &  &  &  &  &  &  &  &  &  &  &  &  &  &  & X & X &  &  &  &  &  \\ \hline
-FR14 &  &  &  &  &  &  &  &  &  &  &  &  & X & X &  &  &  &  &  &  &  \\ \hline
-FR15 &  &  &  &  &  &  &  &  &  &  &  &  &  &  &  &  & X &  &  &  &  \\ \hline
+FR2  &  &  &  &  &  &  &  & X &  &  &  &  &  &  &  &  &  &  &  &  &  &  \\ \hline
+FR3  & X &  &  &  &  &  &  &  &  &  &  &  &  &  &  &  &  &  &  &  &  &  \\ \hline
+FR4  &  &  &  &  &  &  &  &  &  & X &  &  &  &  &  &  &  &  &  &  &  &  \\ \hline
+FR5  &  &  &  &  &  &  &  &  &  &  & X &  &  &  &  &  &  &  &  &  &  &  \\ \hline
+FR6  &  &  &  &  &  &  &  &  &  &  &  &  &  &  &  & X &  &  &  &  &  &  \\ \hline
+FR7  &  &  &  &  & X &  &  &  &  &  &  & X & X &  &  &  &  &  &  &  &  &  \\ \hline
+FR10 &  &  &  &  &  &  &  &  &  &  &  & X &  &  &  &  &  &  &  &  &  &  \\ \hline
+FR11 &  &  &  &  &  &  &  &  &  &  &  &  &  &  &  &  &  &  &  &  &  & X \\ \hline
+FR12 &  &  &  &  &  &  &  &  &  &  &  &  & X &  &  &  & X &  &  &  &  &  \\ \hline
+FR13 &  &  &  &  &  &  &  &  &  &  &  &  &  &  &  &  & X & X &  &  &  &  \\ \hline
+FR14 &  &  &  &  &  &  &  &  &  &  &  &  &  &  & X & X &  &  &  &  &  &  \\ \hline
+FR15 &  &  &  &  &  &  &  &  &  &  &  &  &  &  &  &  &  &  & X &  &  &  \\ \hline
 
-SR-AC1 &  &  &  &  & X &  &  &  &  &  &  &  &  &  &  &  &  &  &  &  &  \\ \hline
-SR-AC4 &  &  &  & X &  &  &  &  &  &  &  &  &  &  &  &  &  &  &  &  &  \\ \hline
-SR-AC5 & X & X & X &  &  &  &  &  &  &  &  &  &  &  &  &  &  &  &  &  &  \\ \hline
-SR-AC6 &  &  &  &  &  &  & X &  &  &  &  &  &  &  &  &  &  &  &  &  &  \\ \hline
-SR-IM1 &  &  &  &  &  &  & X &  &  &  &  &  &  &  &  &  &  &  &  &  &  \\ \hline
+SR-AC1 &  &  &  &  &  &  & X &  &  &  &  &  &  &  &  &  &  &  &  &  &  &  \\ \hline
+SR-AC2 &  & X & X &  &  &  &  &  &  &  &  &  &  &  &  &  &  &  &  &  &  &  \\ \hline
+SR-AC3 &  &  &  &  &  &  &  &  &  &  & X &  &  &  &  &  &  &  &  &  &  &  \\ \hline
+SR-AC4 &  &  &  &  & X &  &  &  &  &  &  &  &  &  &  &  &  &  &  &  &  &  \\ \hline
+SR-AC5 &  &  &  & X &  & X &  &  &  &  &  &  &  &  &  &  &  &  &  &  &  &  \\ \hline
+SR-AC6 &  &  &  &  &  &  &  &  & X &  &  &  &  &  &  &  &  &  &  &  &  &  \\ \hline
 
-SR-VIS1 &  &  &  &  &  &  &  &  &  &  &  &  &  &  & X &  &  &  &  &  &  \\ \hline
-SR-VIS2 &  &  &  &  &  &  &  &  &  &  &  &  &  &  &  & X &  &  &  &  &  \\ \hline
+SR-IM1 &  &  &  &  &  &  &  &  & X &  &  &  &  &  &  &  & X &  &  &  &  &  \\ \hline
+SR-IM2 &  &  &  &  &  &  &  &  &  &  &  &  & X &  &  &  &  &  &  &  &  &  \\ \hline
 
-PR-RFT1 &  &  &  &  &  &  &  &  &  &  &  & X &  &  &  &  &  &  & X &  &  \\ \hline
-SR-INT5 &  &  &  &  &  &  &  &  &  &  &  & X &  &  &  &  &  &  & X &  &  \\ \hline
+SR-INT1 &  &  &  &  &  &  &  &  &  &  & X &  &  &  &  &  &  &  &  &  &  &  \\ \hline
+SR-INT2 &  &  &  &  &  &  &  &  &  &  &  & X &  &  &  &  &  &  &  &  &  &  \\ \hline
+SR-INT3 &  &  &  &  &  &  &  &  &  &  &  & X &  &  &  &  &  &  &  &  &  &  \\ \hline
+SR-INT4 &  &  &  &  &  &  &  &  &  &  &  &  & X &  &  &  &  &  &  &  &  &  \\ \hline
+SR-INT5 &  &  &  &  &  &  &  &  &  &  &  &  &  & X &  &  &  &  &  &  & X &  \\ \hline
+SR-INT7 &  &  &  &  &  &  &  &  &  &  &  &  &  &  & X &  &  &  & X &  &  &  \\ \hline
 
-LF-AR2 &  &  &  &  &  &  &  &  &  &  &  &  &  &  &  &  &  & X &  &  &  \\ \hline
-LF-AR3 &  &  &  &  &  &  &  &  &  &  &  &  &  &  &  &  &  &  &  &  & X \\ \hline
-LF-SR2 &  &  &  &  &  &  &  &  &  &  &  &  &  &  &  &  &  & X &  &  &  \\ \hline
+SR-VIS1 &  &  &  &  &  &  &  &  &  &  &  &  &  &  &  &  & X &  &  &  &  &  \\ \hline
+SR-VIS2 &  &  &  &  &  &  &  &  &  &  &  &  &  &  &  &  &  & X &  &  &  &  \\ \hline
 
-UH-AR1 &  &  &  &  &  &  &  &  &  &  &  &  &  &  &  &  &  & X &  &  &  \\ \hline
+PR-RFT1 &  &  &  &  &  &  &  &  &  &  &  &  &  & X &  &  &  &  &  &  & X &  \\ \hline
+PR-RFT2 &  &  &  &  &  &  &  &  &  &  &  &  &  & X &  &  &  &  &  &  &  &  \\ \hline
+PR-SC1  &  &  &  &  &  & X &  &  &  &  &  &  &  &  &  &  &  &  &  &  &  &  \\ \hline
+PR-SC3  &  &  &  &  & X &  &  &  &  &  &  &  &  &  &  &  &  &  &  &  &  &  \\ \hline
+PR-SL1  &  &  &  &  &  &  &  &  &  &  &  &  &  &  &  &  &  & X &  &  &  &  \\ \hline
 
-OE-PR4 &  &  &  &  &  &  &  &  &  &  &  &  & X &  &  &  & X &  &  &  &  \\ \hline
+LF-AR2 &  &  &  &  &  &  &  &  &  &  &  &  &  &  &  &  &  &  &  & X &  &  \\ \hline
+LF-AR3 &  &  &  &  &  &  &  &  &  &  &  &  &  &  &  &  &  &  &  &  &  & X \\ \hline
+LF-AR6 &  &  &  & X &  &  &  &  &  &  &  &  &  &  &  &  &  &  &  &  &  &  \\ \hline
+LF-SR2 &  &  &  &  &  &  &  &  &  &  &  &  &  &  &  &  &  &  &  & X &  &  \\ \hline
+
+UH-UP3 &  &  &  & X &  &  &  &  &  &  &  &  &  &  &  &  &  &  &  &  &  &  \\ \hline
+UH-AR1 &  &  &  &  &  &  &  &  &  &  &  &  &  &  &  &  &  &  &  & X &  &  \\ \hline
+UH-LR2 &  &  &  &  &  &  &  &  &  &  &  &  &  &  &  &  &  &  &  &  &  & X \\ \hline
+
+OE-IA1 &  &  &  &  &  &  &  &  &  &  &  & X &  &  &  &  &  &  &  &  &  &  \\ \hline
+OE-PR3 &  &  &  &  &  &  &  &  &  &  &  &  &  &  &  & X &  &  &  &  &  &  \\ \hline
+OE-PR4 &  &  &  &  &  &  &  &  &  &  &  &  &  &  & X &  &  &  & X &  &  &  \\ \hline
 
 \end{tabular}
 }
 \end{table}
-
 The tests listed in this report were designed to verify the functional requirements implemented in the final system. Some tests also provide evidence for non-functional requirements, which is why those requirements appear in the traceability matrix.
 
 \section{Trace to Requirements (Nonfunctional)}
