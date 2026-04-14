@@ -108,9 +108,14 @@ class LogoutView(APIView):
 
 
 class RefreshTokenView(APIView):
+    """
+    Refreshes the access token using the refresh token cookie
+    """
+
     permission_classes = [AllowAny]
 
     def post(self, request):
+        # Get refresh token from cookie
         refresh_token = request.COOKIES.get("refresh_token")
 
         if not refresh_token:
@@ -120,25 +125,29 @@ class RefreshTokenView(APIView):
             )
 
         try:
+            # Create new refresh token object and get new access token
             refresh = RefreshToken(refresh_token)
             new_access_token = str(refresh.access_token)
 
+            # Create response
             response = Response(
                 {"message": "Token refreshed successfully"}, status=status.HTTP_200_OK
             )
 
+            # Set the new access token cookie
             response.set_cookie(
                 "access_token",
                 new_access_token,
                 httponly=True,
                 secure=not settings.DEBUG,
                 samesite="Lax",
-                max_age=7200,
+                max_age=7200,  # 2 hours in seconds
             )
 
             return response
 
         except Exception as e:
+            # Token is invalid or expired
             return Response(
                 {"error": f"Invalid or expired refresh token, [{e}]"},
                 status=status.HTTP_401_UNAUTHORIZED,
