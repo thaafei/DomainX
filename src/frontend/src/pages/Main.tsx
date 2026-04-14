@@ -349,35 +349,46 @@ const Main: React.FC = () => {
     .sort((a, b) => b.score - a.score);
 
   const fetchCurrentUser = async () => {
-    try {
-      const response = await fetch(apiUrl("/me/"), {
-        method: "GET",
-        credentials: "include",
-      });
-      if (response.ok) {
-        const data = await response.json();
-        setUser(data.user);
+      try {
+        const response = await fetch(apiUrl("/me/"), {
+          method: "GET",
+          credentials: "include",
+        });
+
+        if (response.ok) {
+          const data = await response.json();
+          setUser(data.user);
+          return data.user;
+        } else {
+          setUser(null);
+          return null;
+        }
+      } catch (error) {
+        console.log("Error fetching current user:", error);
+        setUser(null);
+        return null;
       }
-    } catch (error) {
-      console.log("Error fetching current user:", error);
-    }
-  };
+    };
 
   const fetchUsers = async () => {
-    try {
-      const response = await fetch(apiUrl("/users/?role=admin,superadmin"), {
-        method: "GET",
-        headers: { "Content-Type": "application/json" },
-        credentials: "include",
-      });
-      if (response.ok) {
-        const data = await response.json();
-        setAdminUsers(data);
+      try {
+        const response = await fetch(apiUrl("/users/?role=admin,superadmin"), {
+          method: "GET",
+          headers: { "Content-Type": "application/json" },
+          credentials: "include",
+        });
+
+        if (response.ok) {
+          const data = await response.json();
+          setAdminUsers(data);
+        } else {
+          setAdminUsers([]);
+        }
+      } catch (error) {
+        console.log("Error fetching users:", error);
+        setAdminUsers([]);
       }
-    } catch (error) {
-      console.log("Error fetching users:", error);
-    }
-  };
+    };
 
   const fetchWeights = async (domainId: string) => {
     try {
@@ -394,48 +405,49 @@ const Main: React.FC = () => {
     }
   };
 
-  const fetchDomains = async () => {
-    try {
-      const response = await fetch(apiUrl("/domain/"), {
-        method: "GET",
-        credentials: "include",
-      });
+  const fetchDomains = async (currentUser: any) => {
+      try {
+        const response = await fetch(apiUrl("/domain/"), {
+          method: "GET",
+          credentials: "include",
+        });
 
-      if (response.ok) {
-        const data = await response.json();
+        if (response.ok) {
+          const data = await response.json();
+          setDomains(data);
 
-        setDomains(data);
+          if (data.length > 0) {
+            const savedId = localStorage.getItem("dx:lastDomainId");
+            let domainToSelect;
 
-        if (data.length > 0) {
-          const savedId = localStorage.getItem("dx:lastDomainId");
-
-          let domainToSelect;
-
-          if (user) {
-            domainToSelect = data.find((d: any) => String(d.domain_ID) === String(savedId)) || data[0];
-          } else {
-            const publishedDomains = data.filter((d: any) => d.is_published);
-
-            if (publishedDomains.length > 0) {
-              domainToSelect = publishedDomains[0];
+            if (currentUser) {
+              domainToSelect =
+                data.find((d: any) => String(d.domain_ID) === String(savedId)) || data[0];
             } else {
-              domainToSelect = null;
+              const publishedDomains = data.filter((d: any) => d.is_published);
+              domainToSelect = publishedDomains.length > 0 ? publishedDomains[0] : null;
+            }
+
+            setSelectedDomain(domainToSelect);
+
+            if (domainToSelect) {
+              await getAHPRanking(domainToSelect.domain_ID);
+            } else {
+              setGraph(false);
+              setTableData([]);
+              setGlobalRanking({});
+              setAhpData(null);
+              setPlotlyCharts([]);
             }
           }
-
-          setSelectedDomain(domainToSelect);
-
-          if (domainToSelect) {
-            await getAHPRanking(domainToSelect.domain_ID);
-          }
         }
+      } catch (error) {
+        console.error("Error fetching domains:", error);
+        setGraph(false);
+      } finally {
+        setLoading(false);
       }
-    } catch (error) {
-      console.error("Error fetching domains:", error);
-    } finally {
-      setLoading(false);
-    }
-  };
+    };
 
   useEffect(() => {
     document.title = "DomainX - Home";
@@ -458,10 +470,19 @@ const Main: React.FC = () => {
   }, []);
 
   useEffect(() => {
-    fetchCurrentUser();
-    fetchDomains();
-    fetchUsers();
-  }, []);
+      const init = async () => {
+        const currentUser = await fetchCurrentUser();
+        await fetchDomains(currentUser);
+
+        if (currentUser) {
+          fetchUsers();
+        } else {
+          setAdminUsers([]);
+        }
+      };
+
+      init();
+    }, []);
 
   useEffect(() => {
     if (!selectedDomain?.domain_ID) return;
@@ -559,7 +580,8 @@ const Main: React.FC = () => {
         setDomainName("");
         setDescription("");
         setSelectedCreatorIds([]);
-        await fetchDomains();
+        const currentUser = await fetchCurrentUser();
+        await fetchDomains(currentUser);
       } else {
         setFormError("Failed to create domain. Please try again.");
       }

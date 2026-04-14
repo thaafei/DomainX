@@ -1951,10 +1951,10 @@ The following unit tests concern behaviour-hiding modules that are implemented b
 Following the feedback from the Rev 0 meeting and further analysis of the Lattice Boltzmann Method (LBM) research paper, we identified several discrepancies between our initial implementation and the established research methodology.
 
 \begin{itemize}
-  \item \textbf{Pairwise Comparison Formula:} Our previous implementation used a symmetric comparison approach. We updated the AHP calculation to use the paper's exact formula: 
+  \item \textbf{Pairwise Comparison Formula:} Our previous implementation used a symmetric comparison approach. We updated the AHP calculation to use the paper's exact formula:
   \[
-  A_{jk} = 
-  \begin{cases} 
+  A_{jk} =
+  \begin{cases}
   \min(9, x_{sub} - y_{sub} + 1) & \text{if } x_{sub} \geq y_{sub} \\
   1 / \min(9, y_{sub} - x_{sub} + 1) & \text{if } x_{sub} < y_{sub}
   \end{cases}
@@ -1983,9 +1983,9 @@ To reduce user error, we refined the data entry process.
 
 \begin{itemize}
   \item \textbf{Context-Aware Inputs:} We replaced open-ended text fields with context-aware inputs. The system now provides dropdown menus for Booleans and Ranges based on the \texttt{rules.json} templates, preventing invalid data types from corrupting the AHP calculations.
-  
+
   \item \textbf{Bounded Integer Validation:} For metrics with bounded integer rules (e.g., scale 1-10), the system now enforces min/max validation. Values outside the allowed range are rejected with descriptive error messages.
-  
+
   \item \textbf{Scoring Dictionary Support:} Metrics can now define a \texttt{scoring\_dict} mapping allowed values to scores (e.g., \{"MIT": 5, "Apache-2.0": 4\}), ensuring consistent scoring across libraries.
 \end{itemize}
 
@@ -1994,9 +1994,9 @@ We addressed the limitations regarding how library rankings were displayed to im
 
 \begin{itemize}
   \item \textbf{Graph Scalability:} Previously, the dashboard was limited to the top 10 libraries to avoid overcrowding. To provide a comprehensive view of the domain, we have redesigned the visualization format to clearly accommodate and display all libraries simultaneously.
-  
+
   \item \textbf{Per-Quality AHP Visualization:} Users can now view the AHP calculations for individual qualities beyond just the overall ranking. A filter panel allows users to select which specific quality rankings to display (e.g., Installability only, Maintainability only), providing deeper insight into how each library performs across different dimensions.
-  
+
   \item \textbf{Ranking Table with Sorting:} Based on user recommendations, we have introduced a Ranking Table to complement the graphical data. The table displays all libraries with their overall scores and scores for each individual quality. Users can reorder the table by clicking on any column header, allowing them to sort by overall ranking, Installability, Maintainability, or any other quality to quickly identify top performers in specific categories.
 \end{itemize}
 
@@ -2005,7 +2005,7 @@ Based on user feedback regarding the difficulty of scrolling through large table
 
 \begin{itemize}
   \item \textbf{Modular Design:} The editing page was restructured to use a modular, tab-based layout. Instead of displaying all metrics in a single scrollable table, metrics are now organized by category. Users can navigate between categories using tabs, significantly reducing scrolling and improving the editing experience.
-  
+
   \item \textbf{Improved Navigation:} Each category tab displays only the metrics relevant to that category, making it easier for users to find and edit specific values without losing context.
 \end{itemize}
 
@@ -2014,17 +2014,17 @@ Unit testing was conducted across all modules to validate the changes. Key resul
 
 \begin{itemize}
   \item \textbf{Data Edit Module:} 19 tests passed, validating library CRUD operations, metric value updates, and description field handling.
-  
+
   \item \textbf{User Management Module:} 11 tests passed, confirming role-based access control and password management.
-  
+
   \item \textbf{Automated Metrics Module:} 35 tests passed, including validation of bounded integers, free integers, date/time handling, and metric weight updates.
-  
+
   \item \textbf{Domains Page Module:} 6 tests passed, covering domain creation, updates, and deletion.
-  
+
   \item \textbf{Comparison Module:} 6 tests passed, including AHP filtering to only paper qualities, weighted category calculations, and domain comparison endpoints.
-  
+
   \item \textbf{Visualization Module:} 5 tests passed, verifying graph generation, error handling for missing data, and download functionality.
-  
+
   \item \textbf{Database Persistence Module:} 28 tests passed, confirming model constraints, cascading deletes, and default field initialization.
 \end{itemize}
 
@@ -2190,7 +2190,7 @@ M19 &   &   &   &   &   &   &   & X &   &   &   &   &   &   &   &   &   &   \\ \
 \end{tabular}
 }
 \end{table}
-	
+
 
 \section{Code Coverage Metrics}
 The following report is automatically generated by pytest. We obtained a total coverage of 73\%. The actual coverage should be slightly higher since some files that contain no logic are being counted towards the percentage (i.e. \href{https://github.com/thaafei/DomainX/blob/main/src/backend/api/database/edit_history/views.py}{edit\_history/views}).
@@ -2200,12 +2200,12 @@ The following report is automatically generated by pytest. We obtained a total c
 \begin{longtable}{|p{10cm}|c|c|c|c|}
     \caption{Backend Code Coverage Report} \\
     \hline
-    \textbf{File} & \textbf{Statements} & \textbf{Missing} & \textbf{Excluded} & \textbf{Coverage} \\ 
+    \textbf{File} & \textbf{Statements} & \textbf{Missing} & \textbf{Excluded} & \textbf{Coverage} \\
     \hline
     \endfirsthead
 
     \hline
-    \textbf{File} & \textbf{Statements} & \textbf{Missing} & \textbf{Excluded} & \textbf{Coverage} \\ 
+    \textbf{File} & \textbf{Statements} & \textbf{Missing} & \textbf{Excluded} & \textbf{Coverage} \\
     \hline
     \endhead
       \textbf{\path{src/backend/api/database/backup_logs/admin.py}} & 1 & 0 & 0 & 100\% \\ \hline

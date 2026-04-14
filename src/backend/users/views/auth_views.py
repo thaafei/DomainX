@@ -5,6 +5,7 @@ from django.contrib.auth import authenticate
 from django.contrib.auth.password_validation import validate_password
 from django.core.exceptions import ValidationError
 from django.db import transaction
+from django.db.models import Q
 from django.utils import timezone
 from rest_framework import status
 from rest_framework.permissions import AllowAny, IsAuthenticated
@@ -170,33 +171,41 @@ class InviteUserView(APIView):
             )
 
         data = serializer.validated_data
+        email = data["email"].lower()
+        username = data["username"].lower()
 
         with transaction.atomic():
-            user = CustomUser.objects.filter(
-                email__iexact=data["email"].lower(), is_deleted=True
+            active_conflict = CustomUser.objects.filter(
+                Q(email__iexact=email) | Q(username__iexact=username),
+                is_deleted=False,
             ).first()
 
-            if user:
-                user.email = data["email"].lower()
-                user.username = data["username"].lower()
-                user.first_name = data.get("first_name", "")
-                user.last_name = data.get("last_name", "")
-                user.role = data["role"]
-                user.is_active = False
-                user.is_deleted = False
-                user.set_unusable_password()
-                user.save()
-            else:
-                user = CustomUser.objects.create_user(
-                    email=data["email"].lower(),
-                    username=data["username"].lower(),
-                    first_name=data.get("first_name", ""),
-                    last_name=data.get("last_name", ""),
-                    role=data["role"],
-                    is_active=False,
+            if active_conflict:
+                if active_conflict.email.lower() == email:
+                    return Response(
+                        {"error": "A user with this email already exists."},
+                        status=status.HTTP_400_BAD_REQUEST,
+                    )
+                return Response(
+                    {"error": "A user with this username already exists."},
+                    status=status.HTTP_400_BAD_REQUEST,
                 )
-                user.set_unusable_password()
-                user.save()
+
+            CustomUser.objects.filter(
+                Q(email__iexact=email) | Q(username__iexact=username),
+                is_deleted=True,
+            ).delete()
+
+            user = CustomUser.objects.create_user(
+                email=email,
+                username=username,
+                first_name=data.get("first_name", ""),
+                last_name=data.get("last_name", ""),
+                role=data["role"],
+                is_active=False,
+            )
+            user.set_unusable_password()
+            user.save()
 
             domain_ids = data.get("domain_ids", [])
             if domain_ids:
@@ -381,7 +390,7 @@ class UserUpdateView(APIView):
 
         if (
             CustomUser.objects.exclude(id=user_to_update.id)
-            .filter(email__iexact=user_to_update.email)
+            .filter(email__iexact=user_to_update.email, is_deleted=False)
             .exists()
         ):
             return Response(
@@ -390,7 +399,7 @@ class UserUpdateView(APIView):
 
         if (
             CustomUser.objects.exclude(id=user_to_update.id)
-            .filter(username__iexact=user_to_update.username)
+            .filter(username__iexact=user_to_update.username, is_deleted=False)
             .exists()
         ):
             return Response(
