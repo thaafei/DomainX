@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { apiUrl } from "../config/api";
-
+import { useAuthStore } from "../store/useAuthStore";
 const validatePassword = (password: string) => {
   return {
     length: password.length >= 8,

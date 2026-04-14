@@ -358,12 +358,15 @@ const Main: React.FC = () => {
         if (response.ok) {
           const data = await response.json();
           setUser(data.user);
+          return data.user;
         } else {
           setUser(null);
+          return null;
         }
       } catch (error) {
         console.log("Error fetching current user:", error);
         setUser(null);
+        return null;
       }
     };
 
@@ -577,7 +580,8 @@ const Main: React.FC = () => {
         setDomainName("");
         setDescription("");
         setSelectedCreatorIds([]);
-        await fetchDomains();
+        const currentUser = await fetchCurrentUser();
+        await fetchDomains(currentUser);
       } else {
         setFormError("Failed to create domain. Please try again.");
       }
