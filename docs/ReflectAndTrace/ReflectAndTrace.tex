@@ -1077,8 +1077,8 @@ Various external and internal constraints shaped the final design of the system:
 
   \item \textbf{Research Methodology Constraint:} The AHP calculations had to follow the exact methodology from the LBM research paper. This constrained our implementation to use the specific pairwise comparison formula:
   \[
-  A_{jk} = 
-  \begin{cases} 
+  A_{jk} =
+  \begin{cases}
   \min(9, x_{sub} - y_{sub} + 1) & \text{if } x_{sub} \geq y_{sub} \\
   1 / \min(9, y_{sub} - x_{sub} + 1) & \text{if } x_{sub} < y_{sub}
   \end{cases}

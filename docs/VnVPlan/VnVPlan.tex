@@ -650,7 +650,7 @@ in less than ten seconds).
 \begin{itemize}
   \item \textbf{Tools:} pytest with timing measurements, browser developer tools
   for front-end performance, and custom timing scripts for AHP calculations.
-  
+
   \item \textbf{Timing:} Performance tests were conducted at two points:
   \begin{itemize}
     \item \textbf{After feature completion:} Basic response time checks for new
@@ -659,7 +659,7 @@ in less than ten seconds).
     benchmark suite executed on representative datasets (5, 10, 20, and 40
     libraries).
   \end{itemize}
-  
+
   \item \textbf{Metrics Collected:}
   \begin{itemize}
     \item Dashboard load time (median and 95th percentile)
@@ -673,9 +673,9 @@ in less than ten seconds).
 \begin{itemize}
   \item \textbf{Pass:} All measured response times are below the SRS thresholds
   (AHP $\leq$ 10 seconds; other actions $\leq$ 5 seconds for interactive use).
-  
+
   \item \textbf{Fail:} Any response time exceeds the defined threshold.
-  
+
   \item \textbf{Remediation Actions if Fail:}
   \begin{enumerate}
     \item Identify bottleneck using profiling tools (Django Debug Toolbar).
@@ -707,7 +707,7 @@ Regular validation was conducted through:
 \begin{itemize}
   \item \textbf{Weekly stakeholder meetings:} Dr.~Spencer Smith reviewed
   implemented features and provided feedback on alignment with requirements.
-  
+
   \item \textbf{User testing sessions:} The research subteam and Ryan Fang
   (Robotics domain student) used the tool and provided feedback on usability,
   missing features, and pain points. This feedback was tracked via GitHub
@@ -749,19 +749,19 @@ Regression Testing & Before each release (Rev 0, Rev 1) \\
 \textbf{Iterative Process Description:}
 \begin{enumerate}
   \item \textbf{Build Feature:} The development team implemented a new feature according to the sprint plan.
-  
+
   \item \textbf{Unit Testing:} Automated unit tests were written using pytest and executed via GitHub Actions CI/CD pipeline. Features without passing unit tests could not be merged.
-  
+
   \item \textbf{Integration Testing:} After feature completion, integration tests verified that the new feature worked correctly with existing system components.
-  
+
   \item \textbf{Weekly Dev Team Meeting:} The team reviewed test results, identified failing tests, and prioritized fixes. Adjustments to the VnV plan were discussed based on observed outcomes.
-  
+
   \item \textbf{Weekly Stakeholder Meeting:} Dr.~Smith reviewed progress, provided feedback on feature implementation and test coverage, and identified any gaps in requirements verification. All changes were tracked through GitHub issues.
-  
+
   \item \textbf{User Feedback Session:} The research subteam and Ryan Fang (a Master's student who will use the tool for the Robotics domain) used the tool and provided feedback on usability, correctness, and missing features. This feedback directly informed updates to both the feature backlog and the VnV plan.
-  
+
   \item \textbf{VnV Plan Update:} Based on feedback from testing, stakeholder review, and user sessions, the VnV plan was updated to reflect new test cases, modified success criteria, or changed priorities.
-  
+
   \item \textbf{Regression Testing:} Before major releases (Rev 0 and Rev 1), the full test suite was executed to ensure no existing functionality was broken.
 \end{enumerate}
 
