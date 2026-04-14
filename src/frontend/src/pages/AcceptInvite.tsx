@@ -59,7 +59,14 @@ const AcceptInvite: React.FC = () => {
         }
 
         try {
-          await logout();
+          await fetch(apiUrl("/logout/"), {
+            method: "POST",
+            credentials: "include",
+          });
+        } catch {}
+
+        try {
+          logout();
         } catch {}
 
         try {
