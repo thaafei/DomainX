@@ -48,46 +48,43 @@ const AcceptInvite: React.FC = () => {
     return undefined;
   };
 
-  useEffect(() => {
-    const checkInvite = async () => {
-      if (!token) {
-        setTokenError("This invitation link is invalid.");
-        setCheckingInvite(false);
-        return;
-      }
+  const logout = useAuthStore((s) => s.logout);
 
-      try {
-        await fetch(apiUrl("/logout/"), {
-          method: "POST",
-          credentials: "include",
-        });
-      } catch {}
-
-      try {
-        const res = await fetch(
-          apiUrl(`/validate-invite/?token=${encodeURIComponent(token)}`),
-          {
-            credentials: "include",
-          }
-        );
-        const data = await res.json();
-
-        if (!data.valid) {
-          setTokenError(
-            "This invitation link is invalid, expired, or has already been used."
-          );
+    useEffect(() => {
+      const checkInvite = async () => {
+        if (!token) {
+          setTokenError("This invitation link is invalid.");
+          setCheckingInvite(false);
+          return;
         }
-      } catch {
-        setTokenError(
-          "We could not verify this invitation link. Please contact your administrator."
-        );
-      } finally {
-        setCheckingInvite(false);
-      }
-    };
 
-    checkInvite();
-  }, [token]);
+        try {
+          await logout();
+        } catch {}
+
+        try {
+          const res = await fetch(
+            apiUrl(`/validate-invite/?token=${encodeURIComponent(token)}`),
+            { credentials: "include" }
+          );
+          const data = await res.json();
+
+          if (!data.valid) {
+            setTokenError(
+              "This invitation link is invalid, expired, or has already been used."
+            );
+          }
+        } catch {
+          setTokenError(
+            "We could not verify this invitation link. Please contact your administrator."
+          );
+        } finally {
+          setCheckingInvite(false);
+        }
+      };
+
+      checkInvite();
+    }, [token, logout]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
