@@ -223,8 +223,19 @@ def domain_comparison(request, domain_id):
     for val in values:
         lib_id = str(val.library.library_ID)
         metric_name = val.metric.metric_name
+        metric_value = val.value
+        scoring_dict = val.metric.scoring_dict
+        # validate if the stored value aligns with any new metric type changes, if it does it'll set it to null
+        if metric_value and scoring_dict and metric_value not in scoring_dict:
+            LibraryMetricValue.objects.update_or_create(
+                library=lib_id,
+                metric=val.metric.metric_ID,
+                defaults={"value": None},
+            )
+            metric_value = None
+
         if lib_id in by_lib:
-            by_lib[lib_id]["metrics"][metric_name] = val.value
+            by_lib[lib_id]["metrics"][metric_name] = metric_value
             by_lib[lib_id]["metrics"][f"{metric_name}_evidence"] = val.evidence
             by_lib[lib_id]["metrics"][f"{metric_name}_description"] = val.description
 
