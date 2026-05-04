@@ -16,17 +16,17 @@ import { useAuthStore } from "../store/useAuthStore";
 import {
   headerCellStyle,
   clamp2Style,
-  clamp3Style,
-  compactButtonStyle,
-  overlayCardStyle,
   metricCellStyle
  } from "../components/CellComponents";
+
+import ExpandableText from "../components/ExpandableText";
 
 interface Metric {
   metric_ID: string;
   metric_name: string;
   metric_key?: string | null;
   description?: string | null;
+  category?: string | null;
 }
 
 interface LibraryMetricRow {
@@ -36,85 +36,6 @@ interface LibraryMetricRow {
   url?: string | null;
   metrics: { [metricName: string]: string | number | null };
 }
-
-const ExpandableText: React.FC<{
-  text: string;
-  lines?: 2 | 3;
-  emptyText?: string;
-  textStyle?: React.CSSProperties;
-  description?: string;
-}> = ({ text, lines = 2, emptyText = "—", textStyle, description }) => {
-  const [open, setOpen] = useState(false);
-  const [truncated, setTruncated] = useState(false);
-
-  const wrapRef = React.useRef<HTMLDivElement>(null);
-  const textRef = React.useRef<HTMLDivElement>(null);
-
-  const clampStyle = lines === 2 ? clamp2Style : clamp3Style;
-
-  useEffect(() => {
-    if (textRef.current) {
-      const isOverflowing = textRef.current.scrollHeight > textRef.current.clientHeight;
-      setTruncated(isOverflowing);
-    }
-  }, [text]);
-
-  useEffect(() => {
-    if (!open) return;
-    const handleClick = (e: MouseEvent) => {
-      if (wrapRef.current && !wrapRef.current.contains(e.target as Node)) {
-        setOpen(false);
-      }
-    };
-    window.addEventListener("mousedown", handleClick);
-    return () => window.removeEventListener("mousedown", handleClick);
-  }, [open]);
-
-  const showMoreButton = truncated || !!description;
-
-  if (!text && !description) {
-    return <div style={textStyle}>{emptyText}</div>;
-  }
-
-  return (
-    <div ref={wrapRef} style={{ position: "relative" }}>
-      <div ref={textRef} style={{ ...clampStyle, ...textStyle }}>
-        {text || "—"}
-      </div>
-
-      {showMoreButton && (
-        <button
-          style={compactButtonStyle}
-          onClick={(e) => {
-            e.stopPropagation();
-            setOpen(!open);
-          }}
-        >
-          {open ? "Less" : "More..."}
-        </button>
-      )}
-
-      {open && (
-        <div style={overlayCardStyle}>
-          {description ? (
-            <>
-              <div style={{ fontWeight: 700, marginBottom: 4, color: "var(--accent)" }}>
-                Value:
-              </div>
-              <div style={{ marginBottom: 12 }}>{text || "—"}</div>
-              <div style={{ fontWeight: 700, marginBottom: 4, color: "var(--accent)" }}>
-                Description:
-              </div>
-              <div>{description}</div>
-            </>
-          ) : (
-            text
-          )}
-        </div>
-      )}
-    </div>
-  );
-};
 
 const ComparisonToolPage: React.FC = () => {
   const { domainId } = useParams<{ domainId: string }>();
@@ -129,6 +50,16 @@ const ComparisonToolPage: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [accessDenied, setAccessDenied] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  const groupedMetrics = React.useMemo(() => {
+    const groups: { [category: string]: Metric[] } = {};
+    metricList.forEach(m => {
+      const cat = m.category || 'Other';
+      if (!groups[cat]) groups[cat] = [];
+      groups[cat].push(m);
+    });
+    return Object.entries(groups).map(([category, metrics]) => ({ category, metrics }));
+  }, [metricList]);
 
   useEffect(() => {
     if (!DOMAIN_ID) return;
@@ -462,7 +393,6 @@ const ComparisonToolPage: React.FC = () => {
               className="dx-table"
               style={{
                 tableLayout: "fixed",
-                width: "100%",
               }}
             >
               <thead>
@@ -471,9 +401,50 @@ const ComparisonToolPage: React.FC = () => {
                     className="dx-th-sticky dx-sticky-left"
                     style={{
                       ...headerCellStyle,
+                      background: "rgba(20, 24, 38, 1)",
                       textAlign: "left",
                       width: 320,
                       left: 0,
+                      fontSize: '15px',
+                    }}
+                  >
+                    Category
+                  </th>
+
+                  {groupedMetrics.map((group) => (
+                    <th
+                      className="dx-th-sticky"
+                      key={group.category}
+                      colSpan={group.metrics.length}
+                      style={{
+                        ...headerCellStyle,
+                        textAlign: "center",
+                        borderBottom: "1px solid rgba(255,255,255,0.08)",
+                        overflow: "hidden",
+                        textOverflow: "ellipsis",
+                        whiteSpace: "nowrap",
+                        fontSize: '15px',
+                      }}
+                      title={group.category}
+                    >
+                      <div style={{ display: "flex", alignItems: "flex-start", gap: "6px" }}>
+                        <div style={clamp2Style}>{group.category}</div>
+                      </div>
+                    </th>
+                  ))}
+                </tr>
+
+                <tr>
+                  <th
+                    className="dx-th-sticky dx-sticky-left"
+                    style={{
+                      ...headerCellStyle,
+                      background: "rgba(20, 24, 38, 1)",
+                      textAlign: "left",
+                      width: 320,
+                      left: 0,
+                      top: 36,
+                      fontSize: '15px',
                     }}
                   >
                     Library
@@ -487,6 +458,8 @@ const ComparisonToolPage: React.FC = () => {
                         ...headerCellStyle,
                         textAlign: "left",
                         width: 170,
+                        top: 36,
+                        fontSize: '15px',
                       }}
                       title={m.metric_name}
                     >

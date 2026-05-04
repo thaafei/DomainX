@@ -53,6 +53,22 @@ const EditValuesPage: React.FC = () => {
   const [offset, setOffset] = useState(0);
 
   const affectedMetrics = metricList.filter(isAffectedMetric);
+  const groupedMetrics = React.useMemo(() => {
+    const groups = new Map<string, Metric[]>();
+
+    metricList.forEach((metric) => {
+      const category = metric.category || "Other";
+      if (!groups.has(category)) {
+        groups.set(category, []);
+      }
+      groups.get(category)!.push(metric);
+    });
+
+    return Array.from(groups.entries()).map(([category, metrics]) => ({
+      category,
+      metrics,
+    }));
+  }, [metricList]);
 
   const showSuccess = (msg: string) => {
     setSuccessMessage(msg);
@@ -683,17 +699,96 @@ const EditValuesPage: React.FC = () => {
               className="dx-table"
               style={{
                 tableLayout: "fixed",
-                width: "100%",
+                width: "max-content",
+                minWidth: "100%",
               }}
             >
               <thead>
+                <tr>
+                  <th
+                    className="dx-th-sticky dx-sticky-left"
+                    colSpan={2}
+                    style={{
+                      ...headerCellStyle,
+                      textAlign: "center",
+                      background: "rgba(20, 24, 38, 1)",
+                      borderBottom: "1px solid rgba(255,255,255,0.08)",
+                      minHeight: 20,
+                    }}
+                  >
+                  Categories
+                  </th>
+                  <th
+                    className="dx-th-sticky"
+                    rowSpan={2}
+                    style={{
+                      ...headerCellStyle,
+                      width: 190,
+                      height: 40,
+                      textAlign: "center",
+                      background: "rgba(20, 24, 38, 1)",
+                      borderBottom: "1px solid rgba(255,255,255,0.08)",
+                    }}
+                  >
+                    GitHub URL
+                  </th>
+                  <th
+                    className="dx-th-sticky"
+                    rowSpan={2}
+                    style={{
+                      ...headerCellStyle,
+                      width: 190,
+                      textAlign: "center",
+                      background: "rgba(20, 24, 38, 1)",
+                      borderBottom: "1px solid rgba(255,255,255,0.08)",
+                    }}
+                  >
+                    URL
+                  </th>
+                  <th
+                    className="dx-th-sticky"
+                    rowSpan={2}
+                    style={{
+                      ...headerCellStyle,
+                      width: 190,
+                      textAlign: "center",
+                      background: "rgba(20, 24, 38, 1)",
+                      borderBottom: "1px solid rgba(255,255,255,0.08)",
+                    }}
+                  >
+                    Language
+                  </th>
+
+                  {groupedMetrics.map((group) => (
+                    <th
+                      key={group.category}
+                      colSpan={group.metrics.length}
+                      className="dx-th-sticky"
+                      style={{
+                        ...headerCellStyle,
+                        textAlign: "center",
+                        top: 0,
+                        whiteSpace: "nowrap",
+                        overflow: "hidden",
+                        textOverflow: "ellipsis",
+                        height: 40,
+                        minHeight: 20,
+                      }}
+                      title={group.category}
+                    >
+                      {group.category}
+                    </th>
+                  ))}
+                </tr>
                 <tr>
                   <th
                     ref={firstColRef}
                     className="dx-th-sticky dx-sticky-left"
                     style={{
                       ...headerCellStyle,
+                      background: "rgba(20, 24, 38, 1)",
                       left: 0,
+                      top: 57,
                       width: 190,
                     }}
                   >
@@ -703,38 +798,13 @@ const EditValuesPage: React.FC = () => {
                     className="dx-th-sticky dx-sticky-left"
                     style={{
                       ...headerCellStyle,
+                      background: "rgba(20, 24, 38, 1)",
                       left: offset,
+                      top: 57,
                       width: 190,
                     }}
                   >
                     Name
-                  </th>
-                  <th
-                    className="dx-th-sticky"
-                    style={{
-                      ...headerCellStyle,
-                      width: 220,
-                    }}
-                  >
-                    GitHub URL
-                  </th>
-                  <th
-                    className="dx-th-sticky"
-                    style={{
-                      ...headerCellStyle,
-                      width: 220,
-                    }}
-                  >
-                    URL
-                  </th>
-                  <th
-                    className="dx-th-sticky"
-                    style={{
-                      ...headerCellStyle,
-                      width: 120,
-                    }}
-                  >
-                    Language
                   </th>
                   {metricList.map((m) => (
                     <th
@@ -743,10 +813,10 @@ const EditValuesPage: React.FC = () => {
                       style={{
                         ...headerCellStyle,
                         width: 170,
-
+                        top: 57,
                       }}
                     >
-                      <div style={{ ...clamp2Style, paddingRight: "18px" }}>
+                      <div style={{ ...clamp2Style, paddingRight: "18px"}}>
                         {m.metric_name}
                       </div>
 
