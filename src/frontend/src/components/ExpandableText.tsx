@@ -1,12 +1,22 @@
 import React, { useEffect, useState, useRef, useLayoutEffect } from "react";
 import { clamp2Style, clamp3Style, compactButtonStyle, overlayCardStyle} from "./CellComponents";
 
+const clamp4Style: React.CSSProperties = {
+  display: "-webkit-box",
+  WebkitLineClamp: 4,
+  WebkitBoxOrient: "vertical",
+  overflow: "hidden",
+};
+
 const ExpandableText: React.FC<{
   text: string;
-  lines?: 2 | 3;
+  lines?: 2 | 3 | 4;
   emptyText?: string;
   textStyle?: React.CSSProperties;
-}> = ({ text, lines = 2, emptyText = "—", textStyle }) => {
+  preserveWhitespace?: boolean;
+  description?: string;
+  onToggle?: (isOpen: boolean) => void;
+}> = ({ text, lines = 2, emptyText = "—", textStyle, preserveWhitespace = false, description, onToggle }) => {
   const [open, setOpen] = useState(false);
   const [truncated, setTruncated] = useState(false);
   const textRef = useRef<HTMLDivElement>(null);
@@ -26,7 +36,7 @@ const ExpandableText: React.FC<{
     check();
     window.addEventListener("resize", check);
     return () => window.removeEventListener("resize", check);
-  }, [text, lines]);
+  }, [text, lines, description]);
 
   useEffect(() => {
     if (!open) return;
@@ -35,11 +45,15 @@ const ExpandableText: React.FC<{
       if (!wrapRef.current) return;
       if (!wrapRef.current.contains(e.target as Node)) {
         setOpen(false);
+        onToggle?.(false);
       }
     };
 
     const onEsc = (e: KeyboardEvent) => {
-      if (e.key === "Escape") setOpen(false);
+      if (e.key === "Escape") {
+        setOpen(false);
+        onToggle?.(false);
+      }
     };
 
     document.addEventListener("mousedown", onDocClick);
@@ -48,13 +62,13 @@ const ExpandableText: React.FC<{
       document.removeEventListener("mousedown", onDocClick);
       document.removeEventListener("keydown", onEsc);
     };
-  }, [open]);
+  }, [open, onToggle]);
 
   if (!text) {
     return <div style={textStyle}>{emptyText}</div>;
   }
 
-  const clampStyle = lines === 3 ? clamp3Style : clamp2Style;
+  const clampStyle = lines === 4 ? clamp4Style : lines === 3 ? clamp3Style : clamp2Style;
 
   return (
     <div
@@ -75,6 +89,7 @@ const ExpandableText: React.FC<{
           ...textStyle,
           width: "100%",
           overflowWrap: "anywhere",
+          whiteSpace: preserveWhitespace ? "pre-wrap" : undefined,
         }}
         title={open ? "" : text}
       >
@@ -84,7 +99,10 @@ const ExpandableText: React.FC<{
       {truncated && (
         <button
           type="button"
-          onClick={() => setOpen((v) => !v)}
+          onClick={() => {
+            setOpen((v) => !v);
+            onToggle?.(!open);
+          }}
           style={compactButtonStyle}
         >
           {open ? "less" : "more"}
@@ -92,21 +110,46 @@ const ExpandableText: React.FC<{
       )}
 
       {open && (
-        <div style={overlayCardStyle}>
-          <div style={{ marginBottom: 8 }}>{text}</div>
+        <div
+          style={{
+            ...overlayCardStyle,
+            whiteSpace: preserveWhitespace ? "pre-wrap" : "pre-wrap",
+            fontFamily: preserveWhitespace
+              ? 'ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace'
+              : undefined,
+            fontSize: preserveWhitespace ? 12.5 : undefined,
+            lineHeight: preserveWhitespace ? 1.35 : undefined,
+          }}
+        >
+          {description ? (
+            <>
+              <div style={{ fontWeight: 700, marginBottom: 4, color: "var(--accent)" }}>
+                Value:
+              </div>
+              <div style={{ marginBottom: 12 }}>{text || emptyText}</div>
+              <div style={{ fontWeight: 700, marginBottom: 4, color: "var(--accent)" }}>
+                Description:
+              </div>
+              <div>{description}</div>
+            </>
+          ) : (
+            <>
+              <div style={{ marginBottom: 8 }}>{text}</div>
 
-          <button
-            type="button"
-            className="dx-btn dx-btn-outline"
-            style={{ padding: "5px 8px", fontSize: 12 }}
-            onClick={async () => {
-              try {
-                await navigator.clipboard.writeText(text);
-              } catch {}
-            }}
-          >
-            Copy
-          </button>
+              <button
+                type="button"
+                className="dx-btn dx-btn-outline"
+                style={{ padding: "5px 8px", fontSize: 12 }}
+                onClick={async () => {
+                  try {
+                    await navigator.clipboard.writeText(text);
+                  } catch {}
+                }}
+              >
+                Copy
+              </button>
+            </>
+          )}
         </div>
       )}
     </div>

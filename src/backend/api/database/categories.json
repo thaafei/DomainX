@@ -1,5 +1,6 @@
 {
     "Categories": [
+        "Summary",
         "Installability",
         "Popularity",
         "Activity",
@@ -14,8 +15,6 @@
         "Surface Understandability",
         "Raw Metrics (Measured via git_stats)",
         "Raw Metrics (Measured via scc)",
-        "Repo Metrics (Measured via GitHub)",
-        "Summary"
+        "Repo Metrics (Measured via GitHub)"
     ]
-
 }

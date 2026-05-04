@@ -16,11 +16,10 @@ import { useAuthStore } from "../store/useAuthStore";
 import {
   headerCellStyle,
   clamp2Style,
-  clamp3Style,
-  compactButtonStyle,
-  overlayCardStyle,
   metricCellStyle
  } from "../components/CellComponents";
+
+import ExpandableText from "../components/ExpandableText";
 
 interface Metric {
   metric_ID: string;
@@ -37,85 +36,6 @@ interface LibraryMetricRow {
   url?: string | null;
   metrics: { [metricName: string]: string | number | null };
 }
-
-const ExpandableText: React.FC<{
-  text: string;
-  lines?: 2 | 3;
-  emptyText?: string;
-  textStyle?: React.CSSProperties;
-  description?: string;
-}> = ({ text, lines = 2, emptyText = "—", textStyle, description }) => {
-  const [open, setOpen] = useState(false);
-  const [truncated, setTruncated] = useState(false);
-
-  const wrapRef = React.useRef<HTMLDivElement>(null);
-  const textRef = React.useRef<HTMLDivElement>(null);
-
-  const clampStyle = lines === 2 ? clamp2Style : clamp3Style;
-
-  useEffect(() => {
-    if (textRef.current) {
-      const isOverflowing = textRef.current.scrollHeight > textRef.current.clientHeight;
-      setTruncated(isOverflowing);
-    }
-  }, [text]);
-
-  useEffect(() => {
-    if (!open) return;
-    const handleClick = (e: MouseEvent) => {
-      if (wrapRef.current && !wrapRef.current.contains(e.target as Node)) {
-        setOpen(false);
-      }
-    };
-    window.addEventListener("mousedown", handleClick);
-    return () => window.removeEventListener("mousedown", handleClick);
-  }, [open]);
-
-  const showMoreButton = truncated || !!description;
-
-  if (!text && !description) {
-    return <div style={textStyle}>{emptyText}</div>;
-  }
-
-  return (
-    <div ref={wrapRef} style={{ position: "relative" }}>
-      <div ref={textRef} style={{ ...clampStyle, ...textStyle }}>
-        {text || "—"}
-      </div>
-
-      {showMoreButton && (
-        <button
-          style={compactButtonStyle}
-          onClick={(e) => {
-            e.stopPropagation();
-            setOpen(!open);
-          }}
-        >
-          {open ? "Less" : "More..."}
-        </button>
-      )}
-
-      {open && (
-        <div style={overlayCardStyle}>
-          {description ? (
-            <>
-              <div style={{ fontWeight: 700, marginBottom: 4, color: "var(--accent)" }}>
-                Value:
-              </div>
-              <div style={{ marginBottom: 12 }}>{text || "—"}</div>
-              <div style={{ fontWeight: 700, marginBottom: 4, color: "var(--accent)" }}>
-                Description:
-              </div>
-              <div>{description}</div>
-            </>
-          ) : (
-            text
-          )}
-        </div>
-      )}
-    </div>
-  );
-};
 
 const ComparisonToolPage: React.FC = () => {
   const { domainId } = useParams<{ domainId: string }>();

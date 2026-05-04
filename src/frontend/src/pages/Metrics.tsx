@@ -3,270 +3,10 @@ import { useNavigate } from "react-router-dom";
 import { apiUrl } from "../config/api";
 import SuccessNotification from "../components/SuccessNotification";
 import { ArrowLeft } from "lucide-react";
-interface Metric {
-  metric_ID: string;
-  metric_name: string;
-  value_type: string;
-  source_type?: string | null;
-  metric_key?: string | null;
-  option_category?: string | null;
-  rule?: string | null;
-  category?: string | null;
-  description?: string | null;
-  weight?: number;
-  scoring_dict?: Record<string, number> | null;
-}
-
-interface AutoMetricOption {
-  key: string;
-  label: string;
-  description: string;
-  value_type: string;
-}
-
-interface AutoMetricOptionsResponse {
-  github_api?: AutoMetricOption[];
-  scc?: AutoMetricOption[];
-  gitstats?: AutoMetricOption[];
-}
-
-type ModalMode = "create" | "edit" | null;
-
-const clamp2Style: React.CSSProperties = {
-  display: "-webkit-box",
-  WebkitLineClamp: 2,
-  WebkitBoxOrient: "vertical",
-  overflow: "hidden",
-};
-
-const clamp3Style: React.CSSProperties = {
-  display: "-webkit-box",
-  WebkitLineClamp: 3,
-  WebkitBoxOrient: "vertical",
-  overflow: "hidden",
-};
-
-const clamp4Style: React.CSSProperties = {
-  display: "-webkit-box",
-  WebkitLineClamp: 4,
-  WebkitBoxOrient: "vertical",
-  overflow: "hidden",
-};
-
-const cellBaseStyle: React.CSSProperties = {
-  padding: "7px 8px",
-  verticalAlign: "top",
-  fontSize: 13,
-  lineHeight: 1.32,
-  overflowWrap: "anywhere",
-};
-
-const metricCellStyle: React.CSSProperties = {
-  ...cellBaseStyle,
-  color: "rgba(255,255,255,0.9)",
-};
-
-const headerCellStyle: React.CSSProperties = {
-  textAlign: "left",
-  padding: "8px 8px",
-  fontSize: 12.5,
-  lineHeight: 1.25,
-  fontWeight: 700,
-  color: "rgba(255,255,255,0.92)",
-  background: "rgba(20, 24, 38, 0.96)",
-  borderBottom: "1px solid rgba(255,255,255,0.08)",
-  overflowWrap: "anywhere",
-};
-
-const compactButtonStyle: React.CSSProperties = {
-  border: "none",
-  background: "transparent",
-  color: "var(--accent)",
-  cursor: "pointer",
-  padding: 0,
-  marginTop: 4,
-  fontSize: 11.5,
-  lineHeight: 1.2,
-  alignSelf: "flex-start",
-};
-
-const overlayCardStyle: React.CSSProperties = {
-  position: "absolute",
-  top: "100%",
-  left: 0,
-  marginTop: 6,
-  minWidth: 260,
-  maxWidth: 560,
-  maxHeight: 280,
-  overflow: "auto",
-  padding: "10px 12px",
-  borderRadius: 12,
-  background: "rgba(20, 24, 38, 0.98)",
-  border: "1px solid rgba(255,255,255,0.12)",
-  boxShadow: "0 12px 32px rgba(0,0,0,0.45)",
-  zIndex: 10020,
-  color: "rgba(255,255,255,0.92)",
-  whiteSpace: "pre-wrap",
-  overflowWrap: "anywhere",
-  userSelect: "text",
-};
-const ExpandableText: React.FC<{
-  text: string;
-  lines?: 2 | 3 | 4;
-  emptyText?: string;
-  textStyle?: React.CSSProperties;
-  preserveWhitespace?: boolean;
-  description?: string;
-  onToggle?: (isOpen: boolean) => void;
-}> = ({
-  text,
-  lines = 2,
-  emptyText = "—",
-  textStyle,
-  preserveWhitespace = false,
-  description,
-  onToggle,
-}) => {
-  const [open, setOpen] = useState(false);
-  const [truncated, setTruncated] = useState(false);
-  const textRef = useRef<HTMLDivElement>(null);
-  const wrapRef = useRef<HTMLDivElement>(null);
-  useLayoutEffect(() => {
-    const el = textRef.current;
-    if (!el) return;
-
-    const check = () => {
-      setTruncated(
-        el.scrollHeight > el.clientHeight + 1 ||
-          el.scrollWidth > el.clientWidth + 1
-      );
-    };
-
-    check();
-    window.addEventListener("resize", check);
-    return () => window.removeEventListener("resize", check);
-  }, [text, lines, description]);
-
-  useEffect(() => {
-    if (!open) return;
-
-    const onDocClick = (e: MouseEvent) => {
-      if (!wrapRef.current) return;
-      if (!wrapRef.current.contains(e.target as Node)) {
-        setOpen(false);
-        onToggle?.(false);
-      }
-    };
-
-    const onEsc = (e: KeyboardEvent) => {
-      if (e.key === "Escape") {
-        setOpen(false);
-        onToggle?.(false);
-      }
-    };
-
-    document.addEventListener("mousedown", onDocClick);
-    document.addEventListener("keydown", onEsc);
-    return () => {
-      document.removeEventListener("mousedown", onDocClick);
-      document.removeEventListener("keydown", onEsc);
-    };
-  }, [open, onToggle]);
-
-  const showMoreButton = truncated || !!description;
-
-  if (!text && !description) {
-    return <div style={textStyle}>{emptyText}</div>;
-  }
-
-  const handleToggle = () => {
-    const newState = !open;
-    setOpen(newState);
-    onToggle?.(newState);
-  };
-  const clampStyle = lines === 4 ? clamp4Style : lines === 3 ? clamp3Style : clamp2Style;
-  return (
-    <div
-      ref={wrapRef}
-      style={{
-        position: "relative",
-        display: "flex",
-        flexDirection: "column",
-        alignItems: "flex-start",
-        minWidth: 0,
-        width: "100%",
-      }}
-    >
-      <div
-        ref={textRef}
-        style={{
-          ...clampStyle,
-          ...textStyle,
-          width: "100%",
-          overflowWrap: "anywhere",
-          whiteSpace: preserveWhitespace ? "pre-wrap" : undefined,
-        }}
-        title={open ? "" : text}
-      >
-        {text || emptyText}
-      </div>
-
-      {showMoreButton && (
-        <button
-          type="button"
-          onClick={handleToggle}
-          style={compactButtonStyle}
-        >
-          {open ? "less" : "more"}
-        </button>
-      )}
-
-      {open && (
-        <div
-          style={{
-            ...overlayCardStyle,
-            whiteSpace: preserveWhitespace ? "pre-wrap" : "pre-wrap",
-            fontFamily: preserveWhitespace
-              ? 'ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace'
-              : undefined,
-            fontSize: preserveWhitespace ? 12.5 : undefined,
-            lineHeight: preserveWhitespace ? 1.35 : undefined,
-          }}
-        >
-          {description ? (
-            <>
-              <div style={{ fontWeight: 700, marginBottom: 4, color: "var(--accent)" }}>
-                Value:
-              </div>
-              <div style={{ marginBottom: 12 }}>{text || emptyText}</div>
-              <div style={{ fontWeight: 700, marginBottom: 4, color: "var(--accent)" }}>
-                Description:
-              </div>
-              <div>{description}</div>
-            </>
-          ) : (
-            <>
-              <div style={{ marginBottom: 8 }}>{text}</div>
-              <button
-                type="button"
-                className="dx-btn dx-btn-outline"
-                style={{ padding: "5px 8px", fontSize: 12 }}
-                onClick={async () => {
-                  try {
-                    await navigator.clipboard.writeText(text);
-                  } catch {}
-                }}
-              >
-                Copy
-              </button>
-            </>
-          )}
-        </div>
-      )}
-    </div>
-  );
-};
-
+import { AutoMetricOptionsResponse, Metric, ModalMode } from "./MetricPageTypes";
+import { headerCellStyle, metricCellStyle } from "../components/CellComponents";
+import { AddMetricModal } from "../components/AddMetricModal";
+import ExpandableText from "../components/ExpandableText";
 const MetricsPage: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const navigate = useNavigate();
@@ -300,6 +40,10 @@ const MetricsPage: React.FC = () => {
   const [editTemplate, setEditTemplate] = useState("");
 
   const [formError, setFormError] = useState("");
+  const [reorderModalOpen, setReorderModalOpen] = useState(false);
+  const [reorderCategory, setReorderCategory] = useState("");
+  const [categoryOrder, setCategoryOrder] = useState<string[]>([]);
+  const [categoryMetricOrder, setCategoryMetricOrder] = useState<Record<string, string[]>>({});
 
   const firstColRef = useRef<HTMLTableCellElement>(null);
   const [offset, setOffset] = useState(0);
@@ -383,6 +127,73 @@ const MetricsPage: React.FC = () => {
   useEffect(() => {
     loadMetrics();
   }, []);
+
+  const buildCategoryOrdering = (metricsList: Metric[], categoryList: string[]) => {
+    const uniqueCategories = Array.from(
+      new Set<string>([
+        ...categoryList.filter(Boolean),
+        ...metricsList.map((metric) => metric.category || "Uncategorized"),
+      ])
+    );
+
+    const orderMap: Record<string, string[]> = {};
+    uniqueCategories.forEach((category) => {
+      orderMap[category] = [];
+    });
+
+    metricsList.forEach((metric) => {
+      const category = metric.category || "Uncategorized";
+      if (!orderMap[category]) {
+        orderMap[category] = [];
+      }
+      orderMap[category].push(metric.metric_ID);
+    });
+
+    return { uniqueCategories, orderMap };
+  };
+
+  useEffect(() => {
+    const { uniqueCategories, orderMap } = buildCategoryOrdering(metrics, categories);
+    setCategoryOrder(uniqueCategories);
+    setCategoryMetricOrder(orderMap);
+
+    if (!reorderCategory && uniqueCategories.length > 0) {
+      setReorderCategory(uniqueCategories[0]);
+    } else if (reorderCategory && !uniqueCategories.includes(reorderCategory)) {
+      setReorderCategory(uniqueCategories[0] || "");
+    }
+  }, [metrics, categories]);
+
+  const metricsById = useMemo(
+    () => new Map(metrics.map((metric) => [metric.metric_ID, metric])),
+    [metrics]
+  );
+
+  const openReorderModal = () => {
+    if (categoryOrder.length > 0 && !reorderCategory) {
+      setReorderCategory(categoryOrder[0]);
+    }
+    setReorderModalOpen(true);
+  };
+
+  const closeReorderModal = () => setReorderModalOpen(false);
+
+  const moveMetricInCategory = (metricId: string, direction: "up" | "down") => {
+    setCategoryMetricOrder((prev) => {
+      const current = [...(prev[reorderCategory] || [])];
+      const index = current.indexOf(metricId);
+      if (index === -1) return prev;
+      const target = direction === "up" ? index - 1 : index + 1;
+      if (target < 0 || target >= current.length) return prev;
+      [current[index], current[target]] = [current[target], current[index]];
+      return { ...prev, [reorderCategory]: current };
+    });
+  };
+
+  const saveReorder = () => {
+    setReorderModalOpen(false);
+    showSuccess("Metric display order updated.");
+  };
 
   const isRuleType = (t: string) => t === "bool" || t === "range" || t === "int";
 
@@ -780,6 +591,10 @@ const MetricsPage: React.FC = () => {
               <button className="dx-btn dx-btn-primary" onClick={openCreateModal}>
                 + Add New Metric
               </button>
+
+              <button className="dx-btn dx-btn-primary" onClick={openReorderModal}>
+                Reorder Metrics
+              </button>
             </div>
 
             <div className="dx-table-wrap dx-table-scroll" style={{ flex: 1, minHeight: 0 }}>
@@ -862,34 +677,60 @@ const MetricsPage: React.FC = () => {
                 </thead>
 
                 <tbody>
-                  {metrics.map((m, rowIndex) => {
-                    const isExpanded = expandedRowId === m.metric_ID;
+                  {categoryOrder.map((category) => {
+                    const ids = categoryMetricOrder[category] || [];
+                    if (!ids.length) return null;
 
                     return (
-                      <tr
-                        key={m.metric_ID}
-                        style={{
-                          borderBottom: "1px solid rgba(255,255,255,0.08)",
-                          background:
-                            rowIndex % 2 === 0
-                              ? "rgba(255,255,255,0.01)"
-                              : "rgba(255,255,255,0.025)",
-                          position: "relative",
-                          zIndex: isExpanded ? 100 : 1,
-                        }}
-                      >
-                        <td
-                          className="dx-sticky-left"
+                      <React.Fragment key={category}>
+                        <tr
+                          key={`group-${category}`}
                           style={{
-                            padding: "8px 8px",
-                            verticalAlign: "top",
-                            left: 0,
-                            whiteSpace: "normal",
-                            wordBreak: "break-word",
-                            fontSize: 12.5,
+                            background: "rgba(255,255,255,0.05)",
+                            borderBottom: "1px solid rgba(255,255,255,0.12)",
                           }}
                         >
-                          <div
+                          <td
+                            colSpan={7}
+                            style={{
+                              ...headerCellStyle,
+                              fontWeight: 700,
+                              background: "rgba(255,255,255,0.04)",
+                            }}
+                          >
+                            {category}
+                          </td>
+                        </tr>
+                        {ids.map((metricId, index) => {
+                          const m = metricsById.get(metricId);
+                          if (!m) return null;
+                          const isExpanded = expandedRowId === m.metric_ID;
+
+                          return (
+                            <tr
+                              key={m.metric_ID}
+                              style={{
+                                borderBottom: "1px solid rgba(255,255,255,0.08)",
+                                background:
+                                  index % 2 === 0
+                                    ? "rgba(255,255,255,0.01)"
+                                    : "rgba(255,255,255,0.025)",
+                                position: "relative",
+                                zIndex: isExpanded ? 100 : 1,
+                              }}
+                            >
+                              <td
+                                className="dx-sticky-left"
+                                style={{
+                                  padding: "8px 8px",
+                                  verticalAlign: "top",
+                                  left: 0,
+                                  whiteSpace: "normal",
+                                  wordBreak: "break-word",
+                                  fontSize: 12.5,
+                                }}
+                              >
+                                <div
                             style={{
                               display: "flex",
                               gap: 6,
@@ -1047,6 +888,9 @@ const MetricsPage: React.FC = () => {
                       </tr>
                     );
                   })}
+                      </React.Fragment>
+                    );
+                  })}
                 </tbody>
               </table>
 
@@ -1065,29 +909,30 @@ const MetricsPage: React.FC = () => {
                 ) : null}
             </div>
           </div>
+          
         </div>
 
-        {isModalOpen && (
+        {reorderModalOpen && (
           <div
             className="dx-backdrop"
             role="dialog"
             aria-modal="true"
             onMouseDown={(e) => {
-              if (e.target === e.currentTarget) closeModal();
+              if (e.target === e.currentTarget) closeReorderModal();
             }}
             style={{
               display: "flex",
               alignItems: "center",
               justifyContent: "center",
               backgroundColor: "rgba(0, 0, 0, 0.6)",
-              zIndex: 9999,
+              zIndex: 9998,
             }}
           >
             <div
               className="dx-card"
               onMouseDown={(e) => e.stopPropagation()}
               style={{
-                width: "min(900px, 92vw)",
+                width: "min(760px, 92vw)",
                 maxHeight: "85vh",
                 overflow: "auto",
                 padding: 18,
@@ -1109,12 +954,12 @@ const MetricsPage: React.FC = () => {
                 }}
               >
                 <div style={{ fontSize: "1.15rem", fontWeight: 700, color: "var(--accent)" }}>
-                  {modalMode === "create" ? "Add New Metric" : "Edit Metric"}
+                  Reorder Metrics by Category
                 </div>
 
                 <button
                   className="dx-btn dx-btn-outline"
-                  onClick={closeModal}
+                  onClick={closeReorderModal}
                   aria-label="Close"
                   style={{ padding: "6px 10px" }}
                 >
@@ -1122,310 +967,152 @@ const MetricsPage: React.FC = () => {
                 </button>
               </div>
 
-              {formError && (
-                <div
-                  style={{
-                    marginBottom: 12,
-                    padding: "10px 12px",
-                    borderRadius: 10,
-                    border: "1px solid rgba(255, 99, 99, 0.45)",
-                    background: "rgba(255, 99, 99, 0.10)",
-                    color: "#ffb3b3",
-                    fontSize: "0.95rem",
-                  }}
-                >
-                  {formError}
-                </div>
-              )}
-
-              <div
-                style={{
-                  display: "grid",
-                  gridTemplateColumns: "repeat(2, minmax(0, 1fr))",
-                  gap: 10,
-                }}
-              >
+              <div style={{ display: "grid", gap: 12 }}>
                 <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
-                  <label style={{ opacity: 0.85 }}>Metric Name</label>
-                  <input
-                    className="dx-input"
-                    value={modalMode === "create" ? newName : editName}
-                    onChange={(e) => {
-                      setFormError("");
-                      modalMode === "create" ? setNewName(e.target.value) : setEditName(e.target.value);
-                    }}
-                    maxLength={100}
-                    placeholder="e.g. Commits (Last 5 Years)"
-                  />
-                </div>
-
-                <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
-                  <label style={{ opacity: 0.85 }}>Source Type</label>
+                  <label style={{ opacity: 0.85 }}>Category</label>
                   <select
                     className="dx-input"
-                    value={modalMode === "create" ? newSourceType : editSourceType}
-                    onChange={(e) => {
-                      const val = e.target.value;
-                      setFormError("");
-
-                      if (modalMode === "create") {
-                        setNewSourceType(val);
-                        setNewMetricKey("");
-                        setSelectedOptionCategory("");
-                        setSelectedTemplate("");
-                        if (val === "manual") {
-                          setNewType("float");
-                          setNewDesc("");
-                        }
-                      } else {
-                        setEditSourceType(val);
-                        setEditMetricKey("");
-                        setEditOptionCategory("");
-                        setEditTemplate("");
-                        if (val === "manual") {
-                          setEditType("float");
-                          setEditDesc("");
-                        }
-                      }
-                    }}
+                    value={reorderCategory}
+                    onChange={(e) => setReorderCategory(e.target.value)}
                   >
-                    <option value="manual" className="dx-input-select">
-                      Manual
-                    </option>
-                    <option value="github_api" className="dx-input-select">
-                      GitHub API
-                    </option>
-                    <option value="scc" className="dx-input-select">
-                      SCC
-                    </option>
-                    <option value="gitstats" className="dx-input-select">
-                      GitStats
-                    </option>
-                  </select>
-                </div>
-
-                {modalSourceType !== "manual" && (
-                  <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
-                    <label style={{ opacity: 0.85 }}>System Metric</label>
-                    <select
-                      className="dx-input"
-                      value={modalMetricKey}
-                      onChange={(e) => {
-                        const selectedKey = e.target.value;
-                        const selectedOption = modalAutoOptions.find((x) => x.key === selectedKey);
-                        setFormError("");
-
-                        if (modalMode === "create") {
-                          setNewMetricKey(selectedKey);
-                          setSelectedOptionCategory("");
-                          setSelectedTemplate("");
-                          if (selectedOption) {
-                            setNewType(selectedOption.value_type);
-                            setNewDesc(selectedOption.description || "");
-                          }
-                        } else {
-                          setEditMetricKey(selectedKey);
-                          setEditOptionCategory("");
-                          setEditTemplate("");
-                          if (selectedOption) {
-                            setEditType(selectedOption.value_type);
-                            setEditDesc(selectedOption.description || "");
-                          }
-                        }
-                      }}
-                    >
-                      <option value="">-- Select System Metric --</option>
-                      {modalAutoOptions.map((opt) => (
-                        <option key={opt.key} value={opt.key} className="dx-input-select">
-                          {opt.label}
-                        </option>
-                      ))}
-                    </select>
-                  </div>
-                )}
-
-                <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
-                  <label style={{ opacity: 0.85 }}>Type</label>
-                  <select
-                    className="dx-input"
-                    value={modalMode === "create" ? newType : editType}
-                    onChange={(e) => {
-                      const val = e.target.value;
-                      setFormError("");
-                      if (modalSourceType !== "manual") return;
-                      if (modalMode === "create") setNewType(val);
-                      else onEditTypeChange(val);
-                    }}
-                    disabled={modalSourceType !== "manual"}
-                  >
-                    <option value="float" className="dx-input-select">
-                      Float
-                    </option>
-                    <option value="int" className="dx-input-select">
-                      Integer
-                    </option>
-                    <option value="bool" className="dx-input-select">
-                      Boolean
-                    </option>
-                    <option value="range" className="dx-input-select">
-                      Range
-                    </option>
-                    <option value="text" className="dx-input-select">
-                      Text
-                    </option>
-                    <option value="date" className="dx-input-select">Date</option>
-                    <option value="time" className="dx-input-select">Time</option>
-                    <option value="datetime" className="dx-input-select">Date & Time</option>
-                  </select>
-                </div>
-
-                <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
-                  <label style={{ opacity: 0.85 }}>Category (optional)</label>
-                  <select
-                    className="dx-input"
-                    value={modalMode === "create" ? newCategory : editCategory}
-                    onChange={(e) => {
-                      setFormError("");
-                      modalMode === "create" ? setNewCategory(e.target.value) : setEditCategory(e.target.value);
-                    }}
-                    style={{ borderColor: "var(--accent)" }}
-                  >
-                    <option className="dx-input-select" value="">
-                      -- Select Category --
-                    </option>
-                    {categories.map((catName) => (
-                      <option className="dx-input-select" key={catName} value={catName}>
-                        {catName}
+                    {categoryOrder.map((category) => (
+                      <option key={category} value={category}>
+                        {category}
                       </option>
                     ))}
                   </select>
                 </div>
 
-                <div />
-
-                {modalSourceType === "manual" && isRuleType(modalType) && (
-                  <div
-                    style={{
-                      gridColumn: "1 / -1",
-                      display: "grid",
-                      gridTemplateColumns: "repeat(2, minmax(0, 1fr))",
-                      gap: 10,
-                    }}
-                  >
-                    <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
-                      <label style={{ opacity: 0.85 }}>Input Category</label>
-                      <select
-                        className="dx-input"
-                        value={modalMode === "create" ? selectedOptionCategory : editOptionCategory}
-                        onChange={(e) => {
-                          const v = e.target.value;
-                          setFormError("");
-                          if (modalMode === "create") {
-                            setSelectedOptionCategory(v);
-                            setSelectedTemplate("");
-                          } else {
-                            setEditOptionCategory(v);
-                            setEditTemplate("");
-                          }
-                        }}
-                        style={{ borderColor: "var(--accent)" }}
-                      >
-                        <option value="">-- Select Input Category --</option>
-                        {Object.entries(modalAvailableCats).map(([key, cat]: [string, any]) => (
-                          <option key={key} value={key} style={{ color: "black" }}>
-                            {cat.display_name || key}
-                          </option>
-                        ))}
-                      </select>
-                    </div>
-
-                    <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
-                      <label style={{ opacity: 0.85 }}>Scoring Rule (template)</label>
-                      <select
-                        className="dx-input"
-                        value={modalMode === "create" ? selectedTemplate : editTemplate}
-                        onChange={(e) => {
-                          setFormError("");
-                          modalMode === "create" ? setSelectedTemplate(e.target.value) : setEditTemplate(e.target.value);
-                        }}
-                        disabled={!modalOptionCategory}
-                        style={{ backgroundColor: "rgba(var(--accent-rgb), 0.1)" }}
-                      >
-                        <option value="">-- Select Template --</option>
-                        {(modalOptionCategory
-                          ? Object.keys(modalAvailableCats?.[modalOptionCategory]?.templates || {})
-                          : []
-                        ).map((tKey) => (
-                          <option key={tKey} value={tKey} style={{ color: "black" }}>
-                            {tKey.replace(/_/g, " ")}
-                          </option>
-                        ))}
-                      </select>
-                    </div>
-
-                    {modalPreview && (
-                      <div
-                        style={{
-                          gridColumn: "1 / -1",
-                          padding: "10px 12px",
-                          border: "1px dashed var(--accent)",
-                          borderRadius: 10,
-                          background: "rgba(255,255,255,0.03)",
-                          color: "var(--accent)",
-                          overflowWrap: "anywhere",
-                        }}
-                      >
-                        <div style={{ fontSize: "0.85rem", marginBottom: 6, opacity: 0.9 }}>
-                          Rule Preview
-                        </div>
-                        <code style={{ display: "block", whiteSpace: "pre-wrap", color: "inherit" }}>
-                          {JSON.stringify(modalPreview, null, 2)}
-                        </code>
-                      </div>
-                    )}
-                  </div>
-                )}
-
-                <div style={{ gridColumn: "1 / -1", display: "flex", flexDirection: "column", gap: 6 }}>
-                  <label style={{ opacity: 0.85 }}>Description (optional)</label>
-                  <textarea
-                    className="dx-input"
-                    value={modalMode === "create" ? newDesc : editDesc}
-                    onChange={(e) => {
-                      setFormError("");
-                      modalMode === "create" ? setNewDesc(e.target.value) : setEditDesc(e.target.value);
-                    }}
-                    placeholder="Description…"
-                    rows={4}
-                    style={{
-                      resize: "vertical",
-                      minHeight: 110,
-                      paddingTop: 10,
-                      lineHeight: 1.35,
-                      borderColor: "rgba(255,255,255,0.12)",
-                      background: "rgba(255,255,255,0.03)",
-                    }}
-                  />
-                </div>
-              </div>
-
-              <div style={{ display: "flex", justifyContent: "flex-end", gap: 10, marginTop: 16, flexWrap: "wrap" }}>
-                <button className="dx-btn dx-btn-outline" onClick={closeModal}>
-                  Cancel
-                </button>
-                <button
-                  className="dx-btn dx-btn-primary"
-                  onClick={async () => {
-                    const ok = modalMode === "create" ? await addMetric() : await saveEdit();
-                    if (ok) closeModal();
+                <div
+                  style={{
+                    maxHeight: "52vh",
+                    overflow: "auto",
+                    padding: 12,
+                    borderRadius: 14,
+                    border: "1px solid rgba(255,255,255,0.08)",
+                    background: "rgba(255,255,255,0.03)",
                   }}
                 >
-                  Save
-                </button>
+                  {(categoryMetricOrder[reorderCategory] || []).length > 0 ? (
+                    (categoryMetricOrder[reorderCategory] || []).map((metricId, index) => {
+                      const metric = metricsById.get(metricId);
+                      if (!metric) return null;
+                      const categoryIds = categoryMetricOrder[reorderCategory] || [];
+                      return (
+                        <div
+                          key={metricId}
+                          style={{
+                            display: "flex",
+                            alignItems: "center",
+                            justifyContent: "space-between",
+                            gap: 10,
+                            padding: "10px 0",
+                            borderBottom: index < categoryIds.length - 1 ? "1px solid rgba(255,255,255,0.08)" : undefined,
+                          }}
+                        >
+                          <div
+                            style={{
+                              minWidth: 0,
+                              overflow: "hidden",
+                              textOverflow: "ellipsis",
+                              whiteSpace: "nowrap",
+                              color: "rgba(255,255,255,0.9)",
+                            }}
+                            title={metric.metric_name}
+                          >
+                            {metric.metric_name}
+                          </div>
+                          <div style={{ display: "flex", gap: 6 }}>
+                            <button
+                              type="button"
+                              className="dx-btn dx-btn-outline"
+                              disabled={index === 0}
+                              onClick={() => moveMetricInCategory(metricId, "up")}
+                              style={{ padding: "5px 8px", fontSize: 12 }}
+                            >
+                              ↑
+                            </button>
+                            <button
+                              type="button"
+                              className="dx-btn dx-btn-outline"
+                              disabled={index === categoryIds.length - 1}
+                              onClick={() => moveMetricInCategory(metricId, "down")}
+                              style={{ padding: "5px 8px", fontSize: 12 }}
+                            >
+                              ↓
+                            </button>
+                          </div>
+                        </div>
+                      );
+                    })
+                  ) : (
+                    <div style={{ opacity: 0.7, padding: 12 }}>No metrics found for this category.</div>
+                  )}
+                </div>
+
+                <div style={{ display: "flex", justifyContent: "flex-end", gap: 10 }}>
+                  <button className="dx-btn dx-btn-outline" onClick={closeReorderModal}>
+                    Cancel
+                  </button>
+                  <button className="dx-btn dx-btn-primary" onClick={saveReorder}>
+                    Save Order
+                  </button>
+                </div>
               </div>
             </div>
           </div>
         )}
+
+        <AddMetricModal
+          isOpen={isModalOpen}
+          modalMode={modalMode}
+          categories={categories}
+          formError={formError}
+          modalSourceType={modalSourceType}
+          modalMetricKey={modalMetricKey}
+          modalType={modalType}
+          modalAutoOptions={modalAutoOptions}
+          modalAvailableCats={modalAvailableCats}
+          modalOptionCategory={modalOptionCategory}
+          modalPreview={modalPreview}
+          newName={newName}
+          newType={newType}
+          newSourceType={newSourceType}
+          newMetricKey={newMetricKey}
+          newCategory={newCategory}
+          newDesc={newDesc}
+          selectedOptionCategory={selectedOptionCategory}
+          selectedTemplate={selectedTemplate}
+          editName={editName}
+          editType={editType}
+          editSourceType={editSourceType}
+          editMetricKey={editMetricKey}
+          editCategory={editCategory}
+          editDesc={editDesc}
+          editOptionCategory={editOptionCategory}
+          editTemplate={editTemplate}
+          closeModal={closeModal}
+          onSubmit={modalMode === "create" ? addMetric : saveEdit}
+          setFormError={setFormError}
+          setNewName={setNewName}
+          setEditName={setEditName}
+          setNewType={setNewType}
+          setEditType={setEditType}
+          setNewSourceType={setNewSourceType}
+          setEditSourceType={setEditSourceType}
+          setNewMetricKey={setNewMetricKey}
+          setEditMetricKey={setEditMetricKey}
+          setNewCategory={setNewCategory}
+          setEditCategory={setEditCategory}
+          setNewDesc={setNewDesc}
+          setEditDesc={setEditDesc}
+          setSelectedOptionCategory={setSelectedOptionCategory}
+          setSelectedTemplate={setSelectedTemplate}
+          setEditOptionCategory={setEditOptionCategory}
+          setEditTemplate={setEditTemplate}
+          onEditTypeChange={onEditTypeChange}
+          isRuleType={isRuleType}
+        />
       </div>
     </div>
   );
