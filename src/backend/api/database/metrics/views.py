@@ -1,4 +1,5 @@
 import json
+import logging
 import os
 
 from django.conf import settings
@@ -10,6 +11,8 @@ from rest_framework.views import APIView
 
 from .models import Metric, MetricOrder
 from .serializers import FlatMetricSerializer, MetricSerializer
+
+logger = logging.getLogger(__name__)
 
 
 def load_auto_metric_definitions():
@@ -154,8 +157,9 @@ class MetricReorderView(APIView):
                     status=status.HTTP_200_OK,
                 )
         except Exception as e:
+            logger.exception("Failed to retrieve metric display order")
             return Response(
-                {"error": str(e)},
+                {"error": "An internal error has occurred."},
                 status=status.HTTP_500_INTERNAL_SERVER_ERROR,
             )
 
@@ -203,7 +207,8 @@ class MetricReorderView(APIView):
                 status=status.HTTP_200_OK,
             )
         except Exception as e:
+            logger.exception("Failed to save metric display order")
             return Response(
-                {"error": str(e)},
+                {"error": "An internal error has occurred."},
                 status=status.HTTP_500_INTERNAL_SERVER_ERROR,
             )
