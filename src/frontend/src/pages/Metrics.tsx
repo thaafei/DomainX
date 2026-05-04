@@ -963,7 +963,7 @@ const MetricsPage: React.FC = () => {
                 ) : null}
             </div>
           </div>
-          
+
         </div>
 
         <ReorderMetricsModal

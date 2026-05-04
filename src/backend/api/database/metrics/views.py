@@ -177,11 +177,12 @@ class MetricReorderView(APIView):
 
             # Check if all metric IDs exist
             existing_metrics = set(
-                str(m_id) for m_id in Metric.objects.filter(
+                str(m_id)
+                for m_id in Metric.objects.filter(
                     metric_ID__in=all_metric_ids
                 ).values_list("metric_ID", flat=True)
             )
-            
+
             invalid_ids = all_metric_ids - existing_metrics
             if invalid_ids:
                 return Response(

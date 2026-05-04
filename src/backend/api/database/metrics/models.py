@@ -43,9 +43,10 @@ class Metric(models.Model):
 
 class MetricOrder(models.Model):
     """Stores the display order of metrics by category"""
+
     category_order = models.JSONField(
         default=dict,
-        help_text="JSON object mapping category names to ordered lists of metric IDs"
+        help_text="JSON object mapping category names to ordered lists of metric IDs",
     )
     updated_at = models.DateTimeField(auto_now=True)
 
