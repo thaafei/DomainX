@@ -3,7 +3,6 @@ import { useNavigate, useParams } from "react-router-dom";
 import { apiUrl } from "../config/api";
 import AuthTransition from "../components/AuthTransition";
 import { ArrowLeft } from "lucide-react";
-import { useAuthStore } from "../store/useAuthStore";
 import { headerCellStyle } from "../components/CellComponents";
 
 interface CategoryScores {

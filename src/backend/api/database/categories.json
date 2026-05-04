@@ -14,7 +14,8 @@
         "Surface Understandability",
         "Raw Metrics (Measured via git_stats)",
         "Raw Metrics (Measured via scc)",
-        "Repo Metrics (Measured via GitHub)"
+        "Repo Metrics (Measured via GitHub)",
+        "Summary"
     ]
 
 }

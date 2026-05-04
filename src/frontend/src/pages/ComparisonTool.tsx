@@ -27,6 +27,7 @@ interface Metric {
   metric_name: string;
   metric_key?: string | null;
   description?: string | null;
+  category?: string | null;
 }
 
 interface LibraryMetricRow {
@@ -129,6 +130,16 @@ const ComparisonToolPage: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [accessDenied, setAccessDenied] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  const groupedMetrics = React.useMemo(() => {
+    const groups: { [category: string]: Metric[] } = {};
+    metricList.forEach(m => {
+      const cat = m.category || 'Other';
+      if (!groups[cat]) groups[cat] = [];
+      groups[cat].push(m);
+    });
+    return Object.entries(groups).map(([category, metrics]) => ({ category, metrics }));
+  }, [metricList]);
 
   useEffect(() => {
     if (!DOMAIN_ID) return;
@@ -466,6 +477,38 @@ const ComparisonToolPage: React.FC = () => {
               }}
             >
               <thead>
+                <tr>
+                  <th
+                    className="dx-th-sticky dx-sticky-left"
+                    style={{
+                      ...headerCellStyle,
+                      textAlign: "left",
+                      width: 320,
+                      left: 0,
+                    }}
+                  >
+                    {/* empty */}
+                  </th>
+
+                  {groupedMetrics.map((group) => (
+                    <th
+                      key={group.category}
+                      colSpan={group.metrics.length}
+                      style={{
+                        ...headerCellStyle,
+                        textAlign: "center",
+                        borderBottom: "1px solid rgba(255,255,255,0.08)",
+                        overflow: "hidden",
+                        textOverflow: "ellipsis",
+                        whiteSpace: "nowrap",
+                      }}
+                      title={group.category}
+                    >
+                      {group.category}
+                    </th>
+                  ))}
+                </tr>
+
                 <tr>
                   <th
                     className="dx-th-sticky dx-sticky-left"
