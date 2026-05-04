@@ -8,7 +8,7 @@ from rest_framework.permissions import IsAuthenticatedOrReadOnly
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
-from .models import Metric
+from .models import Metric, MetricOrder
 from .serializers import FlatMetricSerializer, MetricSerializer
 
 
@@ -134,3 +134,75 @@ class MetricUpdateWeightView(APIView):
 class MetricListFlatView(generics.ListAPIView):
     serializer_class = FlatMetricSerializer
     queryset = Metric.objects.all().order_by("metric_name")
+
+
+class MetricReorderView(APIView):
+    permission_classes = [IsAuthenticatedOrReadOnly]  # noqa: F811
+
+    def get(self, request):
+        """Retrieve the current metric display order"""
+        try:
+            metric_order = MetricOrder.objects.first()
+            if metric_order:
+                return Response(
+                    {"category_order": metric_order.category_order},
+                    status=status.HTTP_200_OK,
+                )
+            else:
+                return Response(
+                    {"category_order": {}},
+                    status=status.HTTP_200_OK,
+                )
+        except Exception as e:
+            return Response(
+                {"error": str(e)},
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            )
+
+    def post(self, request):
+        """Save the metric display order"""
+        try:
+            category_order = request.data.get("category_order")
+            if category_order is None:
+                return Response(
+                    {"error": "category_order field is required"},
+                    status=status.HTTP_400_BAD_REQUEST,
+                )
+
+            # Validate that all metric IDs exist
+            all_metric_ids = set()
+            for category_metrics in category_order.values():
+                if isinstance(category_metrics, list):
+                    all_metric_ids.update(category_metrics)
+
+            # Check if all metric IDs exist
+            existing_metrics = set(
+                str(m_id) for m_id in Metric.objects.filter(
+                    metric_ID__in=all_metric_ids
+                ).values_list("metric_ID", flat=True)
+            )
+            
+            invalid_ids = all_metric_ids - existing_metrics
+            if invalid_ids:
+                return Response(
+                    {"error": f"Invalid metric IDs: {list(invalid_ids)}"},
+                    status=status.HTTP_400_BAD_REQUEST,
+                )
+
+            # Get or create the single MetricOrder instance
+            metric_order, _ = MetricOrder.objects.get_or_create(pk=1)
+            metric_order.category_order = category_order
+            metric_order.save()
+
+            return Response(
+                {
+                    "message": "Metric display order updated successfully",
+                    "category_order": metric_order.category_order,
+                },
+                status=status.HTTP_200_OK,
+            )
+        except Exception as e:
+            return Response(
+                {"error": str(e)},
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            )

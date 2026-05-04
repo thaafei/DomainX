@@ -118,6 +118,19 @@ const MetricsPage: React.FC = () => {
           uniqueMetricsMap.set(metric.metric_ID, metric);
         });
         setMetrics(Array.from(uniqueMetricsMap.values()));
+
+        // Load stored category ordering
+        try {
+          const orderRes = await fetch(apiUrl("/metrics/reorder/"), { credentials: "include" });
+          if (orderRes.ok) {
+            const orderData = await orderRes.json();
+            if (orderData.category_order) {
+              setCategoryMetricOrder(orderData.category_order);
+            }
+          }
+        } catch (orderErr) {
+          console.error("Error fetching metric order:", orderErr);
+        }
       } catch (err) {
         console.error(err);
       } finally {
@@ -129,7 +142,7 @@ const MetricsPage: React.FC = () => {
     loadMetrics();
   }, []);
 
-  const buildCategoryOrdering = (metricsList: Metric[], categoryList: string[]) => {
+  const buildCategoryOrdering = (metricsList: Metric[], categoryList: string[], savedOrder?: Record<string, string[]>) => {
     const uniqueCategories = Array.from(
       new Set<string>([
         ...categoryList.filter(Boolean),
@@ -139,22 +152,36 @@ const MetricsPage: React.FC = () => {
 
     const orderMap: Record<string, string[]> = {};
     uniqueCategories.forEach((category) => {
-      orderMap[category] = [];
+      orderMap[category] = savedOrder?.[category] || [];
     });
 
+    const metricsInOrder = new Set<string>();
+
+    // First, add metrics that are in the saved order
+    if (savedOrder) {
+      Object.entries(savedOrder).forEach(([category, metricIds]) => {
+        const validIds = metricIds.filter((id) => metricsList.some((m) => m.metric_ID === id));
+        orderMap[category] = validIds;
+        validIds.forEach((id) => metricsInOrder.add(id));
+      });
+    }
+
+    // Then, add any metrics that aren't in the saved order
     metricsList.forEach((metric) => {
-      const category = metric.category || "Uncategorized";
-      if (!orderMap[category]) {
-        orderMap[category] = [];
+      if (!metricsInOrder.has(metric.metric_ID)) {
+        const category = metric.category || "Uncategorized";
+        if (!orderMap[category]) {
+          orderMap[category] = [];
+        }
+        orderMap[category].push(metric.metric_ID);
       }
-      orderMap[category].push(metric.metric_ID);
     });
 
     return { uniqueCategories, orderMap };
   };
 
   useEffect(() => {
-    const { uniqueCategories, orderMap } = buildCategoryOrdering(metrics, categories);
+    const { uniqueCategories, orderMap } = buildCategoryOrdering(metrics, categories, categoryMetricOrder);
     setCategoryOrder(uniqueCategories);
     setCategoryMetricOrder(orderMap);
 
@@ -177,7 +204,10 @@ const MetricsPage: React.FC = () => {
     setReorderModalOpen(true);
   };
 
-  const closeReorderModal = () => setReorderModalOpen(false);
+  const closeReorderModal = () => {
+    setFormError("")
+    setReorderModalOpen(false)
+  };
 
   const moveMetricInCategory = (metricId: string, direction: "up" | "down") => {
     setCategoryMetricOrder((prev) => {
@@ -191,9 +221,32 @@ const MetricsPage: React.FC = () => {
     });
   };
 
-  const saveReorder = () => {
-    setReorderModalOpen(false);
-    showSuccess("Metric display order updated.");
+  const saveReorder = async () => {
+    try {
+      const payload = {
+        category_order: categoryMetricOrder,
+      };
+
+      const res = await fetch(apiUrl("/metrics/reorder/"), {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        credentials: "include",
+        body: JSON.stringify(payload),
+      });
+
+      if (!res.ok) {
+        console.error("Failed to save metric order");
+        setFormError("Error saving order. Please try again.");
+        return false;
+      }
+      closeReorderModal();
+      showSuccess("Metric display order updated.");
+      return true;
+    } catch (err) {
+      console.error("Error saving reorder:", err);
+      setFormError("Error saving order. Please try again.");
+      return false;
+    }
   };
 
   const isRuleType = (t: string) => t === "bool" || t === "range" || t === "int";
@@ -915,6 +968,7 @@ const MetricsPage: React.FC = () => {
 
         <ReorderMetricsModal
           isOpen={reorderModalOpen}
+          formError={formError}
           categoryOrder={categoryOrder}
           reorderCategory={reorderCategory}
           categoryMetricOrder={categoryMetricOrder}

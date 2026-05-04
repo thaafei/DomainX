@@ -5,6 +5,7 @@ from .views import (
     MetricCategoryView,
     MetricListCreateView,
     MetricListFlatView,
+    MetricReorderView,
     MetricRetrieveUpdateDestroyView,
     MetricRulesView,
     MetricUpdateWeightView,
@@ -14,6 +15,7 @@ urlpatterns = [
     path("", MetricListCreateView.as_view(), name="metric-list-create"),
     path("auto-options/", AutoMetricOptionsView.as_view(), name="metric-auto-options"),
     path("all/", MetricListFlatView.as_view(), name="metric-all-flat"),
+    path("reorder/", MetricReorderView.as_view(), name="metric-reorder"),
     path("rules/", MetricRulesView.as_view(), name="metric-rules"),
     path("categories/", MetricCategoryView.as_view(), name="metric-categories"),
     path(

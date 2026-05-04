@@ -1,20 +1,9 @@
 import React from "react";
-import { Metric } from "../pages/MetricPageTypes";
-
-interface ReorderMetricsModalProps {
-  isOpen: boolean;
-  categoryOrder: string[];
-  reorderCategory: string;
-  categoryMetricOrder: Record<string, string[]>;
-  metricsById: Map<string, Metric>;
-  onCategoryChange: (category: string) => void;
-  onMoveMetric: (metricId: string, direction: "up" | "down") => void;
-  onClose: () => void;
-  onSave: () => void;
-}
+import { ReorderMetricsModalProps } from "../pages/MetricPageTypes";
 
 export const ReorderMetricsModal: React.FC<ReorderMetricsModalProps> = ({
   isOpen,
+  formError,
   categoryOrder,
   reorderCategory,
   categoryMetricOrder,
@@ -25,6 +14,10 @@ export const ReorderMetricsModal: React.FC<ReorderMetricsModalProps> = ({
   onSave,
 }) => {
   if (!isOpen) return null;
+  const handleReorder = async () => {
+    const ok = await onSave();
+    if (ok) onClose();
+  };
 
   return (
     <div
@@ -80,7 +73,21 @@ export const ReorderMetricsModal: React.FC<ReorderMetricsModalProps> = ({
             ✕
           </button>
         </div>
-
+        {formError && (
+          <div
+            style={{
+              marginBottom: 12,
+              padding: "10px 12px",
+              borderRadius: 10,
+              border: "1px solid rgba(255, 99, 99, 0.45)",
+              background: "rgba(255, 99, 99, 0.10)",
+              color: "#ffb3b3",
+              fontSize: "0.95rem",
+            }}
+          >
+            {formError}
+          </div>
+        )}
         <div style={{ display: "grid", gap: 12 }}>
           <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
             <label style={{ opacity: 0.85 }}>Category</label>
@@ -171,7 +178,7 @@ export const ReorderMetricsModal: React.FC<ReorderMetricsModalProps> = ({
             <button className="dx-btn dx-btn-outline" onClick={onClose}>
               Cancel
             </button>
-            <button className="dx-btn dx-btn-primary" onClick={onSave}>
+            <button className="dx-btn dx-btn-primary" onClick={handleReorder}>
               Save Order
             </button>
           </div>

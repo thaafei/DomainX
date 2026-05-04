@@ -76,3 +76,16 @@ export interface AddMetricModalProps {
   onEditTypeChange: (value: string) => void;
   isRuleType: (type: string) => boolean;
 }
+
+export interface ReorderMetricsModalProps {
+  isOpen: boolean;
+  formError: string;
+  categoryOrder: string[];
+  reorderCategory: string;
+  categoryMetricOrder: Record<string, string[]>;
+  metricsById: Map<string, Metric>;
+  onCategoryChange: (category: string) => void;
+  onMoveMetric: (metricId: string, direction: "up" | "down") => void;
+  onClose: () => void;
+  onSave: () => Promise<boolean>;
+}
