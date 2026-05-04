@@ -2,17 +2,14 @@
     "Categories": [
         "Summary",
         "Installability",
-        "Popularity",
-        "Activity",
-        "Quality",
         "Correctness and Verifiability",
         "Surface Reliability",
         "Surface Robustness",
         "Surface Usability",
         "Maintainability",
         "Reusability",
-        "Visibility/Transparency",
         "Surface Understandability",
+        "Visibility/Transparency",  
         "Raw Metrics (Measured via git_stats)",
         "Raw Metrics (Measured via scc)",
         "Repo Metrics (Measured via GitHub)"
