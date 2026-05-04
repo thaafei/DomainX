@@ -9,7 +9,7 @@
         "Maintainability",
         "Reusability",
         "Surface Understandability",
-        "Visibility/Transparency",  
+        "Visibility/Transparency",
         "Raw Metrics (Measured via git_stats)",
         "Raw Metrics (Measured via scc)",
         "Repo Metrics (Measured via GitHub)"
