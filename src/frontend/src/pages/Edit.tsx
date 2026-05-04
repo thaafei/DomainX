@@ -53,6 +53,22 @@ const EditValuesPage: React.FC = () => {
   const [offset, setOffset] = useState(0);
 
   const affectedMetrics = metricList.filter(isAffectedMetric);
+  const groupedMetrics = React.useMemo(() => {
+    const groups = new Map<string, Metric[]>();
+
+    metricList.forEach((metric) => {
+      const category = metric.category || "Other";
+      if (!groups.has(category)) {
+        groups.set(category, []);
+      }
+      groups.get(category)!.push(metric);
+    });
+
+    return Array.from(groups.entries()).map(([category, metrics]) => ({
+      category,
+      metrics,
+    }));
+  }, [metricList]);
 
   const showSuccess = (msg: string) => {
     setSuccessMessage(msg);
@@ -683,17 +699,75 @@ const EditValuesPage: React.FC = () => {
               className="dx-table"
               style={{
                 tableLayout: "fixed",
-                width: "100%",
+                width: "max-content",
+                minWidth: "100%",
               }}
             >
               <thead>
+                <tr>
+                  <th
+                    className="dx-th-sticky dx-sticky-left"
+                    colSpan={2}
+                    style={{
+                      ...headerCellStyle,
+                      left: 0,
+                      width: 190,
+                      textAlign: "center",
+                      padding: 0,
+                      background: "rgba(20, 24, 38, 1)",
+                      borderBottom: "1px solid rgba(255,255,255,0.08)",
+                      height: 40,
+                      minHeight: 40,
+                    }}
+                  >
+                  Categories
+                  </th>
+                  <th
+                    className="dx-th-sticky"
+                    colSpan={3}
+                    style={{
+                      ...headerCellStyle,
+                      left: 190,
+                      width: 190,
+                      padding: 0,
+                      background: "rgba(20, 24, 38, 0.96)",
+                      borderBottom: "1px solid rgba(255,255,255,0.08)",
+                      height: 40,
+                      minHeight: 40,
+                    }}
+                  />
+
+                  {groupedMetrics.map((group) => (
+                    <th
+                      key={group.category}
+                      colSpan={group.metrics.length}
+                      className="dx-th-sticky"
+                      style={{
+                        ...headerCellStyle,
+                        textAlign: "center",
+                        background: "rgba(20, 24, 38, 0.96)",
+                        top: 0,
+                        whiteSpace: "nowrap",
+                        overflow: "hidden",
+                        textOverflow: "ellipsis",
+                        height: 40,
+                        minHeight: 20,
+                      }}
+                      title={group.category}
+                    >
+                      {group.category}
+                    </th>
+                  ))}
+                </tr>
                 <tr>
                   <th
                     ref={firstColRef}
                     className="dx-th-sticky dx-sticky-left"
                     style={{
                       ...headerCellStyle,
+                      background: "rgba(20, 24, 38, 1)",
                       left: 0,
+                      top: 40,
                       width: 190,
                     }}
                   >
@@ -703,7 +777,9 @@ const EditValuesPage: React.FC = () => {
                     className="dx-th-sticky dx-sticky-left"
                     style={{
                       ...headerCellStyle,
+                      background: "rgba(20, 24, 38, 1)",
                       left: offset,
+                      top: 40,
                       width: 190,
                     }}
                   >
@@ -714,6 +790,7 @@ const EditValuesPage: React.FC = () => {
                     style={{
                       ...headerCellStyle,
                       width: 220,
+                      top: 40,
                     }}
                   >
                     GitHub URL
@@ -723,6 +800,7 @@ const EditValuesPage: React.FC = () => {
                     style={{
                       ...headerCellStyle,
                       width: 220,
+                      top: 40,
                     }}
                   >
                     URL
@@ -732,6 +810,7 @@ const EditValuesPage: React.FC = () => {
                     style={{
                       ...headerCellStyle,
                       width: 120,
+                      top: 40,
                     }}
                   >
                     Language
@@ -743,7 +822,7 @@ const EditValuesPage: React.FC = () => {
                       style={{
                         ...headerCellStyle,
                         width: 170,
-
+                        top: 42,
                       }}
                     >
                       <div style={{ ...clamp2Style, paddingRight: "18px" }}>

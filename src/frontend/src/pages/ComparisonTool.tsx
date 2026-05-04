@@ -401,6 +401,7 @@ const ComparisonToolPage: React.FC = () => {
                     className="dx-th-sticky dx-sticky-left"
                     style={{
                       ...headerCellStyle,
+                      background: "rgba(20, 24, 38, 1)",
                       textAlign: "left",
                       width: 320,
                       left: 0,
@@ -438,6 +439,7 @@ const ComparisonToolPage: React.FC = () => {
                     className="dx-th-sticky dx-sticky-left"
                     style={{
                       ...headerCellStyle,
+                      background: "rgba(20, 24, 38, 1)",
                       textAlign: "left",
                       width: 320,
                       left: 0,

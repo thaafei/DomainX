@@ -184,20 +184,27 @@ def analyze_domain_libraries(request, domain_id):
 @api_view(["GET"])
 def domain_comparison(request, domain_id):
     domain = get_object_or_404(Domain, pk=domain_id)
+    path = os.path.join(settings.BASE_DIR, "api", "database", "categories.json")
 
     libraries = Library.objects.filter(domain=domain)
     metrics = Metric.objects.all()
 
+    categories_order = []
+    with open(path, "r") as f:
+        categories_order = json.load(f).get("Categories", [])
+    
     # Sort metrics based on MetricOrder
     metric_order_obj = MetricOrder.objects.first()
     if metric_order_obj and metric_order_obj.category_order:
-        category_order = metric_order_obj.category_order
-        # Get all categories, sort them alphabetically
-        categories = sorted(category_order.keys())
+        metrics_category = metric_order_obj.category_order
+        category_ordered = [
+            cat for cat in categories_order
+            if cat in metrics_category and metrics_category[cat]
+        ]
         ordered_metric_ids = []
-        for cat in categories:
-            if cat in category_order:
-                ordered_metric_ids.extend(category_order[cat])
+
+        for cat in category_ordered:
+            ordered_metric_ids.extend(metrics_category[cat])
         # Create position dict
         position = {mid: i for i, mid in enumerate(ordered_metric_ids)}
         # Sort metrics
