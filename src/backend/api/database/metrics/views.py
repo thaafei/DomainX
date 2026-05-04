@@ -157,7 +157,7 @@ class MetricReorderView(APIView):
                     status=status.HTTP_200_OK,
                 )
         except Exception as e:
-            logger.exception("Failed to retrieve metric display order")
+            logger.exception("Failed to retrieve metric display order: %s", e)
             return Response(
                 {"error": "An internal error has occurred."},
                 status=status.HTTP_500_INTERNAL_SERVER_ERROR,
@@ -207,7 +207,7 @@ class MetricReorderView(APIView):
                 status=status.HTTP_200_OK,
             )
         except Exception as e:
-            logger.exception("Failed to save metric display order")
+            logger.exception("Failed to save metric display order %s", e)
             return Response(
                 {"error": "An internal error has occurred."},
                 status=status.HTTP_500_INTERNAL_SERVER_ERROR,
