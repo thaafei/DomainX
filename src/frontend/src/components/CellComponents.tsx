@@ -28,7 +28,7 @@ export const headerCellStyle: React.CSSProperties = {
   lineHeight: 1.25,
   fontWeight: 700,
   color: "rgba(255,255,255,0.92)",
-  background: "rgba(20, 24, 38, 0.96)",
+  background: "rgba(20, 24, 38, 1)",
   borderBottom: "1px solid rgba(255,255,255,0.08)",
   overflowWrap: "anywhere",
 };

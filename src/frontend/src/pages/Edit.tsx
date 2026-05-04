@@ -710,32 +710,54 @@ const EditValuesPage: React.FC = () => {
                     colSpan={2}
                     style={{
                       ...headerCellStyle,
-                      left: 0,
-                      width: 190,
                       textAlign: "center",
-                      padding: 0,
                       background: "rgba(20, 24, 38, 1)",
                       borderBottom: "1px solid rgba(255,255,255,0.08)",
-                      height: 40,
-                      minHeight: 40,
+                      minHeight: 20,
                     }}
                   >
                   Categories
                   </th>
                   <th
                     className="dx-th-sticky"
-                    colSpan={3}
+                    rowSpan={2}
                     style={{
                       ...headerCellStyle,
-                      left: 190,
                       width: 190,
-                      padding: 0,
-                      background: "rgba(20, 24, 38, 0.96)",
-                      borderBottom: "1px solid rgba(255,255,255,0.08)",
                       height: 40,
-                      minHeight: 40,
+                      textAlign: "center",
+                      background: "rgba(20, 24, 38, 1)",
+                      borderBottom: "1px solid rgba(255,255,255,0.08)",
                     }}
-                  />
+                  >
+                    GitHub URL
+                  </th>
+                  <th
+                    className="dx-th-sticky"
+                    rowSpan={2}
+                    style={{
+                      ...headerCellStyle,
+                      width: 190,
+                      textAlign: "center",
+                      background: "rgba(20, 24, 38, 1)",
+                      borderBottom: "1px solid rgba(255,255,255,0.08)",
+                    }}
+                  >
+                    URL
+                  </th>
+                  <th
+                    className="dx-th-sticky"
+                    rowSpan={2}
+                    style={{
+                      ...headerCellStyle,
+                      width: 190,
+                      textAlign: "center",
+                      background: "rgba(20, 24, 38, 1)",
+                      borderBottom: "1px solid rgba(255,255,255,0.08)",
+                    }}
+                  >
+                    Language
+                  </th>
 
                   {groupedMetrics.map((group) => (
                     <th
@@ -745,7 +767,6 @@ const EditValuesPage: React.FC = () => {
                       style={{
                         ...headerCellStyle,
                         textAlign: "center",
-                        background: "rgba(20, 24, 38, 0.96)",
                         top: 0,
                         whiteSpace: "nowrap",
                         overflow: "hidden",
@@ -767,7 +788,7 @@ const EditValuesPage: React.FC = () => {
                       ...headerCellStyle,
                       background: "rgba(20, 24, 38, 1)",
                       left: 0,
-                      top: 40,
+                      top: 57,
                       width: 190,
                     }}
                   >
@@ -779,41 +800,11 @@ const EditValuesPage: React.FC = () => {
                       ...headerCellStyle,
                       background: "rgba(20, 24, 38, 1)",
                       left: offset,
-                      top: 40,
+                      top: 57,
                       width: 190,
                     }}
                   >
                     Name
-                  </th>
-                  <th
-                    className="dx-th-sticky"
-                    style={{
-                      ...headerCellStyle,
-                      width: 220,
-                      top: 40,
-                    }}
-                  >
-                    GitHub URL
-                  </th>
-                  <th
-                    className="dx-th-sticky"
-                    style={{
-                      ...headerCellStyle,
-                      width: 220,
-                      top: 40,
-                    }}
-                  >
-                    URL
-                  </th>
-                  <th
-                    className="dx-th-sticky"
-                    style={{
-                      ...headerCellStyle,
-                      width: 120,
-                      top: 40,
-                    }}
-                  >
-                    Language
                   </th>
                   {metricList.map((m) => (
                     <th
@@ -822,10 +813,10 @@ const EditValuesPage: React.FC = () => {
                       style={{
                         ...headerCellStyle,
                         width: 170,
-                        top: 42,
+                        top: 57,
                       }}
                     >
-                      <div style={{ ...clamp2Style, paddingRight: "18px" }}>
+                      <div style={{ ...clamp2Style, paddingRight: "18px"}}>
                         {m.metric_name}
                       </div>
 
