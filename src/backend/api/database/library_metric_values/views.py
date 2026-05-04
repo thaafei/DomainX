@@ -15,7 +15,7 @@ from rest_framework.views import APIView
 from ...utils.analysis import enqueue_library_analysis
 from ..domain.models import Domain
 from ..libraries.models import Library
-from ..metrics.models import Metric
+from ..metrics.models import Metric, MetricOrder
 from .models import LibraryMetricValue
 
 
@@ -187,6 +187,23 @@ def domain_comparison(request, domain_id):
 
     libraries = Library.objects.filter(domain=domain)
     metrics = Metric.objects.all()
+
+    # Sort metrics based on MetricOrder
+    metric_order_obj = MetricOrder.objects.first()
+    if metric_order_obj and metric_order_obj.category_order:
+        category_order = metric_order_obj.category_order
+        # Get all categories, sort them alphabetically
+        categories = sorted(category_order.keys())
+        ordered_metric_ids = []
+        for cat in categories:
+            if cat in category_order:
+                ordered_metric_ids.extend(category_order[cat])
+        # Create position dict
+        position = {mid: i for i, mid in enumerate(ordered_metric_ids)}
+        # Sort metrics
+        metrics = sorted(metrics, key=lambda m: position.get(str(m.metric_ID), len(ordered_metric_ids)))
+    else:
+        metrics = list(metrics)
 
     table = []
     by_lib = {}

@@ -393,7 +393,6 @@ const ComparisonToolPage: React.FC = () => {
               className="dx-table"
               style={{
                 tableLayout: "fixed",
-                width: "100%",
               }}
             >
               <thead>
@@ -405,13 +404,15 @@ const ComparisonToolPage: React.FC = () => {
                       textAlign: "left",
                       width: 320,
                       left: 0,
+                      fontSize: '15px',
                     }}
                   >
-                    {/* empty */}
+                    Category
                   </th>
 
                   {groupedMetrics.map((group) => (
                     <th
+                      className="dx-th-sticky"
                       key={group.category}
                       colSpan={group.metrics.length}
                       style={{
@@ -421,10 +422,13 @@ const ComparisonToolPage: React.FC = () => {
                         overflow: "hidden",
                         textOverflow: "ellipsis",
                         whiteSpace: "nowrap",
+                        fontSize: '15px',
                       }}
                       title={group.category}
                     >
-                      {group.category}
+                      <div style={{ display: "flex", alignItems: "flex-start", gap: "6px" }}>
+                        <div style={clamp2Style}>{group.category}</div>
+                      </div>
                     </th>
                   ))}
                 </tr>
@@ -437,6 +441,8 @@ const ComparisonToolPage: React.FC = () => {
                       textAlign: "left",
                       width: 320,
                       left: 0,
+                      top: 36,
+                      fontSize: '15px',
                     }}
                   >
                     Library
@@ -450,6 +456,8 @@ const ComparisonToolPage: React.FC = () => {
                         ...headerCellStyle,
                         textAlign: "left",
                         width: 170,
+                        top: 36,
+                        fontSize: '15px',
                       }}
                       title={m.metric_name}
                     >
