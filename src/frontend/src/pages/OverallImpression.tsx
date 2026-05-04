@@ -14,7 +14,6 @@ const OverallImpressionPage: React.FC = () => {
   const { domainId } = useParams<{ domainId: string }>();
   const navigate = useNavigate();
   const DOMAIN_ID = domainId;
-  const { isLoading: authLoading } = useAuthStore();
 
   const [domainName, setDomainName] = useState("");
   const [categoryScores, setCategoryScores] = useState<CategoryScores>({});
@@ -236,6 +235,7 @@ const OverallImpressionPage: React.FC = () => {
                   {categories.map((category) => (
                     <th
                       key={category}
+                      className="dx-th-sticky dx-sticky-left"
                       style={{
                         textAlign: "left",
                         padding: "8px 8px",
