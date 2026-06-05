@@ -200,8 +200,8 @@ docker compose up -d --no-deps --force-recreate backend
 ```
 git pull
 
-docker compose build backend celery celery_gitstats
-docker compose up -d --no-deps --force-recreate backend celery celery_gitstats
+docker compose build backend celery_gitstats
+docker compose up -d --no-deps --force-recreate backend celery_gitstats
 ```
 ### 4) Only Frontend Changed
 ```
