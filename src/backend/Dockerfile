@@ -18,7 +18,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     file \
   && rm -rf /var/lib/apt/lists/*
 
-COPY gems/nova_git_stats-2.4.3.gem /tmp/
+COPY gems/nova_git_stats-2.4.3.b.gem /tmp/
 
 RUN gem install /tmp/nova_git_stats-2.4.3.b.gem --no-document
 
