@@ -20,7 +20,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 
 COPY gems/nova_git_stats-2.4.3.gem /tmp/
 
-RUN gem install /tmp/nova_git_stats-2.4.3.gem --no-document
+RUN gem install /tmp/nova_git_stats-2.4.3.b.gem --no-document
 
 RUN set -eux; \
     curl -L "https://github.com/boyter/scc/releases/latest/download/scc_Linux_x86_64.tar.gz" -o /tmp/scc.tar.gz; \
