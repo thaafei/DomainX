@@ -41,6 +41,8 @@ def send_invitation_for_user(user, invited_by):
     body = (
         f"Hi {user.first_name or user.username},\n\n"
         f"You've been invited to join DomainX.\n\n"
+        f"DomainX requires all users to either be using McMaster's campus wifi, or connected to McMaster's VPN. Please ensure you are connected before clicking on the invite link.\n\n"
+        f"All future sessions will also require you to be connected when using DomainX.\n\n"
         f"To activate your account, please set your password using the link below:\n\n"
         f"{invite_url}\n\n"
         f"This invitation link will expire in 7 days.\n"
